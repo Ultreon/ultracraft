@@ -1,0 +1,9 @@
+sourceCompatibility = 17
+dependencies {
+    implementation 'org.jetbrains:annotations:23.0.0'
+}
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+eclipse.project.name = appName + "-core"
