@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -21,19 +20,19 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.camera.CameraController;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.world.PerlinNoiseGenerator;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 
 public class UltreonCraft extends ApplicationAdapter {
 	public static final String NAMESPACE = "craft";
+	public BitmapFont font;
+	public CameraController controller;
+	public World world;
 	private static UltreonCraft instance;
-	SpriteBatch spriteBatch;
-	BitmapFont font;
-	ModelBatch modelBatch;
-	PerspectiveCamera camera;
-	Environment lights;
-	CameraController controller;
-	World voxelWorld;
+	private SpriteBatch spriteBatch;
+	private ModelBatch modelBatch;
+	private PerspectiveCamera camera;
+	private Environment lights;
 
 	public UltreonCraft() {
 		instance = this;
@@ -64,6 +63,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		Registries.init();
 
 		Blocks.register();
+		NoiseSettingsInit.register();
 
 		Registry.postEvents();
 		Registry.freezeAll();
@@ -78,11 +78,14 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 
 		MathUtils.random.setSeed(0);
-		voxelWorld = new World(texture, 20, 4, 20);
-		PerlinNoiseGenerator.generateVoxels(voxelWorld, 0, 63, 10);
-		float camX = voxelWorld.voxelsX / 2f;
-		float camZ = voxelWorld.voxelsZ / 2f;
-		float camY = voxelWorld.getHighest(camX, camZ) + 1.5f;
+		world = new World(texture, 20, 4, 20);
+//		PerlinNoiseGenerator.generateVoxels(world, 0, 63, 10);
+		world.generateWorld();
+
+//		world.chunks
+		float camX = world.voxelsX / 2f;
+		float camZ = world.voxelsZ / 2f;
+		float camY = world.getHighest(camX, camZ) + 1.5f;
 		camera.position.set(camX, camY, camZ);
 	}
 
@@ -90,13 +93,13 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void render() {
 		ScreenUtils.clear(0.4f, 0.4f, 0.4f, 1f, true);
 		modelBatch.begin(camera);
-		modelBatch.render(voxelWorld, lights);
+		modelBatch.render(world, lights);
 		modelBatch.end();
 		controller.update();
 
 		spriteBatch.begin();
-		font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + voxelWorld.renderedChunks + "/"
-				+ voxelWorld.numChunks, 0, 20);
+		font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
+				+ world.numChunks, 0, 20);
 		spriteBatch.end();
 	}
 

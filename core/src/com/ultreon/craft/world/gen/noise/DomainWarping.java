@@ -4,10 +4,15 @@ import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.util.Vec2i;
 
 public class DomainWarping {
-    public NoiseSettings noiseDomainX, noiseDomainY;
+    public final NoiseSettings noiseDomainX, noiseDomainY;
     public int amplitudeX = 20, amplitudeY = 20;
 
-    public float GenerateDomainNoise(int x, int z, NoiseSettings defaultNoiseSettings) {
+    public DomainWarping(NoiseSettings noiseDomainX, NoiseSettings noiseDomainY) {
+        this.noiseDomainX = noiseDomainX;
+        this.noiseDomainY = noiseDomainY;
+    }
+
+    public float generateDomainNoise(int x, int z, NoiseSettings defaultNoiseSettings) {
         Vector2 domainOffset = GenerateDomainOffset(x, z);
         return MyNoise.octavePerlin(x + domainOffset.x, z + domainOffset.y, defaultNoiseSettings);
     }

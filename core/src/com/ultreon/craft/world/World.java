@@ -28,18 +28,35 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.util.Vec2i;
+import com.ultreon.craft.world.gen.BiomeGenerator;
+import com.ultreon.craft.world.gen.layer.*;
+import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 
 import java.util.Map;
 
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 16;
+	public static final int WORLD_HEIGHT = 256;
 
 	public final Chunk[] chunkArray;
 	public final Mesh[] meshArray;
 	public final Material[] materialArray;
 	public final boolean[] dirty;
 	public final int[] numVertices;
+	private final BiomeGenerator biome = BiomeGenerator.builder()
+			.noise(NoiseSettingsInit.DEFAULT.get())
+			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get()))
+			.layer(new WaterTerrainLayer(16))
+			.layer(new AirTerrainLayer())
+			.layer(new SurfaceTerrainLayer())
+			.layer(new StoneTerrainLayer())
+			.layer(new UndergroundTerrainLayer())
+			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH.get(), new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get())))
+			.build();
+	private final Vec2i mapSeed = new Vec2i(49454, 58393);
 	public float[] vertices;
 	public final int chunksX;
 	public final int chunksY;
@@ -98,10 +115,20 @@ public class World implements RenderableProvider {
 		for (i = 0; i < numVertices.length; i++)
 			numVertices[i] = 0;
 
-		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
+		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 		this.materialArray = new Material[chunksX * chunksY * chunksZ];
 		for (i = 0; i < materialArray.length; i++) {
 			materialArray[i] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		}
+	}
+
+	public void generateWorld() {
+		for (Chunk chunk : chunkArray) {
+			for (int x = 0; x < CHUNK_SIZE; x++) {
+				for (int z = 0; z < CHUNK_SIZE; z++) {
+					biome.processColumn(chunk, x, z, mapSeed, biome.getSurfaceHeightNoise(x, z, 256));
+				}
+			}
 		}
 	}
 

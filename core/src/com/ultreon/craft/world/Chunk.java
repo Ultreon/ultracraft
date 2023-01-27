@@ -51,6 +51,10 @@ public class Chunk {
 		this.widthTimesHeight = width * height;
 	}
 
+	public Block get(BlockPos pos) {
+		return get(pos.x(), pos.y(), pos.z());
+	}
+
 	public Block get(int x, int y, int z) {
 		if (x < 0 || x >= width) return Blocks.AIR.get();
 		if (y < 0 || y >= height) return Blocks.AIR.get();
@@ -58,19 +62,31 @@ public class Chunk {
 		return getFast(x, y, z);
 	}
 
+	public Block getFast(BlockPos pos) {
+		return getFast(pos.x(), pos.y(), pos.z());
+	}
+
 	public Block getFast(int x, int y, int z) {
 		return blocks[x + z * width + y * widthTimesHeight];
 	}
 
-	public void set(int x, int y, int z, Block voxel) {
+	public void set(BlockPos pos, Block block) {
+		set(pos.x(), pos.y(), pos.z(), block);
+	}
+
+	public void set(int x, int y, int z, Block block) {
 		if (x < 0 || x >= width) return;
 		if (y < 0 || y >= height) return;
 		if (z < 0 || z >= depth) return;
-		setFast(x, y, z, voxel);
+		setFast(x, y, z, block);
 	}
 
-	public void setFast(int x, int y, int z, Block voxel) {
-		blocks[x + z * width + y * widthTimesHeight] = voxel;
+	public void setFast(BlockPos pos, Block block) {
+		set(pos.x(), pos.y(), pos.z(), block);
+	}
+
+	public void setFast(int x, int y, int z, Block block) {
+		blocks[x + z * width + y * widthTimesHeight] = block;
 	}
 
 	/** Creates a mesh out of the chunk, returning the number of indices produced
@@ -82,37 +98,38 @@ public class Chunk {
 			for (int z = 0; z < depth; z++) {
 				for (int x = 0; x < width; x++, i++) {
 					Block block = blocks[i];
-					if (block == null) continue;
+					if (block == null || block == Blocks.AIR.get()) continue;
 
 					BakedCubeModel model = block.bakedModel();
+					if (model == null) continue;
 
 					if (y < height - 1) {
-						if (blocks[i + topOffset] == null) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR.get()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
-						if (blocks[i + bottomOffset] == null) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR.get()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
-						if (blocks[i + leftOffset] == null) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR.get()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < width - 1) {
-						if (blocks[i + rightOffset] == null) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR.get()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
-						if (blocks[i + frontOffset] == null) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR.get()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < depth - 1) {
-						if (blocks[i + backOffset] == null) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR.get()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}

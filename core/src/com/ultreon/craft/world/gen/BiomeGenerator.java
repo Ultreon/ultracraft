@@ -37,7 +37,7 @@ public class BiomeGenerator {
 
         groundPos = Objects.requireNonNullElseGet(height, () -> getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height));
 
-        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + (int) chunk.width; y++) {
+        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.width; y++) {
             for (var layer : layers) {
                 if (layer.handle(chunk, x, y, z, groundPos, mapSeed)) {
                     break;
@@ -52,16 +52,16 @@ public class BiomeGenerator {
         return chunk;
     }
 
-    private int getSurfaceHeightNoise(float x, float z, int height) {
+    public int getSurfaceHeightNoise(float x, float z, int height) {
         float terrainHeight;
         if (!USE_DOMAIN_WARPING) {
             terrainHeight = MyNoise.octavePerlin(x, z, biomeNoise);
         } else {
-            terrainHeight = domainWarping.GenerateDomainNoise((int) x, (int) z, biomeNoise);
+            terrainHeight = domainWarping.generateDomainNoise((int) x, (int) z, biomeNoise);
         }
 
         terrainHeight = MyNoise.redistribution(terrainHeight, biomeNoise);
-        return MyNoise.remapValue01ToInt(terrainHeight, 0, World.CHUNK_HEIGHT);
+        return MyNoise.remapValue01ToInt(terrainHeight, 0, World.WORLD_HEIGHT);
     }
 
     public static class Builder {
@@ -90,7 +90,7 @@ public class BiomeGenerator {
             return this;
         }
 
-        public BiomeGenerator createBiomeGenerator() {
+        public BiomeGenerator build() {
             return new BiomeGenerator(biomeNoise, domainWarping, layers, extraLayers);
         }
     }

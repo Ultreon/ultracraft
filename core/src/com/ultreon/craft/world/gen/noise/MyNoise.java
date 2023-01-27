@@ -14,25 +14,25 @@ public class MyNoise {
     }
 
     public static float redistribution(float noise, NoiseSettings settings) {
-        return (float) Math.pow(noise * settings.redistributionModifier, settings.exponent);
+        return (float) Math.pow(noise * settings.redistributionModifier(), settings.exponent());
     }
 
     public static float octavePerlin(float x, float z, NoiseSettings settings) {
-        x *= settings.noiseZoom;
-        z *= settings.noiseZoom;
-        x += settings.noiseZoom;
-        z += settings.noiseZoom;
+        x *= settings.noiseZoom();
+        z *= settings.noiseZoom();
+        x += settings.noiseZoom();
+        z += settings.noiseZoom();
 
         float total = 0;
         float frequency = 1;
         float amplitude = 1;
         float amplitudeSum = 0;  // Used for normalizing result to 0.0 - 1.0 range
-        for (int i = 0; i < settings.octaves; i++) {
-            total += new NoiseGenerator().noise((settings.offest.x + settings.worldOffset.x + x) * frequency, (settings.offest.y + settings.worldOffset.y + z) * frequency) * amplitude;
+        for (int i = 0; i < settings.octaves(); i++) {
+            total += new NoiseGenerator().noise((settings.offset().x + settings.worldOffset.x + x) * frequency, (settings.offset().y + settings.worldOffset.y + z) * frequency) * amplitude;
 
             amplitudeSum += amplitude;
 
-            amplitude *= settings.persistance;
+            amplitude *= settings.persistence();
             frequency *= 2;
         }
 
