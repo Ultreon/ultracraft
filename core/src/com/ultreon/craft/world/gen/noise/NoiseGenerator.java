@@ -101,9 +101,33 @@ public class NoiseGenerator {
 		return value / initialSize;
 	}
 
+	public double noise(double x, double y, int size) {
+		double value = 0.0;
+		double initialSize = size;
+
+		while (size >= 1) {
+			value += smoothNoise((x / size), (y / size), (0f / size)) * size;
+			size /= 2.0;
+		}
+
+		return value / initialSize;
+	}
+
     public double noise(double x) {
         double value = 0.0;
         double size = default_size;
+        double initialSize = size;
+
+        while (size >= 1) {
+            value += smoothNoise((x / size), (0f / size), (0f / size)) * size;
+            size /= 2.0;
+        }
+
+        return value / initialSize;
+    }
+
+    public double noise(double x, int size) {
+        double value = 0.0;
         double initialSize = size;
 
         while (size >= 1) {

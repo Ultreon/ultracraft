@@ -39,7 +39,7 @@ import java.util.Map;
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 16;
-	public static final int WORLD_HEIGHT = 256;
+	public static final int WORLD_HEIGHT = 16;
 
 	public final Chunk[] chunkArray;
 	public final Mesh[] meshArray;
@@ -49,7 +49,7 @@ public class World implements RenderableProvider {
 	private final BiomeGenerator biome = BiomeGenerator.builder()
 			.noise(NoiseSettingsInit.DEFAULT.get())
 			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get()))
-			.layer(new WaterTerrainLayer(16))
+//			.layer(new WaterTerrainLayer(16))
 			.layer(new AirTerrainLayer())
 			.layer(new SurfaceTerrainLayer())
 			.layer(new StoneTerrainLayer())
@@ -126,7 +126,7 @@ public class World implements RenderableProvider {
 		for (Chunk chunk : chunkArray) {
 			for (int x = 0; x < CHUNK_SIZE; x++) {
 				for (int z = 0; z < CHUNK_SIZE; z++) {
-					biome.processColumn(chunk, x, z, mapSeed, biome.getSurfaceHeightNoise(x, z, 256));
+					biome.processColumn(chunk, x, z, mapSeed, biome.getSurfaceHeightNoise(x, z, WORLD_HEIGHT));
 				}
 			}
 		}

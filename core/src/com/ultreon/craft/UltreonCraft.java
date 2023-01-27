@@ -78,7 +78,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 
 		MathUtils.random.setSeed(0);
-		world = new World(texture, 20, 4, 20);
+		world = new World(texture, 8, 16, 8);
 //		PerlinNoiseGenerator.generateVoxels(world, 0, 63, 10);
 		world.generateWorld();
 

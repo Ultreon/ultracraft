@@ -28,7 +28,7 @@ public class MyNoise {
         float amplitude = 1;
         float amplitudeSum = 0;  // Used for normalizing result to 0.0 - 1.0 range
         for (int i = 0; i < settings.octaves(); i++) {
-            total += new NoiseGenerator().noise((settings.offset().x + settings.worldOffset.x + x) * frequency, (settings.offset().y + settings.worldOffset.y + z) * frequency) * amplitude;
+            total += new NoiseGenerator().noise((settings.offset().x + settings.worldOffset.x + x) * frequency, (settings.offset().y + settings.worldOffset.y + z) * frequency, 1) * amplitude;
 
             amplitudeSum += amplitude;
 
