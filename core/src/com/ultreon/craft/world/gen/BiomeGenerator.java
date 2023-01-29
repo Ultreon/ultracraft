@@ -1,8 +1,6 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.util.Vec2i;
 import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.MyNoise;
@@ -19,6 +17,7 @@ public class BiomeGenerator {
     private final List<TerrainLayer> layers;
     private final List<TerrainLayer> extraLayers;
     public static final boolean USE_DOMAIN_WARPING = true;
+    public TreeGenerator treeGenerator;
 
     public BiomeGenerator(NoiseSettings biomeNoise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
         this.biomeNoise = biomeNoise;
@@ -31,22 +30,22 @@ public class BiomeGenerator {
         return new Builder();
     }
 
-    public Chunk processColumn(Chunk chunk, int x, int z, Vec2i mapSeed, @Nullable Integer height) {
-        biomeNoise.worldOffset = mapSeed;
+    public Chunk processColumn(Chunk chunk, int x, int z, long seed, @Nullable Integer height) {
+        biomeNoise.seed = seed;
         int groundPos;
 
         groundPos = Objects.requireNonNullElseGet(height, () -> getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height));
 
-        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.width; y++) {
+        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.size; y++) {
             for (var layer : layers) {
-                if (layer.handle(chunk, x, y, z, groundPos, mapSeed)) {
+                if (layer.handle(chunk, x, y, z, groundPos, seed)) {
                     break;
                 }
             }
         }
 
         for (var layer : extraLayers) {
-            layer.handle(chunk, x, (int) chunk.offset.y, z, groundPos, mapSeed);
+            layer.handle(chunk, x, (int) chunk.offset.y, z, groundPos, seed);
         }
 
         return chunk;
@@ -61,7 +60,14 @@ public class BiomeGenerator {
         }
 
         terrainHeight = MyNoise.redistribution(terrainHeight, biomeNoise);
-        return MyNoise.remapValue01ToInt(terrainHeight, 0, World.WORLD_HEIGHT);
+        return MyNoise.remapValue01ToInt(terrainHeight, 0, height);
+    }
+
+    public TreeData getTreeData(Chunk chunk, long seed) {
+        if (treeGenerator == null)
+            return new TreeData();
+
+        return treeGenerator.generateTreeData(chunk, seed);
     }
 
     public static class Builder {

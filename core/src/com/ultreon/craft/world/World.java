@@ -28,17 +28,21 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.util.Vec2i;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.world.gen.BiomeGenerator;
+import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.*;
 
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
-	public static final int CHUNK_HEIGHT = 16;
+	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 16;
 
 	public final Chunk[] chunkArray;
@@ -56,7 +60,7 @@ public class World implements RenderableProvider {
 			.layer(new UndergroundTerrainLayer())
 			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH.get(), new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get())))
 			.build();
-	private final Vec2i mapSeed = new Vec2i(49454, 58393);
+	private final long seed = new Random().nextLong();
 	public float[] vertices;
 	public final int chunksX;
 	public final int chunksY;
@@ -70,6 +74,7 @@ public class World implements RenderableProvider {
 	private Map<ChunkPos, Chunk> chunks;
 	private Map<ChunkPos, Mesh> meshes;
 	private Map<ChunkPos, Material> materials;
+	private TerrainGenerator terrainGen;
 
 	public World(Texture texture, int chunksX, int chunksY, int chunksZ) {
 		this.chunkArray = new Chunk[chunksX * chunksY * chunksZ];
@@ -84,7 +89,7 @@ public class World implements RenderableProvider {
 		for (int y = 0; y < chunksY; y++) {
 			for (int z = 0; z < chunksZ; z++) {
 				for (int x = 0; x < chunksX; x++) {
-					Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
+					Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
 					chunk.offset.set(x * CHUNK_SIZE, y * CHUNK_HEIGHT, z * CHUNK_SIZE);
 					chunkArray[i++] = chunk;
 				}
@@ -126,10 +131,27 @@ public class World implements RenderableProvider {
 		for (Chunk chunk : chunkArray) {
 			for (int x = 0; x < CHUNK_SIZE; x++) {
 				for (int z = 0; z < CHUNK_SIZE; z++) {
-					biome.processColumn(chunk, x, z, mapSeed, biome.getSurfaceHeightNoise(x, z, WORLD_HEIGHT));
+					biome.processColumn(chunk, x, z, seed, CHUNK_HEIGHT);
 				}
 			}
 		}
+	}
+
+	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<Vector3> toCreate) {
+		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
+		return CompletableFuture.supplyAsync(() -> {
+			for (var pos : toCreate) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+
+				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
+				Chunk newChunk = terrainGen.generateChunkData(chunk, seed);
+			}
+			return map;
+		});
 	}
 
 	public void set(float x, float y, float z, Block voxel) {
@@ -229,5 +251,4 @@ public class World implements RenderableProvider {
 			renderables.add(renderable);
 			renderedChunks++;
 		}
-	}
-}
+	}}

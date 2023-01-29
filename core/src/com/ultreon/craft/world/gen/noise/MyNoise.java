@@ -1,5 +1,9 @@
 package com.ultreon.craft.world.gen.noise;
 
+import de.articdive.jnoise.generators.noisegen.perlin.PerlinNoiseGenerator;
+
+import java.util.Random;
+
 public class MyNoise {
     public static float remapValue(float value, float initialMin, float initialMax, float outputMin, float outputMax) {
         return outputMin + (value - initialMin) * (outputMax - outputMin) / (initialMax - initialMin);
@@ -28,7 +32,7 @@ public class MyNoise {
         float amplitude = 1;
         float amplitudeSum = 0;  // Used for normalizing result to 0.0 - 1.0 range
         for (int i = 0; i < settings.octaves(); i++) {
-            total += new NoiseGenerator().noise((settings.offset().x + settings.worldOffset.x + x) * frequency, (settings.offset().y + settings.worldOffset.y + z) * frequency, 1) * amplitude;
+            total += new NoiseGenerator().noise((settings.offset().x + settings.seed + x) * frequency, (settings.offset().y + settings.seed + z) * frequency, 1) * amplitude;
 
             amplitudeSum += amplitude;
 

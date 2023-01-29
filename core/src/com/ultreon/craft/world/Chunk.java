@@ -21,34 +21,34 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
+import com.ultreon.craft.world.gen.TreeData;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
 	public final Block[] blocks;
-	public final int width;
+	public final int size;
 	public final int height;
-	public final int depth;
 	public final Vector3 offset = new Vector3();
-	private final int widthTimesHeight;
+	private final int sizeTimesHeight;
 	private final int topOffset;
 	private final int bottomOffset;
 	private final int leftOffset;
 	private final int rightOffset;
 	private final int frontOffset;
 	private final int backOffset;
+	public TreeData treeData;
 
-	public Chunk(int width, int height, int depth) {
-		this.blocks = new Block[width * height * depth];
-		this.width = width;
+	public Chunk(int size, int height) {
+		this.blocks = new Block[size * height * size];
+		this.size = size;
 		this.height = height;
-		this.depth = depth;
-		this.topOffset = width * depth;
-		this.bottomOffset = -width * depth;
+		this.topOffset = size * size;
+		this.bottomOffset = -size * size;
 		this.leftOffset = -1;
 		this.rightOffset = 1;
-		this.frontOffset = -width;
-		this.backOffset = width;
-		this.widthTimesHeight = width * height;
+		this.frontOffset = -size;
+		this.backOffset = size;
+		this.sizeTimesHeight = size * size;
 	}
 
 	public Block get(BlockPos pos) {
@@ -56,9 +56,9 @@ public class Chunk {
 	}
 
 	public Block get(int x, int y, int z) {
-		if (x < 0 || x >= width) return Blocks.AIR.get();
+		if (x < 0 || x >= size) return Blocks.AIR.get();
 		if (y < 0 || y >= height) return Blocks.AIR.get();
-		if (z < 0 || z >= depth) return Blocks.AIR.get();
+		if (z < 0 || z >= size) return Blocks.AIR.get();
 		return getFast(x, y, z);
 	}
 
@@ -67,7 +67,14 @@ public class Chunk {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		return blocks[x + z * width + y * widthTimesHeight];
+		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
+		System.out.println("(x + z) = " + (x + z));
+		System.out.println("(x + z * size) = " + (x + z * size));
+		System.out.println("(x + z * size + y) = " + (x + z * size + y));
+		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
+		System.out.println("(z * size) = " + (z * size));
+		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
+		return blocks[x + z * size + y * sizeTimesHeight];
 	}
 
 	public void set(BlockPos pos, Block block) {
@@ -75,9 +82,9 @@ public class Chunk {
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		if (x < 0 || x >= width) return;
+		if (x < 0 || x >= size) return;
 		if (y < 0 || y >= height) return;
-		if (z < 0 || z >= depth) return;
+		if (z < 0 || z >= size) return;
 		setFast(x, y, z, block);
 	}
 
@@ -86,7 +93,15 @@ public class Chunk {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		blocks[x + z * width + y * widthTimesHeight] = block;
+		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
+		System.out.println("(x + z) = " + (x + z));
+		System.out.println("(x + z * size) = " + (x + z * size));
+		System.out.println("(x + z * size + y) = " + (x + z * size + y));
+		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
+		System.out.println("(z * size) = " + (z * size));
+		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
+		System.out.println("blocks.length = " + blocks.length);
+		blocks[x + z * size + y * sizeTimesHeight] = block;
 	}
 
 	/** Creates a mesh out of the chunk, returning the number of indices produced
@@ -95,8 +110,8 @@ public class Chunk {
 		int i = 0;
 		int vertexOffset = 0;
 		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < depth; z++) {
-				for (int x = 0; x < width; x++, i++) {
+			for (int z = 0; z < size; z++) {
+				for (int x = 0; x < size; x++, i++) {
 					Block block = blocks[i];
 					if (block == null || block == Blocks.AIR.get()) continue;
 
@@ -118,7 +133,7 @@ public class Chunk {
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
-					if (x < width - 1) {
+					if (x < size - 1) {
 						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR.get()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
@@ -128,7 +143,7 @@ public class Chunk {
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
-					if (z < depth - 1) {
+					if (z < size - 1) {
 						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR.get()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);

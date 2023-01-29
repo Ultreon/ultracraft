@@ -1,5 +1,7 @@
 package com.ultreon.craft.util;
 
+import com.badlogic.gdx.math.Vector3;
+
 import java.util.Objects;
 
 public class Vec3i {
@@ -17,6 +19,10 @@ public class Vec3i {
         this.x = vec3i.x;
         this.y = vec3i.y;
         this.z = vec3i.z;
+    }
+
+    public static Vec3i of(Vector3 gdx) {
+        return new Vec3i((int) gdx.x, (int) gdx.y, (int) gdx.z);
     }
 
     public Vec3i add(int x, int y, int z) {
@@ -77,5 +83,21 @@ public class Vec3i {
                 "x=" + x + ", " +
                 "y=" + y + ", " +
                 "z=" + z + ']';
+    }
+
+    public Vector3 gdx() {
+        return new Vector3(x, y, z);
+    }
+
+    public void x(int x) {
+        this.x = x;
+    }
+
+    public void y(int y) {
+        this.y = y;
+    }
+
+    public void z(int z) {
+        this.z = z;
     }
 }

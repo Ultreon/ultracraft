@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.util.Vec2i;
+import com.ultreon.craft.util.Mth;
 
 public class DomainWarping {
     public final NoiseSettings noiseDomainX, noiseDomainY;
@@ -23,7 +23,7 @@ public class DomainWarping {
         return new Vector2(noiseX, noiseY);
     }
 
-    public Vec2i GenerateDomainOffsetInt(int x, int z) {
-        return Vec2i.roundToInt(GenerateDomainOffset(x, z));
+    public Vector2 GenerateDomainOffsetInt(int x, int z) {
+        return Mth.round(GenerateDomainOffset(x, z));
     }
 }

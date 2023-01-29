@@ -66,5 +66,9 @@ project(":core") {
         api "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
         api 'it.unimi.dsi:fastutil:8.5.11'
         api 'com.google.guava:guava:31.1-jre'
+        api 'com.raylabz:opensimplex:1.0.3'
+        api 'de.articdive:jnoise-modules:4.0.0'
+        api 'de.articdive:jnoise-generators:4.0.0'
+        api 'de.articdive:jnoise-modifiers:4.0.0'
     }
 }

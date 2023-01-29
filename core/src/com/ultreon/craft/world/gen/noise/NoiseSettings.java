@@ -1,24 +1,24 @@
 package com.ultreon.craft.world.gen.noise;
 
-import com.ultreon.craft.util.Vec2i;
+import com.badlogic.gdx.math.Vector2;
 
 import java.util.Objects;
 
 public final class NoiseSettings {
     private final float noiseZoom;
     private final int octaves;
-    private final Vec2i offset;
-    public Vec2i worldOffset;
+    private final Vector2 offset;
+    public long seed;
     private final float persistence;
     private final float redistributionModifier;
     private final float exponent;
 
-    public NoiseSettings(float noiseZoom, int octaves, Vec2i offset, Vec2i worldOffset, float persistence,
+    public NoiseSettings(float noiseZoom, int octaves, Vector2 offset, long seed, float persistence,
                          float redistributionModifier, float exponent) {
         this.noiseZoom = noiseZoom * 0.0000001f;
         this.octaves = octaves;
         this.offset = offset;
-        this.worldOffset = worldOffset;
+        this.seed = seed;
         this.persistence = persistence;
         this.redistributionModifier = redistributionModifier;
         this.exponent = exponent;
@@ -32,12 +32,12 @@ public final class NoiseSettings {
         return octaves;
     }
 
-    public Vec2i offset() {
+    public Vector2 offset() {
         return offset;
     }
 
-    public Vec2i worldOffset() {
-        return worldOffset;
+    public long seed() {
+        return seed;
     }
 
     public float persistence() {
@@ -60,7 +60,7 @@ public final class NoiseSettings {
         return Float.floatToIntBits(this.noiseZoom) == Float.floatToIntBits(that.noiseZoom) &&
                 this.octaves == that.octaves &&
                 Objects.equals(this.offset, that.offset) &&
-                Objects.equals(this.worldOffset, that.worldOffset) &&
+                Objects.equals(this.seed, that.seed) &&
                 Float.floatToIntBits(this.persistence) == Float.floatToIntBits(that.persistence) &&
                 Float.floatToIntBits(this.redistributionModifier) == Float.floatToIntBits(that.redistributionModifier) &&
                 Float.floatToIntBits(this.exponent) == Float.floatToIntBits(that.exponent);
@@ -68,7 +68,7 @@ public final class NoiseSettings {
 
     @Override
     public int hashCode() {
-        return Objects.hash(noiseZoom, octaves, offset, worldOffset, persistence, redistributionModifier, exponent);
+        return Objects.hash(noiseZoom, octaves, offset, seed, persistence, redistributionModifier, exponent);
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class NoiseSettings {
                 "noiseZoom=" + noiseZoom + ", " +
                 "octaves=" + octaves + ", " +
                 "offset=" + offset + ", " +
-                "worldOffset=" + worldOffset + ", " +
+                "worldOffset=" + seed + ", " +
                 "persistence=" + persistence + ", " +
                 "redistributionModifier=" + redistributionModifier + ", " +
                 "exponent=" + exponent + ']';
