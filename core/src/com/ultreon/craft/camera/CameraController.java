@@ -75,6 +75,17 @@ public class CameraController extends InputAdapter {
     }
 
     @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        if (!Gdx.input.isCursorCatched()) return super.mouseMoved(screenX, screenY);
+        float deltaX = -Gdx.input.getDeltaX() * DEGREES_PER_PIXEL;
+        float deltaY = -Gdx.input.getDeltaY() * DEGREES_PER_PIXEL;
+        camera.direction.rotate(camera.up, deltaX);
+        tmp.set(camera.direction).crs(camera.up).nor();
+        camera.direction.rotate(tmp, deltaY);
+        return true;
+    }
+
+    @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (!Gdx.input.isCursorCatched()) {
             Gdx.input.setCursorCatched(true);
