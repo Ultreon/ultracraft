@@ -1,6 +1,7 @@
 package com.ultreon.craft.world.gen.layer;
 
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
@@ -19,6 +20,7 @@ public class StonePatchTerrainLayer extends TerrainLayer {
 
     @Override
     public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
+        Debugger.layersTriggered.add(this);
         if (chunk.offset.y > height)
             return false;
 
@@ -31,17 +33,17 @@ public class StonePatchTerrainLayer extends TerrainLayer {
             endPosition = (int) (chunk.offset.y + chunk.height);
         }
 
-
         if (stoneNoise > stoneThreshold) {
             for (int i = (int) chunk.offset.y; i <= endPosition; i++) {
                 BlockPos pos = new BlockPos(x, i, z);
                 try {
                     chunk.set(pos, Blocks.STONE.get());
                 } catch (Exception e) {
-                    System.out.println("pos = " + pos);
+//                    System.out.println("pos = " + pos);
                     throw new RuntimeException("Execution error at " + pos, e);
                 }
             }
+            Debugger.layersHandled.add(this);
             return true;
         }
         return false;

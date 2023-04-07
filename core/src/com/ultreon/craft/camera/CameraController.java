@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.UltreonCraft;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class CameraController extends InputAdapter {
@@ -17,6 +18,7 @@ public class CameraController extends InputAdapter {
     public int upKey = Input.Keys.SPACE;
     public int downKey = Input.Keys.SHIFT_LEFT;
     public int pauseKey = Input.Keys.ESCAPE;
+    public int regenKey = Input.Keys.F3;
     public int runningKey = Input.Keys.CONTROL_LEFT;
     private final IntArraySet keys = new IntArraySet();
     private final Vector3 tmp = new Vector3();

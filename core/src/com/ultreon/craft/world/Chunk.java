@@ -67,13 +67,13 @@ public class Chunk {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-		System.out.println("(x + z) = " + (x + z));
-		System.out.println("(x + z * size) = " + (x + z * size));
-		System.out.println("(x + z * size + y) = " + (x + z * size + y));
-		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
-		System.out.println("(z * size) = " + (z * size));
-		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
+//		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
+//		System.out.println("(x + z) = " + (x + z));
+//		System.out.println("(x + z * size) = " + (x + z * size));
+//		System.out.println("(x + z * size + y) = " + (x + z * size + y));
+//		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
+//		System.out.println("(z * size) = " + (z * size));
+//		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
 		return blocks[x + z * size + y * sizeTimesHeight];
 	}
 
@@ -93,14 +93,14 @@ public class Chunk {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-		System.out.println("(x + z) = " + (x + z));
-		System.out.println("(x + z * size) = " + (x + z * size));
-		System.out.println("(x + z * size + y) = " + (x + z * size + y));
-		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
-		System.out.println("(z * size) = " + (z * size));
-		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
-		System.out.println("blocks.length = " + blocks.length);
+//		System.out.println("x = " + x + ", y = " + y + ", z = " + z);
+//		System.out.println("(x + z) = " + (x + z));
+//		System.out.println("(x + z * size) = " + (x + z * size));
+//		System.out.println("(x + z * size + y) = " + (x + z * size + y));
+//		System.out.println("(x + z * size + y * sizeTimesHeight) = " + (x + z * size + y * sizeTimesHeight));
+//		System.out.println("(z * size) = " + (z * size));
+//		System.out.println("(y * sizeTimesHeight) = " + (y * sizeTimesHeight));
+//		System.out.println("blocks.length = " + blocks.length);
 		blocks[x + z * size + y * sizeTimesHeight] = block;
 	}
 

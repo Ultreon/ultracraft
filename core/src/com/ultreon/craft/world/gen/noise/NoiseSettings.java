@@ -15,7 +15,7 @@ public final class NoiseSettings {
 
     public NoiseSettings(float noiseZoom, int octaves, Vector2 offset, long seed, float persistence,
                          float redistributionModifier, float exponent) {
-        this.noiseZoom = noiseZoom * 0.0000001f;
+        this.noiseZoom = noiseZoom;
         this.octaves = octaves;
         this.offset = offset;
         this.seed = seed;

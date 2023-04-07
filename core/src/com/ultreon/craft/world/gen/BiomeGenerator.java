@@ -1,12 +1,15 @@
 package com.ultreon.craft.world.gen;
 
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.MyNoise;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.event.DocumentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,11 +21,13 @@ public class BiomeGenerator {
     private final List<TerrainLayer> extraLayers;
     public static final boolean USE_DOMAIN_WARPING = true;
     public TreeGenerator treeGenerator;
+    private final int chunkAmplitude = 1;
 
     public BiomeGenerator(NoiseSettings biomeNoise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
         this.biomeNoise = biomeNoise;
         this.domainWarping = domainWarping;
         this.layers = layers;
+        System.out.println("layers = " + layers);
         this.extraLayers = extraLayers;
     }
 
@@ -34,10 +39,14 @@ public class BiomeGenerator {
         biomeNoise.seed = seed;
         int groundPos;
 
-        groundPos = Objects.requireNonNullElseGet(height, () -> getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height));
+        groundPos = getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
 
-        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.size; y++) {
+        Debugger.highestSurface = Math.max(groundPos, Debugger.highestSurface);
+
+        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.height; y++) {
+//            System.out.println("y = " + y);
             for (var layer : layers) {
+                Debugger.maxY = Math.max(Debugger.maxY, y);
                 if (layer.handle(chunk, x, y, z, groundPos, seed)) {
                     break;
                 }
@@ -59,8 +68,12 @@ public class BiomeGenerator {
             terrainHeight = domainWarping.generateDomainNoise((int) x, (int) z, biomeNoise);
         }
 
+        Debugger.terrainMax = Math.max(terrainHeight, Debugger.terrainMax);
+
         terrainHeight = MyNoise.redistribution(terrainHeight, biomeNoise);
+        Debugger.redistMax = Math.max(terrainHeight, Debugger.redistMax);
         return MyNoise.remapValue01ToInt(terrainHeight, 0, height);
+//        return (int) (terrainHeight * height);
     }
 
     public TreeData getTreeData(Chunk chunk, long seed) {

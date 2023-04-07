@@ -2,6 +2,7 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -78,15 +79,15 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 
 		MathUtils.random.setSeed(0);
-		world = new World(texture, 8, 1, 8);
+		world = new World(texture, 16, 1, 16);
 //		PerlinNoiseGenerator.generateVoxels(world, 0, 63, 10);
 		world.generateWorld();
 
 //		world.chunks
 		float camX = world.voxelsX / 2f;
 		float camZ = world.voxelsZ / 2f;
-		float camY = world.getHighest(camX, camZ) + 1.5f;
-		camera.position.set(camX, camY, camZ);
+		float camY = world.getHighest(0, 0) + 1.5f;
+		camera.position.set(0, 255, 0);
 	}
 
 	@Override
@@ -97,9 +98,17 @@ public class UltreonCraft extends ApplicationAdapter {
 		modelBatch.end();
 		controller.update();
 
+
+		if (controller.isKeyDown(Input.Keys.F3)) {
+			world.regen();
+		}
+
 		spriteBatch.begin();
 		font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
 				+ world.numChunks, 0, 20);
+		font.draw(spriteBatch, "x: " + (int)camera.position.x + ", y: " + (int)camera.position.y + ", z: "
+				+ (int)camera.position.z, 0, 40);
+		font.draw(spriteBatch, "chunk shown: " + (world.get(camera.position.x, camera.position.y, camera.position.z) != null), 0, 60);
 		spriteBatch.end();
 	}
 

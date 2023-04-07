@@ -29,6 +29,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
@@ -43,15 +44,15 @@ import java.util.concurrent.*;
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
-	public static final int WORLD_HEIGHT = 16;
+	public static final int WORLD_HEIGHT = 256;
 
-	public final Chunk[] chunkArray;
+	public Chunk[] chunkArray;
 	public final Mesh[] meshArray;
 	public final Material[] materialArray;
 	public final boolean[] dirty;
 	public final int[] numVertices;
 	private final BiomeGenerator biome = BiomeGenerator.builder()
-			.noise(NoiseSettingsInit.DEFAULT.get())
+			.noise(NoiseSettingsInit.DOMAIN_X.get())
 			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get()))
 //			.layer(new WaterTerrainLayer(16))
 			.layer(new AirTerrainLayer())
@@ -60,7 +61,7 @@ public class World implements RenderableProvider {
 			.layer(new UndergroundTerrainLayer())
 			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH.get(), new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get())))
 			.build();
-	private final long seed = new Random().nextLong();
+	private final long seed = 512;
 	public float[] vertices;
 	public final int chunksX;
 	public final int chunksY;
@@ -135,6 +136,7 @@ public class World implements RenderableProvider {
 				}
 			}
 		}
+		Debugger.dumpLayerInfo();
 	}
 
 	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<Vector3> toCreate) {
@@ -251,4 +253,19 @@ public class World implements RenderableProvider {
 			renderables.add(renderable);
 			renderedChunks++;
 		}
-	}}
+	}
+
+	public void regen() {
+		int i = 0;
+		for (int y = 0; y < chunksY; y++) {
+			for (int z = 0; z < chunksZ; z++) {
+				for (int x = 0; x < chunksX; x++) {
+					Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
+					chunk.offset.set(x * CHUNK_SIZE, y * CHUNK_HEIGHT, z * CHUNK_SIZE);
+					chunkArray[i++] = chunk;
+				}
+			}
+		}
+		generateWorld();
+	}
+}
