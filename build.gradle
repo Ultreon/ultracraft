@@ -55,6 +55,19 @@ project(":core") {
     apply plugin: "java-library"
 
     dependencies {
+        // CoreLibs
+        implementation "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
+        implementation "com.github.Ultreon.corelibs:corelibs-translations-v0:$corelibs_version"
+
+        // LibGDX
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"

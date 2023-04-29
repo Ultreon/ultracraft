@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Deprecated
 public class Registry<T> {
     private static final Map<Class<?>, Registry<?>> REGISTRIES = new HashMap<>();
     private static final AtomicBoolean CREATION_FROZEN = new AtomicBoolean();

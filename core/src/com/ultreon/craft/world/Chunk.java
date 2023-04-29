@@ -56,9 +56,9 @@ public class Chunk {
 	}
 
 	public Block get(int x, int y, int z) {
-		if (x < 0 || x >= size) return Blocks.AIR.get();
-		if (y < 0 || y >= height) return Blocks.AIR.get();
-		if (z < 0 || z >= size) return Blocks.AIR.get();
+		if (x < 0 || x >= size) return Blocks.AIR;
+		if (y < 0 || y >= height) return Blocks.AIR;
+		if (z < 0 || z >= size) return Blocks.AIR;
 		return getFast(x, y, z);
 	}
 
@@ -113,38 +113,38 @@ public class Chunk {
 			for (int z = 0; z < size; z++) {
 				for (int x = 0; x < size; x++, i++) {
 					Block block = blocks[i];
-					if (block == null || block == Blocks.AIR.get()) continue;
+					if (block == null || block == Blocks.AIR) continue;
 
 					BakedCubeModel model = block.bakedModel();
 					if (model == null) continue;
 
 					if (y < height - 1) {
-						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR.get()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
-						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR.get()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
-						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR.get()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < size - 1) {
-						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR.get()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
-						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR.get()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < size - 1) {
-						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR.get()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}

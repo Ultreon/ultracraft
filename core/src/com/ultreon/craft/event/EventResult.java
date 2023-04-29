@@ -3,6 +3,7 @@ package com.ultreon.craft.event;
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public final class EventResult<T> {
     private final boolean interrupted;
     private final T value;

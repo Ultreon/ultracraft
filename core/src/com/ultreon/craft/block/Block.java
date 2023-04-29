@@ -27,7 +27,7 @@ public class Block {
     }
 
     public void bake(Texture texture) {
-        if (this == Blocks.AIR.get()) return;
+        if (this == Blocks.AIR) return;
         this.bakedModel = model.bake(texture);
     }
 }

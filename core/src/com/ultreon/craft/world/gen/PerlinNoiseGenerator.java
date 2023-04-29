@@ -137,7 +137,7 @@ public class PerlinNoiseGenerator {
 		int idx = 0;
 		for (int z = 0; z < voxelWorld.voxelsZ; z++) {
 			for (int x = 0; x < voxelWorld.voxelsX; x++) {
-				voxelWorld.setColumn(x, heightMap[idx++], z, Blocks.GRASS_BLOCK.get());
+				voxelWorld.setColumn(x, heightMap[idx++], z, Blocks.GRASS_BLOCK);
 // 				voxelWorld.set(x, heightMap[idx++], z, (byte)1);
 			}
 		}

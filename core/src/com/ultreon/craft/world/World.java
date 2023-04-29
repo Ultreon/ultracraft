@@ -24,11 +24,11 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
@@ -38,8 +38,9 @@ import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
@@ -174,11 +175,11 @@ public class World implements RenderableProvider {
 		int iy = (int)y;
 		int iz = (int)z;
 		int chunkX = ix / CHUNK_SIZE;
-		if (chunkX < 0 || chunkX >= chunksX) return Blocks.AIR.get();
+		if (chunkX < 0 || chunkX >= chunksX) return Blocks.AIR;
 		int chunkY = iy / CHUNK_HEIGHT;
-		if (chunkY < 0 || chunkY >= chunksY) return Blocks.AIR.get();
+		if (chunkY < 0 || chunkY >= chunksY) return Blocks.AIR;
 		int chunkZ = iz / CHUNK_SIZE;
-		if (chunkZ < 0 || chunkZ >= chunksZ) return Blocks.AIR.get();
+		if (chunkZ < 0 || chunkZ >= chunksZ) return Blocks.AIR;
 		
 		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(ix % CHUNK_SIZE, iy % CHUNK_HEIGHT,iz % CHUNK_SIZE);
 	}
@@ -190,7 +191,7 @@ public class World implements RenderableProvider {
 		if (iz < 0 || iz >= voxelsZ) return 0;
 		// FIXME optimize
 		for (int y = voxelsY - 1; y > 0; y--) {
-			if (get(ix, y, iz) != Blocks.AIR.get()) return y + 1;
+			if (get(ix, y, iz) != Blocks.AIR) return y + 1;
 		}
 		return 0;
 	}

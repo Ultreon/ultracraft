@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+@Deprecated
 public class DelayedRegister<T> {
     private final String namespace;
     private final Registry<T> registry;

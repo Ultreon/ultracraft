@@ -21,7 +21,6 @@ public class BiomeGenerator {
     private final List<TerrainLayer> extraLayers;
     public static final boolean USE_DOMAIN_WARPING = true;
     public TreeGenerator treeGenerator;
-    private final int chunkAmplitude = 1;
 
     public BiomeGenerator(NoiseSettings biomeNoise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
         this.biomeNoise = biomeNoise;
@@ -37,14 +36,13 @@ public class BiomeGenerator {
 
     public Chunk processColumn(Chunk chunk, int x, int z, long seed, @Nullable Integer height) {
         biomeNoise.seed = seed;
-        int groundPos;
 
-        groundPos = getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
+        final int chunkAmplitude = 1;
+        int groundPos = getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
 
         Debugger.highestSurface = Math.max(groundPos, Debugger.highestSurface);
 
         for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.height; y++) {
-//            System.out.println("y = " + y);
             for (var layer : layers) {
                 Debugger.maxY = Math.max(Debugger.maxY, y);
                 if (layer.handle(chunk, x, y, z, groundPos, seed)) {
@@ -72,7 +70,7 @@ public class BiomeGenerator {
 
         terrainHeight = MyNoise.redistribution(terrainHeight, biomeNoise);
         Debugger.redistMax = Math.max(terrainHeight, Debugger.redistMax);
-        return MyNoise.remapValue01ToInt(terrainHeight, 0, height);
+        return MyNoise.remapValue01ToInt(terrainHeight, 64, height);
 //        return (int) (terrainHeight * height);
     }
 

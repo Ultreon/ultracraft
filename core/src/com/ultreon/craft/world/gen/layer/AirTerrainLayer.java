@@ -9,7 +9,7 @@ public class AirTerrainLayer extends TerrainLayer {
     public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
         Debugger.layersTriggered.add(this);
         if (y > height) {
-            chunk.set(x, y, z, Blocks.AIR.get());
+            chunk.set(x, y, z, Blocks.AIR);
             Debugger.layersHandled.add(this);
             return true;
         }

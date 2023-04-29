@@ -102,11 +102,17 @@ public class CameraController extends InputAdapter {
         var speed = isKeyDown(runningKey) ? getRunningSpeed() : getSpeed();
 
         if (isKeyDown(forwardKey)) {
-            tmp.set(camera.direction).nor().scl(deltaTime * speed);
+            tmp.set(camera.direction);
+            tmp.y = 0;
+//            tmp.z = 0;
+            tmp.nor().scl(deltaTime * speed);
             camera.position.add(tmp);
         }
         if (isKeyDown(backwardKey)) {
-            tmp.set(camera.direction).nor().scl(-deltaTime * speed);
+            tmp.set(camera.direction);
+            tmp.y = 0;
+//            tmp.z = 0;
+            tmp.nor().scl(-deltaTime * speed);
             camera.position.add(tmp);
         }
         if (isKeyDown(strafeLeftKey)) {

@@ -4,6 +4,7 @@ import com.ultreon.craft.resources.Identifier;
 
 import java.util.function.Supplier;
 
+@Deprecated
 public class RegistrySupplier<T> implements Supplier<T> {
     private final Registry<? super T> registry;
     private final Identifier id;

@@ -11,7 +11,7 @@ public class StoneTerrainLayer extends TerrainLayer {
         if (y < height - 3) {
             Debugger.stoneLayerMax = Math.max(height, Debugger.stoneLayerMax);
             Debugger.stoneLayerMin = Math.min(height, Debugger.stoneLayerMin);
-            chunk.set(x, y, z, Blocks.STONE.get());
+            chunk.set(x, y, z, Blocks.STONE);
             Debugger.layersHandled.add(this);
             return true;
         }

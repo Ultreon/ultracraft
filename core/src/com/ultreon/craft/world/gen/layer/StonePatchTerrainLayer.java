@@ -37,7 +37,7 @@ public class StonePatchTerrainLayer extends TerrainLayer {
             for (int i = (int) chunk.offset.y; i <= endPosition; i++) {
                 BlockPos pos = new BlockPos(x, i, z);
                 try {
-                    chunk.set(pos, Blocks.STONE.get());
+                    chunk.set(pos, Blocks.STONE);
                 } catch (Exception e) {
 //                    System.out.println("pos = " + pos);
                     throw new RuntimeException("Execution error at " + pos, e);

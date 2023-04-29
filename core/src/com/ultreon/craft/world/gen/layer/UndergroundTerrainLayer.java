@@ -9,7 +9,7 @@ public class UndergroundTerrainLayer extends TerrainLayer {
     public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
         Debugger.layersTriggered.add(this);
         if (y < height) {
-            chunk.set(x, y, z, Blocks.DIRT.get());
+            chunk.set(x, y, z, Blocks.DIRT);
             Debugger.layersHandled.add(this);
             return true;
         }

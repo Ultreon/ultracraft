@@ -4,6 +4,7 @@ import com.ultreon.craft.registry.Registry;
 
 import java.util.*;
 
+@Deprecated
 public class RegistryEvents {
     private static final Map<Registry<?>, Event<?>> EVENTS = new HashMap<>();
 

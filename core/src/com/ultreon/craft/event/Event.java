@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Deprecated
 public final class Event<T> {
     private final Factory<T> factory;
     private final List<T> listeners = new ArrayList<>();
