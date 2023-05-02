@@ -16,15 +16,6 @@ allprojects {
     apply plugin: "eclipse"
 
     version = '1.0'
-    ext {
-        appName = "Ultreon Craft"
-        gdxVersion = '1.11.0'
-        roboVMVersion = '2.3.16'
-        box2DLightsVersion = '1.5'
-        ashleyVersion = '1.7.4'
-        aiVersion = '1.8.2'
-        gdxControllersVersion = '2.2.1'
-    }
 
     repositories {
         mavenLocal()
@@ -42,12 +33,12 @@ project(":desktop") {
 
     dependencies {
         implementation project(":core")
-        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-        api "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
-        api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        api "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdxControllersVersion"
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+        api "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
+        api "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     }
 }
 
@@ -66,17 +57,18 @@ project(":core") {
         implementation "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
         implementation "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
         implementation "com.github.Ultreon.corelibs:corelibs-translations-v0:$corelibs_version"
+        implementation "com.github.Ultreon:ultreon-data:$ultreon_data_version"
 
         // LibGDX
-        api "com.badlogicgames.gdx:gdx:$gdxVersion"
-        api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        api "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
-        api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
-        api "com.badlogicgames.gdx:gdx-ai:$aiVersion"
-        api "com.badlogicgames.ashley:ashley:$ashleyVersion"
-        api "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
-        api "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        api "com.badlogicgames.gdx:gdx:$gdx_version"
+        api "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+        api "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
+        api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+        api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+        api "com.badlogicgames.gdx:gdx-ai:$ai_version"
+        api "com.badlogicgames.ashley:ashley:$ashley_version"
+        api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
+        api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
         api 'it.unimi.dsi:fastutil:8.5.11'
         api 'com.google.guava:guava:31.1-jre'
         api 'com.raylabz:opensimplex:1.0.3'

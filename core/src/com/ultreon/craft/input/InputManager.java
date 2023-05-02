@@ -1,4 +1,4 @@
-package com.ultreon.craft.camera;
+package com.ultreon.craft.input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-public class CameraController extends InputAdapter {
+public class InputManager extends InputAdapter {
     private static final float DEGREES_PER_PIXEL = 0.5f;
     private final Camera camera;
     public int forwardKey = Input.Keys.W;
@@ -20,12 +20,12 @@ public class CameraController extends InputAdapter {
     public int pauseKey = Input.Keys.ESCAPE;
     public int regenKey = Input.Keys.F3;
     public int runningKey = Input.Keys.CONTROL_LEFT;
-    private final IntArraySet keys = new IntArraySet();
+    private static final IntArraySet keys = new IntArraySet();
     private final Vector3 tmp = new Vector3();
     private float speed = 5;
     private float runningSpeed = 10;
 
-    public CameraController(Camera camera) {
+    public InputManager(Camera camera) {
         this.camera = camera;
     }
 
@@ -41,7 +41,7 @@ public class CameraController extends InputAdapter {
         return true;
     }
 
-    public boolean isKeyDown(int keycode) {
+    public static boolean isKeyDown(int keycode) {
         return keys.contains(keycode);
     }
     
@@ -101,36 +101,37 @@ public class CameraController extends InputAdapter {
 
         var speed = isKeyDown(runningKey) ? getRunningSpeed() : getSpeed();
 
-        if (isKeyDown(forwardKey)) {
-            tmp.set(camera.direction);
-            tmp.y = 0;
-//            tmp.z = 0;
-            tmp.nor().scl(deltaTime * speed);
-            camera.position.add(tmp);
-        }
-        if (isKeyDown(backwardKey)) {
-            tmp.set(camera.direction);
-            tmp.y = 0;
-//            tmp.z = 0;
-            tmp.nor().scl(-deltaTime * speed);
-            camera.position.add(tmp);
-        }
-        if (isKeyDown(strafeLeftKey)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * speed);
-            camera.position.add(tmp);
-        }
-        if (isKeyDown(strafeRightKey)) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * speed);
-            camera.position.add(tmp);
-        }
-        if (isKeyDown(upKey)) {
-            tmp.set(camera.up).nor().scl(deltaTime * speed);
-            camera.position.add(tmp);
-        }
-        if (isKeyDown(downKey)) {
-            tmp.set(camera.up).nor().scl(-deltaTime * speed);
-            camera.position.add(tmp);
-        }
+//        if (isKeyDown(forwardKey)) {
+//            tmp.set(camera.direction);
+//            tmp.y = 0;
+////            tmp.z = 0;
+//            tmp.nor().scl(deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+//        if (isKeyDown(backwardKey)) {
+//            tmp.set(camera.direction);
+//            tmp.y = 0;
+////            tmp.z = 0;
+//            tmp.nor().scl(-deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+//        if (isKeyDown(strafeLeftKey)) {
+//            tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+//        if (isKeyDown(strafeRightKey)) {
+//            tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+//        if (isKeyDown(upKey)) {
+//            tmp.set(camera.up).nor().scl(deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+//        if (isKeyDown(downKey)) {
+//            tmp.set(camera.up).nor().scl(-deltaTime * speed);
+//            camera.position.add(tmp);
+//        }
+
         if (isKeyDown(pauseKey) && Gdx.input.isCursorCatched()) {
             Gdx.input.setCursorCatched(false);
         }

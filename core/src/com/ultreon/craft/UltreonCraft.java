@@ -19,7 +19,12 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.camera.CameraController;
+import com.ultreon.craft.input.GameCamera;
+import com.ultreon.craft.input.InputManager;
+import com.ultreon.craft.entity.Entities;
+import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -28,18 +33,22 @@ import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
 
 public class UltreonCraft extends ApplicationAdapter {
-	public static final String NAMESPACE = "craft";
+	public static final String NAMESPACE = "ultreoncraft";
+	public static final int TPS = 20;
 	public BitmapFont font;
-	public CameraController controller;
+	public InputManager input;
 	public World world;
 	private static UltreonCraft instance;
+	public Player player;
 	private SpriteBatch spriteBatch;
 	private ModelBatch modelBatch;
-	private PerspectiveCamera camera;
-	private Environment lights;
+	private GameCamera camera;
+	private Environment env;
+	private float timeUntilNextTick;
+	public final PlayerInput playerInput = new PlayerInput();
 
 	public UltreonCraft() {
-		Identifier.setDefaultNamespace("ultreoncraft");
+		Identifier.setDefaultNamespace(NAMESPACE);
 		instance = this;
 	}
 
@@ -53,27 +62,28 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void create() {
-		spriteBatch = new SpriteBatch();
-		font = new BitmapFont();
+		this.spriteBatch = new SpriteBatch();
+		this.font = new BitmapFont();
 		DefaultShader.Config config = new DefaultShader.Config();
 		config.defaultCullFace = GL20.GL_FRONT;
-		modelBatch = new ModelBatch(new DefaultShaderProvider(config));
-		camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.near = 0.01f;
-		camera.far = 1000;
-		controller = new CameraController(camera);
-		Gdx.input.setInputProcessor(controller);
+		this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
+		this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		this.camera.near = 0.01f;
+		this.camera.far = 1000;
+		this.input = new InputManager(camera);
+		Gdx.input.setInputProcessor(input);
 
-		lights = new Environment();
-		lights.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-		lights.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
-		lights.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
+		this.env = new Environment();
+		this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
+		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
 
-		Registries.init();
+		Registries.nopInit();
 		Bullet.init(true);
 
-		Blocks.register();
-		NoiseSettingsInit.register();
+		Blocks.nopInit();
+		NoiseSettingsInit.nopInit();
+		Entities.nopInit();
 
 		for (var registry : Registry.getRegistries()) {
 			RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
@@ -90,99 +100,73 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 
 		MathUtils.random.setSeed(0);
-		world = new World(texture, 16, 1, 16);
-//		PerlinNoiseGenerator.generateVoxels(world, 0, 63, 10);
-		world.generateWorld();
+		this.world = new World(texture, 16, 1, 16);
+		this.world.generateWorld();
 
-//		world.chunks
-		float camX = world.voxelsX / 2f;
-		float camZ = world.voxelsZ / 2f;
-		float camY = world.getHighest(1, 1) + 2.5f;
-		camera.position.set(.5f, camY, .5f);
+		float spawnX = this.world.voxelsX / 2f;
+		float spawnZ = this.world.voxelsZ / 2f;
+		float spawnY = this.world.getHighest(1, 1) + 2.5f;
+
+		this.player = Entities.PLAYER.spawn(this.world);
+		this.player.setPosition(spawnX + 0.5f, spawnY, spawnZ + 0.5f);
 	}
-
-//	List<float[]> meshes = new ArrayList<float[]>();
-//
-//	{
-//		ArrayList<Object> objects = new ArrayList<>();
-//		world.getRenderables(objects, world.)
-//		for (var mesh : world.meshArray) {
-//			meshes.add(mesh.getVerticesBuffer().array());
-//		}
-//		meshes.add(verticesBody); meshes.add(verticesWings); meshes.add(verticesRudder)
-//	}
-//
-//	public boolean intersectRayMeshes(Ray ray, List<float[]> meshes, Vector3 globalIntersection) {
-//
-//// presets
-//		boolean intersectionOccured = false;
-//		var localIntersection = camera.position;
-//
-//// for all Meshes in List
-//		for (float[] mesh : meshes) {
-//			if (Intersector.intersectRayTriangles(ray, mesh, localIntersection)) {
-//				intersectionOccured = true;
-//				Log.out("Intersection Occured!");
-//				// update globalIntersection only if
-//				// it is closer to the screen as the
-//				// intersection point we got earlier
-//				// and there was an intersection yet at all
-//				if (globalIntersection != null) {
-//					Log.out("Local intersection occured!");
-//					if (ray.start.sub(localIntersection).len() < ray.start.sub(globalIntersection).len()) {
-//						Log.out("updated global intersection");
-//						globalIntersection.set(localIntersection);
-//					}
-//				} else {
-//					Log.out("First time setting global intersection!");
-//					globalIntersection.set(localIntersection);
-//				}
-//			}
-//		}
-//
-//		if (intersectionOccured) {
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
 
     @Override
     public void render() {
-        ScreenUtils.clear(0.4f, 0.4f, 0.4f, 1f, true);
-        modelBatch.begin(camera);
-        modelBatch.render(world, lights);
-        modelBatch.end();
-        controller.update();
+		final var tickTime = 1f / TPS;
+
+		float deltaTime = Gdx.graphics.getDeltaTime();
+		this.timeUntilNextTick -= deltaTime;
+		if (this.timeUntilNextTick < 0) {
+			this.timeUntilNextTick = tickTime;
+
+			tick();
+		}
+
+		ScreenUtils.clear(0.4f, 0.4f, 0.4f, 1f, true);
+        this.modelBatch.begin(this.camera);
+        this.modelBatch.render(this.world, this.env);
+        this.modelBatch.end();
 
 
-        if (controller.isKeyDown(Input.Keys.F3)) {
+        if (InputManager.isKeyDown(Input.Keys.F3)) {
             world.regen();
         }
 
-        spriteBatch.begin();
+        this.spriteBatch.begin();
         Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 
-        font.draw(spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
-                + world.numChunks, 0, 20);
-        font.draw(spriteBatch, "x: " + (int) camera.position.x + ", y: " + (int) camera.position.y + ", z: "
-                + (int) camera.position.z, 0, 40);
-        font.draw(spriteBatch, "chunk shown: " + (world.get(camera.position.x, camera.position.y, camera.position.z) != null), 0, 60);
-        spriteBatch.end();
+        this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + this.world.renderedChunks + "/"
+                + this.world.numChunks, 0, 20);
+        this.font.draw(this.spriteBatch, "x: " + (int) this.camera.position.x + ", y: " + (int) this.camera.position.y + ", z: "
+                + (int) this.camera.position.z, 0, 40);
+        this.font.draw(this.spriteBatch, "chunk shown: " + (this.world.get(this.camera.position.x, this.camera.position.y, this.camera.position.z) != null), 0, 60);
+        this.spriteBatch.end();
     }
+
+	public void tick() {
+		this.playerInput.tick();
+
+		WorldEvents.PRE_TICK.factory().onPreTick(this.world);
+		this.world.tick();
+		WorldEvents.POST_TICK.factory().onPostTick(this.world);
+
+		this.camera.update(this.player);
+		this.input.update();
+	}
 
 	@Override
 	public void resize(int width, int height) {
-		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		camera.viewportWidth = width;
-		camera.viewportHeight = height;
-		camera.update();
+		this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+		this.camera.viewportWidth = width;
+		this.camera.viewportHeight = height;
+		this.camera.update();
 	}
 
 	@Override
 	public void dispose() {
-		modelBatch.dispose();
-		spriteBatch.dispose();
-		font.dispose();
+		this.modelBatch.dispose();
+		this.spriteBatch.dispose();
+		this.font.dispose();
 	}
 }

@@ -6,4 +6,4 @@ dependencies {
 
 sourceSets.main.java.srcDirs = [ "src/" ]
 
-eclipse.project.name = appName + "-core"
+eclipse.project.name = app_name + "-core"
