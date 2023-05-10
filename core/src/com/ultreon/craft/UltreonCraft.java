@@ -120,7 +120,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 		Registry.freeze();
 
-		Texture texture = new Texture(Gdx.files.internal("data/g3d/tiles.png"));
+		Texture texture = new Texture(Gdx.files.internal("data/craft/tiles.png"));
 
 		for (Block block : Registries.BLOCK.values()) {
 			if (block == null) {

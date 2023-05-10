@@ -7,26 +7,15 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.libs.commons.v0.Mth;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class InputManager extends InputAdapter {
-    private static final float DEGREES_PER_PIXEL = 0.5f;
-    private final Camera camera;
-    public int forwardKey = Input.Keys.W;
-    public int strafeLeftKey = Input.Keys.A;
-    public int backwardKey = Input.Keys.S;
-    public int strafeRightKey = Input.Keys.D;
-    public int upKey = Input.Keys.SPACE;
-    public int downKey = Input.Keys.SHIFT_LEFT;
+    private static final float DEG_PER_PIXEL = 0.6384300433839F;
     public int pauseKey = Input.Keys.ESCAPE;
-    public int regenKey = Input.Keys.F3;
-    public int runningKey = Input.Keys.CONTROL_LEFT;
     public int imGuiKey = Input.Keys.F3;
     public int imGuiFocusKey = Input.Keys.F4;
     private static final IntArraySet keys = new IntArraySet();
-    private final Vector3 tmp = new Vector3();
-    private UltreonCraft game;
+    private final UltreonCraft game;
     private int xPos;
     private int yPos;
     private int deltaX;
@@ -36,7 +25,6 @@ public class InputManager extends InputAdapter {
 
     public InputManager(UltreonCraft game, Camera camera) {
         this.game = game;
-        this.camera = camera;
     }
 
     @Override
@@ -71,6 +59,9 @@ public class InputManager extends InputAdapter {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
+        this.wasCaptured = isCaptured;
+        this.isCaptured = Gdx.input.isCursorCatched();
+
         if (!Gdx.input.isCursorCatched()) {
             return super.mouseMoved(screenX, screenY);
         }
@@ -81,6 +72,9 @@ public class InputManager extends InputAdapter {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        this.wasCaptured = isCaptured;
+        this.isCaptured = Gdx.input.isCursorCatched();
+
         if (!Gdx.input.isCursorCatched()) return super.mouseMoved(screenX, screenY);
 
         updatePlayerMovement(screenX, screenY);
@@ -88,9 +82,6 @@ public class InputManager extends InputAdapter {
     }
 
     private void updatePlayerMovement(int screenX, int screenY) {
-        this.wasCaptured = isCaptured;
-        this.isCaptured = Gdx.input.isCursorCatched();
-
         if (isCaptured && !wasCaptured) {
             this.deltaX = 0;
             this.deltaY = 0;
@@ -103,7 +94,7 @@ public class InputManager extends InputAdapter {
         this.yPos = screenY;
 
         Vector2 rotation = game.player.getRotation();
-        rotation.add(deltaX, deltaY);
+        rotation.add(deltaX * DEG_PER_PIXEL, deltaY * DEG_PER_PIXEL);
         game.player.setRotation(rotation);
     }
 
