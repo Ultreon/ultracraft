@@ -30,12 +30,18 @@ import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
+import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.data.types.MapType;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -53,14 +59,14 @@ public class World implements RenderableProvider {
 	public final boolean[] dirty;
 	public final int[] numVertices;
 	private final BiomeGenerator biome = BiomeGenerator.builder()
-			.noise(NoiseSettingsInit.DOMAIN_X.get())
-			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get()))
+			.noise(NoiseSettingsInit.DOMAIN_X)
+			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y))
 //			.layer(new WaterTerrainLayer(16))
 			.layer(new AirTerrainLayer())
 			.layer(new SurfaceTerrainLayer())
 			.layer(new StoneTerrainLayer())
 			.layer(new UndergroundTerrainLayer())
-			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH.get(), new DomainWarping(NoiseSettingsInit.DOMAIN_X.get(), NoiseSettingsInit.DOMAIN_Y.get())))
+			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
 			.build();
 	private final long seed = 512;
 	public float[] vertices;
@@ -77,6 +83,9 @@ public class World implements RenderableProvider {
 	private Map<ChunkPos, Mesh> meshes;
 	private Map<ChunkPos, Material> materials;
 	private TerrainGenerator terrainGen;
+	private final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
+	private int playTime;
+	private int curId;
 
 	public World(Texture texture, int chunksX, int chunksY, int chunksZ) {
 		this.chunkArray = new Chunk[chunksX * chunksY * chunksZ];
@@ -138,6 +147,14 @@ public class World implements RenderableProvider {
 			}
 		}
 		Debugger.dumpLayerInfo();
+	}
+
+	public void tick() {
+		playTime++;
+
+		for (var entity : entities.values()) {
+			entity.tick();
+		}
 	}
 
 	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<Vector3> toCreate) {
@@ -268,5 +285,47 @@ public class World implements RenderableProvider {
 			}
 		}
 		generateWorld();
+	}
+
+	public int getPlayTime() {
+		return playTime;
+	}
+
+	public <T extends Entity> T spawn(T entity) {
+		setEntityId(entity);
+		entities.put(entity.getId(), entity);
+		return entity;
+	}
+
+	public <T extends Entity> T spawn(T entity, MapType spawnData) {
+		setEntityId(entity);
+		entity.onPrepareSpawn(spawnData);
+		entities.put(entity.getId(), entity);
+		return entity;
+	}
+
+	private <T extends Entity> void setEntityId(T entity) {
+		int oldId = entity.getId();
+		if (oldId > 0 && entities.containsKey(oldId)) {
+			throw new IllegalStateException("Entity already spawned: " + entity);
+		}
+		int newId = oldId > 0 ? oldId : nextId();
+		entity.setId(newId);
+	}
+
+	private int nextId() {
+		return curId++;
+	}
+
+	public void despawn(Entity entity) {
+		entities.remove(entity.getId());
+	}
+
+	public void despawn(int id) {
+		entities.remove(id);
+	}
+
+	public Entity getEntity(int id) {
+		return entities.get(id);
 	}
 }
