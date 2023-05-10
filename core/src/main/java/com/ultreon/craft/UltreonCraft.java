@@ -243,8 +243,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
 		if (ImGui.begin("Player Utils", getDefaultFlags())) {
 			ImGuiEx.text("Id:", () -> this.player.getId());
-			ImGuiEx.editFloat("Speed:", "PlayerSpeed", this.player.getSpeed(), v -> this.player.setSpeed(v));
-			ImGuiEx.editFloat("Running Speed:", "PlayerRunningSpeed", this.player.getRunningSpeed(), v -> this.player.setRunningSpeed(v));
+			ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", this.player.getWalkingSpeed(), v -> this.player.setWalkingSpeed(v));
+			ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
 			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
 			ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
 			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);

@@ -3,6 +3,7 @@ package com.ultreon.craft.block;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
+import com.ultreon.craft.util.AxisAlignedBB;
 
 public class Block {
     private final int id;
@@ -33,5 +34,13 @@ public class Block {
 
     public boolean isAir() {
         return this == Blocks.AIR;
+    }
+
+    public boolean isSolid() {
+        return this != Blocks.AIR;
+    }
+
+    public AxisAlignedBB getBoundingBox(int x, int y, int z) {
+        return new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
     }
 }

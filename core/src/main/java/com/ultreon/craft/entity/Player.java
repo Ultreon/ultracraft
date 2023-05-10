@@ -10,8 +10,9 @@ import com.ultreon.craft.world.World;
 public class Player extends Entity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
     private boolean running;
-    private float speed = .5F;
-    private float runningSpeed = 1.5F;
+    private float walkingSpeed = .14F;
+    private float flyingSpeed = 1.5F;
+    private final float runModifier = 1.75F;
     private boolean flying;
 
     public Player(EntityType<? extends Player> entityType, World world) {
@@ -29,10 +30,20 @@ public class Player extends Entity {
             flying = noGravity = !flying;
         }
 
-        var speed = isRunning() ? getRunningSpeed() : getSpeed();
+        float speed;
+        if (flying) {
+            speed = this.flyingSpeed;
+        } else {
+            speed = this.walkingSpeed;
+        }
+
+        if (isRunning()) {
+            speed *= runModifier;
+        }
 
         Vector3 tmp = new Vector3();
-        Vector3 position = getPosition();
+        Vector3 position = new Vector3();
+        position.y = velocityY;
 
         input.tick();
 
@@ -67,7 +78,7 @@ public class Player extends Entity {
             }
         }
 
-        this.setPosition(position);
+        this.setVelocity(position);
     }
 
     public float getEyeHeight() {
@@ -82,20 +93,20 @@ public class Player extends Entity {
         this.running = running;
     }
 
-    public float getRunningSpeed() {
-        return runningSpeed;
+    public float getWalkingSpeed() {
+        return walkingSpeed;
     }
 
-    public void setRunningSpeed(float runningSpeed) {
-        this.runningSpeed = runningSpeed;
+    public void setWalkingSpeed(float walkingSpeed) {
+        this.walkingSpeed = walkingSpeed;
     }
 
-    public float getSpeed() {
-        return speed;
+    public float getFlyingSpeed() {
+        return flyingSpeed;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
+    public void setFlyingSpeed(float flyingSpeed) {
+        this.flyingSpeed = flyingSpeed;
     }
 
     public boolean getFlying() {

@@ -5,10 +5,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.util.EntitySize;
+import com.ultreon.craft.util.AxisAlignedBB;
+import com.ultreon.craft.util.EnumFacing;
+import com.ultreon.craft.util.EnumFacing.Axis;
+import com.ultreon.craft.util.EnumFacing.AxisDirection;
+import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.awt.*;
@@ -27,11 +33,14 @@ public class Entity {
     public float velocityX;
     public float velocityY;
     public float velocityZ;
-    public float gravity = 0.1F;
+    public float gravity = 0.08F;
     public boolean noGravity;
     private boolean almostOnGround;
-    public float jumpVel = 1F;
+    public float jumpVel = 0.4F;
     public boolean jumping;
+    private float oldX;
+    private float oldY;
+    private float oldZ;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -43,14 +52,61 @@ public class Entity {
     }
 
     public void tick() {
-        this.checkOnGround();
+        var size = getSize();
+        AxisAlignedBB boundingBox = this.getBoundingBox(size);
 
-        if (!this.onGround && !this.noGravity) {
-            this.velocityY -= this.gravity;
-        } else if (this.jumping && this.onGround) {
+        var oldX = this.x;
+        var oldY = this.y;
+        var oldZ = this.z;
+
+        this.velocityY -= this.gravity;
+
+        // Check for collisions in the x dimension
+        if (this.velocityX != 0) {
+            float nextX = this.x + this.velocityX;
+            AxisAlignedBB nextBox = boundingBox.offset(this.velocityX, 0, 0);
+
+            AxisAlignedBB collidedX = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.X, velocityX > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            if (collidedX != null) {
+                this.x = velocityX > 0 ? collidedX.minX - size.height() : collidedX.maxX;
+                this.velocityX = 0;
+            } else {
+                this.x = nextX;
+            }
+        }
+
+        // Check for collisions in the y dimension
+        if (this.velocityY != 0) {
+            float nextY = this.y + this.velocityY;
+            AxisAlignedBB nextBox = boundingBox.offset(0, this.velocityY, 0);
+
+            AxisAlignedBB collidedY = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.Y, velocityY > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            if (collidedY != null) {
+                this.y = velocityY > 0 ? collidedY.minY - size.height() : collidedY.maxY;
+                this.velocityY = 0;
+            } else {
+                this.y = nextY;
+            }
+        }
+
+        // Check for collisions in the z dimension
+        if (this.velocityZ != 0) {
+            float nextZ = this.z + this.velocityZ;
+            AxisAlignedBB nextBox = boundingBox.offset(0, 0, this.velocityZ);
+
+            AxisAlignedBB collidedZ = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.Z, velocityZ > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            if (collidedZ != null) {
+                this.z = velocityZ > 0 ? collidedZ.minZ - size.height() : collidedZ.maxZ;
+                this.velocityZ = 0;
+            } else {
+                this.z = nextZ;
+            }
+        }
+
+        checkOnGround();
+
+        if (this.jumping && this.onGround) {
             this.jump();
-        } else if (this.onGround) {
-            this.velocityY = 0;
         }
 
         this.velocityX *= 0.98F;
@@ -60,6 +116,24 @@ public class Entity {
         this.x += this.velocityX;
         this.y = this.almostOnGround || this.onGround ? Math.max(this.y + this.velocityY, this.groundY) : this.y + this.velocityY;
         this.z += this.velocityZ;
+
+//        // Check for collisions in the y dimension again
+//        AxisAlignedBB box = boundingBox.offset(this.x - oldX, this.y - oldY, this.z - oldZ);
+//        AxisAlignedBB collidedY = this.world.collidesWithAnyBlock(box);
+//        if (collidedY != null) {
+//            this.y = oldY;
+//            this.velocityY = 0;
+//        }
+    }
+
+    public AxisAlignedBB getBoundingBox(EntitySize size) {
+        float x1 = this.x - size.width() / 2;
+        float y1 = this.y;
+        float z1 = this.z - size.width() / 2;
+        float x2 = this.x + size.width() / 2;
+        float y2 = this.y + size.height();
+        float z2 = this.z + size.width() / 2;
+        return new AxisAlignedBB(x1, y1, z1, x2, y2, z2);
     }
 
     public void jump() {
@@ -170,6 +244,12 @@ public class Entity {
 
     public Vector3 getVelocity() {
         return new Vector3(this.velocityX, this.velocityY, this.velocityZ);
+    }
+
+    protected void setVelocity(Vector3 velocity) {
+        this.velocityX = velocity.x;
+        this.velocityY = velocity.y;
+        this.velocityZ = velocity.z;
     }
 
     public void onPrepareSpawn(MapType spawnData) {
