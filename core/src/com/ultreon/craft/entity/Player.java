@@ -1,18 +1,17 @@
 package com.ultreon.craft.entity;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.input.PlayerInput;
-import com.ultreon.craft.util.Vec3i;
 import com.ultreon.craft.world.World;
 
 public class Player extends Entity {
-    private PlayerInput input = UltreonCraft.get().playerInput;
+    private final PlayerInput input = UltreonCraft.get().playerInput;
     private boolean running;
-    private float runningSpeed;
-    private float speed;
+    private float speed = .5F;
+    private float runningSpeed = 1.5F;
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -22,30 +21,33 @@ public class Player extends Entity {
     public void tick() {
         super.tick();
 
+        setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT));
+
         var speed = isRunning() ? getRunningSpeed() : getSpeed();
 
         Vector3 tmp = new Vector3();
         Vector3 position = getPosition();
+
+        input.tick();
+
         if (input.forward) {
-            tmp.set(new Vector3(getRotation(), 0));
+            tmp.set(getLookVector());
             tmp.y = 0;
-//            tmp.z = 0;
             tmp.nor().scl(speed);
             position.add(tmp);
         }
         if (input.backward) {
-            tmp.set(new Vector3(getRotation(), 0));
+            tmp.set(getLookVector());
             tmp.y = 0;
-//            tmp.z = 0;
             tmp.nor().scl(-speed);
             position.add(tmp);
         }
         if (input.strafeLeft) {
-            tmp.set(new Vector3(getRotation(), 0)).crs(0,1, 0).nor().scl(-speed);
+            tmp.set(getLookVector()).crs(0,1, 0).nor().scl(-speed);
             position.add(tmp);
         }
         if (input.strafeRight) {
-            tmp.set(new Vector3(getRotation(), 0)).crs(0,1, 0).nor().scl(speed);
+            tmp.set(getLookVector()).crs(0,1, 0).nor().scl(speed);
             position.add(tmp);
         }
         if (input.up) {
@@ -58,6 +60,10 @@ public class Player extends Entity {
         }
 
         this.setPosition(position);
+    }
+
+    public float getEyeHeight() {
+        return 1.63F;
     }
 
     public boolean isRunning() {

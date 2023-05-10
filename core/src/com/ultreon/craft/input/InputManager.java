@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.libs.commons.v0.Mth;
@@ -25,10 +26,16 @@ public class InputManager extends InputAdapter {
     public int imGuiFocusKey = Input.Keys.F4;
     private static final IntArraySet keys = new IntArraySet();
     private final Vector3 tmp = new Vector3();
-    private float speed = 5;
-    private float runningSpeed = 10;
+    private UltreonCraft game;
+    private int xPos;
+    private int yPos;
+    private int deltaX;
+    private int deltaY;
+    private boolean isCaptured;
+    private boolean wasCaptured;
 
-    public InputManager(Camera camera) {
+    public InputManager(UltreonCraft game, Camera camera) {
+        this.game = game;
         this.camera = camera;
     }
 
@@ -62,44 +69,42 @@ public class InputManager extends InputAdapter {
         update(Gdx.graphics.getDeltaTime());
     }
 
-    public float getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    public float getRunningSpeed() {
-        return runningSpeed;
-    }
-
-    public void setRunningSpeed(float runningSpeed) {
-        this.runningSpeed = runningSpeed;
-    }
-
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        if (!Gdx.input.isCursorCatched()) return super.mouseMoved(screenX, screenY);
-        float deltaX = -Gdx.input.getDeltaX() * DEGREES_PER_PIXEL;
-        float deltaY = -Gdx.input.getDeltaY() * DEGREES_PER_PIXEL;
-        camera.direction.rotate(camera.up, deltaX);
-        tmp.set(camera.direction).crs(camera.up).nor();
-        var srcY = camera.direction.y + (float)Math.toRadians(deltaY);
-        camera.direction.y = (float) Math.toRadians(Mth.clamp(Math.toDegrees(srcY), -90, 90));
+        if (!Gdx.input.isCursorCatched()) {
+            return super.mouseMoved(screenX, screenY);
+        }
+
+        updatePlayerMovement(screenX, screenY);
         return true;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (!Gdx.input.isCursorCatched()) return super.mouseMoved(screenX, screenY);
-        float deltaX = -Gdx.input.getDeltaX() * DEGREES_PER_PIXEL;
-        float deltaY = -Gdx.input.getDeltaY() * DEGREES_PER_PIXEL;
-        camera.direction.rotate(camera.up, deltaX);
-        tmp.set(camera.direction).crs(camera.up).nor();
-        var srcY = camera.direction.y + (float)Math.toRadians(deltaY);
-        camera.direction.y = (float) Math.toRadians(Mth.clamp(Math.toDegrees(srcY), -90, 90));
+
+        updatePlayerMovement(screenX, screenY);
         return true;
+    }
+
+    private void updatePlayerMovement(int screenX, int screenY) {
+        this.wasCaptured = isCaptured;
+        this.isCaptured = Gdx.input.isCursorCatched();
+
+        if (isCaptured && !wasCaptured) {
+            this.deltaX = 0;
+            this.deltaY = 0;
+        } else if (isCaptured) {
+            this.deltaX = xPos - screenX;
+            this.deltaY = yPos - screenY;
+        }
+
+        this.xPos = screenX;
+        this.yPos = screenY;
+
+        Vector2 rotation = game.player.getRotation();
+        rotation.add(deltaX, deltaY);
+        game.player.setRotation(rotation);
     }
 
     @Override
@@ -114,42 +119,8 @@ public class InputManager extends InputAdapter {
     public void update(float deltaTime) {
         if (!Gdx.input.isCursorCatched()) return;
 
-        var speed = isKeyDown(runningKey) ? getRunningSpeed() : getSpeed();
-
-//        if (isKeyDown(forwardKey)) {
-//            tmp.set(camera.direction);
-//            tmp.y = 0;
-////            tmp.z = 0;
-//            tmp.nor().scl(deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-//        if (isKeyDown(backwardKey)) {
-//            tmp.set(camera.direction);
-//            tmp.y = 0;
-////            tmp.z = 0;
-//            tmp.nor().scl(-deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-//        if (isKeyDown(strafeLeftKey)) {
-//            tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-//        if (isKeyDown(strafeRightKey)) {
-//            tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-//        if (isKeyDown(upKey)) {
-//            tmp.set(camera.up).nor().scl(deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-//        if (isKeyDown(downKey)) {
-//            tmp.set(camera.up).nor().scl(-deltaTime * speed);
-//            camera.position.add(tmp);
-//        }
-
         if (isKeyDown(pauseKey) && Gdx.input.isCursorCatched()) {
             Gdx.input.setCursorCatched(false);
         }
-        camera.update(true);
     }
 }

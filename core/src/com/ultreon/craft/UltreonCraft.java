@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,13 +19,14 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.input.GameCamera;
-import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.input.GameCamera;
+import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -100,7 +100,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		this.camera.near = 0.01f;
 		this.camera.far = 1000;
-		this.input = new InputManager(camera);
+		this.input = new InputManager(this, camera);
 		Gdx.input.setInputProcessor(input);
 
 		this.env = new Environment();
@@ -214,15 +214,7 @@ public class UltreonCraft extends ApplicationAdapter {
         this.modelBatch.render(this.world, this.env);
         this.modelBatch.end();
 
-		this.camera.position.x = this.imGuiPosX.get();
-		this.camera.position.y = this.imGuiPosY.get();
-		this.camera.position.z = this.imGuiPosZ.get();
-
         this.input.update();
-
-		this.imGuiPosX.set(this.camera.position.x);
-		this.imGuiPosY.set(this.camera.position.y);
-		this.imGuiPosZ.set(this.camera.position.z);
 
         if (InputManager.isKeyDown(Input.Keys.F9)) {
             world.regen();
@@ -267,13 +259,13 @@ public class UltreonCraft extends ApplicationAdapter {
 						ImGui.endMenu();
 					}
 
-					ImGui.text("Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "  Frames ID: " + Gdx.graphics.getFrameId());
+					ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
 					ImGui.endMenuBar();
 				}
 				ImGui.end();
 			}
 
-			if (SHOW_INFO_WINDOW.get()) showInfoWindow();
+			if (SHOW_INFO_WINDOW.get()) showPlayerUtilsWindow();
 			if (SHOW_UTILS.get()) showUtils();
 
 			ImGui.render();
@@ -284,8 +276,6 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
 	public void tick() {
-		this.playerInput.tick();
-
 		WorldEvents.PRE_TICK.factory().onPreTick(this.world);
 		this.world.tick();
 		WorldEvents.POST_TICK.factory().onPostTick(this.world);
@@ -294,22 +284,38 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.input.update();
 	}
 
-	private void showInfoWindow() {
+	private void showPlayerUtilsWindow() {
 //		Screen currentScreen = getCurrentScreen();
 		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
 		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-		if (ImGui.begin("Debug Info", getDefaultFlags())) {
-			ImGui.text("X:");
-			ImGui.sameLine();
-			ImGui.inputFloat("##PlayerX", this.imGuiPosX);
-			ImGui.text("Y:");
-			ImGui.sameLine();
-			ImGui.inputFloat("##PlayerY", this.imGuiPosY);
-			ImGui.text("Z:");
-			ImGui.sameLine();
-			ImGui.inputFloat("##PlayerZ", this.imGuiPosZ);
+		if (ImGui.begin("Player Utils", getDefaultFlags())) {
+			ImGuiEx.text("Id:", () -> this.player.getId());
+			ImGuiEx.editFloat("Speed:", "PlayerSpeed", this.player.getSpeed(), v -> this.player.setSpeed(v));
+			ImGuiEx.editFloat("Running Speed:", "PlayerRunningSpeed", this.player.getRunningSpeed(), v -> this.player.setRunningSpeed(v));
 
-			ImGui.text("Rot: " + this.camera.direction);
+			if (ImGui.collapsingHeader("Position")) {
+				ImGui.treePush();
+				ImGuiEx.editFloat("X:", "PlayerX", this.player.getX(), v -> this.player.setX(v));
+				ImGuiEx.editFloat("Y:", "PlayerY", this.player.getY(), v -> this.player.setY(v));
+				ImGuiEx.editFloat("Z:", "PlayerZ", this.player.getZ(), v -> this.player.setZ(v));
+				ImGui.treePop();
+			}
+			if (ImGui.collapsingHeader("Rotation")) {
+				ImGui.treePush();
+				ImGuiEx.editFloat("X:", "PlayerXRot", this.player.getXRot(), v -> this.player.setXRot(v));
+				ImGuiEx.editFloat("Y:", "PlayerYRot", this.player.getYRot(), v -> this.player.setYRot(v));
+				ImGui.treePop();
+			}
+			if (ImGui.collapsingHeader("Player Input")) {
+				ImGui.treePush();
+				ImGuiEx.bool("Forward", () -> this.playerInput.forward);
+				ImGuiEx.bool("Backward", () -> this.playerInput.backward);
+				ImGuiEx.bool("Left", () -> this.playerInput.strafeLeft);
+				ImGuiEx.bool("Right", () -> this.playerInput.strafeRight);
+				ImGuiEx.bool("Up", () -> this.playerInput.up);
+				ImGuiEx.bool("Down", () -> this.playerInput.down);
+				ImGui.treePop();
+			}
 		}
 		ImGui.end();
 	}
@@ -323,6 +329,7 @@ public class UltreonCraft extends ApplicationAdapter {
 			if (ImGui.isItemClicked()) {
 				respawn();
 			}
+			ImGuiEx.slider("FOV", "GameFOV", (int) camera.fieldOfView, 10, 150, i -> camera.fieldOfView = i);
 		}
 		ImGui.end();
 	}
@@ -335,15 +342,17 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	private void respawn() {
+		if (this.player != null && this.world.getEntity(this.player.getId()) == player) {
+			this.world.despawn(player);
+		}
+
 		float spawnX = this.world.voxelsX / 2f;
 		float spawnZ = this.world.voxelsZ / 2f;
-		float spawnY = this.world.getHighest(1, 1) + 2.5f;
+		float spawnY = this.world.getHighest(1, 1) + 1;
 
-		this.player = Entities.PLAYER.spawn(this.world);
+		this.player = Entities.PLAYER.create(this.world);
 		this.player.setPosition(spawnX + 0.5f, spawnY, spawnZ + 0.5f);
-		this.imGuiPosX.set(this.camera.position.x);
-		this.imGuiPosY.set(this.camera.position.y);
-		this.imGuiPosZ.set(this.camera.position.z);
+		this.world.spawn(this.player);
 	}
 
 	@Override
