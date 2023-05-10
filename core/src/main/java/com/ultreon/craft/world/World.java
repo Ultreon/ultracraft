@@ -330,7 +330,7 @@ public class World implements RenderableProvider {
 		return entities.get(id);
 	}
 
-	public AxisAlignedBB collidesWithAnyBlock(AxisAlignedBB box, EnumFacing facing) {
+	public AxisAlignedBB collide(AxisAlignedBB box, EnumFacing facing) {
 		int xMin = MathUtils.floor(box.minX);
 		int xMax = MathUtils.floor(box.maxX);
 		int yMin = MathUtils.floor(box.minY);
@@ -402,5 +402,38 @@ public class World implements RenderableProvider {
 		}
 
 		return null;
+	}
+
+	public Vector3 calculateTotalCollisionAmount(AxisAlignedBB box) {
+		float collisionAmountX = 0.0F;
+		float collisionAmountY = 0.0F;
+		float collisionAmountZ = 0.0F;
+		int xMin = MathUtils.floor(box.minX);
+		int xMax = MathUtils.floor(box.maxX);
+		int yMin = MathUtils.floor(box.minY);
+		int yMax = MathUtils.floor(box.maxY);
+		int zMin = MathUtils.floor(box.minZ);
+		int zMax = MathUtils.floor(box.maxZ);
+
+		for (int x = xMin; x <= xMax; x++) {
+			for (int y = yMin; y <= yMax; y++) {
+				for (int z = zMin; z <= zMax; z++) {
+					Block block = this.get(x, y, z);
+					if (block != null && block.isSolid()) {
+						AxisAlignedBB blockBox = block.getBoundingBox(x, y, z);
+						if (blockBox != null && blockBox.intersects(box)) {
+							float overlapX = 1.0F - blockBox.calculateIntersect(box, new Vector3(1, 0, 0)).x;
+							float overlapY = 1.0F - blockBox.calculateIntersect(box, new Vector3(0, 1, 0)).y;
+							float overlapZ = 1.0F - blockBox.calculateIntersect(box, new Vector3(0, 0, 1)).z;
+							collisionAmountX += overlapX;
+							collisionAmountY += overlapY;
+							collisionAmountZ += overlapZ;
+						}
+					}
+				}
+			}
+		}
+
+		return new Vector3(collisionAmountX, collisionAmountY, collisionAmountZ);
 	}
 }

@@ -9,15 +9,11 @@ import com.ultreon.craft.util.AxisAlignedBB;
 import com.ultreon.craft.util.EnumFacing;
 import com.ultreon.craft.util.EnumFacing.Axis;
 import com.ultreon.craft.util.EnumFacing.AxisDirection;
-import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.ApiStatus;
-
-import java.awt.*;
 
 public class Entity {
     private final EntityType<? extends Entity> type;
@@ -66,7 +62,7 @@ public class Entity {
             float nextX = this.x + this.velocityX;
             AxisAlignedBB nextBox = boundingBox.offset(this.velocityX, 0, 0);
 
-            AxisAlignedBB collidedX = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.X, velocityX > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            AxisAlignedBB collidedX = this.world.collide(nextBox, EnumFacing.byAxis(Axis.X, velocityX > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
             if (collidedX != null) {
                 this.x = velocityX > 0 ? collidedX.minX - 0.5000001F : collidedX.maxX + 0.5000001F;
                 this.velocityX = 0;
@@ -78,9 +74,9 @@ public class Entity {
         // Check for collisions in the y dimension
         if (this.velocityY != 0) {
             float nextY = this.y + this.velocityY;
-            AxisAlignedBB nextBox = boundingBox.offset(0, this.velocityY, 0);
+            AxisAlignedBB nextBox = boundingBox.offset(0, this.velocityY, 0).offset(0, this.y - oldY, 0);
 
-            AxisAlignedBB collidedY = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.Y, velocityY > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            AxisAlignedBB collidedY = this.world.collide(nextBox, EnumFacing.byAxis(Axis.Y, velocityY > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
             if (collidedY != null) {
                 this.y = velocityY > 0 ? collidedY.minY - size.height() : collidedY.maxY;
                 this.velocityY = 0;
@@ -94,7 +90,7 @@ public class Entity {
             float nextZ = this.z + this.velocityZ;
             AxisAlignedBB nextBox = boundingBox.offset(0, 0, this.velocityZ);
 
-            AxisAlignedBB collidedZ = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.Z, velocityZ > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
+            AxisAlignedBB collidedZ = this.world.collide(nextBox, EnumFacing.byAxis(Axis.Z, velocityZ > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
             if (collidedZ != null) {
                 this.z = velocityZ > 0 ? collidedZ.minZ - 0.5000001F : collidedZ.maxZ + 0.5000001F;
                 this.velocityZ = 0;
@@ -117,13 +113,13 @@ public class Entity {
         this.y = this.almostOnGround || this.onGround ? Math.max(this.y + this.velocityY, this.groundY) : this.y + this.velocityY;
         this.z += this.velocityZ;
 
-//        // Check for collisions in the y dimension again
-//        AxisAlignedBB box = boundingBox.offset(this.x - oldX, this.y - oldY, this.z - oldZ);
-//        AxisAlignedBB collidedY = this.world.collidesWithAnyBlock(box);
-//        if (collidedY != null) {
-//            this.y = oldY;
-//            this.velocityY = 0;
-//        }
+        // Check for collisions in the y dimension again
+        AxisAlignedBB box = boundingBox.offset(this.x - oldX, this.y - oldY, this.z - oldZ);
+        AxisAlignedBB collidedY = this.world.collide(box, EnumFacing.DOWN);
+        if (collidedY != null) {
+            this.y = oldY;
+            this.velocityY = 0;
+        }
     }
 
     public AxisAlignedBB getBoundingBox(EntitySize size) {
