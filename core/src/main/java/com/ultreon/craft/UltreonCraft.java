@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -109,7 +108,6 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
 
 		Registries.nopInit();
-		Bullet.init(true);
 
 		Blocks.nopInit();
 		NoiseSettingsInit.nopInit();
@@ -120,7 +118,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 		Registry.freeze();
 
-		Texture texture = new Texture(Gdx.files.internal("data/craft/tiles.png"));
+		Texture texture = new Texture(Gdx.files.internal("assets/craft/tiles.png"));
 
 		for (Block block : Registries.BLOCK.values()) {
 			if (block == null) {

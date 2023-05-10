@@ -1,9 +1,146 @@
-sourceCompatibility = 17
-dependencies {
-    implementation 'org.jetbrains:annotations:23.0.0'
+//file:noinspection GroovyUnusedCatchParameter
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+buildscript {
+    repositories {
+        mavenCentral()
+
+        maven {
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "sonatype"
+        }
+
+        maven {
+            url = "https://maven.atlassian.com/3rdparty/"
+        }
+
+        google()
+    }
+
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
+        classpath "com.google.code.gson:gson:2.8.9"
+    }
 }
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-sourceSets.main.java.srcDirs = [ "src/" ]
+//*****************//
+//     Plugins     //
+//*****************//
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id "org.panteleyev.jpackageplugin"
+}
 
-eclipse.project.name = app_name + "-core"
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+//****************************//
+// Setting up main properties //
+//****************************//
+
+// Project properties.
+version project_version
+group project_group
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    // CoreLibs
+    implementation "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
+    implementation "com.github.Ultreon.corelibs:corelibs-translations-v0:$corelibs_version"
+    implementation "com.github.Ultreon:ultreon-data:$ultreon_data_version"
+
+    // LibGDX
+    implementation "com.badlogicgames.gdx:gdx:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
+    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
+
+    // LibGDX Natives
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
+
+    // Misc. Libraries
+    implementation 'it.unimi.dsi:fastutil:8.5.11'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.raylabz:opensimplex:1.0.3'
+    implementation 'de.articdive:jnoise-modules:4.0.0'
+    implementation 'de.articdive:jnoise-generators:4.0.0'
+    implementation 'de.articdive:jnoise-modifiers:4.0.0'
+    implementation 'org.jetbrains:annotations:24.0.0'
+
+    // ImGui
+    implementation "io.github.spair:imgui-java-binding:$imgui_version"
+    implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+}
+
+processResources {
+    from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
+    exclude "*.pdn", "*.xcf", "*.ps"
+
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+jar {
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'Ultreon Craft',
+                'Implementation-Vendor': 'Ultreon Team',
+                project_version: project.project_version,
+                'Main-Class': 'com.ultreon.craft.DesktopLauncher',
+                'Multi-Release': 'true'
+    }
+
+    from {
+        compileJava.outputs
+    }
+    from {
+        processResources.outputs
+    }
+
+    zip64 true
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.create('prepareRun', {
+    Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
+})
+
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.incremental = true
+}
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}

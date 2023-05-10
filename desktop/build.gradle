@@ -1,47 +1,131 @@
-sourceCompatibility = 17
-sourceSets.main.java.srcDirs = [ "src/" ]
-sourceSets.main.resources.srcDirs = ["../assets"]
+//file:noinspection GroovyUnusedCatchParameter
 
-project.ext.mainClassName = "com.ultreon.craft.DesktopLauncher"
-project.ext.assetsDir = new File("../assets")
+import java.nio.file.Files
+import java.nio.file.Paths
 
-import org.gradle.internal.os.OperatingSystem
+buildscript {
+    repositories {
+        mavenCentral()
 
-task run(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    workingDir = project.assetsDir
-    ignoreExitValue = true
+        maven {
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "sonatype"
+        }
 
-    if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
-        // Required to run on macOS
-        jvmArgs += "-XstartOnFirstThread"
+        maven {
+            url = "https://maven.atlassian.com/3rdparty/"
+        }
+
+        google()
+    }
+
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
+        classpath "com.google.code.gson:gson:2.8.9"
     }
 }
 
-task debug(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    workingDir = project.assetsDir
-    ignoreExitValue = true
-    debug = true
+//*****************//
+//     Plugins     //
+//*****************//
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id "org.panteleyev.jpackageplugin"
 }
 
-task dist(type: Jar) {
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+//****************************//
+// Setting up main properties //
+//****************************//
+
+// Project properties.
+version project_version
+group project_group
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    implementation project(":core")
+
+    implementation "com.badlogicgames.gdx:gdx:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
+    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
+
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
+
+    implementation 'it.unimi.dsi:fastutil:8.5.11'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.raylabz:opensimplex:1.0.3'
+    implementation 'de.articdive:jnoise-modules:4.0.0'
+    implementation 'de.articdive:jnoise-generators:4.0.0'
+    implementation 'de.articdive:jnoise-modifiers:4.0.0'
+
+    // ImGui
+    implementation "io.github.spair:imgui-java-binding:$imgui_version"
+    implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+}
+
+processResources {
+    from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
+    exclude "*.pdn", "*.xcf", "*.ps"
+
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+jar {
+    //noinspection GroovyAssignabilityCheck
     manifest {
-        attributes 'Main-Class': project.mainClassName
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'Ultreon Craft',
+                'Implementation-Vendor': 'Ultreon Team',
+                project_version: project.project_version,
+                'Main-Class': 'com.ultreon.craft.DesktopLauncher',
+                'Multi-Release': 'true'
     }
-    dependsOn configurations.runtimeClasspath
+
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        compileJava.outputs
     }
-    with jar
+    from {
+        processResources.outputs
+    }
+
+    zip64 true
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+tasks.create('prepareRun', {
+    Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
+})
 
-dist.dependsOn classes
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.incremental = true
+}
 
-eclipse.project.name = app_name + "-desktop"
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
