@@ -149,52 +149,6 @@ public class UltreonCraft extends ApplicationAdapter {
 		imGuiGl3.init("#version 150");
 	}
 
-//	List<float[]> meshes = new ArrayList<float[]>();
-//
-//	{
-//		ArrayList<Object> objects = new ArrayList<>();
-//		world.getRenderables(objects, world.)
-//		for (var mesh : world.meshArray) {
-//			meshes.add(mesh.getVerticesBuffer().array());
-//		}
-//		meshes.add(verticesBody); meshes.add(verticesWings); meshes.add(verticesRudder)
-//	}
-//
-//	public boolean intersectRayMeshes(Ray ray, List<float[]> meshes, Vector3 globalIntersection) {
-//
-//// presets
-//		boolean intersectionOccured = false;
-//		var localIntersection = camera.position;
-//
-//// for all Meshes in List
-//		for (float[] mesh : meshes) {
-//			if (Intersector.intersectRayTriangles(ray, mesh, localIntersection)) {
-//				intersectionOccured = true;
-//				Log.out("Intersection Occured!");
-//				// update globalIntersection only if
-//				// it is closer to the screen as the
-//				// intersection point we got earlier
-//				// and there was an intersection yet at all
-//				if (globalIntersection != null) {
-//					Log.out("Local intersection occured!");
-//					if (ray.start.sub(localIntersection).len() < ray.start.sub(globalIntersection).len()) {
-//						Log.out("updated global intersection");
-//						globalIntersection.set(localIntersection);
-//					}
-//				} else {
-//					Log.out("First time setting global intersection!");
-//					globalIntersection.set(localIntersection);
-//				}
-//			}
-//		}
-//
-//		if (intersectionOccured) {
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
-
     @Override
     public void render() {
 		final var tickTime = 1f / TPS;
