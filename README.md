@@ -5,4 +5,4 @@
 *Coming Soon*
 
 ## Download Latest Builds
-*Coming Soon* <!-- This will be using CircleCI -->
+Circle CI is available [here](https://app.circleci.com/pipelines/github/Ultreon/ultreon-craft).

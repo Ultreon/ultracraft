@@ -19,7 +19,7 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew dist"
+            command: "./gradlew build"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
