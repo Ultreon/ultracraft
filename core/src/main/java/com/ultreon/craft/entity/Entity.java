@@ -68,7 +68,7 @@ public class Entity {
 
             AxisAlignedBB collidedX = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.X, velocityX > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
             if (collidedX != null) {
-                this.x = velocityX > 0 ? collidedX.minX - size.height() : collidedX.maxX;
+                this.x = velocityX > 0 ? collidedX.minX - 0.5000001F : collidedX.maxX + 0.5000001F;
                 this.velocityX = 0;
             } else {
                 this.x = nextX;
@@ -96,7 +96,7 @@ public class Entity {
 
             AxisAlignedBB collidedZ = this.world.collidesWithAnyBlock(nextBox, EnumFacing.byAxis(Axis.Z, velocityZ > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
             if (collidedZ != null) {
-                this.z = velocityZ > 0 ? collidedZ.minZ - size.height() : collidedZ.maxZ;
+                this.z = velocityZ > 0 ? collidedZ.minZ - 0.5000001F : collidedZ.maxZ + 0.5000001F;
                 this.velocityZ = 0;
             } else {
                 this.z = nextZ;
