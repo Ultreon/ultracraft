@@ -12,6 +12,7 @@ public class Player extends Entity {
     private boolean running;
     private float speed = .5F;
     private float runningSpeed = 1.5F;
+    private boolean flying;
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -19,9 +20,14 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
+        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+
         super.tick();
 
         setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT));
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            flying = noGravity = !flying;
+        }
 
         var speed = isRunning() ? getRunningSpeed() : getSpeed();
 
@@ -50,13 +56,15 @@ public class Player extends Entity {
             tmp.set(getLookVector()).crs(0,1, 0).nor().scl(speed);
             position.add(tmp);
         }
-        if (input.up) {
-            tmp.set(0,1, 0).nor().scl(speed);
-            position.add(tmp);
-        }
-        if (input.down) {
-            tmp.set(0,1, 0).nor().scl(-speed);
-            position.add(tmp);
+        if (flying) {
+            if (input.up) {
+                tmp.set(0, 1, 0).nor().scl(speed);
+                position.add(tmp);
+            }
+            if (input.down) {
+                tmp.set(0, 1, 0).nor().scl(-speed);
+                position.add(tmp);
+            }
         }
 
         this.setPosition(position);
@@ -88,5 +96,13 @@ public class Player extends Entity {
 
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public boolean getFlying() {
+        return flying;
+    }
+
+    public void setFlying(boolean flying) {
+        this.noGravity = this.flying = flying;
     }
 }

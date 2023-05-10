@@ -174,31 +174,29 @@ public class World implements RenderableProvider {
 		});
 	}
 
-	public void set(float x, float y, float z, Block voxel) {
-		int ix = (int)x;
-		int iy = (int)y;
-		int iz = (int)z;
-		int chunkX = ix / CHUNK_SIZE;
+	public void set(int x, int y, int z, Block voxel) {
+		int chunkX = x / CHUNK_SIZE;
 		if (chunkX < 0 || chunkX >= chunksX) return;
-		int chunkY = iy / CHUNK_HEIGHT;
+		int chunkY = y / CHUNK_HEIGHT;
 		if (chunkY < 0 || chunkY >= chunksY) return;
-		int chunkZ = iz / CHUNK_SIZE;
+		int chunkZ = z / CHUNK_SIZE;
 		if (chunkZ < 0 || chunkZ >= chunksZ) return;
-		chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].set(ix % CHUNK_SIZE, iy % CHUNK_HEIGHT, iz % CHUNK_SIZE, voxel);
+		chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
 	}
 
-	public Block get(float x, float y, float z) {
-		int ix = (int)x;
-		int iy = (int)y;
-		int iz = (int)z;
-		int chunkX = ix / CHUNK_SIZE;
+	public Block get(BlockPos pos) {
+		return get(pos.x(), pos.y(), pos.z());
+	}
+
+	public Block get(int x, int y, int z) {
+		int chunkX = x / CHUNK_SIZE;
 		if (chunkX < 0 || chunkX >= chunksX) return Blocks.AIR;
-		int chunkY = iy / CHUNK_HEIGHT;
+		int chunkY = y / CHUNK_HEIGHT;
 		if (chunkY < 0 || chunkY >= chunksY) return Blocks.AIR;
-		int chunkZ = iz / CHUNK_SIZE;
+		int chunkZ = z / CHUNK_SIZE;
 		if (chunkZ < 0 || chunkZ >= chunksZ) return Blocks.AIR;
 		
-		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(ix % CHUNK_SIZE, iy % CHUNK_HEIGHT,iz % CHUNK_SIZE);
+		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE);
 	}
 
 	public float getHighest(float x, float z) {

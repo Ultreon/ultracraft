@@ -177,9 +177,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
         this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + this.world.renderedChunks + "/"
                 + this.world.numChunks, 0, 20);
-        this.font.draw(this.spriteBatch, "x: " + (int) this.camera.position.x + ", y: " + (int) this.camera.position.y + ", z: "
-                + (int) this.camera.position.z, 0, 40);
-        this.font.draw(this.spriteBatch, "chunk shown: " + (this.world.get(this.camera.position.x, this.camera.position.y, this.camera.position.z) != null), 0, 60);
+		if (this.player != null) {
+			this.font.draw(this.spriteBatch, "xyz: " + this.player.getBlockPos(), 0, 40);
+			this.font.draw(this.spriteBatch, "chunk shown: " + (this.world.get(this.player.getBlockPos()) != null), 0, 60);
+		}
 
 		if (this.showImGui.get()) {
 			// render 3D scene
@@ -244,12 +245,24 @@ public class UltreonCraft extends ApplicationAdapter {
 			ImGuiEx.text("Id:", () -> this.player.getId());
 			ImGuiEx.editFloat("Speed:", "PlayerSpeed", this.player.getSpeed(), v -> this.player.setSpeed(v));
 			ImGuiEx.editFloat("Running Speed:", "PlayerRunningSpeed", this.player.getRunningSpeed(), v -> this.player.setRunningSpeed(v));
+			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
+			ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
+			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
+			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.getFlying(), v -> this.player.setFlying(v));
+			ImGuiEx.bool("On Ground:", () -> this.player.onGround);
 
 			if (ImGui.collapsingHeader("Position")) {
 				ImGui.treePush();
 				ImGuiEx.editFloat("X:", "PlayerX", this.player.getX(), v -> this.player.setX(v));
 				ImGuiEx.editFloat("Y:", "PlayerY", this.player.getY(), v -> this.player.setY(v));
 				ImGuiEx.editFloat("Z:", "PlayerZ", this.player.getZ(), v -> this.player.setZ(v));
+				ImGui.treePop();
+			}
+			if (ImGui.collapsingHeader("Velocity")) {
+				ImGui.treePush();
+				ImGuiEx.editFloat("X:", "PlayerVelocityX", this.player.velocityX, v -> this.player.velocityX = v);
+				ImGuiEx.editFloat("Y:", "PlayerVelocityY", this.player.velocityY, v -> this.player.velocityY = v);
+				ImGuiEx.editFloat("Z:", "PlayerVelocityZ", this.player.velocityZ, v -> this.player.velocityZ = v);
 				ImGui.treePop();
 			}
 			if (ImGui.collapsingHeader("Rotation")) {

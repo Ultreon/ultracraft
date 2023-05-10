@@ -30,4 +30,8 @@ public class Block {
         if (this == Blocks.AIR) return;
         this.bakedModel = model.bake(texture);
     }
+
+    public boolean isAir() {
+        return this == Blocks.AIR;
+    }
 }
