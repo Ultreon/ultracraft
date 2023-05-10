@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.libs.commons.v0.Mth;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class InputManager extends InputAdapter {
@@ -20,6 +21,8 @@ public class InputManager extends InputAdapter {
     public int pauseKey = Input.Keys.ESCAPE;
     public int regenKey = Input.Keys.F3;
     public int runningKey = Input.Keys.CONTROL_LEFT;
+    public int imGuiKey = Input.Keys.F3;
+    public int imGuiFocusKey = Input.Keys.F4;
     private static final IntArraySet keys = new IntArraySet();
     private final Vector3 tmp = new Vector3();
     private float speed = 5;
@@ -38,6 +41,16 @@ public class InputManager extends InputAdapter {
     @Override
     public boolean keyUp(int keycode) {
         keys.remove(keycode);
+        UltreonCraft craft = UltreonCraft.get();
+        if (imGuiKey == keycode) {
+            if (craft.isShowingImGui()) {
+                Gdx.input.setCursorCatched(true);
+            }
+            craft.setShowingImGui(!craft.isShowingImGui());
+        }
+        if (imGuiFocusKey == keycode && craft.isShowingImGui()) {
+            Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+        }
         return true;
     }
 
@@ -72,7 +85,8 @@ public class InputManager extends InputAdapter {
         float deltaY = -Gdx.input.getDeltaY() * DEGREES_PER_PIXEL;
         camera.direction.rotate(camera.up, deltaX);
         tmp.set(camera.direction).crs(camera.up).nor();
-        camera.direction.rotate(tmp, deltaY);
+        var srcY = camera.direction.y + (float)Math.toRadians(deltaY);
+        camera.direction.y = (float) Math.toRadians(Mth.clamp(Math.toDegrees(srcY), -90, 90));
         return true;
     }
 
@@ -83,13 +97,14 @@ public class InputManager extends InputAdapter {
         float deltaY = -Gdx.input.getDeltaY() * DEGREES_PER_PIXEL;
         camera.direction.rotate(camera.up, deltaX);
         tmp.set(camera.direction).crs(camera.up).nor();
-        camera.direction.rotate(tmp, deltaY);
+        var srcY = camera.direction.y + (float)Math.toRadians(deltaY);
+        camera.direction.y = (float) Math.toRadians(Mth.clamp(Math.toDegrees(srcY), -90, 90));
         return true;
     }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (!Gdx.input.isCursorCatched()) {
+        if (!Gdx.input.isCursorCatched() && !UltreonCraft.get().isShowingImGui()) {
             Gdx.input.setCursorCatched(true);
             return true;
         }
