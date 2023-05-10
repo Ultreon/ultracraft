@@ -77,11 +77,26 @@ project(":core") {
         api "com.badlogicgames.ashley:ashley:$ashleyVersion"
         api "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
         api "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdxControllersVersion"
+
         api 'it.unimi.dsi:fastutil:8.5.11'
         api 'com.google.guava:guava:31.1-jre'
         api 'com.raylabz:opensimplex:1.0.3'
         api 'de.articdive:jnoise-modules:4.0.0'
         api 'de.articdive:jnoise-generators:4.0.0'
         api 'de.articdive:jnoise-modifiers:4.0.0'
+
+        // ImGui
+        implementation "io.github.spair:imgui-java-binding:$imgui_version"
+        implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
+        implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
+        implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
+        implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
     }
 }

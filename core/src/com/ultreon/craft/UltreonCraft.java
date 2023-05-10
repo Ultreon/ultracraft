@@ -3,6 +3,7 @@ package com.ultreon.craft;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -26,9 +27,26 @@ import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiWindowFlags;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+import imgui.type.ImBoolean;
+import imgui.type.ImFloat;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
+
+import java.util.List;
 
 public class UltreonCraft extends ApplicationAdapter {
 	public static final String NAMESPACE = "craft";
+	private static final ImBoolean SHOW_INFO_WINDOW = new ImBoolean(false);
+	private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+	private final ImGuiImplGlfw imGuiGlfw;
+	private final ImGuiImplGl3 imGuiGl3;
 	public BitmapFont font;
 	public CameraController controller;
 	public World world;
@@ -37,9 +55,21 @@ public class UltreonCraft extends ApplicationAdapter {
 	private ModelBatch modelBatch;
 	private PerspectiveCamera camera;
 	private Environment lights;
+	private final boolean isDevMode;
+	private final ImBoolean showImGui = new ImBoolean(false);
+	private long windowHandle;
+	private final ImFloat imGuiPosX = new ImFloat();
+	private final ImFloat imGuiPosY = new ImFloat();
+	private final ImFloat imGuiPosZ = new ImFloat();
 
-	public UltreonCraft() {
+	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace("ultreoncraft");
+		imGuiGlfw = new ImGuiImplGlfw();
+		imGuiGl3 = new ImGuiImplGl3();
+
+		List<String> argList = List.of(args);
+		isDevMode = argList.contains("--dev");
+
 		instance = this;
 	}
 
@@ -95,10 +125,21 @@ public class UltreonCraft extends ApplicationAdapter {
 		world.generateWorld();
 
 //		world.chunks
-		float camX = world.voxelsX / 2f;
-		float camZ = world.voxelsZ / 2f;
-		float camY = world.getHighest(1, 1) + 2.5f;
-		camera.position.set(.5f, camY, .5f);
+		respawn();
+
+		GLFWErrorCallback.createPrint(System.err).set();
+		if (!GLFW.glfwInit()) {
+			throw new IllegalStateException("Unable to initialize GLFW");
+		}
+		ImGui.createContext();
+		final ImGuiIO io = ImGui.getIO();
+		io.setIniFilename(null);
+		io.getFonts().addFontDefault();
+
+		windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
+
+		imGuiGlfw.init(windowHandle, true);
+		imGuiGl3.init("#version 150");
 	}
 
 //	List<float[]> meshes = new ArrayList<float[]>();
@@ -153,10 +194,18 @@ public class UltreonCraft extends ApplicationAdapter {
         modelBatch.begin(camera);
         modelBatch.render(world, lights);
         modelBatch.end();
+
+		camera.position.x = imGuiPosX.get();
+		camera.position.y = imGuiPosY.get();
+		camera.position.z = imGuiPosZ.get();
+
         controller.update();
 
+		imGuiPosX.set(camera.position.x);
+		imGuiPosY.set(camera.position.y);
+		imGuiPosZ.set(camera.position.z);
 
-        if (controller.isKeyDown(Input.Keys.F3)) {
+        if (controller.isKeyDown(Input.Keys.F9)) {
             world.regen();
         }
 
@@ -168,8 +217,102 @@ public class UltreonCraft extends ApplicationAdapter {
         font.draw(spriteBatch, "x: " + (int) camera.position.x + ", y: " + (int) camera.position.y + ", z: "
                 + (int) camera.position.z, 0, 40);
         font.draw(spriteBatch, "chunk shown: " + (world.get(camera.position.x, camera.position.y, camera.position.z) != null), 0, 60);
+
+		if (showImGui.get()) {
+			// render 3D scene
+			imGuiGlfw.newFrame();
+
+			ImGui.newFrame();
+			ImGui.setNextWindowPos(0, 0);
+			ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
+			ImGui.setNextWindowCollapsed(true);
+
+			if (Gdx.input.isCursorCatched()) {
+				ImGui.getIO().setMouseDown(new boolean[5]);
+				ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+			}
+
+			if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
+					ImGuiWindowFlags.NoCollapse |
+					ImGuiWindowFlags.AlwaysAutoResize |
+					ImGuiWindowFlags.NoTitleBar |
+					ImGuiWindowFlags.MenuBar |
+					ImGuiInputTextFlags.AllowTabInput)) {
+				if (ImGui.beginMenuBar()) {
+					if (ImGui.beginMenu("View")) {
+						ImGui.menuItem("Show Info Window", null, SHOW_INFO_WINDOW);
+						ImGui.endMenu();
+					}
+					if (ImGui.beginMenu("Debug")) {
+						ImGui.menuItem("Utils", null, SHOW_UTILS);
+						ImGui.endMenu();
+					}
+
+					ImGui.text("Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "  Frames ID: " + Gdx.graphics.getFrameId());
+					ImGui.endMenuBar();
+				}
+				ImGui.end();
+			}
+
+			if (SHOW_INFO_WINDOW.get()) showInfoWindow();
+			if (SHOW_UTILS.get()) showUtils();
+
+			ImGui.render();
+			imGuiGl3.renderDrawData(ImGui.getDrawData());
+		}
+
         spriteBatch.end();
     }
+
+	private void showInfoWindow() {
+//		Screen currentScreen = getCurrentScreen();
+		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+		if (ImGui.begin("Debug Info", getDefaultFlags())) {
+			ImGui.text("X:");
+			ImGui.sameLine();
+			ImGui.inputFloat("##PlayerX", imGuiPosX);
+			ImGui.text("Y:");
+			ImGui.sameLine();
+			ImGui.inputFloat("##PlayerY", imGuiPosY);
+			ImGui.text("Z:");
+			ImGui.sameLine();
+			ImGui.inputFloat("##PlayerZ", imGuiPosZ);
+
+			ImGui.text("Rot: " + camera.direction);
+		}
+		ImGui.end();
+	}
+
+	private void showUtils() {
+//		Screen currentScreen = getCurrentScreen();
+		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+		if (ImGui.begin("Utils", getDefaultFlags())) {
+			ImGui.button("Respawn");
+			if (ImGui.isItemClicked()) {
+				respawn();
+			}
+		}
+		ImGui.end();
+	}
+
+	private int getDefaultFlags() {
+		boolean cursorCaught = Gdx.input.isCursorCatched();
+		var flags = ImGuiWindowFlags.None;
+		if (cursorCaught) flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs;
+		return flags;
+	}
+
+	private void respawn() {
+		float camX = world.voxelsX / 2f;
+		float camZ = world.voxelsZ / 2f;
+		float camY = world.getHighest(1, 1) + 2.5f;
+		camera.position.set(.5f, camY, .5f);
+		imGuiPosX.set(camera.position.x);
+		imGuiPosY.set(camera.position.y);
+		imGuiPosZ.set(camera.position.z);
+	}
 
 	@Override
 	public void resize(int width, int height) {
@@ -181,8 +324,28 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
+		imGuiGl3.dispose();
+		imGuiGlfw.dispose();
+		ImGui.destroyContext();
+
 		modelBatch.dispose();
 		spriteBatch.dispose();
 		font.dispose();
+	}
+
+	public long getWindowHandle() {
+		return windowHandle;
+	}
+
+	public boolean isDevMode() {
+		return isDevMode;
+	}
+
+	public boolean isShowingImGui() {
+		return showImGui.get();
+	}
+
+	public void setShowingImGui(boolean value) {
+		showImGui.set(value);
 	}
 }
