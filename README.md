@@ -1,8 +1,8 @@
 # Ultreon Craft
 **DO NOT REDISTRIBUTE**
 
-# Build
+## Build
 *Coming Soon*
 
-# Download Latest Builds
+## Download Latest Builds
 *Coming Soon* <!-- This will be using CircleCI -->
