@@ -1,21 +1,6 @@
-/*******************************************************************************
- * Copyright 2011 See AUTHORS file.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- *   http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
-
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.ai.utils.Collision;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
@@ -24,15 +9,17 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.Frustum;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
-import com.ultreon.craft.util.AxisAlignedBB;
 import com.ultreon.craft.util.EnumFacing;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
@@ -49,7 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.ultreon.craft.util.EnumFacing.*;
+import static com.ultreon.craft.util.EnumFacing.AxisDirection;
 
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
@@ -330,13 +317,13 @@ public class World implements RenderableProvider {
 		return entities.get(id);
 	}
 
-	public AxisAlignedBB collide(AxisAlignedBB box, EnumFacing facing) {
-		int xMin = MathUtils.floor(box.minX);
-		int xMax = MathUtils.floor(box.maxX);
-		int yMin = MathUtils.floor(box.minY);
-		int yMax = MathUtils.floor(box.maxY);
-		int zMin = MathUtils.floor(box.minZ);
-		int zMax = MathUtils.floor(box.maxZ);
+	public BoundingBox collide(BoundingBox box, EnumFacing facing) {
+		int xMin = MathUtils.floor(box.min.x);
+		int xMax = MathUtils.floor(box.max.x);
+		int yMin = MathUtils.floor(box.min.y);
+		int yMax = MathUtils.floor(box.max.y);
+		int zMin = MathUtils.floor(box.min.z);
+		int zMax = MathUtils.floor(box.max.z);
 
 		AxisDirection axisDirection = facing.getAxisDirection();
 		int step = axisDirection == AxisDirection.NEGATIVE ? -1 : 1;
@@ -352,7 +339,7 @@ public class World implements RenderableProvider {
 							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
 							Block block = this.get(x, y, z);
 							if (block != null && block.isSolid()) {
-								AxisAlignedBB blockBox = block.getBoundingBox(x, y, z);
+								BoundingBox blockBox = block.getBoundingBox(x, y, z);
 								if (blockBox != null && blockBox.intersects(box)) {
 									return blockBox;
 								}
@@ -371,7 +358,7 @@ public class World implements RenderableProvider {
 							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
 							Block block = this.get(x, y, z);
 							if (block != null && block.isSolid()) {
-								AxisAlignedBB blockBox = block.getBoundingBox(x, y, z);
+								BoundingBox blockBox = block.getBoundingBox(x, y, z);
 								if (blockBox != null && blockBox.intersects(box)) {
 									return blockBox;
 								}
@@ -390,7 +377,7 @@ public class World implements RenderableProvider {
 							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
 							Block block = this.get(x, y, z);
 							if (block != null && block.isSolid()) {
-								AxisAlignedBB blockBox = block.getBoundingBox(x, y, z);
+								BoundingBox blockBox = block.getBoundingBox(x, y, z);
 								if (blockBox != null && blockBox.intersects(box)) {
 									return blockBox;
 								}
@@ -402,38 +389,5 @@ public class World implements RenderableProvider {
 		}
 
 		return null;
-	}
-
-	public Vector3 calculateTotalCollisionAmount(AxisAlignedBB box) {
-		float collisionAmountX = 0.0F;
-		float collisionAmountY = 0.0F;
-		float collisionAmountZ = 0.0F;
-		int xMin = MathUtils.floor(box.minX);
-		int xMax = MathUtils.floor(box.maxX);
-		int yMin = MathUtils.floor(box.minY);
-		int yMax = MathUtils.floor(box.maxY);
-		int zMin = MathUtils.floor(box.minZ);
-		int zMax = MathUtils.floor(box.maxZ);
-
-		for (int x = xMin; x <= xMax; x++) {
-			for (int y = yMin; y <= yMax; y++) {
-				for (int z = zMin; z <= zMax; z++) {
-					Block block = this.get(x, y, z);
-					if (block != null && block.isSolid()) {
-						AxisAlignedBB blockBox = block.getBoundingBox(x, y, z);
-						if (blockBox != null && blockBox.intersects(box)) {
-							float overlapX = 1.0F - blockBox.calculateIntersect(box, new Vector3(1, 0, 0)).x;
-							float overlapY = 1.0F - blockBox.calculateIntersect(box, new Vector3(0, 1, 0)).y;
-							float overlapZ = 1.0F - blockBox.calculateIntersect(box, new Vector3(0, 0, 1)).z;
-							collisionAmountX += overlapX;
-							collisionAmountY += overlapY;
-							collisionAmountZ += overlapZ;
-						}
-					}
-				}
-			}
-		}
-
-		return new Vector3(collisionAmountX, collisionAmountY, collisionAmountZ);
 	}
 }

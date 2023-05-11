@@ -1,9 +1,10 @@
 package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
-import com.ultreon.craft.util.AxisAlignedBB;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Block {
     private final int id;
@@ -40,7 +41,8 @@ public class Block {
         return this != Blocks.AIR;
     }
 
-    public AxisAlignedBB getBoundingBox(int x, int y, int z) {
-        return new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1);
+    public BoundingBox getBoundingBox(int x, int y, int z) {
+        Vector3 vector3 = new Vector3(x, y, z);
+        return new BoundingBox(vector3, vector3.cpy().add(1));
     }
 }
