@@ -34,18 +34,17 @@ public class Entity {
     public float velocityX;
     public float velocityY;
     public float velocityZ;
-    public float gravity = 0.08F;
+    public float gravity = 0.07F;
     public boolean noGravity;
     private boolean almostOnGround;
-    public float jumpVel = 0.4F;
+    public float jumpVel = 0.5F;
     public boolean jumping;
-    private float oldX;
-    private float oldY;
-    private float oldZ;
     public boolean isColliding;
     public boolean isCollidingX;
     public boolean isCollidingY;
     public boolean isCollidingZ;
+
+    public boolean noClip;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -60,11 +59,9 @@ public class Entity {
         var size = getSize();
         BoundingBox boundingBox = this.getBoundingBox(size);
 
-        var oldX = this.x;
-        var oldY = this.y;
-        var oldZ = this.z;
-
-        this.velocityY -= this.gravity;
+        if (!noGravity) {
+            this.velocityY -= this.gravity;
+        }
 
         move(velocityX, velocityY, velocityZ);
 
@@ -74,13 +71,13 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.91F;
-        this.velocityY *= 0.98F;
-        this.velocityZ *= 0.91F;
+        this.velocityX *= 0.8F;
+        this.velocityY *= 0.8F;
+        this.velocityZ *= 0.8F;
 
         if (this.onGround) {
-            this.velocityX *= 0.8f;
-            this.velocityZ *= 0.8f;
+            this.velocityX *= 0.9f;
+            this.velocityZ *= 0.9f;
         }
 
         this.x += this.velocityX;
@@ -100,52 +97,58 @@ public class Entity {
         if (dz < 0) ext.min.z += dz;
         else ext.max.z += dz;
         ext.update();
-        var boxes = world.collide(ext);
-        var pBox = getBoundingBox();
-        isColliding = false;
-        isCollidingY = false;
-        for (BoundingBox box : boxes) {
-            var dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
-            isColliding |= dy != dy2;
-            isCollidingY |= dy != dy2;
-            dy = dy2;
+        if (this.noClip) {
+            x += dx;
+            y += dy;
+            z += dz;
+        } else {
+            var boxes = world.collide(ext);
+            var pBox = getBoundingBox();
+            isColliding = false;
+            isCollidingY = false;
+            for (BoundingBox box : boxes) {
+                var dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+                isColliding |= dy != dy2;
+                isCollidingY |= dy != dy2;
+                dy = dy2;
+            }
+            pBox.min.add(0.0f, dy, 0.0f);
+            pBox.max.add(0.0f, dy, 0.0f);
+            pBox.update();
+            isCollidingX = false;
+            for (BoundingBox box : boxes) {
+                var dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+                isColliding |= dx != dx2;
+                isCollidingX |= dx != dx2;
+                dx = dx2;
+            }
+            pBox.min.add(dx, 0.0f, 0.0f);
+            pBox.max.add(dx, 0.0f, 0.0f);
+            pBox.update();
+            isCollidingZ = false;
+            for (BoundingBox box : boxes) {
+                var dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+                isColliding |= dz != dz2;
+                isCollidingZ |= dz != dz2;
+                dz = dz2;
+            }
+            pBox.min.add(0.0f, 0.0f, dz);
+            pBox.max.add(0.0f, 0.0f, dz);
+            pBox.update();
+            boolean bl = this.onGround = oDy != dy && oDy < 0.0f;
+            if (oDx != dx) {
+                this.velocityX = 0.0f;
+            }
+            if (oDy != dy) {
+                this.velocityY = 0.0f;
+            }
+            if (oDz != dz) {
+                this.velocityZ = 0.0f;
+            }
+            this.x = (pBox.min.x + pBox.max.x) / 2.0f;
+            this.y = pBox.min.y;
+            this.z = (pBox.min.z + pBox.max.z) / 2.0f;
         }
-        pBox.min.add(0.0f, dy, 0.0f);
-        pBox.max.add(0.0f, dy, 0.0f);
-        pBox.update();
-        isCollidingX = false;
-        for (BoundingBox box : boxes) {
-            var dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
-            isColliding |= dx != dx2;
-            isCollidingX |= dx != dx2;
-            dx = dx2;
-        }
-        pBox.min.add(dx, 0.0f, 0.0f);
-        pBox.max.add(dx, 0.0f, 0.0f);
-        pBox.update();
-        isCollidingZ = false;
-        for (BoundingBox box : boxes) {
-            var dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
-            isColliding |= dz != dz2;
-            isCollidingZ |= dz != dz2;
-            dz = dz2;
-        }
-        pBox.min.add(0.0f, 0.0f, dz);
-        pBox.max.add(0.0f, 0.0f, dz);
-        pBox.update();
-        boolean bl = this.onGround = oDy != dy && oDy < 0.0f;
-        if (oDx != dx) {
-            this.velocityX = 0.0f;
-        }
-        if (oDy != dy) {
-            this.velocityY = 0.0f;
-        }
-        if (oDz != dz) {
-            this.velocityZ = 0.0f;
-        }
-        this.x = (pBox.min.x + pBox.max.x) / 2.0f;
-        this.y = pBox.min.y;
-        this.z = (pBox.min.z + pBox.max.z) / 2.0f;
     }
 
     private BoundingBox getBoundingBox() {

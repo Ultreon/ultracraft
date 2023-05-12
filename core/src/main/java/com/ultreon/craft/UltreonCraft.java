@@ -249,7 +249,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
 			ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
 			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
-			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.getFlying(), v -> this.player.setFlying(v));
+			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.isFlying(), v -> this.player.setFlying(v));
+			ImGuiEx.editBool("Spectating:", "PlayerSpectating", this.player.isSpectating(), v -> this.player.setSpectating(v));
 			ImGuiEx.bool("On Ground:", () -> this.player.onGround);
 			ImGuiEx.bool("Colliding:", () -> this.player.isColliding);
 			ImGuiEx.bool("Colliding X:", () -> this.player.isCollidingX);

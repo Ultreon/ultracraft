@@ -16,6 +16,7 @@ public class Player extends Entity {
     private final float crouchModifier = 0.5F;
     private boolean flying;
     private boolean crouching;
+    private boolean spectating;
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -107,7 +108,7 @@ public class Player extends Entity {
         this.flyingSpeed = flyingSpeed;
     }
 
-    public boolean getFlying() {
+    public boolean isFlying() {
         return flying;
     }
 
@@ -121,5 +122,13 @@ public class Player extends Entity {
 
     public void setCrouching(boolean crouching) {
         this.crouching = crouching;
+    }
+
+    public boolean isSpectating() {
+        return spectating;
+    }
+
+    public void setSpectating(boolean spectating) {
+        this.spectating = this.noClip = this.noGravity = this.flying = spectating;
     }
 }
