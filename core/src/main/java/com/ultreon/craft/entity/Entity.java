@@ -72,10 +72,6 @@ public class Entity {
             this.velocityX *= 0.9f;
             this.velocityZ *= 0.9f;
         }
-
-        this.x += this.velocityX;
-        this.y = this.almostOnGround || this.onGround ? Math.max(this.y + this.velocityY, this.groundY) : this.y + this.velocityY;
-        this.z += this.velocityZ;
     }
 
     public void move(float dx, float dy, float dz) {
