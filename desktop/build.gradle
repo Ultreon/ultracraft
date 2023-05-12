@@ -66,6 +66,7 @@ dependencies {
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
     implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 

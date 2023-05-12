@@ -1,19 +1,3 @@
-/*******************************************************************************
- * Copyright 2011 See AUTHORS file.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- *   http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
-
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.GL20;
@@ -24,14 +8,15 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
@@ -174,31 +159,29 @@ public class World implements RenderableProvider {
 		});
 	}
 
-	public void set(float x, float y, float z, Block voxel) {
-		int ix = (int)x;
-		int iy = (int)y;
-		int iz = (int)z;
-		int chunkX = ix / CHUNK_SIZE;
+	public void set(int x, int y, int z, Block voxel) {
+		int chunkX = x / CHUNK_SIZE;
 		if (chunkX < 0 || chunkX >= chunksX) return;
-		int chunkY = iy / CHUNK_HEIGHT;
+		int chunkY = y / CHUNK_HEIGHT;
 		if (chunkY < 0 || chunkY >= chunksY) return;
-		int chunkZ = iz / CHUNK_SIZE;
+		int chunkZ = z / CHUNK_SIZE;
 		if (chunkZ < 0 || chunkZ >= chunksZ) return;
-		chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].set(ix % CHUNK_SIZE, iy % CHUNK_HEIGHT, iz % CHUNK_SIZE, voxel);
+		chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
 	}
 
-	public Block get(float x, float y, float z) {
-		int ix = (int)x;
-		int iy = (int)y;
-		int iz = (int)z;
-		int chunkX = ix / CHUNK_SIZE;
+	public Block get(BlockPos pos) {
+		return get(pos.x(), pos.y(), pos.z());
+	}
+
+	public Block get(int x, int y, int z) {
+		int chunkX = x / CHUNK_SIZE;
 		if (chunkX < 0 || chunkX >= chunksX) return Blocks.AIR;
-		int chunkY = iy / CHUNK_HEIGHT;
+		int chunkY = y / CHUNK_HEIGHT;
 		if (chunkY < 0 || chunkY >= chunksY) return Blocks.AIR;
-		int chunkZ = iz / CHUNK_SIZE;
+		int chunkZ = z / CHUNK_SIZE;
 		if (chunkZ < 0 || chunkZ >= chunksZ) return Blocks.AIR;
 		
-		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(ix % CHUNK_SIZE, iy % CHUNK_HEIGHT,iz % CHUNK_SIZE);
+		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE);
 	}
 
 	public float getHighest(float x, float z) {
@@ -327,5 +310,31 @@ public class World implements RenderableProvider {
 
 	public Entity getEntity(int id) {
 		return entities.get(id);
+	}
+
+	public List<BoundingBox> collide(BoundingBox box) {
+		List<BoundingBox> boxes = new ArrayList<>();
+		int xMin = MathUtils.floor(box.min.x);
+		int xMax = MathUtils.floor(box.max.x);
+		int yMin = MathUtils.floor(box.min.y);
+		int yMax = MathUtils.floor(box.max.y);
+		int zMin = MathUtils.floor(box.min.z);
+		int zMax = MathUtils.floor(box.max.z);
+
+		for (int x = xMin; x <= xMax; x++) {
+			for (int y = yMin; y <= yMax; y++) {
+				for (int z = zMin; z <= zMax; z++) {
+					Block block = this.get(x, y, z);
+					if (block != null && block.isSolid()) {
+						BoundingBox blockBox = block.getBoundingBox(x, y, z);
+						if (blockBox != null && blockBox.intersects(box)) {
+							boxes.add(blockBox);
+						}
+					}
+				}
+			}
+		}
+
+		return boxes;
 	}
 }

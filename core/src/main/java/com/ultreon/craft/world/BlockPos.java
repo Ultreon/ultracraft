@@ -1,6 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.util.Vec3i;
 
 public final class BlockPos extends Vec3i {
@@ -21,5 +20,21 @@ public final class BlockPos extends Vec3i {
     @Override
     public String toString() {
         return "(%d, %d, %d)".formatted(x, y, z);
+    }
+
+    public BlockPos below() {
+        return new BlockPos(x, y-1, z);
+    }
+
+    public BlockPos above() {
+        return new BlockPos(x, y+1, z);
+    }
+
+    public BlockPos relative(int off) {
+        return new BlockPos(x+off, y+off, z+off);
+    }
+
+    public BlockPos relative(int offX, int offY, int offZ) {
+        return new BlockPos(x+offX, y+offY, z+offZ);
     }
 }

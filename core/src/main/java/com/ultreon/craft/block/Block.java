@@ -1,8 +1,10 @@
 package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Block {
     private final int id;
@@ -29,5 +31,17 @@ public class Block {
     public void bake(Texture texture) {
         if (this == Blocks.AIR) return;
         this.bakedModel = model.bake(texture);
+    }
+
+    public boolean isAir() {
+        return this == Blocks.AIR;
+    }
+
+    public boolean isSolid() {
+        return this != Blocks.AIR;
+    }
+
+    public BoundingBox getBoundingBox(int x, int y, int z) {
+        return new BoundingBox(new Vector3(x, y, z), new Vector3(x + 1, y + 1, z + 1));
     }
 }
