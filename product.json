@@ -1,0 +1,7 @@
+{
+  "id": "${product_id}",
+  "name": "${product_name}",
+  "gameName": "${game_name}",
+  "gameVersion": "${game_version}",
+  "buildDate": ${build_date}
+}
