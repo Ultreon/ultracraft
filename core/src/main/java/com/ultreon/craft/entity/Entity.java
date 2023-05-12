@@ -27,10 +27,10 @@ public class Entity {
     public float velocityX;
     public float velocityY;
     public float velocityZ;
-    public float gravity = 0.07F;
+    public float gravity = 0.08F;
     public boolean noGravity;
     private boolean almostOnGround;
-    public float jumpVel = 0.5F;
+    public float jumpVel = 0.55F;
     public boolean jumping;
     public boolean isColliding;
     public boolean isCollidingX;
@@ -64,13 +64,13 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.8F;
-        this.velocityY *= 0.8F;
-        this.velocityZ *= 0.8F;
+        this.velocityX *= 0.85F;
+        this.velocityY *= 0.98F;
+        this.velocityZ *= 0.85F;
 
         if (this.onGround) {
-            this.velocityX *= 0.9f;
-            this.velocityZ *= 0.9f;
+            this.velocityX *= 0.8f;
+            this.velocityZ *= 0.8f;
         }
     }
 
