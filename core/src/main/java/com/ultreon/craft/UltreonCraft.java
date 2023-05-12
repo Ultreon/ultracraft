@@ -243,6 +243,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
 		if (ImGui.begin("Player Utils", getDefaultFlags())) {
 			ImGuiEx.text("Id:", () -> this.player.getId());
+//			ImGuiEx.text("'Direction':", () -> this.player.getFacing());
 			ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", this.player.getWalkingSpeed(), v -> this.player.setWalkingSpeed(v));
 			ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
 			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
@@ -250,6 +251,10 @@ public class UltreonCraft extends ApplicationAdapter {
 			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
 			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.getFlying(), v -> this.player.setFlying(v));
 			ImGuiEx.bool("On Ground:", () -> this.player.onGround);
+			ImGuiEx.bool("Colliding:", () -> this.player.isColliding);
+			ImGuiEx.bool("Colliding X:", () -> this.player.isCollidingX);
+			ImGuiEx.bool("Colliding Y:", () -> this.player.isCollidingY);
+			ImGuiEx.bool("Colliding Z:", () -> this.player.isCollidingZ);
 
 			if (ImGui.collapsingHeader("Position")) {
 				ImGui.treePush();

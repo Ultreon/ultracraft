@@ -16,6 +16,7 @@
 
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
@@ -37,6 +38,7 @@ public class Chunk {
 	private final int frontOffset;
 	private final int backOffset;
 	public TreeData treeData;
+	public Mesh mesh;
 
 	public Chunk(int size, int height) {
 		this.blocks = new Block[size * height * size];

@@ -10,10 +10,12 @@ import com.ultreon.craft.world.World;
 public class Player extends Entity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
     private boolean running;
-    private float walkingSpeed = .14F;
-    private float flyingSpeed = 1.5F;
+    private float walkingSpeed = .05F;
+    private float flyingSpeed = 0.5F;
     private final float runModifier = 1.75F;
+    private final float crouchModifier = 0.5F;
     private boolean flying;
+    private boolean crouching;
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -26,24 +28,20 @@ public class Player extends Entity {
         super.tick();
 
         setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT));
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            flying = noGravity = !flying;
-        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) flying = noGravity = !flying;
+        if (!flying) crouching = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
 
         float speed;
-        if (flying) {
-            speed = this.flyingSpeed;
-        } else {
-            speed = this.walkingSpeed;
-        }
+        if (flying) speed = this.flyingSpeed;
+        else speed = this.walkingSpeed;
 
-        if (isRunning()) {
-            speed *= runModifier;
-        }
+        if (isCrouching()) speed *= crouchModifier;
+        else if (isRunning()) speed *= runModifier;
 
         Vector3 tmp = new Vector3();
-        Vector3 position = new Vector3();
-        position.y = velocityY;
+        Vector3 vel = getVelocity();
+        vel.y = velocityY;
 
         input.tick();
 
@@ -51,38 +49,38 @@ public class Player extends Entity {
             tmp.set(getLookVector());
             tmp.y = 0;
             tmp.nor().scl(speed);
-            position.add(tmp);
+            vel.add(tmp);
         }
         if (input.backward) {
             tmp.set(getLookVector());
             tmp.y = 0;
             tmp.nor().scl(-speed);
-            position.add(tmp);
+            vel.add(tmp);
         }
         if (input.strafeLeft) {
             tmp.set(getLookVector()).crs(0,1, 0).nor().scl(-speed);
-            position.add(tmp);
+            vel.add(tmp);
         }
         if (input.strafeRight) {
             tmp.set(getLookVector()).crs(0,1, 0).nor().scl(speed);
-            position.add(tmp);
+            vel.add(tmp);
         }
         if (flying) {
             if (input.up) {
                 tmp.set(0, 1, 0).nor().scl(speed);
-                position.add(tmp);
+                vel.add(tmp);
             }
             if (input.down) {
                 tmp.set(0, 1, 0).nor().scl(-speed);
-                position.add(tmp);
+                vel.add(tmp);
             }
         }
 
-        this.setVelocity(position);
+        this.setVelocity(vel);
     }
 
     public float getEyeHeight() {
-        return 1.63F;
+        return crouching ? 1.15F : 1.63F;
     }
 
     public boolean isRunning() {
@@ -115,5 +113,13 @@ public class Player extends Entity {
 
     public void setFlying(boolean flying) {
         this.noGravity = this.flying = flying;
+    }
+
+    public boolean isCrouching() {
+        return crouching;
+    }
+
+    public void setCrouching(boolean crouching) {
+        this.crouching = crouching;
     }
 }

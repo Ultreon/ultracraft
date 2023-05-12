@@ -1,6 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.ai.utils.Collision;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
@@ -9,8 +8,6 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.math.Frustum;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -20,7 +17,6 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
-import com.ultreon.craft.util.EnumFacing;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
@@ -30,13 +26,12 @@ import com.ultreon.data.types.MapType;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static com.ultreon.craft.util.EnumFacing.AxisDirection;
 
 public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
@@ -317,7 +312,8 @@ public class World implements RenderableProvider {
 		return entities.get(id);
 	}
 
-	public BoundingBox collide(BoundingBox box, EnumFacing facing) {
+	public List<BoundingBox> collide(BoundingBox box) {
+		List<BoundingBox> boxes = new ArrayList<>();
 		int xMin = MathUtils.floor(box.min.x);
 		int xMax = MathUtils.floor(box.max.x);
 		int yMin = MathUtils.floor(box.min.y);
@@ -325,69 +321,20 @@ public class World implements RenderableProvider {
 		int zMin = MathUtils.floor(box.min.z);
 		int zMax = MathUtils.floor(box.max.z);
 
-		AxisDirection axisDirection = facing.getAxisDirection();
-		int step = axisDirection == AxisDirection.NEGATIVE ? -1 : 1;
-
-		switch (facing.getAxis()) {
-			case X -> {
-				var min = axisDirection == AxisDirection.NEGATIVE ? xMax : xMin;
-				var max = axisDirection == AxisDirection.NEGATIVE ? xMin : xMax;
-
-				for (int x = min; (axisDirection == AxisDirection.NEGATIVE) == (x > max); x+=step) {
-					for (int y = yMin; y <= yMax; y++) {
-						for (int z = zMin; z <= zMax; z++) {
-							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-							Block block = this.get(x, y, z);
-							if (block != null && block.isSolid()) {
-								BoundingBox blockBox = block.getBoundingBox(x, y, z);
-								if (blockBox != null && blockBox.intersects(box)) {
-									return blockBox;
-								}
-							}
-						}
-					}
-				}
-			}
-			case Y -> {
-				var min = axisDirection == AxisDirection.NEGATIVE ? yMax : yMin;
-				var max = axisDirection == AxisDirection.NEGATIVE ? yMin : yMax;
-
-				for (int y = min; (axisDirection == AxisDirection.NEGATIVE) == (y > max); y+=step) {
-					for (int x = xMin; x <= xMax; x++) {
-						for (int z = zMin; z <= zMax; z++) {
-							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-							Block block = this.get(x, y, z);
-							if (block != null && block.isSolid()) {
-								BoundingBox blockBox = block.getBoundingBox(x, y, z);
-								if (blockBox != null && blockBox.intersects(box)) {
-									return blockBox;
-								}
-							}
-						}
-					}
-				}
-			}
-			case Z -> {
-				var min = axisDirection == AxisDirection.NEGATIVE ? zMax : zMin;
-				var max = axisDirection == AxisDirection.NEGATIVE ? zMin : zMax;
-
-				for (int z = min; (axisDirection == AxisDirection.NEGATIVE) == (z > max); z+=step) {
-					for (int x = xMin; x <= xMax; x++) {
-						for (int y = yMin; y <= yMax; y++) {
-							System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-							Block block = this.get(x, y, z);
-							if (block != null && block.isSolid()) {
-								BoundingBox blockBox = block.getBoundingBox(x, y, z);
-								if (blockBox != null && blockBox.intersects(box)) {
-									return blockBox;
-								}
-							}
+		for (int x = xMin; x <= xMax; x++) {
+			for (int y = yMin; y <= yMax; y++) {
+				for (int z = zMin; z <= zMax; z++) {
+					Block block = this.get(x, y, z);
+					if (block != null && block.isSolid()) {
+						BoundingBox blockBox = block.getBoundingBox(x, y, z);
+						if (blockBox != null && blockBox.intersects(box)) {
+							boxes.add(blockBox);
 						}
 					}
 				}
 			}
 		}
 
-		return null;
+		return boxes;
 	}
 }

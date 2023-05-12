@@ -73,12 +73,14 @@ dependencies {
     implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
     implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
 
     // LibGDX Natives
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
     implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 

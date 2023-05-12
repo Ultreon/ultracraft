@@ -42,7 +42,6 @@ public class Block {
     }
 
     public BoundingBox getBoundingBox(int x, int y, int z) {
-        Vector3 vector3 = new Vector3(x, y, z);
-        return new BoundingBox(vector3, vector3.cpy().add(1));
+        return new BoundingBox(new Vector3(x, y, z), new Vector3(x + 1, y + 1, z + 1));
     }
 }

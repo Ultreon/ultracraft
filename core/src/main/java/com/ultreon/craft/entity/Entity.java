@@ -4,6 +4,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.util.BoundingBoxUtils;
@@ -15,6 +17,8 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import org.jetbrains.annotations.ApiStatus;
+
+import java.util.ArrayList;
 
 public class Entity {
     private final EntityType<? extends Entity> type;
@@ -38,6 +42,10 @@ public class Entity {
     private float oldX;
     private float oldY;
     private float oldZ;
+    public boolean isColliding;
+    public boolean isCollidingX;
+    public boolean isCollidingY;
+    public boolean isCollidingZ;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -57,56 +65,8 @@ public class Entity {
         var oldZ = this.z;
 
         this.velocityY -= this.gravity;
-//        float magic = 0.5000001F;
-        float magic = size.width() / 2 + 0.0000001F;
 
-        // Check for collisions in the x dimension
-        if (this.velocityX != 0) {
-            float nextX = this.x + this.velocityX;
-            BoundingBox nextBox = BoundingBoxUtils.offset(boundingBox, this.velocityX + (this.x - oldX), 0, 0);
-
-            BoundingBox collidedX = this.world.collide(nextBox, EnumFacing.byAxis(Axis.X, velocityX > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
-            if (collidedX != null) {
-                if (x > collidedX.min.x) x = collidedX.min.x - magic;
-                if (x < collidedX.max.x) x = collidedX.max.x + magic;
-//                this.x = velocityX > 0 ? collidedX.min.x - magic : collidedX.max.x + magic;
-                this.velocityX = 0;
-            } else {
-                this.x = nextX;
-            }
-        }
-
-        // Check for collisions in the y dimension
-        if (this.velocityY != 0) {
-            float nextY = this.y + this.velocityY;
-            BoundingBox nextBox = BoundingBoxUtils.offset(boundingBox, 0, this.velocityY + (this.y - oldY), 0);
-
-            BoundingBox collidedY = this.world.collide(nextBox, EnumFacing.byAxis(Axis.Y, velocityY > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
-            if (collidedY != null) {
-                if (y > collidedY.min.y) y = collidedY.min.y - size.width();
-                if (y < collidedY.max.y) y = collidedY.max.y;
-//                this.y = velocityY > 0 ? collidedY.min.y - size.height() : collidedY.max.y;
-                this.velocityY = 0;
-            } else {
-                this.y = nextY;
-            }
-        }
-
-        // Check for collisions in the z dimension
-        if (this.velocityZ != 0) {
-            float nextZ = this.z + this.velocityZ;
-            BoundingBox nextBox = BoundingBoxUtils.offset(boundingBox, 0, 0, this.velocityZ + (this.z - oldZ));
-
-            BoundingBox collidedZ = this.world.collide(nextBox, EnumFacing.byAxis(Axis.Z, velocityZ > 0 ? AxisDirection.NEGATIVE : AxisDirection.POSITIVE));
-            if (collidedZ != null) {
-                if (z > collidedZ.min.z) z = collidedZ.min.z - magic;
-                if (z < collidedZ.max.z) z = collidedZ.max.z + magic;
-//                this.z = velocityZ > 0 ? collidedZ.min.z - magic : collidedZ.max.z + magic;
-                this.velocityZ = 0;
-            } else {
-                this.z = nextZ;
-            }
-        }
+        move(velocityX, velocityY, velocityZ);
 
         checkOnGround();
 
@@ -114,21 +74,82 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.98F;
+        this.velocityX *= 0.91F;
         this.velocityY *= 0.98F;
-        this.velocityZ *= 0.98F;
+        this.velocityZ *= 0.91F;
+
+        if (this.onGround) {
+            this.velocityX *= 0.8f;
+            this.velocityZ *= 0.8f;
+        }
 
         this.x += this.velocityX;
         this.y = this.almostOnGround || this.onGround ? Math.max(this.y + this.velocityY, this.groundY) : this.y + this.velocityY;
         this.z += this.velocityZ;
+    }
 
-//        // Check for collisions in the y dimension again
-//        BoundingBox box = BoundingBoxUtils.offset(boundingBox, this.x - oldX, this.y - oldY, this.z - oldZ);
-//        BoundingBox collidedY = this.world.collide(box, EnumFacing.DOWN);
-//        if (collidedY != null) {
-//            this.y = oldY;
-//            this.velocityY = 0;
-//        }
+    public void move(float dx, float dy, float dz) {
+        float oDx = dx;
+        float oDy = dy;
+        float oDz = dz;
+        var ext = this.getBoundingBox();
+        if (dx < 0) ext.min.x += dx;
+        else ext.max.x += dx;
+        if (dy < 0) ext.min.y += dy;
+        else ext.max.y += dy;
+        if (dz < 0) ext.min.z += dz;
+        else ext.max.z += dz;
+        ext.update();
+        var boxes = world.collide(ext);
+        var pBox = getBoundingBox();
+        isColliding = false;
+        isCollidingY = false;
+        for (BoundingBox box : boxes) {
+            var dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+            isColliding |= dy != dy2;
+            isCollidingY |= dy != dy2;
+            dy = dy2;
+        }
+        pBox.min.add(0.0f, dy, 0.0f);
+        pBox.max.add(0.0f, dy, 0.0f);
+        pBox.update();
+        isCollidingX = false;
+        for (BoundingBox box : boxes) {
+            var dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+            isColliding |= dx != dx2;
+            isCollidingX |= dx != dx2;
+            dx = dx2;
+        }
+        pBox.min.add(dx, 0.0f, 0.0f);
+        pBox.max.add(dx, 0.0f, 0.0f);
+        pBox.update();
+        isCollidingZ = false;
+        for (BoundingBox box : boxes) {
+            var dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+            isColliding |= dz != dz2;
+            isCollidingZ |= dz != dz2;
+            dz = dz2;
+        }
+        pBox.min.add(0.0f, 0.0f, dz);
+        pBox.max.add(0.0f, 0.0f, dz);
+        pBox.update();
+        boolean bl = this.onGround = oDy != dy && oDy < 0.0f;
+        if (oDx != dx) {
+            this.velocityX = 0.0f;
+        }
+        if (oDy != dy) {
+            this.velocityY = 0.0f;
+        }
+        if (oDz != dz) {
+            this.velocityZ = 0.0f;
+        }
+        this.x = (pBox.min.x + pBox.max.x) / 2.0f;
+        this.y = pBox.min.y;
+        this.z = (pBox.min.z + pBox.max.z) / 2.0f;
+    }
+
+    private BoundingBox getBoundingBox() {
+        return getBoundingBox(getSize());
     }
 
     public BoundingBox getBoundingBox(EntitySize size) {
