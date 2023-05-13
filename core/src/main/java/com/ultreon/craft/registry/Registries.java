@@ -1,5 +1,6 @@
 package com.ultreon.craft.registry;
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.EntityType;
@@ -11,6 +12,7 @@ public final class Registries {
     public static final Registry<NoiseSettings> NOISE_SETTINGS = Registry.create(UltreonCraft.id("noise_settings"));
     public static final Registry<EntityType<?>> ENTITIES = Registry.create(UltreonCraft.id("entity_type"));
     public static final Registry<Registry<?>> REGISTRY = Registry.create(UltreonCraft.id("registry"));
+    public static final Registry<BitmapFont> FONTS = Registry.create(UltreonCraft.id("font"));
 
     public static void nopInit() {
 

@@ -12,6 +12,7 @@ public class DesktopLauncher {
 		config.setForegroundFPS(240);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
+		config.setWindowedMode(1280, 720);
 		new Lwjgl3Application(new UltreonCraft(arg), config);
 	}
 

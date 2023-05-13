@@ -77,6 +77,8 @@ dependencies {
     implementation 'de.articdive:jnoise-generators:4.0.0'
     implementation 'de.articdive:jnoise-modifiers:4.0.0'
 
+    implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
+
     // ImGui
     implementation "io.github.spair:imgui-java-binding:$imgui_version"
     implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"

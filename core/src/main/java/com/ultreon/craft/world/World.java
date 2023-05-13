@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -37,12 +38,12 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
+	private boolean doRender = false;
 
 	public Chunk[] chunkArray;
-	public final Mesh[] meshArray;
-	public final Material[] materialArray;
-	public final boolean[] dirty;
-	public final int[] numVertices;
+	public Mesh[] meshArray;
+	public Material[] materialArray;
+	public int[] numVertices;
 	private final BiomeGenerator biome = BiomeGenerator.builder()
 			.noise(NoiseSettingsInit.DOMAIN_X)
 			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y))
@@ -87,6 +88,7 @@ public class World implements RenderableProvider {
 				for (int x = 0; x < chunksX; x++) {
 					Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
 					chunk.offset.set(x * CHUNK_SIZE, y * CHUNK_HEIGHT, z * CHUNK_SIZE);
+					chunk.dirty = false;
 					chunkArray[i++] = chunk;
 				}
 			}
@@ -108,10 +110,6 @@ public class World implements RenderableProvider {
 				CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 			meshArray[i].setIndices(indices);
 		}
-		this.dirty = new boolean[chunksX * chunksY * chunksZ];
-		for (i = 0; i < dirty.length; i++)
-			dirty[i] = true;
-
 		this.numVertices = new int[chunksX * chunksY * chunksZ];
 		for (i = 0; i < numVertices.length; i++)
 			numVertices[i] = 0;
@@ -124,13 +122,18 @@ public class World implements RenderableProvider {
 	}
 
 	public void generateWorld() {
-		for (Chunk chunk : chunkArray) {
+		for (int i = 0; i < chunkArray.length; i++) {
+			Chunk chunk = chunkArray[i];
 			for (int x = 0; x < CHUNK_SIZE; x++) {
 				for (int z = 0; z < CHUNK_SIZE; z++) {
 					biome.processColumn(chunk, x, z, seed, CHUNK_HEIGHT);
 				}
 			}
+			chunk.dirty = true;
 		}
+
+		doRender = true;
+
 		Debugger.dumpLayerInfo();
 	}
 
@@ -234,15 +237,17 @@ public class World implements RenderableProvider {
 
 	@Override
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
+		if (!doRender) return;
+
 		renderedChunks = 0;
 		for (int i = 0; i < chunkArray.length; i++) {
 			Chunk chunk = chunkArray[i];
 			Mesh mesh = meshArray[i];
-			if (dirty[i]) {
+			if (chunk.dirty) {
 				int numVerts = chunk.calculateVertices(vertices);
 				numVertices[i] = numVerts / 4 * 6;
 				mesh.setVertices(vertices, 0, numVerts * Chunk.VERTEX_SIZE);
-				dirty[i] = false;
+				chunk.dirty = false;
 			}
 			if (numVertices[i] == 0) continue;
 			Renderable renderable = pool.obtain();
@@ -263,6 +268,7 @@ public class World implements RenderableProvider {
 				for (int x = 0; x < chunksX; x++) {
 					Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
 					chunk.offset.set(x * CHUNK_SIZE, y * CHUNK_HEIGHT, z * CHUNK_SIZE);
+					chunk.dirty = true;
 					chunkArray[i++] = chunk;
 				}
 			}
@@ -336,5 +342,14 @@ public class World implements RenderableProvider {
 		}
 
 		return boxes;
+	}
+
+	public void dispose() {
+		for (Mesh mesh : meshArray) mesh.dispose();
+
+		chunkArray = null;
+		meshArray = null;
+		materialArray = null;
+		numVertices = null;
 	}
 }
