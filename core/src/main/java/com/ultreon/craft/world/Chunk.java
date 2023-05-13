@@ -18,6 +18,7 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -54,8 +55,8 @@ public class Chunk {
 		this.sizeTimesHeight = size * size;
 	}
 
-	public Block get(BlockPos pos) {
-		return get(pos.x(), pos.y(), pos.z());
+	public Block get(GridPoint3 pos) {
+		return get(pos.x, pos.y, pos.z);
 	}
 
 	public Block get(int x, int y, int z) {
@@ -65,16 +66,16 @@ public class Chunk {
 		return getFast(x, y, z);
 	}
 
-	public Block getFast(BlockPos pos) {
-		return getFast(pos.x(), pos.y(), pos.z());
+	public Block getFast(GridPoint3 pos) {
+		return getFast(pos.x, pos.y, pos.z);
 	}
 
 	public Block getFast(int x, int y, int z) {
 		return blocks[x + z * size + y * sizeTimesHeight];
 	}
 
-	public void set(BlockPos pos, Block block) {
-		set(pos.x(), pos.y(), pos.z(), block);
+	public void set(GridPoint3 pos, Block block) {
+		set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
@@ -84,8 +85,8 @@ public class Chunk {
 		setFast(x, y, z, block);
 	}
 
-	public void setFast(BlockPos pos, Block block) {
-		set(pos.x(), pos.y(), pos.z(), block);
+	public void setFast(GridPoint3 pos, Block block) {
+		set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {

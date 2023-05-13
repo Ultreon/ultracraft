@@ -1,5 +1,6 @@
 package com.ultreon.craft.entity;
 
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -7,7 +8,6 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.util.BoundingBoxUtils;
-import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
@@ -159,7 +159,7 @@ public class Entity {
     }
 
     private void checkOnGround() {
-        Block block = this.world.get(this.getBlockPos().below());
+        Block block = this.world.get(this.getGridPoint3().add(0, -1, 0));
         if (block == null) {
             this.almostOnGround = false;
             this.onGround = true;
@@ -234,8 +234,8 @@ public class Entity {
         this.z = z;
     }
 
-    public BlockPos getBlockPos() {
-        return new BlockPos((int) this.x, (int) this.y, (int) this.z);
+    public GridPoint3 getGridPoint3() {
+        return new GridPoint3((int) this.x, (int) this.y, (int) this.z);
     }
 
     public Vector2 getRotation() {

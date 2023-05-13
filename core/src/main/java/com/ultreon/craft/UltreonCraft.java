@@ -12,8 +12,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
-import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -54,19 +52,12 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
@@ -294,8 +285,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
 					+ world.numChunks, 0, 20);
 			if (this.player != null) {
-				this.font.draw(this.spriteBatch, "xyz: " + this.player.getBlockPos(), 0, 40);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.get(this.player.getBlockPos()) != null), 0, 60);
+				this.font.draw(this.spriteBatch, "xyz: " + this.player.getGridPoint3(), 0, 40);
+				this.font.draw(this.spriteBatch, "chunk shown: " + (world.get(this.player.getGridPoint3()) != null), 0, 60);
 			}
 		}
 

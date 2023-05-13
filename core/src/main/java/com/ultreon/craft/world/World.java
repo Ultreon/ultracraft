@@ -7,17 +7,20 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.layer.*;
@@ -121,9 +124,12 @@ public class World implements RenderableProvider {
 		}
 	}
 
+	public HitResult raycastBlock(Ray ray) {
+		return WorldRayCaster.rayCast(new HitResult(ray), this);
+	}
+
 	public void generateWorld() {
-		for (int i = 0; i < chunkArray.length; i++) {
-			Chunk chunk = chunkArray[i];
+		for (Chunk chunk : chunkArray) {
 			for (int x = 0; x < CHUNK_SIZE; x++) {
 				for (int z = 0; z < CHUNK_SIZE; z++) {
 					biome.processColumn(chunk, x, z, seed, CHUNK_HEIGHT);
@@ -162,6 +168,10 @@ public class World implements RenderableProvider {
 		});
 	}
 
+	public void set(GridPoint3 blockPos, Block block) {
+		set(blockPos.x, blockPos.y, blockPos.z, block);
+	}
+
 	public void set(int x, int y, int z, Block voxel) {
 		int chunkX = x / CHUNK_SIZE;
 		if (chunkX < 0 || chunkX >= chunksX) return;
@@ -169,11 +179,13 @@ public class World implements RenderableProvider {
 		if (chunkY < 0 || chunkY >= chunksY) return;
 		int chunkZ = z / CHUNK_SIZE;
 		if (chunkZ < 0 || chunkZ >= chunksZ) return;
-		chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
+		Chunk chunk = chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ];
+		chunk.set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
+		chunk.dirty = true;
 	}
 
-	public Block get(BlockPos pos) {
-		return get(pos.x(), pos.y(), pos.z());
+	public Block get(GridPoint3 pos) {
+		return get(pos.x, pos.y, pos.z);
 	}
 
 	public Block get(int x, int y, int z) {
@@ -185,6 +197,14 @@ public class World implements RenderableProvider {
 		if (chunkZ < 0 || chunkZ >= chunksZ) return Blocks.AIR;
 		
 		return chunkArray[chunkX + chunkZ * chunksX + chunkY * chunksX * chunksZ].get(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE);
+	}
+
+	public Chunk getChunk(ChunkPos chunkPos) {
+		int chunkX = chunkPos.x() / CHUNK_SIZE;
+		if (chunkX < 0 || chunkX >= chunksX) return null;
+		int chunkZ = chunkPos.z() / CHUNK_SIZE;
+		if (chunkZ < 0 || chunkZ >= chunksZ) return null;
+		return chunkArray[chunkX + chunkZ * chunksX];
 	}
 
 	public float getHighest(float x, float z) {
@@ -351,5 +371,10 @@ public class World implements RenderableProvider {
 		meshArray = null;
 		materialArray = null;
 		numVertices = null;
+	}
+
+	public Chunk getChunk(Vector3 abs) {
+		ChunkPos chunkPos = new ChunkPos((int) (abs.x / CHUNK_SIZE), (int) (abs.z / CHUNK_SIZE));
+		return getChunk(chunkPos);
 	}
 }

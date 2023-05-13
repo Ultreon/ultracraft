@@ -4,10 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.world.World;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public class InputManager extends InputAdapter {
@@ -123,9 +130,24 @@ public class InputManager extends InputAdapter {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (!Gdx.input.isCursorCatched() && !UltreonCraft.get().isShowingImGui() && game.world != null && game.currentScreen == null) {
-            Gdx.input.setCursorCatched(true);
-            return true;
+        World world = this.game.world;
+        if (world != null && this.game.currentScreen == null) {
+            if (!Gdx.input.isCursorCatched() && !UltreonCraft.get().isShowingImGui()) {
+                Gdx.input.setCursorCatched(true);
+                return true;
+            }
+
+            Player player = this.game.player;
+            if (player != null) {
+                HitResult hitResult = world.raycastBlock(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                GridPoint3 blockPos = new GridPoint3(hitResult.pos);
+                GridPoint3 pos = hitResult.pos;
+                System.out.println("pos.toString() = " + pos);
+                Block block = world.get(blockPos);
+                if (hitResult.collide && block != null && !block.isAir()) {
+                    world.set(blockPos, Blocks.AIR);
+                }
+            }
         }
 
         screenY = game.getHeight() - screenY;
