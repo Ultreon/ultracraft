@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Button extends GuiComponent {
     private Callback<Button> callback = caller -> {};
-    private @Nullable @IntRange(from = 0, to = 359) Color color = Color.white;
+    private @Nullable @IntRange(from = 0, to = 359) Color color = Color.lightGray;
     private static final Int2ReferenceMap<TextureRegion> REGION_CACHE = new Int2ReferenceArrayMap<>();
     private boolean pressed;
     private String message;
