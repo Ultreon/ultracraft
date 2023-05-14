@@ -424,7 +424,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 			if (world != null && this.chunkRefresh-- == 0) {
 				this.chunkRefresh = 20;
-				world.updateChunksForPlayer(player);
+				world.updateChunksForPlayerAsync(player);
 			}
 		}
 		this.input.update();
@@ -534,12 +534,12 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.world.despawn(player);
 		}
 
-		float spawnX = 0;
-		float spawnZ = 0;
+		int spawnX = 0;
+		int spawnZ = 0;
 
 		this.world.updateChunksForPlayer(spawnX, spawnZ);
 
-		float spawnY = this.world.getHighest(1, 1) + 1;
+		float spawnY = this.world.getHighest(spawnX, spawnZ) + 1;
 
 		this.player = Entities.PLAYER.create(this.world);
 		this.player.setHealth(this.player.getMaxHeath());

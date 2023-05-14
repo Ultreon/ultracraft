@@ -154,16 +154,14 @@ public class World implements RenderableProvider {
 				.toList();
 	}
 
-	public void updateChunksForPlayer(Player player) {
-		updateChunksForPlayer(player.getPosition());
+	public void updateChunksForPlayerAsync(Player player) {
+		CompletableFuture.runAsync(() -> updateChunksForPlayer(player.getPosition()));
 	}
 
 	private void updateChunksForPlayer(Vector3 player) {
-		CompletableFuture.runAsync(() -> {
-			WorldGenInfo worldGenInfo = getWorldGenInfo(player);
-			worldGenInfo.toRemove.forEach(this::unloadChunk);
-			worldGenInfo.toCreate.forEach(this::generateChunk);
-		});
+		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
+		worldGenInfo.toRemove.forEach(this::unloadChunk);
+		worldGenInfo.toCreate.forEach(this::generateChunk);
 	}
 
 	private void unloadChunk(ChunkPos chunkPos) {

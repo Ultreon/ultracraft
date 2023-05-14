@@ -62,4 +62,9 @@ public class DeathScreen extends Screen {
     public Button getExitWorldButton() {
         return exitWorldButton;
     }
+
+    @Override
+    public boolean canCloseOnEsc() {
+        return false;
+    }
 }
