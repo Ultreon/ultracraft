@@ -35,6 +35,7 @@ public class Entity {
     public boolean isCollidingZ;
 
     public boolean noClip;
+    protected float fallDistance = 0;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -124,7 +125,11 @@ public class Entity {
                 this.velocityX = 0.0f;
             }
             if (oDy != dy) {
+                hitGround();
+                this.fallDistance = 0.0F;
                 this.velocityY = 0.0f;
+            } else if (this.velocityY < 0) {
+                this.fallDistance += -this.velocityY;
             }
             if (oDz != dz) {
                 this.velocityZ = 0.0f;
@@ -133,6 +138,10 @@ public class Entity {
             this.y = pBox.min.y;
             this.z = (pBox.min.z + pBox.max.z) / 2.0f;
         }
+    }
+
+    protected void hitGround() {
+
     }
 
     private BoundingBox getBoundingBox() {
