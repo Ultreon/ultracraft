@@ -35,7 +35,6 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -110,8 +109,8 @@ public class World implements RenderableProvider {
 	public void generateWorld() {
 		for (int z = 0; z < chunksZ; z++) {
 			for (int x = 0; x < chunksX; x++) {
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
 				ChunkPos chunkPos = new ChunkPos(x, z);
+				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
 				System.out.println("chunkPos = " + chunkPos);
 				chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 				chunk.dirty = false;
@@ -122,7 +121,7 @@ public class World implements RenderableProvider {
 
 				for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 					for (int by = 0; by < CHUNK_SIZE; by++) {
-						biome.processColumn(chunk, chunkPos.x() * CHUNK_SIZE + bx, chunkPos.z() * CHUNK_SIZE + by, seed, CHUNK_HEIGHT);
+						biome.processColumn(chunk, chunkPos.x * CHUNK_SIZE + bx, chunkPos.z * CHUNK_SIZE + by, seed, CHUNK_HEIGHT);
 					}
 				}
 
@@ -158,7 +157,8 @@ public class World implements RenderableProvider {
 		}
 	}
 
-	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<Vector3> toCreate) {
+	@SuppressWarnings("BlockingMethodInNonBlockingContext")
+	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
 		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
 			for (var pos : toCreate) {
@@ -168,7 +168,7 @@ public class World implements RenderableProvider {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
+				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				Chunk newChunk = terrainGen.generateChunkData(chunk, seed);
 			}
 			return map;
@@ -207,7 +207,7 @@ public class World implements RenderableProvider {
 	}
 
 	public Chunk getChunkAt(GridPoint3 pos) {
-		ChunkPos chunkPos = new ChunkPos(pos.x / CHUNK_SIZE, pos.z / CHUNK_SIZE);
+		ChunkPos chunkPos = new ChunkPos(Math.floorDiv(pos.x, CHUNK_SIZE), Math.floorDiv(pos.z, CHUNK_SIZE));
 		return getChunk(chunkPos);
 	}
 
@@ -265,7 +265,7 @@ public class World implements RenderableProvider {
 		renderedChunks = 0;
 		for (Chunk chunk : chunks.values()) {
 			if (!chunk.ready) {
-				System.out.println("chunk.ready = " + chunk.ready);
+				System.out.println("chunk.ready = " + false);
 				continue;
 			}
 
@@ -276,7 +276,9 @@ public class World implements RenderableProvider {
 				mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
 				chunk.dirty = false;
 			}
-			if (chunk.numVertices == 0) continue;
+			if (chunk.numVertices == 0) {
+				continue;
+			}
 			Renderable renderable = pool.obtain();
 			renderable.material = chunk.material;
 			renderable.meshPart.mesh = mesh;
@@ -292,7 +294,7 @@ public class World implements RenderableProvider {
 		int i = 0;
 		for (int z = 0; z < chunksZ; z++) {
 			for (int x = 0; x < chunksX; x++) {
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT);
+				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, new ChunkPos(x, z));
 				chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 				chunk.dirty = true;
 				chunks.put(new ChunkPos(x, z), chunk);

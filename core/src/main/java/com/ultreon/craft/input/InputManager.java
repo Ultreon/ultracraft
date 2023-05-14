@@ -171,7 +171,7 @@ public class InputManager extends InputAdapter {
                     if (hitResult.collide && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
                             world.set(pos, Blocks.AIR);
-                        } else if (button == Input.Buttons.RIGHT && blockNext.isAir()) {
+                        } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
                             world.set(posNext, this.game.player.getSelectedBlock());
                         }
                     }

@@ -3,20 +3,12 @@ package com.ultreon.craft.world;
 import java.util.Objects;
 
 public final class ChunkPos {
-    private final int x;
-    private final int z;
+    public final int x;
+    public final int z;
 
     public ChunkPos(int x, int z) {
         this.x = x;
         this.z = z;
-    }
-
-    public int x() {
-        return x;
-    }
-
-    public int z() {
-        return z;
     }
 
     @Override
