@@ -28,11 +28,8 @@ public class Button extends GuiComponent {
      * @param width   size create the widget
      * @param message
      */
-    public Button(int x, int y, @IntRange(from = 21) int width, String message) {
-        super(x, y, width, 21);
-        this.message = message;
-
-        updateLayout();
+    public Button(int x, int y, @IntRange(from = 21) int width,  String message) {
+        this(x, y, width, 21, message);
     }
 
     /**
@@ -41,8 +38,32 @@ public class Button extends GuiComponent {
      * @param width   size create the widget
      * @param message
      */
-    public Button(int x, int y, @IntRange(from = 21) int width, String message, Callback<Button> callback) {
-        super(x, y, width, 21);
+    public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message) {
+        super(x, y, width, height);
+        this.message = message;
+
+        updateLayout();
+    }
+
+    /**
+     * @param x        position create the widget
+     * @param y        position create the widget
+     * @param width    size create the widget
+     * @param message
+     * @param callback
+     */
+    public Button(int x, int y, @IntRange(from = 21) int width,  String message, Callback<Button> callback) {
+        this(x, y, width, 21, message, callback);
+    }
+
+    /**
+     * @param x       position create the widget
+     * @param y       position create the widget
+     * @param width   size create the widget
+     * @param message
+     */
+    public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message, Callback<Button> callback) {
+        super(x, y, width, height);
         this.callback = callback;
         this.message = message;
 
@@ -64,7 +85,7 @@ public class Button extends GuiComponent {
     }
 
     @Override
-    public void render(Renderer renderer, float deltaTime) {
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         Texture texture = game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
 
         var x = this.x;
@@ -73,9 +94,9 @@ public class Button extends GuiComponent {
         var v = isPressed() ? 21 : 0;
 
         renderer.setTextureColor(color == null ? Color.white : this.color);
-        renderer.texture(texture, x, y+14, 7, 7, u, v, 7, 7);
-        renderer.texture(texture, x+7, y+14, width - 14, 7, 7 + u, v, 7, 7);
-        renderer.texture(texture, x+width-7, y+14, 7, 7, 14 + u, v, 7, 7);
+        renderer.texture(texture, x, y+height-7, 7, 7, u, v, 7, 7);
+        renderer.texture(texture, x+7, y+height-7, width - 14, 7, 7 + u, v, 7, 7);
+        renderer.texture(texture, x+width-7, y+height-7, 7, 7, 14 + u, v, 7, 7);
         renderer.texture(texture, x, y+7, 7, height - 14, u, 7 + v, 7, 7);
         renderer.texture(texture, x+7, y+7, width - 14, height - 14, 7 + u, 7 + v, 7, 7);
         renderer.texture(texture, x+width-7, y+7, 7, height - 14, 14 + u, 7 + v, 7, 7);
@@ -84,9 +105,9 @@ public class Button extends GuiComponent {
         renderer.texture(texture, x+width-7, y, 7, 7, 14 + u, 14 + v, 7, 7);
         renderer.setTextureColor(Color.rgb(0xffffff));
         renderer.setColor(textColor.darker().darker());
-        renderer.text(message, x + width / 2 - (int)layout.width / 2, y + (height - (isPressed() ? 7 : 5)));
+        renderer.text(message, x + width / 2 - (int)layout.width / 2, y + (height / 2 + font.getLineHeight() - 1 - (isPressed() ? 2 : 0)));
         renderer.setColor(textColor);
-        renderer.text(message, x + width / 2 - (int)layout.width / 2, y + (height - (isPressed() ? 6 : 4)));
+        renderer.text(message, x + width / 2 - (int)layout.width / 2, y + (height / 2 + font.getLineHeight() - (isPressed() ? 2 : 0)));
     }
 
     @Override
@@ -126,5 +147,14 @@ public class Button extends GuiComponent {
 
     public Color getTextColor() {
         return textColor;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+        this.layout.setText(this.font, this.message);
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
@@ -41,6 +43,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
+	public static final int WORLD_DEPTH = 0;
 	private boolean doRender = false;
 
 	public Chunk[] chunkArray;
@@ -121,6 +124,8 @@ public class World implements RenderableProvider {
 		this.materialArray = new Material[chunksX * chunksY * chunksZ];
 		for (i = 0; i < materialArray.length; i++) {
 			materialArray[i] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+			materialArray[i].set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+			materialArray[i].set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 		}
 	}
 
@@ -200,9 +205,9 @@ public class World implements RenderableProvider {
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
-		int chunkX = chunkPos.x() / CHUNK_SIZE;
+		int chunkX = chunkPos.x();
 		if (chunkX < 0 || chunkX >= chunksX) return null;
-		int chunkZ = chunkPos.z() / CHUNK_SIZE;
+		int chunkZ = chunkPos.z();
 		if (chunkZ < 0 || chunkZ >= chunksZ) return null;
 		return chunkArray[chunkX + chunkZ * chunksX];
 	}

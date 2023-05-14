@@ -12,6 +12,7 @@ public class MatrixStack {
     private final Deque<Matrix4> stack;
     public Consumer<Matrix4> onPush = matrix -> {};
     public Consumer<Matrix4> onPop = matrix -> {};
+    public Consumer<Matrix4> onEdit = matrix -> {};
 
     public MatrixStack() {
         stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(new Matrix4()));
@@ -24,12 +25,12 @@ public class MatrixStack {
     public void push() {
         var matrix = stack.getLast();
         stack.addLast(new Matrix4(matrix));
-        onPush.accept(stack.getLast());
+        onEdit.accept(stack.getLast());
     }
 
     public void pop() {
         stack.removeLast();
-        onPush.accept(stack.getLast());
+        onEdit.accept(stack.getLast());
     }
 
     public void translate(double x, double y) {
@@ -39,16 +40,19 @@ public class MatrixStack {
     public void translate(float x, float y) {
         Matrix4 matrix = stack.getLast();
         matrix.translate(x, y, 0);
+        onEdit.accept(matrix);
     }
 
     public void scale(float x, float y) {
         Matrix4 matrix = stack.getLast();
         matrix.scale(x, y, 0);
+        onEdit.accept(matrix);
     }
     
     public void rotate(Quaternion quaternion) {
         var matrix = stack.getLast();
         matrix.rotate(quaternion);
+        onEdit.accept(matrix);
     }
 
     public Matrix4 last() {

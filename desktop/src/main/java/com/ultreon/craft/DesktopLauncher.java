@@ -2,6 +2,8 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
@@ -13,6 +15,47 @@ public class DesktopLauncher {
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);
+		config.setWindowListener(new Lwjgl3WindowListener() {
+			@Override
+			public void created(Lwjgl3Window window) {
+
+			}
+
+			@Override
+			public void iconified(boolean isIconified) {
+
+			}
+
+			@Override
+			public void maximized(boolean isMaximized) {
+
+			}
+
+			@Override
+			public void focusLost() {
+				UltreonCraft.get().pause();
+			}
+
+			@Override
+			public void focusGained() {
+
+			}
+
+			@Override
+			public boolean closeRequested() {
+				return UltreonCraft.get().closeRequested();
+			}
+
+			@Override
+			public void filesDropped(String[] files) {
+				UltreonCraft.get().filesDropped(files);
+			}
+
+			@Override
+			public void refreshRequested() {
+
+			}
+		});
 		new Lwjgl3Application(new UltreonCraft(arg), config);
 	}
 
