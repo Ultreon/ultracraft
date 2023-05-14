@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
@@ -29,6 +30,8 @@ import com.ultreon.craft.world.gen.TreeData;
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
+	protected final Object lock = new Object();
+	protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Block[] blocks;
 	public final int size;
@@ -391,7 +394,8 @@ public class Chunk {
 	}
 
 	public void dispose() {
-		this.mesh.dispose();
+		final Mesh mesh = this.mesh;
+		UltreonCraft.get().runLater(mesh::dispose);
 		this.material = null;
 		this.blocks = null;
 		this.mesh = null;

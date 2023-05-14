@@ -10,6 +10,8 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
+import com.ultreon.craft.util.Utils;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 
 public class Player extends LivingEntity {
@@ -27,6 +29,8 @@ public class Player extends LivingEntity {
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
+
+        setFlying(true);
     }
 
     public void selectBlock(int i) {
@@ -94,6 +98,10 @@ public class Player extends LivingEntity {
         }
 
         this.setVelocity(vel);
+    }
+
+    public ChunkPos getChunkPos() {
+        return Utils.chunkPosFromBlockCoords(getPosition());
     }
 
     public float getEyeHeight() {

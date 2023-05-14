@@ -22,10 +22,13 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
+import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -51,6 +54,7 @@ public class World implements RenderableProvider {
 	private final short[] indices;
 	private float[] vertices;
 	private boolean doRender = false;
+	public int renderDistance;
 
 	private final BiomeGenerator biome = BiomeGenerator.builder()
 			.noise(NoiseSettingsInit.DOMAIN_X)
@@ -63,14 +67,10 @@ public class World implements RenderableProvider {
 			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
 			.build();
 	private final long seed = 512;
-	public final int chunksX;
-	public final int chunksZ;
-	public final int voxelsX;
-	public final int voxelsZ;
 	public int renderedChunks;
 	public int numChunks;
 
-	private final Map<ChunkPos, Chunk> chunks;
+	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
 	private TerrainGenerator terrainGen;
 	private final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
 	private int playTime;
@@ -79,12 +79,6 @@ public class World implements RenderableProvider {
 
 	public World(Texture texture, int chunksX, int chunksZ) {
 		this.texture = texture;
-		this.chunks = new ConcurrentHashMap<>();
-		this.chunksX = chunksX;
-		this.chunksZ = chunksZ;
-//		this.numChunks = chunksX * chunksY * chunksZ;
-		this.voxelsX = chunksX * CHUNK_SIZE;
-		this.voxelsZ = chunksZ * CHUNK_SIZE;
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 
@@ -94,11 +88,93 @@ public class World implements RenderableProvider {
 		short j = 0;
 		for (int i = 0; i < len; i += 6, j += 4) {
 			indices[i] = j;
-			indices[i + 1] = (short)(j + 1);
-			indices[i + 2] = (short)(j + 2);
-			indices[i + 3] = (short)(j + 2);
-			indices[i + 4] = (short)(j + 3);
+			indices[i + 1] = (short) (j + 1);
+			indices[i + 2] = (short) (j + 2);
+			indices[i + 3] = (short) (j + 2);
+			indices[i + 4] = (short) (j + 3);
 			indices[i + 5] = j;
+		}
+		renderDistance = game.renderDistance;
+	}
+
+	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
+		List<ChunkPos> needed = getChunksAround(this, pos);
+		List<ChunkPos> chunkPositionsToCreate = getChunksToLoad(needed, pos);
+		List<ChunkPos> chunkPositionsToRemove = getChunksToUnload(needed);
+
+		WorldGenInfo data = new WorldGenInfo();
+		data.toCreate = chunkPositionsToCreate;
+		data.toRemove = chunkPositionsToRemove;
+		data.toUpdate = new ArrayList<>();
+		return data;
+
+	}
+
+	static List<ChunkPos> getChunksAround(World world, Vector3 pos) {
+		int startX = (int) (pos.x - (world.renderDistance) * World.CHUNK_SIZE);
+		int startZ = (int) (pos.z - (world.renderDistance) * World.CHUNK_SIZE);
+		int endX = (int) (pos.x + (world.renderDistance) * World.CHUNK_SIZE);
+		int endZ = (int) (pos.z + (world.renderDistance) * World.CHUNK_SIZE);
+
+		List<ChunkPos> toCreate = new ArrayList<>();
+		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
+			for (int z = startZ; z <= endZ; z += World.CHUNK_HEIGHT) {
+				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, 0, z));
+				toCreate.add(chunkPos);
+				if (x >= pos.x - World.CHUNK_SIZE
+						&& x <= pos.x + World.CHUNK_SIZE
+						&& z >= pos.z - World.CHUNK_SIZE
+						&& z <= pos.z + World.CHUNK_SIZE) {
+					for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
+						chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, y, z));
+						toCreate.add(chunkPos);
+					}
+				}
+			}
+		}
+
+		return toCreate;
+	}
+
+	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
+		List<ChunkPos> toRemove = new ArrayList<>();
+		for (var pos : chunks.keySet().stream().filter(pos -> !needed.contains(pos) && !getChunk(pos).modifiedByPlayer).toList()) {
+			if (this.getChunk(pos) != null) {
+				toRemove.add(pos);
+			}
+		}
+
+		return toRemove;
+	}
+
+	 private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vector3 pos) {
+		return needed.stream()
+				.filter(chunkPos -> this.getChunk(chunkPos) == null)
+				.sorted((o1, o2) -> Float.compare(o1.toVector3().dst(pos), o2.toVector3().dst(pos)))
+				.toList();
+	}
+
+	public void updateChunksForPlayer(Player player) {
+		updateChunksForPlayer(player.getPosition());
+	}
+
+	private void updateChunksForPlayer(Vector3 player) {
+		CompletableFuture.runAsync(() -> {
+			WorldGenInfo worldGenInfo = getWorldGenInfo(player);
+			worldGenInfo.toRemove.forEach(this::unloadChunk);
+			worldGenInfo.toCreate.forEach(this::generateChunk);
+		});
+	}
+
+	private void unloadChunk(ChunkPos chunkPos) {
+		unloadChunk(getChunk(chunkPos));
+	}
+
+	private void unloadChunk(Chunk chunk) {
+		synchronized (chunk.lock) {
+			chunk.ready = false;
+			chunks.remove(chunk.pos);
+			chunk.dispose();
 		}
 	}
 
@@ -106,38 +182,43 @@ public class World implements RenderableProvider {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
+	@Deprecated
 	public void generateWorld() {
-		for (int z = 0; z < chunksZ; z++) {
-			for (int x = 0; x < chunksX; x++) {
-				ChunkPos chunkPos = new ChunkPos(x, z);
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
-				chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
-				chunk.dirty = false;
-				chunk.numVertices = 0;
-				chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
-				chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-				chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
-				for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-					for (int by = 0; by < CHUNK_SIZE; by++) {
-						biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
-					}
-				}
-
-				game.runLater(() -> {
-					chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-							CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-					chunk.mesh.setIndices(indices);
-					chunk.ready = true;
-					chunk.dirty = true;
-				});
-				putChunk(chunkPos, chunk);
-			}
-		}
 
 		doRender = true;
 
 		Debugger.dumpLayerInfo();
+	}
+
+	protected void generateChunk(ChunkPos pos) {
+		generateChunk(pos.x, pos.z);
+	}
+
+	protected void generateChunk(int x, int z) {
+		ChunkPos chunkPos = new ChunkPos(x, z);
+		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
+		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
+		chunk.dirty = false;
+		chunk.numVertices = 0;
+		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+
+		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
+			for (int by = 0; by < CHUNK_SIZE; by++) {
+				biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
+			}
+		}
+
+		game.runLater(() -> {
+			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+			chunk.mesh.setIndices(indices);
+			chunk.ready = true;
+			chunk.dirty = true;
+			putChunk(chunkPos, chunk);
+		});
 	}
 
 	private void putChunk(ChunkPos chunkPos, Chunk chunk) {
@@ -210,14 +291,13 @@ public class World implements RenderableProvider {
 		return getChunk(chunkPos);
 	}
 
-	public float getHighest(float x, float z) {
-		int ix = (int)x;
-		int iz = (int)z;
-		if (ix < 0 || ix >= voxelsX) return 0;
-		if (iz < 0 || iz >= voxelsZ) return 0;
-		// FIXME optimize
+	public int getHighest(int x, int z) {
+		Chunk chunkAt = getChunkAt(x, 0, z);
+		if (chunkAt == null) return 0;
+
+		// FIXME: Optimize by using a heightmap.
 		for (int y = CHUNK_HEIGHT - 1; y > 0; y--) {
-			if (get(ix, y, iz) != Blocks.AIR) return y + 1;
+			if (get(x, y, z) != Blocks.AIR) return y + 1;
 		}
 		return 0;
 	}
@@ -263,43 +343,36 @@ public class World implements RenderableProvider {
 
 		renderedChunks = 0;
 		for (Chunk chunk : chunks.values()) {
-			if (!chunk.ready) {
-				System.out.println("chunk.ready = " + false);
-				continue;
+			synchronized (chunk.lock) {
+				if (!chunk.ready) {
+					System.out.println("chunk.ready = " + false);
+					continue;
+				}
+				Mesh mesh = chunk.mesh;
+				if (chunk.dirty) {
+					int numVertices = chunk.calculateVertices(this.vertices);
+					chunk.numVertices = numVertices / 4 * 6;
+					mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
+					chunk.dirty = false;
+				}
+				if (chunk.numVertices == 0) {
+					continue;
+				}
+				Renderable renderable = pool.obtain();
+				renderable.material = chunk.material;
+				renderable.meshPart.mesh = mesh;
+				renderable.meshPart.offset = 0;
+				renderable.meshPart.size = chunk.numVertices;
+				renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+				renderables.add(renderable);
+				renderedChunks++;
 			}
-
-			Mesh mesh = chunk.mesh;
-			if (chunk.dirty) {
-				int numVertices = chunk.calculateVertices(this.vertices);
-				chunk.numVertices = numVertices / 4 * 6;
-				mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
-				chunk.dirty = false;
-			}
-			if (chunk.numVertices == 0) {
-				continue;
-			}
-			Renderable renderable = pool.obtain();
-			renderable.material = chunk.material;
-			renderable.meshPart.mesh = mesh;
-			renderable.meshPart.offset = 0;
-			renderable.meshPart.size = chunk.numVertices;
-			renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
-			renderables.add(renderable);
-			renderedChunks++;
 		}
 	}
 
+	@Deprecated
 	public void regen() {
-		int i = 0;
-		for (int z = 0; z < chunksZ; z++) {
-			for (int x = 0; x < chunksX; x++) {
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, new ChunkPos(x, z));
-				chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
-				chunk.dirty = true;
-				chunks.put(new ChunkPos(x, z), chunk);
-			}
-		}
-		generateWorld();
+
 	}
 
 	public int getPlayTime() {
@@ -375,5 +448,9 @@ public class World implements RenderableProvider {
 			chunk.dispose();
 		}
 		vertices = null;
+	}
+
+	public void updateChunksForPlayer(float spawnX, float spawnZ) {
+		this.updateChunksForPlayer(new Vector3(spawnX, 0, spawnZ));
 	}
 }

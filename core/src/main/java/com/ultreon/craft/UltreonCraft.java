@@ -89,6 +89,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	public World world;
 	private static UltreonCraft instance;
 	public Player player;
+	public int renderDistance = 8;
 	private SpriteBatch spriteBatch;
 	private ModelBatch modelBatch;
 	private GameCamera camera;
@@ -112,6 +113,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	public boolean renderWorld = false;
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
+	private int chunkRefresh;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -409,14 +411,21 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
 	public void tick() {
-		if (this.world != null) {
-			WorldEvents.PRE_TICK.factory().onPreTick(this.world);
-			this.world.tick();
-			WorldEvents.POST_TICK.factory().onPostTick(this.world);
+		World world = this.world;
+		if (world != null) {
+			WorldEvents.PRE_TICK.factory().onPreTick(world);
+			world.tick();
+			WorldEvents.POST_TICK.factory().onPostTick(world);
 		}
 
-		if (this.player != null) {
-			this.camera.update(this.player);
+		Player player = this.player;
+		if (player != null) {
+			this.camera.update(player);
+
+			if (world != null && this.chunkRefresh-- == 0) {
+				this.chunkRefresh = 20;
+				world.updateChunksForPlayer(player);
+			}
 		}
 		this.input.update();
 	}
@@ -525,8 +534,11 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.world.despawn(player);
 		}
 
-		float spawnX = this.world.voxelsX / 2f;
-		float spawnZ = this.world.voxelsZ / 2f;
+		float spawnX = 0;
+		float spawnZ = 0;
+
+		this.world.updateChunksForPlayer(spawnX, spawnZ);
+
 		float spawnY = this.world.getHighest(1, 1) + 1;
 
 		this.player = Entities.PLAYER.create(this.world);

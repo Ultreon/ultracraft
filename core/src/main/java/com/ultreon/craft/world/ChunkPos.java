@@ -1,5 +1,7 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
+
 import java.util.Objects;
 
 public final class ChunkPos {
@@ -29,5 +31,9 @@ public final class ChunkPos {
         return "ChunkPos[" +
                 "x=" + x + ", " +
                 "z=" + z + ']';
+    }
+
+    public Vector3 toVector3() {
+        return new Vector3(x * World.CHUNK_SIZE, World.WORLD_DEPTH, z * World.CHUNK_SIZE);
     }
 }

@@ -59,9 +59,9 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.85F;
+        this.velocityX *= 0.91F;
         this.velocityY *= 0.98F;
-        this.velocityZ *= 0.85F;
+        this.velocityZ *= 0.91F;
 
         if (this.onGround) {
             this.velocityX *= 0.8f;
