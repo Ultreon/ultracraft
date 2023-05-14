@@ -110,58 +110,44 @@ public class Chunk {
 				for (int x = 0; x < size; x++, i++) {
 					Block block = blocks[i];
 
-					if (pos.x != 0 && pos.z != 0) System.out.println("block = " + block);
+//					if (pos.x != 0 && pos.z != 0) System.out.println("block = " + block);
 
 					if (block == null || block == Blocks.AIR) continue;
 
 					BakedCubeModel model = block.bakedModel();
 
-					if (pos.x != 0 && pos.z != 0) System.out.println("model = " + model);
+//					if (pos.x != 0 && pos.z != 0) System.out.println("model = " + model);
 
 					if (model == null) continue;
 
-					if (pos.x != 0 && pos.z != 0) System.out.println("y = " + y + ", height = " + height);
-
 					if (y < height - 1) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("TOP");
 						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("TOP");
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("BOTTOM");
 						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("BOTTOM");
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("LEFT");
 						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("LEFT");
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < size - 1) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("RIGHT");
 						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("RIGHT");
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("FRONT");
 						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("FRONT");
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < size - 1) {
-						if (pos.x != 0 && pos.z != 0) System.out.println("BACK");
 						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
-						if (pos.x != 0 && pos.z != 0) System.out.println("BACK");
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}
 				}

@@ -111,7 +111,6 @@ public class World implements RenderableProvider {
 			for (int x = 0; x < chunksX; x++) {
 				ChunkPos chunkPos = new ChunkPos(x, z);
 				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
-				System.out.println("chunkPos = " + chunkPos);
 				chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 				chunk.dirty = false;
 				chunk.numVertices = 0;
@@ -121,7 +120,7 @@ public class World implements RenderableProvider {
 
 				for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 					for (int by = 0; by < CHUNK_SIZE; by++) {
-						biome.processColumn(chunk, chunkPos.x * CHUNK_SIZE + bx, chunkPos.z * CHUNK_SIZE + by, seed, CHUNK_HEIGHT);
+						biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
 					}
 				}
 

@@ -321,7 +321,6 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.tasks.forEach(runnable -> {
 			runnable.run();
-			System.out.println("runnable = " + runnable);
 			this.tasks.remove(runnable);
 		});
 
@@ -352,7 +351,7 @@ public class UltreonCraft extends ApplicationAdapter {
 					+ world.numChunks, 20, 20);
 			if (this.player != null) {
 				this.font.draw(this.spriteBatch, "xyz: " + this.player.getGridPoint3(), 20, 30);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.get(this.player.getGridPoint3()) != null), 20, 40);
+				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.getGridPoint3()) != null), 20, 40);
 			}
 			this.hud.render(renderer, deltaTime);
 		}
@@ -526,10 +525,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.world.despawn(player);
 		}
 
-//		float spawnX = this.world.voxelsX / 2f;
-//		float spawnZ = this.world.voxelsZ / 2f;
-		float spawnX = 0;
-		float spawnZ = 0;
+		float spawnX = this.world.voxelsX / 2f;
+		float spawnZ = this.world.voxelsZ / 2f;
 		float spawnY = this.world.getHighest(1, 1) + 1;
 
 		this.player = Entities.PLAYER.create(this.world);
