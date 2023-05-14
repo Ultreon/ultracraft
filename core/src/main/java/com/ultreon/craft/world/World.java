@@ -128,9 +128,8 @@ public class World implements RenderableProvider {
 					chunk.mesh.setIndices(indices);
 					chunk.ready = true;
 					chunk.dirty = true;
-					putChunk(chunkPos, chunk);
 				});
-
+				putChunk(chunkPos, chunk);
 			}
 		}
 
@@ -261,7 +260,10 @@ public class World implements RenderableProvider {
 
 		renderedChunks = 0;
 		for (Chunk chunk : chunks.values()) {
-			if (!chunk.ready) continue;
+			if (!chunk.ready) {
+				System.out.println("chunk.ready = " + chunk.ready);
+				continue;
+			}
 
 			Mesh mesh = chunk.mesh;
 			if (chunk.dirty) {
