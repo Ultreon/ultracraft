@@ -118,7 +118,7 @@ public class World implements RenderableProvider {
 
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
-			for (int z = startZ; z <= endZ; z += World.CHUNK_HEIGHT) {
+			for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
 				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, 0, z));
 				toCreate.add(chunkPos);
 				if (x >= pos.x - World.CHUNK_SIZE
@@ -344,10 +344,8 @@ public class World implements RenderableProvider {
 		renderedChunks = 0;
 		for (Chunk chunk : chunks.values()) {
 			synchronized (chunk.lock) {
-				if (!chunk.ready) {
-					System.out.println("chunk.ready = " + false);
-					continue;
-				}
+				if (!chunk.ready) continue;
+
 				Mesh mesh = chunk.mesh;
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);

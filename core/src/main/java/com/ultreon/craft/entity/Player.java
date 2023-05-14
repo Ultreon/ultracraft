@@ -29,8 +29,6 @@ public class Player extends LivingEntity {
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
-
-        setFlying(true);
     }
 
     public void selectBlock(int i) {
