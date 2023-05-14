@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
@@ -17,11 +19,16 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.zip.Deflater;
+
 public class InputManager extends InputAdapter {
     private static final float DEG_PER_PIXEL = 0.6384300433839F;
     public int pauseKey = Input.Keys.ESCAPE;
     public int imGuiKey = Input.Keys.F3;
     public int imGuiFocusKey = Input.Keys.F4;
+    public int screenshotKey = Input.Keys.F2;
     private static final IntArraySet keys = new IntArraySet();
     private final UltreonCraft game;
     private int xPos;
@@ -40,19 +47,30 @@ public class InputManager extends InputAdapter {
         keys.add(keycode);
 
         Screen currentScreen = game.currentScreen;
-        if (currentScreen != null) {
+        if (currentScreen != null && !Gdx.input.isCursorCatched()) {
             boolean flag = currentScreen.keyPress(keycode);
             if (flag) return true;
         }
 
-        if (isKeyDown(pauseKey) && Gdx.input.isCursorCatched()) {
-            game.showScreen(new PauseScreen());
+        if (keycode == screenshotKey) {
+            Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            PixmapIO.writePNG(Gdx.files.local("screenshots/screenshot_%s.png".formatted(DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+            pixmap.dispose();
         }
 
-        Player player = game.player;
-        if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9 && player != null) {
-            int index = keycode - Input.Keys.NUM_1;
-            player.selectBlock(index);
+        if (Gdx.input.isCursorCatched()) {
+            if (isKeyDown(pauseKey) && Gdx.input.isCursorCatched()) {
+                game.showScreen(new PauseScreen());
+                return true;
+            }
+
+            Player player = game.player;
+            if (player != null) {
+                if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9) {
+                    int index = keycode - Input.Keys.NUM_1;
+                    player.selectBlock(index);
+                }
+            }
         }
 
         return true;
@@ -84,37 +102,6 @@ public class InputManager extends InputAdapter {
         update(Gdx.graphics.getDeltaTime());
     }
 
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        this.wasCaptured = isCaptured;
-        this.isCaptured = Gdx.input.isCursorCatched();
-
-        if (!Gdx.input.isCursorCatched()) {
-            return super.mouseMoved(screenX, screenY);
-        }
-
-        updatePlayerMovement(screenX, screenY);
-
-        Screen currentScreen = game.currentScreen;
-        if (currentScreen != null) currentScreen.mouseMove((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()));
-        return true;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        this.wasCaptured = isCaptured;
-        this.isCaptured = Gdx.input.isCursorCatched();
-
-        if (!Gdx.input.isCursorCatched()) return super.mouseMoved(screenX, screenY);
-
-        updatePlayerMovement(screenX, screenY);
-
-        screenY = game.getHeight() - screenY;
-        Screen currentScreen = game.currentScreen;
-        if (currentScreen != null) currentScreen.mouseMove(screenX, screenY);
-        return true;
-    }
-
     private void updatePlayerMovement(int screenX, int screenY) {
         if (this.game.player == null) return;
 
@@ -135,45 +122,79 @@ public class InputManager extends InputAdapter {
     }
 
     @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        this.wasCaptured = isCaptured;
+        this.isCaptured = Gdx.input.isCursorCatched();
+
+        if (Gdx.input.isCursorCatched()) {
+            updatePlayerMovement(screenX, screenY);
+        } else {
+            Screen currentScreen = game.currentScreen;
+            if (currentScreen != null)
+                currentScreen.mouseMove((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()));
+        }
+        return true;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        this.wasCaptured = isCaptured;
+        this.isCaptured = Gdx.input.isCursorCatched();
+
+        if (Gdx.input.isCursorCatched()) {
+            updatePlayerMovement(screenX, screenY);
+        } else {
+            screenY = game.getHeight() - screenY;
+            Screen currentScreen = game.currentScreen;
+            if (currentScreen != null) currentScreen.mouseMove(screenX, screenY);
+        }
+        return true;
+    }
+
+    @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         World world = this.game.world;
-        if (world != null && this.game.currentScreen == null) {
-            if (!Gdx.input.isCursorCatched() && !UltreonCraft.get().isShowingImGui()) {
-                Gdx.input.setCursorCatched(true);
-                return true;
-            }
+        if (Gdx.input.isCursorCatched()) {
+            if (world != null && this.game.currentScreen == null) {
+                if (!Gdx.input.isCursorCatched() && !UltreonCraft.get().isShowingImGui()) {
+                    Gdx.input.setCursorCatched(true);
+                    return true;
+                }
 
-            Player player = this.game.player;
-            if (player != null) {
-                HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                GridPoint3 pos = hitResult.pos;
-                System.out.println("pos.toString() = " + pos);
-                Block block = world.get(pos);
-                GridPoint3 posNext = hitResult.next;
-                Block blockNext = world.get(posNext);
-                if (hitResult.collide && block != null && !block.isAir()) {
-                    if (button == Input.Buttons.LEFT) {
-                        world.set(pos, Blocks.AIR);
-                    } else if (button == Input.Buttons.RIGHT && blockNext.isAir()) {
-                        world.set(posNext, this.game.player.getSelectedBlock());
+                Player player = this.game.player;
+                if (player != null) {
+                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                    GridPoint3 pos = hitResult.pos;
+                    Block block = world.get(pos);
+                    GridPoint3 posNext = hitResult.next;
+                    Block blockNext = world.get(posNext);
+                    if (hitResult.collide && block != null && !block.isAir()) {
+                        if (button == Input.Buttons.LEFT) {
+                            world.set(pos, Blocks.AIR);
+                        } else if (button == Input.Buttons.RIGHT && blockNext.isAir()) {
+                            world.set(posNext, this.game.player.getSelectedBlock());
+                        }
                     }
                 }
             }
+        } else {
+            screenY = game.getHeight() - screenY;
+            Screen currentScreen = game.currentScreen;
+            if (currentScreen != null)
+                currentScreen.mousePress((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button);
         }
-
-        screenY = game.getHeight() - screenY;
-        Screen currentScreen = game.currentScreen;
-        if (currentScreen != null) currentScreen.mousePress((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button);
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        Screen currentScreen = game.currentScreen;
-        screenY = game.getHeight() - screenY;
-        if (currentScreen != null) {
-            currentScreen.mouseRelease((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button);
-            currentScreen.mouseClick((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button, 1);
+        if (!Gdx.input.isCursorCatched()) {
+            Screen currentScreen = game.currentScreen;
+            screenY = game.getHeight() - screenY;
+            if (currentScreen != null) {
+                currentScreen.mouseRelease((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button);
+                currentScreen.mouseClick((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button, 1);
+            }
         }
         return super.touchUp(screenX, screenY, pointer, button);
     }
@@ -181,6 +202,16 @@ public class InputManager extends InputAdapter {
     @Override
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = game.currentScreen;
+
+        Player player = game.player;
+        if (player != null) {
+            int scrollAmount = (int) amountY;
+            int i = (player.selected + scrollAmount) % 9;
+            if (i < 0) {
+                i += 9;
+            }
+            player.selected = i;
+        }
 
         var yPos = game.getHeight() - this.yPos;
         if (currentScreen != null) currentScreen.mouseWheel((int) (xPos / game.getGuiScale()), (int) (yPos / game.getGuiScale()), amountY);

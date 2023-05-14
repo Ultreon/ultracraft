@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
@@ -45,7 +47,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
-	public static final float WORLD_DEPTH = 0;
+	public static final int WORLD_DEPTH = 0;
 	private final Texture texture;
 	private final short[] indices;
 	private float[] vertices;
@@ -115,6 +117,8 @@ public class World implements RenderableProvider {
 				chunk.dirty = false;
 				chunk.numVertices = 0;
 				chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+				chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+				chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
 				for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 					for (int by = 0; by < CHUNK_SIZE; by++) {

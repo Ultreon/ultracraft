@@ -113,32 +113,32 @@ public class Chunk {
 					if (model == null) continue;
 
 					if (y < height - 1) {
-						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
-						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
-						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < size - 1) {
-						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
-						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < size - 1) {
-						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}

@@ -1,7 +1,6 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiContainer;
@@ -15,7 +14,7 @@ public class Screen extends GuiContainer {
     public Screen(String title) {
         super(0, 0, ceil(UltreonCraft.get().getWidth() / UltreonCraft.get().getGuiScale()), ceil(UltreonCraft.get().getHeight() / UltreonCraft.get().getGuiScale()));
         this.title = title;
-        this.titleLayout = new GlyphLayout(font, "Loading World");
+        this.titleLayout = new GlyphLayout(font, title);
     }
 
     public void tick() {
@@ -35,10 +34,11 @@ public class Screen extends GuiContainer {
 
     }
 
-    public void render(Renderer renderer, float deltaTime) {
+    @Override
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         renderBackground(renderer);
 
-        super.render(renderer, deltaTime);
+        super.render(renderer, mouseX, mouseY, deltaTime);
     }
 
     protected void renderBackground(Renderer renderer) {

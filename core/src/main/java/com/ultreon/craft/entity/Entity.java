@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.World;
@@ -23,13 +22,11 @@ public class Entity {
     protected float yRot;
     private int id = -1;
     public boolean onGround;
-    private float groundY;
     public float velocityX;
     public float velocityY;
     public float velocityZ;
     public float gravity = 0.08F;
     public boolean noGravity;
-    private boolean almostOnGround;
     public float jumpVel = 0.55F;
     public boolean jumping;
     public boolean isColliding;
@@ -57,8 +54,6 @@ public class Entity {
         }
 
         move(velocityX, velocityY, velocityZ);
-
-        checkOnGround();
 
         if (this.jumping && this.onGround) {
             this.jump();
@@ -124,7 +119,7 @@ public class Entity {
             pBox.min.add(0.0f, 0.0f, dz);
             pBox.max.add(0.0f, 0.0f, dz);
             pBox.update();
-            boolean bl = this.onGround = oDy != dy && oDy < 0.0f;
+            this.onGround = oDy != dy && oDy < 0.0f;
             if (oDx != dx) {
                 this.velocityX = 0.0f;
             }
@@ -156,26 +151,6 @@ public class Entity {
 
     public void jump() {
         this.velocityY = this.jumpVel;
-    }
-
-    private void checkOnGround() {
-        Block block = this.world.get(this.getGridPoint3().add(0, -1, 0));
-        if (block == null) {
-            this.almostOnGround = false;
-            this.onGround = true;
-            this.groundY = y;
-        } else if (this.y % 1 == 0 && !block.isAir()) {
-            this.almostOnGround = false;
-            this.onGround = true;
-            this.groundY = (int) y;
-        } else if (this.y % 1 > 0 && !block.isAir()) {
-            this.almostOnGround = true;
-            this.onGround = false;
-            this.groundY = (int) y;
-        } else {
-            this.almostOnGround = false;
-            this.onGround = false;
-        }
     }
 
     public float getX() {

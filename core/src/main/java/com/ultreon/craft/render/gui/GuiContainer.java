@@ -20,15 +20,15 @@ public abstract class GuiContainer extends GuiComponent {
     }
 
     @Override
-    public void render(Renderer renderer, float deltaTime) {
-        renderChildren(renderer, deltaTime);
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        renderChildren(renderer, mouseX, mouseY, deltaTime);
     }
 
-    protected void renderChildren(Renderer renderer, float deltaTime) {
+    protected void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         for (GuiComponent child : this.children) {
             if (child.visible) {
 //                renderer.subInstance(child.getX(), child.getY(), child.getWidth(), child.getHeight(), renderer1 -> child.render(renderer1, deltaTime));
-                child.render(renderer, deltaTime);
+                child.render(renderer, mouseX, mouseY, deltaTime);
             }
         }
     }

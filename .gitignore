@@ -115,3 +115,5 @@ Thumbs.db
 
 # Discord stuffs
 !.idea/discord.xml
+
+/run/

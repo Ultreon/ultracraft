@@ -37,9 +37,11 @@ public interface Widget extends GuiStateListener {
      * Rendering method, should not be called if you don't know what you are doing.
      *
      * @param renderer  renderer to draw/render with.
+     * @param mouseX
+     * @param mouseY
      * @param deltaTime value of {@link Graphics#getDeltaTime()}
      */
-    void render(Renderer renderer, float deltaTime);
+    void render(Renderer renderer, int mouseX, int mouseY, float deltaTime);
 
     /**
      * @return the position create the widget.

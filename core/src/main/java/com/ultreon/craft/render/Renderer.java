@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.google.common.base.Preconditions;
@@ -70,10 +71,11 @@ public class Renderer {
 
         // Projection matrix.
         Consumer<Matrix4> projectionMatrixSetter = matrix -> {
-//            shapes.getBatch().setTransformMatrix(matrix);
+            shapes.getBatch().setTransformMatrix(matrix);
         };
         this.matrixStack.onPush = projectionMatrixSetter;
         this.matrixStack.onPop = projectionMatrixSetter;
+        this.matrixStack.onEdit = projectionMatrixSetter;
     }
 
     public MatrixStack getMatrixStack() {
@@ -331,6 +333,14 @@ public class Renderer {
         font.draw(batch, str, x, y);
     }
 
+    public void text(String str, float x, float y, float maxWidth,  String truncate) {
+        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, false, truncate);
+    }
+
+    public void text(String str, float x, float y, float maxWidth, boolean wrap, String truncate) {
+        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, wrap);
+    }
+
     public void text(TextObject str, int x, int y) {
         font.draw(batch, str.getText(), x, y);
     }
@@ -361,24 +371,20 @@ public class Renderer {
     public void translate(float tx, float ty) {
         globalTranslation.add(tx, ty, 0);
         matrixStack.translate(tx, ty);
-        batch.setProjectionMatrix(matrixStack.last());
     }
 
     public void translate(int x, int y) {
         globalTranslation.add(x, y, 0);
         matrixStack.translate((float) x, (float) y);
-        batch.setProjectionMatrix(matrixStack.last());
     }
 
     public void rotate(double x, double y) {
         matrixStack.rotate(new Quaternion(1, 0, 0, (float) x));
         matrixStack.rotate(new Quaternion(0, 1, 0, (float) y));
-        batch.setProjectionMatrix(matrixStack.last());
     }
 
     public void scale(double sx, double sy) {
         matrixStack.scale((float) sx, (float) sy);
-        batch.setProjectionMatrix(matrixStack.last());
     }
 
     public Matrix4 getTransform() {
@@ -403,7 +409,7 @@ public class Renderer {
     //     Miscellaneous     //
     ///////////////////////////
     public void subInstance(int x, int y, int width, int height, Consumer<Renderer> consumer) {
-        var rectangle = new com.badlogic.gdx.math.Rectangle(x, y, width, height);
+        var rectangle = new Rectangle(x, y, width, height);
         boolean doPop = false;
         if (!Objects.equals(ScissorStack.peekScissors(), rectangle)) {
             doPop = true;
@@ -456,5 +462,9 @@ public class Renderer {
 
     public void popMatrix() {
         matrixStack.pop();
+    }
+
+    public Batch getBatch() {
+        return batch;
     }
 }
