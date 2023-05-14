@@ -54,7 +54,6 @@ public class World implements RenderableProvider {
 	private final short[] indices;
 	private float[] vertices;
 	private boolean doRender = false;
-	public int renderDistance;
 
 	private final BiomeGenerator biome = BiomeGenerator.builder()
 			.noise(NoiseSettingsInit.DOMAIN_X)
@@ -94,7 +93,6 @@ public class World implements RenderableProvider {
 			indices[i + 4] = (short) (j + 3);
 			indices[i + 5] = j;
 		}
-		renderDistance = game.renderDistance;
 	}
 
 	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
@@ -111,10 +109,10 @@ public class World implements RenderableProvider {
 	}
 
 	static List<ChunkPos> getChunksAround(World world, Vector3 pos) {
-		int startX = (int) (pos.x - (world.renderDistance) * World.CHUNK_SIZE);
-		int startZ = (int) (pos.z - (world.renderDistance) * World.CHUNK_SIZE);
-		int endX = (int) (pos.x + (world.renderDistance) * World.CHUNK_SIZE);
-		int endZ = (int) (pos.z + (world.renderDistance) * World.CHUNK_SIZE);
+		int startX = (int) (pos.x - (world.getRenderDistance()) * World.CHUNK_SIZE);
+		int startZ = (int) (pos.z - (world.getRenderDistance()) * World.CHUNK_SIZE);
+		int endX = (int) (pos.x + (world.getRenderDistance()) * World.CHUNK_SIZE);
+		int endZ = (int) (pos.z + (world.getRenderDistance()) * World.CHUNK_SIZE);
 
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
@@ -134,6 +132,10 @@ public class World implements RenderableProvider {
 		}
 
 		return toCreate;
+	}
+
+	private int getRenderDistance() {
+		return game.settings.getRenderDistance();
 	}
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {

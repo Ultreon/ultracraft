@@ -11,14 +11,23 @@ import java.util.Properties;
 public class GameSettings {
     public static final String FILENAME = "settings.xml";
     private Locale language;
+    private int renderDistance;
 
     public GameSettings() {
         var props = load();
         this.language = new Locale(props.getProperty("language", "en"));
+        this.renderDistance = getInt(props, "renderDistance", 8);
 
-        System.out.println("language = " + language);
         LanguageManager.setCurrentLanguage(language);
         save();
+    }
+
+    private int getInt(Properties props, String key, int defaultValue) {
+        try {
+            return Integer.parseInt(props.getProperty(key));
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     @SuppressWarnings("BlockingMethodInNonBlockingContext")
@@ -45,10 +54,20 @@ public class GameSettings {
         save();
     }
 
+    public int getRenderDistance() {
+        return renderDistance;
+    }
+
+    public void setRenderDistance(int renderDistance) {
+        this.renderDistance = renderDistance;
+        save();
+    }
+
     @SuppressWarnings("BlockingMethodInNonBlockingContext")
     private void save() {
         var props = new Properties();
         props.setProperty("language", language.getLanguage());
+        props.setProperty("renderDistance", Integer.toString(renderDistance));
         try {
             props.storeToXML(new FileOutputStream(FILENAME), "This is the settings for the Ultreon Craft game.");
         } catch (IOException e) {
