@@ -14,7 +14,7 @@ public class Screen extends GuiContainer {
     public Screen(String title) {
         super(0, 0, ceil(UltreonCraft.get().getWidth() / UltreonCraft.get().getGuiScale()), ceil(UltreonCraft.get().getHeight() / UltreonCraft.get().getGuiScale()));
         this.title = title;
-        this.titleLayout = new GlyphLayout(font, "Loading World");
+        this.titleLayout = new GlyphLayout(font, title);
     }
 
     public void tick() {

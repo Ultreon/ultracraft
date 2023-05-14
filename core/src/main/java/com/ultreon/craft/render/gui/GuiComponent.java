@@ -29,6 +29,8 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     protected Color backgroundColor;
     protected final UltreonCraft game = UltreonCraft.get();
     public final BitmapFont font = Fonts.DEFAULT;
+    public final BitmapFont largeFont = Fonts.LARGE_DEFAULT;
+    public final BitmapFont xlFont = Fonts.XL_DEFAULT;
     public final BitmapFont monospaced = Fonts.MONOSPACED;
     private boolean hovered = false;
     private int lastMouseX;

@@ -18,8 +18,7 @@ public class TitleScreen extends Screen {
     private Button startButton;
     private Button optionsButton;
     private Button quitButton;
-    private BitmapFont xlFont = Fonts.XL_DEFAULT;
-    private GlyphLayout layout = new GlyphLayout();
+    private final GlyphLayout layout = new GlyphLayout();
 
     public TitleScreen() {
         super("Title Screen");
@@ -59,13 +58,11 @@ public class TitleScreen extends Screen {
         super.renderBackground(renderer);
 
         Batch batch = renderer.getBatch();
-        {
-            layout.setText(xlFont, "Ultreon Craft");
-            xlFont.setColor(Color.white.darker().darker().toGdx());
-            xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40 - 3)));
-            xlFont.setColor(Color.white.toGdx());
-            xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40)));
-        }
+        layout.setText(xlFont, "Ultreon Craft");
+        xlFont.setColor(Color.white.darker().darker().toGdx());
+        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40 - 3)));
+        xlFont.setColor(Color.white.toGdx());
+        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40)));
     }
 
     public Button getStartButton() {

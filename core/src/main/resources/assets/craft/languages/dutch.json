@@ -14,6 +14,14 @@
       "language": {
         "back": "Terug"
       },
+      "death": {
+        "respawn": "Respawn",
+        "title": "Je bent doodgegaan"
+      },
+      "pause": {
+        "back_to_game": "Terug naar spel",
+        "exit_world": "Wereld sluiten"
+      },
       "title": {
         "start_world": "Start nieuwe wereld",
         "options": "Opties...",

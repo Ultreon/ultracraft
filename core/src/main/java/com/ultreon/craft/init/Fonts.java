@@ -9,6 +9,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 public class Fonts {
     public static final BitmapFont DEFAULT = register("default", UltreonCraft.get().font);
     public static final BitmapFont XL_DEFAULT = register("xl_default", UltreonCraft.get().xlFont);
+    public static final BitmapFont LARGE_DEFAULT = register("xl_default", UltreonCraft.get().largeFont);
     public static final BitmapFont MONOSPACED = register("monospaced", new BitmapFont());
 
     private static BitmapFont register(String name, BitmapFont font) {

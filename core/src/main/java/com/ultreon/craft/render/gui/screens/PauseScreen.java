@@ -27,11 +27,11 @@ public class PauseScreen extends Screen {
     public void show() {
         super.show();
 
-        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, "Back to the Game", this::resumeGame));
-        this.optionsButton = add(new Button(width / 2 - 100, height - height / 3 - 25, 95, Language.translate("craft/screen/title/options"), caller -> {
+        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft/screen/pause/back_to_game"), this::resumeGame));
+        this.optionsButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 95, Language.translate("craft/screen/title/options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
-        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height - this.height / 3 - 25, 95, "Exit World", this::exitWorld));
+        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height - this.height / 3 - 25, 95, Language.translate("craft/screen/pause/exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.red);
         this.exitWorldButton.setTextColor(Color.white);
     }

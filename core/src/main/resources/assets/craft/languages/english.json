@@ -14,6 +14,14 @@
       "language": {
         "back": "Back"
       },
+      "death": {
+        "respawn": "Respawn",
+        "title": "You Died"
+      },
+      "pause": {
+        "back_to_game": "Back to the Game",
+        "exit_world": "Exit World"
+      },
       "title": {
         "start_world": "Start New World",
         "options": "Options...",
