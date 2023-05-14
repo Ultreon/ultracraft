@@ -9,6 +9,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.translations.v0.Language;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -53,7 +54,7 @@ public class Hud implements GameRenderable {
         renderer.text((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37);
         if (key != null && !selectedBlock.isAir()) {
             ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
-            String name = "block." + key.location() + "." + key.path().replaceAll("/", ".");
+            String name = Language.translate(key.location() + "/block/" + key.path() + "/name");
             renderer.setColor(Color.rgb(0xffffff));
             this.layout.setText(this.game.font, name);
             renderer.setColor(Color.rgb(0xffffff).darker().darker());

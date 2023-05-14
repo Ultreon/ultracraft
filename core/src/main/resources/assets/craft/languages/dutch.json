@@ -1,0 +1,24 @@
+{
+  "craft": {
+    "block": {
+      "sand":  { "name": "Zand"  },
+      "grass_block": { "name": "Gras" },
+      "dirt":  { "name": "Aarde"  },
+      "stone": { "name": "Steen" },
+      "water": { "name": "Water" }
+    },
+    "screen": {
+      "world_load": {
+        "loading_world": "Wereld Laden"
+      },
+      "language": {
+        "back": "Terug"
+      },
+      "title": {
+        "start_world": "Start nieuwe wereld",
+        "options": "Opties...",
+        "quit": "Afsluiten"
+      }
+    }
+  }
+}

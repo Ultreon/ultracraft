@@ -33,6 +33,7 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.options.GameSettings;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Hud;
@@ -80,6 +81,8 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final ImGuiImplGl3 imGuiGl3;
 	public static final int TPS = 20;
 	public BitmapFont font;
+	public BitmapFont largeFont;
+	public BitmapFont xlFont;
 	public InputManager input;
 	public World world;
 	private static UltreonCraft instance;
@@ -97,6 +100,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final ImFloat imGuiPosY = new ImFloat();
 	private final ImFloat imGuiPosZ = new ImFloat();
 	public Screen currentScreen;
+	public final GameSettings settings = new GameSettings();
 	private ShapeDrawer shapes;
 	private TextureRegion white;
 	private TextureManager textureManager;
@@ -145,6 +149,18 @@ public class UltreonCraft extends ApplicationAdapter {
 		fontParameter.magFilter = Texture.TextureFilter.Nearest;
 		fontParameter.mono = true;
 		this.font = generator.generateFont(fontParameter);
+		FreeTypeFontParameter largeFontParameter = new FreeTypeFontParameter();
+		largeFontParameter.size = 16;
+		largeFontParameter.minFilter = Texture.TextureFilter.Nearest;
+		largeFontParameter.magFilter = Texture.TextureFilter.Nearest;
+		largeFontParameter.mono = true;
+		this.largeFont = generator.generateFont(largeFontParameter);
+		FreeTypeFontParameter xlFontParameter = new FreeTypeFontParameter();
+		xlFontParameter.size = 24;
+		xlFontParameter.minFilter = Texture.TextureFilter.Nearest;
+		xlFontParameter.magFilter = Texture.TextureFilter.Nearest;
+		xlFontParameter.mono = true;
+		this.xlFont = generator.generateFont(xlFontParameter);
 
 		DefaultShader.Config config = new DefaultShader.Config();
 		config.defaultCullFace = GL20.GL_FRONT;
@@ -166,6 +182,10 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
 		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
 		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
+
+		LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
+		LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
+		LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
 
 		Registries.nopInit();
 
