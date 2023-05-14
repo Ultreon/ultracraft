@@ -18,8 +18,10 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
@@ -27,7 +29,11 @@ import com.ultreon.craft.world.gen.TreeData;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
-	public final Block[] blocks;
+	public final ChunkPos pos;
+	protected final Object lock = new Object();
+	protected boolean modifiedByPlayer;
+	protected boolean ready;
+	private Block[] blocks;
 	public final int size;
 	public final int height;
 	public final Vector3 offset = new Vector3();
@@ -39,10 +45,14 @@ public class Chunk {
 	private final int frontOffset;
 	private final int backOffset;
 	public TreeData treeData;
-	public Mesh mesh;
-	public boolean dirty;
+	protected Mesh mesh;
+	protected Material material;
+	protected boolean dirty;
 
-	public Chunk(int size, int height) {
+	protected int numVertices;
+
+	public Chunk(int size, int height, ChunkPos pos) {
+		this.pos = pos;
 		this.blocks = new Block[size * height * size];
 		this.size = size;
 		this.height = height;
@@ -102,9 +112,15 @@ public class Chunk {
 			for (int z = 0; z < size; z++) {
 				for (int x = 0; x < size; x++, i++) {
 					Block block = blocks[i];
+
+//					if (pos.x != 0 && pos.z != 0) System.out.println("block = " + block);
+
 					if (block == null || block == Blocks.AIR) continue;
 
 					BakedCubeModel model = block.bakedModel();
+
+//					if (pos.x != 0 && pos.z != 0) System.out.println("model = " + model);
+
 					if (model == null) continue;
 
 					if (y < height - 1) {
@@ -375,5 +391,18 @@ public class Chunk {
 		vertices[vertexOffset++] = region.getU();
 		vertices[vertexOffset++] = region.getV2();
 		return vertexOffset;
+	}
+
+	public void dispose() {
+		final Mesh mesh = this.mesh;
+		UltreonCraft.get().runLater(mesh::dispose);
+		this.material = null;
+		this.blocks = null;
+		this.mesh = null;
+	}
+
+	@Override
+	public String toString() {
+		return "Chunk[x=" + pos.x + ", z=" + pos.z + "]";
 	}
 }

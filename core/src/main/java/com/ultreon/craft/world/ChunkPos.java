@@ -1,31 +1,24 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
+
 import java.util.Objects;
 
 public final class ChunkPos {
-    private final int x;
-    private final int z;
+    public final int x;
+    public final int z;
 
     public ChunkPos(int x, int z) {
         this.x = x;
         this.z = z;
     }
 
-    public int x() {
-        return x;
-    }
-
-    public int z() {
-        return z;
-    }
-
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (ChunkPos) obj;
-        return this.x == that.x &&
-                this.z == that.z;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChunkPos chunkPos = (ChunkPos) o;
+        return x == chunkPos.x && z == chunkPos.z;
     }
 
     @Override
@@ -38,5 +31,9 @@ public final class ChunkPos {
         return "ChunkPos[" +
                 "x=" + x + ", " +
                 "z=" + z + ']';
+    }
+
+    public Vector3 toVector3() {
+        return new Vector3(x * World.CHUNK_SIZE, World.WORLD_DEPTH, z * World.CHUNK_SIZE);
     }
 }
