@@ -1,6 +1,5 @@
 package com.ultreon.craft.render.gui.screens;
 
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
@@ -15,7 +14,7 @@ public class WorldLoadScreen extends Screen {
     public void show() {
         super.show();
 
-        game.world = new World(game.getTilesTex(), 16, 1, 16);
+        game.world = new World(game.getTilesTex(), 16, 16);
         new Thread(this::run, "World Loading").start();
     }
 

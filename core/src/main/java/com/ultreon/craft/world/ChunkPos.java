@@ -20,12 +20,11 @@ public final class ChunkPos {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (ChunkPos) obj;
-        return this.x == that.x &&
-                this.z == that.z;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChunkPos chunkPos = (ChunkPos) o;
+        return x == chunkPos.x && z == chunkPos.z;
     }
 
     @Override

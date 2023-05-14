@@ -18,6 +18,7 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
@@ -27,7 +28,8 @@ import com.ultreon.craft.world.gen.TreeData;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
-	public final Block[] blocks;
+	protected boolean ready;
+	private Block[] blocks;
 	public final int size;
 	public final int height;
 	public final Vector3 offset = new Vector3();
@@ -39,8 +41,11 @@ public class Chunk {
 	private final int frontOffset;
 	private final int backOffset;
 	public TreeData treeData;
-	public Mesh mesh;
-	public boolean dirty;
+	protected Mesh mesh;
+	protected Material material;
+	protected boolean dirty;
+
+	protected int numVertices;
 
 	public Chunk(int size, int height) {
 		this.blocks = new Block[size * height * size];
@@ -375,5 +380,12 @@ public class Chunk {
 		vertices[vertexOffset++] = region.getU();
 		vertices[vertexOffset++] = region.getV2();
 		return vertexOffset;
+	}
+
+	public void dispose() {
+		this.mesh.dispose();
+		this.material = null;
+		this.blocks = null;
+		this.mesh = null;
 	}
 }

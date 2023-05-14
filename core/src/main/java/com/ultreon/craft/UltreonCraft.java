@@ -259,9 +259,10 @@ public class UltreonCraft extends ApplicationAdapter {
 			tick();
 		}
 
-		this.tasks.removeIf(runnable -> {
+		this.tasks.forEach(runnable -> {
 			runnable.run();
-			return true;
+			System.out.println("runnable = " + runnable);
+			this.tasks.remove(runnable);
 		});
 
 		this.input.update();
@@ -463,8 +464,10 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.world.despawn(player);
 		}
 
-		float spawnX = this.world.voxelsX / 2f;
-		float spawnZ = this.world.voxelsZ / 2f;
+//		float spawnX = this.world.voxelsX / 2f;
+//		float spawnZ = this.world.voxelsZ / 2f;
+		float spawnX = 0;
+		float spawnZ = 0;
 		float spawnY = this.world.getHighest(1, 1) + 1;
 
 		this.player = Entities.PLAYER.create(this.world);
