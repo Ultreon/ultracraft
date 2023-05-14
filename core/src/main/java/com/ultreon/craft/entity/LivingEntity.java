@@ -52,7 +52,16 @@ public class LivingEntity extends Entity {
         }
     }
 
-    private void attack(int damage) {
+    @Override
+    protected void hitGround() {
+        if (fallDistance != 0.0F) System.out.println("fallDistance = " + fallDistance);
+        if (this.fallDistance > 3) {
+            float damage = this.fallDistance - 3;
+            this.attack(damage);
+        }
+    }
+
+    private void attack(float damage) {
         if (isDead) return;
         if (damageImmunity > 0) return;
 
@@ -64,7 +73,7 @@ public class LivingEntity extends Entity {
         damage = Math.max(damage, 0);
 
         health = Math.max(health - damage, 0);
-        damageImmunity = 20;
+        damageImmunity = 10;
     }
 
     public SoundEvent getHurtSound() {
