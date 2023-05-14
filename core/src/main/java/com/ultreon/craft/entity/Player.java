@@ -4,11 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.world.World;
 
 public class Player extends Entity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
+    public static final Block[] ALLOWED = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
+    public int selected;
     private boolean running;
     private float walkingSpeed = .05F;
     private float flyingSpeed = 0.5F;
@@ -20,6 +24,14 @@ public class Player extends Entity {
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
+    }
+
+    public void selectBlock(int i) {
+        selected = i % ALLOWED.length;
+    }
+
+    public Block getSelectedBlock() {
+        return ALLOWED[selected];
     }
 
     @Override
