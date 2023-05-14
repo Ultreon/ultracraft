@@ -64,7 +64,7 @@ public class Button extends GuiComponent {
     }
 
     @Override
-    public void render(Renderer renderer, float deltaTime) {
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         Texture texture = game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
 
         var x = this.x;

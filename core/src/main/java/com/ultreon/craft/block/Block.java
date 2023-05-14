@@ -8,11 +8,17 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Block {
     private final int id;
+    private final boolean transparent;
     private final CubeModel model;
     private BakedCubeModel bakedModel;
 
-    public Block(int id, CubeModel model) {
+    public Block(int id,  CubeModel model) {
+        this(id, false, model);
+    }
+
+    public Block(int id, boolean transparent, CubeModel model) {
         this.id = id;
+        this.transparent = transparent;
         this.model = model;
     }
 
@@ -43,5 +49,9 @@ public class Block {
 
     public BoundingBox getBoundingBox(int x, int y, int z) {
         return new BoundingBox(new Vector3(x, y, z), new Vector3(x + 1, y + 1, z + 1));
+    }
+
+    public boolean isTransparent() {
+        return transparent;
     }
 }

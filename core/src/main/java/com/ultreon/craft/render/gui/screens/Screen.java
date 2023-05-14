@@ -1,7 +1,6 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiContainer;
@@ -35,10 +34,11 @@ public class Screen extends GuiContainer {
 
     }
 
-    public void render(Renderer renderer, float deltaTime) {
+    @Override
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         renderBackground(renderer);
 
-        super.render(renderer, deltaTime);
+        super.render(renderer, mouseX, mouseY, deltaTime);
     }
 
     protected void renderBackground(Renderer renderer) {

@@ -331,6 +331,14 @@ public class Renderer {
         font.draw(batch, str, x, y);
     }
 
+    public void text(String str, float x, float y, float maxWidth,  String truncate) {
+        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, false, truncate);
+    }
+
+    public void text(String str, float x, float y, float maxWidth, boolean wrap, String truncate) {
+        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, wrap);
+    }
+
     public void text(TextObject str, int x, int y) {
         font.draw(batch, str.getText(), x, y);
     }

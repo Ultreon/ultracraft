@@ -7,17 +7,18 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.world.World;
 
-public class Player extends Entity {
+public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
     public static final Block[] ALLOWED = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
     public int selected;
     private boolean running;
     private float walkingSpeed = .05F;
     private float flyingSpeed = 0.5F;
-    private final float runModifier = 1.75F;
-    private final float crouchModifier = 0.5F;
+    public final float runModifier = 1.75F;
+    public final float crouchModifier = 0.5F;
     private boolean flying;
     private boolean crouching;
     private boolean spectating;
@@ -27,11 +28,12 @@ public class Player extends Entity {
     }
 
     public void selectBlock(int i) {
-        selected = i % ALLOWED.length;
+        selected = i % 9;
     }
 
     public Block getSelectedBlock() {
-        return ALLOWED[selected];
+        return this.selected >= ALLOWED.length ? Blocks.AIR : ALLOWED[this.selected];
+
     }
 
     @Override
@@ -142,5 +144,12 @@ public class Player extends Entity {
 
     public void setSpectating(boolean spectating) {
         this.spectating = this.noClip = this.noGravity = this.flying = spectating;
+    }
+
+    @Override
+    public void onDeath() {
+        super.onDeath();
+
+        UltreonCraft.get().showScreen(new DeathScreen());
     }
 }

@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
@@ -121,6 +123,8 @@ public class World implements RenderableProvider {
 		this.materialArray = new Material[chunksX * chunksY * chunksZ];
 		for (i = 0; i < materialArray.length; i++) {
 			materialArray[i] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+			materialArray[i].set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+			materialArray[i].set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 		}
 	}
 

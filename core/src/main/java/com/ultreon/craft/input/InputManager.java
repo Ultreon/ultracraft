@@ -182,6 +182,16 @@ public class InputManager extends InputAdapter {
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = game.currentScreen;
 
+        Player player = game.player;
+        if (player != null) {
+            int scrollAmount = (int) amountY;
+            int i = (player.selected + scrollAmount) % 9;
+            if (i < 0) {
+                i += 9;
+            }
+            player.selected = i;
+        }
+
         var yPos = game.getHeight() - this.yPos;
         if (currentScreen != null) currentScreen.mouseWheel((int) (xPos / game.getGuiScale()), (int) (yPos / game.getGuiScale()), amountY);
         return super.scrolled(amountX, amountY);

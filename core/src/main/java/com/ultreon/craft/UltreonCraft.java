@@ -4,7 +4,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,6 +18,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
@@ -31,6 +31,8 @@ import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.render.Color;
+import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
@@ -44,6 +46,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import com.ultreon.libs.resources.v0.ResourceManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiCond;
@@ -57,6 +60,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -91,10 +95,12 @@ public class UltreonCraft extends ApplicationAdapter {
 	private ShapeDrawer shapes;
 	private TextureRegion white;
 	private TextureManager textureManager;
+	private ResourceManager resourceManager;
 	private Texture tilesTex;
 	private float guiScale = 2;
 	public boolean renderWorld = false;
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
+	private Hud hud;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -119,6 +125,13 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void create() {
 		this.textureManager = new TextureManager();
 		this.spriteBatch = new SpriteBatch();
+
+		this.resourceManager = new ResourceManager("assets");
+		try {
+			this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
 		FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
@@ -168,6 +181,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			}
 			block.bake(this.tilesTex);
 		}
+
+		this.hud = new Hud(this);
 
 		showScreen(new TitleScreen());
 
@@ -282,23 +297,23 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.spriteBatch.begin();
 
-		if (world != null) {
-			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
-					+ world.numChunks, 0, 20);
-			if (this.player != null) {
-				this.font.draw(this.spriteBatch, "xyz: " + this.player.getGridPoint3(), 0, 40);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.get(this.player.getGridPoint3()) != null), 0, 60);
-			}
-		}
-
 		Screen screen = this.currentScreen;
 		Renderer renderer = new Renderer(this.shapes);
-		if (screen != null) {
-			float guiScale = getGuiScale();
-			spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix().scale(guiScale, guiScale, 1));
-			screen.render(renderer, deltaTime);
-			spriteBatch.setTransformMatrix(spriteBatch.getTransformMatrix().scale(1F / guiScale, 1F / guiScale, 1));
+		this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
+		if (world != null) {
+			this.font.setColor(Color.rgb(0xffffff).toGdx());
+			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
+					+ world.numChunks, 20, 20);
+			if (this.player != null) {
+				this.font.draw(this.spriteBatch, "xyz: " + this.player.getGridPoint3(), 20, 30);
+				this.font.draw(this.spriteBatch, "chunk shown: " + (world.get(this.player.getGridPoint3()) != null), 20, 40);
+			}
+			this.hud.render(renderer, deltaTime);
 		}
+		if (screen != null) {
+			screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
+		}
+		this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
 
 		if (this.showImGui.get()) {
 			// render 3D scene
@@ -372,6 +387,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
 			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
 			ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
+			ImGuiEx.editFloat("Health:", "PlayerHealth", this.player.getHealth(), v -> this.player.setHealth(v));
+			ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", this.player.getMaxHeath(), v -> this.player.setMaxHeath(v));
 			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
 			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.isFlying(), v -> this.player.setFlying(v));
 			ImGuiEx.editBool("Spectating:", "PlayerSpectating", this.player.isSpectating(), v -> this.player.setSpectating(v));
@@ -468,6 +485,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		float spawnY = this.world.getHighest(1, 1) + 1;
 
 		this.player = Entities.PLAYER.create(this.world);
+		this.player.setHealth(this.player.getMaxHeath());
 		this.player.setPosition(spawnX + 0.5f, spawnY, spawnZ + 0.5f);
 		this.world.spawn(this.player);
 	}
@@ -538,6 +556,14 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public float getGuiScale() {
 		return guiScale;
+	}
+
+	public int getScaledWidth() {
+		return MathUtils.ceil(getWidth() / getGuiScale());
+	}
+
+	public int getScaledHeight() {
+		return MathUtils.ceil(getHeight() / getGuiScale());
 	}
 
 	public void exitWorld() {
