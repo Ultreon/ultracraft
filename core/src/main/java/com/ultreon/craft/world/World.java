@@ -204,9 +204,9 @@ public class World implements RenderableProvider {
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
-		int chunkX = chunkPos.x() / CHUNK_SIZE;
+		int chunkX = chunkPos.x();
 		if (chunkX < 0 || chunkX >= chunksX) return null;
-		int chunkZ = chunkPos.z() / CHUNK_SIZE;
+		int chunkZ = chunkPos.z();
 		if (chunkZ < 0 || chunkZ >= chunksZ) return null;
 		return chunkArray[chunkX + chunkZ * chunksX];
 	}
