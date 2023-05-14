@@ -43,6 +43,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
+	public static final int WORLD_DEPTH = 0;
 	private boolean doRender = false;
 
 	public Chunk[] chunkArray;

@@ -2,6 +2,7 @@ package com.ultreon.craft.registry;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
@@ -13,6 +14,7 @@ public final class Registries {
     public static final Registry<EntityType<?>> ENTITIES = Registry.create(UltreonCraft.id("entity_type"));
     public static final Registry<Registry<?>> REGISTRY = Registry.create(UltreonCraft.id("registry"));
     public static final Registry<BitmapFont> FONTS = Registry.create(UltreonCraft.id("font"));
+    public static final Registry<SoundEvent> SOUNDS = Registry.create(UltreonCraft.id("sound"));
 
     public static void nopInit() {
 

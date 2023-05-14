@@ -14,4 +14,8 @@ public class Fonts {
         Registries.FONTS.register(new Identifier(UltreonCraft.NAMESPACE, name), font);
         return font;
     }
+
+    public static void nopInit() {
+
+    }
 }

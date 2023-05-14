@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.world.World;
@@ -151,5 +153,10 @@ public class Player extends LivingEntity {
         super.onDeath();
 
         UltreonCraft.get().showScreen(new DeathScreen());
+    }
+
+    @Override
+    public SoundEvent getHurtSound() {
+        return Sounds.PlAYER_HURT;
     }
 }

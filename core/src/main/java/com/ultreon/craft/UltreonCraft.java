@@ -18,15 +18,18 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ScreenEvents;
+import com.ultreon.craft.events.WindowCloseEvent;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.init.Fonts;
+import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
@@ -47,6 +50,7 @@ import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.ResourceManager;
+import com.ultreon.libs.translations.v0.LanguageManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiCond;
@@ -62,6 +66,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
@@ -167,6 +172,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		Blocks.nopInit();
 		NoiseSettingsInit.nopInit();
 		Entities.nopInit();
+		Fonts.nopInit();
+		Sounds.nopInit();
 
 		for (var registry : Registry.getRegistries()) {
 			RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
@@ -174,6 +181,13 @@ public class UltreonCraft extends ApplicationAdapter {
 		Registry.freeze();
 
 		this.tilesTex = textureManager.registerTexture(id("textures/blocks.png"));
+
+		for (SoundEvent sound : Registries.SOUNDS.values()) {
+			if (sound == null) {
+				break;
+			}
+			sound.register();
+		}
 
 		for (Block block : Registries.BLOCK.values()) {
 			if (block == null) {
@@ -559,11 +573,11 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	public int getScaledWidth() {
-		return MathUtils.ceil(getWidth() / getGuiScale());
+		return ceil(getWidth() / getGuiScale());
 	}
 
 	public int getScaledHeight() {
-		return MathUtils.ceil(getHeight() / getGuiScale());
+		return ceil(getHeight() / getGuiScale());
 	}
 
 	public void exitWorld() {
@@ -575,5 +589,22 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void runLater(Runnable task) {
 		tasks.add(task);
+	}
+
+	public ResourceManager getResourceManager() {
+		return resourceManager;
+	}
+
+	public void playSound(SoundEvent event) {
+		event.getSound().play();
+	}
+
+	public boolean closeRequested() {
+		EventResult eventResult = WindowCloseEvent.EVENT.factory().onWindowClose();
+		return !eventResult.isCanceled();
+	}
+
+	public void filesDropped(String[] files) {
+
 	}
 }
