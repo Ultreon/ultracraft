@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
@@ -17,11 +19,16 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.zip.Deflater;
+
 public class InputManager extends InputAdapter {
     private static final float DEG_PER_PIXEL = 0.6384300433839F;
     public int pauseKey = Input.Keys.ESCAPE;
     public int imGuiKey = Input.Keys.F3;
     public int imGuiFocusKey = Input.Keys.F4;
+    public int screenshotKey = Input.Keys.F2;
     private static final IntArraySet keys = new IntArraySet();
     private final UltreonCraft game;
     private int xPos;
@@ -43,6 +50,12 @@ public class InputManager extends InputAdapter {
         if (currentScreen != null && !Gdx.input.isCursorCatched()) {
             boolean flag = currentScreen.keyPress(keycode);
             if (flag) return true;
+        }
+
+        if (keycode == screenshotKey) {
+            Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            PixmapIO.writePNG(Gdx.files.local("screenshots/screenshot_%s.png".formatted(DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+            pixmap.dispose();
         }
 
         if (Gdx.input.isCursorCatched()) {

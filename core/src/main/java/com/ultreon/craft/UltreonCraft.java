@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -66,6 +67,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -134,6 +136,8 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void create() {
 		this.textureManager = new TextureManager();
 		this.spriteBatch = new SpriteBatch();
+
+		createDir("screenshots/");
 
 		this.resourceManager = new ResourceManager("assets");
 		try {
@@ -233,6 +237,13 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		imGuiGlfw.init(windowHandle, true);
 		imGuiGl3.init("#version 150");
+	}
+
+	private static void createDir(String dirName) {
+		FileHandle directory = Gdx.files.local(dirName);
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
 	}
 
 	@Override
