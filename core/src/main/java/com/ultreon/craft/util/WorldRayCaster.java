@@ -22,9 +22,6 @@ public class WorldRayCaster {
 	private static final Vector3 local = new Vector3();
 	private static final BoundingBox box = new BoundingBox();
 
-
-	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
-	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
 	public static HitResult rayCast(World map) {
 		return rayCast(new HitResult(), map);
 	}

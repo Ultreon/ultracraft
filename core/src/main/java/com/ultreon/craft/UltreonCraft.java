@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -265,7 +266,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.input.update();
 
-		ScreenUtils.clear(0.4f, 0.4f, 0.4f, 1f, true);
+		ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
 		World world = this.world;
 		Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 

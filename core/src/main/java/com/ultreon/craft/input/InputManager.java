@@ -49,6 +49,12 @@ public class InputManager extends InputAdapter {
             game.showScreen(new PauseScreen());
         }
 
+        Player player = game.player;
+        if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9 && player != null) {
+            int index = keycode - Input.Keys.NUM_1;
+            player.selectBlock(index);
+        }
+
         return true;
     }
 
@@ -139,13 +145,18 @@ public class InputManager extends InputAdapter {
 
             Player player = this.game.player;
             if (player != null) {
-                HitResult hitResult = world.raycastBlock(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                GridPoint3 blockPos = new GridPoint3(hitResult.pos);
+                HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
                 GridPoint3 pos = hitResult.pos;
                 System.out.println("pos.toString() = " + pos);
-                Block block = world.get(blockPos);
+                Block block = world.get(pos);
+                GridPoint3 posNext = hitResult.next;
+                Block blockNext = world.get(posNext);
                 if (hitResult.collide && block != null && !block.isAir()) {
-                    world.set(blockPos, Blocks.AIR);
+                    if (button == Input.Buttons.LEFT) {
+                        world.set(pos, Blocks.AIR);
+                    } else if (button == Input.Buttons.RIGHT && blockNext.isAir()) {
+                        world.set(posNext, this.game.player.getSelectedBlock());
+                    }
                 }
             }
         }

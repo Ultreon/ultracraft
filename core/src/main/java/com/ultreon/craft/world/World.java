@@ -124,7 +124,7 @@ public class World implements RenderableProvider {
 		}
 	}
 
-	public HitResult raycastBlock(Ray ray) {
+	public HitResult rayCast(Ray ray) {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
