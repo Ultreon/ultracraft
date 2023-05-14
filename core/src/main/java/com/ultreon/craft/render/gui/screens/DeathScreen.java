@@ -46,7 +46,7 @@ public class DeathScreen extends Screen {
 
         Batch batch = renderer.getBatch();
         largeFont.setColor(Color.white.darker().darker().toGdx());
-        largeFont.draw(batch, title, (int)((float) width / 2 - titleLayout.width / 2), (int)((float) (height - 40 - 3)));
+        largeFont.draw(batch, title, (int)((float) width / 2 - titleLayout.width / 2), (int)((float) (height - 40 - 2)));
         largeFont.setColor(Color.white.toGdx());
         largeFont.draw(batch, title, (int)((float) width / 2 - titleLayout.width / 2), (int)((float) (height - 40)));
     }
