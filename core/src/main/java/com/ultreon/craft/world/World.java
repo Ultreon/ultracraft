@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -55,7 +56,7 @@ public class World implements RenderableProvider {
 	private float[] vertices;
 	private boolean doRender = false;
 
-	private final long seed = 512;
+	private final long seed = new Random().nextInt(0, (int) (Integer.MAX_VALUE / Math.pow(2, 10)));
 	private int renderedChunks;
 
 	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
