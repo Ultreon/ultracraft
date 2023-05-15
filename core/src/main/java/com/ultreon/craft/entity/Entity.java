@@ -60,13 +60,13 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.91F;
+        this.velocityX *= 0.8F;
         this.velocityY *= 0.98F;
-        this.velocityZ *= 0.91F;
+        this.velocityZ *= 0.8F;
 
         if (this.onGround) {
-            this.velocityX *= 0.8f;
-            this.velocityZ *= 0.8f;
+            this.velocityX *= 0.9f;
+            this.velocityZ *= 0.9f;
         }
     }
 
