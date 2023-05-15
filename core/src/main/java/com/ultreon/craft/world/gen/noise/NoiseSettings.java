@@ -8,10 +8,12 @@ public final class NoiseSettings {
     private final float noiseZoom;
     private final int octaves;
     private final Vector2 offset;
-    public long seed;
+    long seed;
+    private long oldSeed;
     private final float persistence;
     private final float redistributionModifier;
     private final float exponent;
+    private SimplexNoise noise;
 
     public NoiseSettings(float noiseZoom, int octaves, Vector2 offset, long seed, float persistence,
                          float redistributionModifier, float exponent) {
@@ -19,9 +21,21 @@ public final class NoiseSettings {
         this.octaves = octaves;
         this.offset = offset;
         this.seed = seed;
+        this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);
         this.persistence = persistence;
         this.redistributionModifier = redistributionModifier;
         this.exponent = exponent;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
+
+        if (this.noise != null) this.noise.dispose();
+        this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);
+    }
+
+    public SimplexNoise getNoise() {
+        return this.noise;
     }
 
     public float noiseZoom() {

@@ -20,21 +20,20 @@ public class StonePatchTerrainLayer extends TerrainLayer {
 
     @Override
     public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
-        Debugger.layersTriggered.add(this);
         if (chunk.offset.y > height)
             return false;
 
-        noiseSettings.seed = seed;
+        noiseSettings.setSeed(seed);
         //float stoneNoise = MyNoise.OctavePerlin(chunkData.worldPosition.x + x, chunkData.worldPosition.z + z, stoneNoiseSettings);
-        float stoneNoise = domainWarping.generateDomainNoise((int) (chunk.offset.x + x), (int) (chunk.offset.z + z), noiseSettings);
+        float stoneNoise = domainWarping.generateDomainNoise(chunk.offset.x + x, chunk.offset.z + z, noiseSettings);
 
         int endPosition = height;
         if (chunk.offset.y < 0) {
-            endPosition = (int) (chunk.offset.y + chunk.height);
+            endPosition = chunk.offset.y + chunk.height;
         }
 
         if (stoneNoise > stoneThreshold) {
-            for (int i = (int) chunk.offset.y; i <= endPosition; i++) {
+            for (int i = chunk.offset.y; i <= endPosition; i++) {
                 GridPoint3 pos = new GridPoint3(x, i, z);
                 try {
                     chunk.set(pos, Blocks.STONE);
@@ -43,7 +42,6 @@ public class StonePatchTerrainLayer extends TerrainLayer {
                     throw new RuntimeException("Execution error at " + pos, e);
                 }
             }
-            Debugger.layersHandled.add(this);
             return true;
         }
         return false;

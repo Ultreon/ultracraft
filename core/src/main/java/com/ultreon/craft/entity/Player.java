@@ -26,6 +26,9 @@ public class Player extends LivingEntity {
     private boolean flying;
     private boolean crouching;
     private boolean spectating;
+    // TODO: @DEBUG START
+    public final boolean topView = false;
+    // TODO: @DEBUG END
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -44,6 +47,11 @@ public class Player extends LivingEntity {
     public void tick() {
         this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE);
 
+        if (this.topView) {
+            this.noGravity = true;
+            this.flying = true;
+            this.spectating = true;
+        }
         super.tick();
 
         setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT));
@@ -58,44 +66,58 @@ public class Player extends LivingEntity {
         if (isCrouching()) speed *= crouchModifier;
         else if (isRunning()) speed *= runModifier;
 
-        Vector3 tmp = new Vector3();
-        Vector3 vel = getVelocity();
-        vel.y = velocityY;
+        if (!this.topView) {
+            Vector3 tmp = new Vector3();
+            Vector3 vel = getVelocity();
 
-        input.tick();
+            input.tick();
 
-        if (input.forward) {
-            tmp.set(getLookVector());
-            tmp.y = 0;
-            tmp.nor().scl(speed);
-            vel.add(tmp);
-        }
-        if (input.backward) {
-            tmp.set(getLookVector());
-            tmp.y = 0;
-            tmp.nor().scl(-speed);
-            vel.add(tmp);
-        }
-        if (input.strafeLeft) {
-            tmp.set(getLookVector()).crs(0,1, 0).nor().scl(-speed);
-            vel.add(tmp);
-        }
-        if (input.strafeRight) {
-            tmp.set(getLookVector()).crs(0,1, 0).nor().scl(speed);
-            vel.add(tmp);
-        }
-        if (flying) {
-            if (input.up) {
+            if (input.forward) {
+                tmp.set(getLookVector());
+                tmp.y = 0;
+                tmp.nor().scl(speed);
+                vel.add(tmp);
+            }
+            if (input.backward) {
+                tmp.set(getLookVector());
+                tmp.y = 0;
+                tmp.nor().scl(-speed);
+                vel.add(tmp);
+            }
+            if (input.strafeLeft) {
+                tmp.set(getLookVector()).crs(0, 1, 0).nor().scl(-speed);
+                vel.add(tmp);
+            }
+            if (input.strafeRight) {
+                tmp.set(getLookVector()).crs(0, 1, 0).nor().scl(speed);
+                vel.add(tmp);
+            }
+            if (isInWater() && input.up) {
                 tmp.set(0, 1, 0).nor().scl(speed);
                 vel.add(tmp);
             }
-            if (input.down) {
-                tmp.set(0, 1, 0).nor().scl(-speed);
-                vel.add(tmp);
+            if (flying) {
+                if (input.up) {
+                    tmp.set(0, 1, 0).nor().scl(speed);
+                    vel.add(tmp);
+                }
+                if (input.down) {
+                    tmp.set(0, 1, 0).nor().scl(-speed);
+                    vel.add(tmp);
+                }
             }
-        }
 
-        this.setVelocity(vel);
+            this.setVelocity(vel);
+        } else {
+            this.x = this.z = 0;
+            this.y = 120;
+            this.xRot = 45;
+            this.yRot =  -45;
+        }
+    }
+
+    private boolean isInWater() {
+        return world.get(blockPosition()) == Blocks.WATER;
     }
 
     public ChunkPos getChunkPos() {

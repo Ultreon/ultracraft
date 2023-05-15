@@ -36,7 +36,7 @@ public class Chunk {
 	private Block[] blocks;
 	public final int size;
 	public final int height;
-	public final Vector3 offset = new Vector3();
+	public final GridPoint3 offset = new GridPoint3();
 	private final int sizeTimesHeight;
 	private final int topOffset;
 	private final int bottomOffset;
@@ -46,12 +46,17 @@ public class Chunk {
 	private final int backOffset;
 	public TreeData treeData;
 	protected Mesh mesh;
+	protected Mesh transparentMesh;
 	protected Material material;
+	protected Material transparentMaterial;
 	protected boolean dirty;
 
 	protected int numVertices;
+	protected int numTransparentVertices;
+	private final World world;
 
-	public Chunk(int size, int height, ChunkPos pos) {
+	public Chunk(World world, int size, int height, ChunkPos pos) {
+		this.world = world;
 		this.pos = pos;
 		this.blocks = new Block[size * height * size];
 		this.size = size;
@@ -103,6 +108,13 @@ public class Chunk {
 		blocks[x + z * size + y * sizeTimesHeight] = block;
 	}
 
+	private GridPoint3 reverse(int index) {
+		int y = index / sizeTimesHeight;
+		int z = (index - y * sizeTimesHeight) / size;
+		int x = index - y * sizeTimesHeight - z * size;
+		return new GridPoint3(x, y, z);
+	}
+
 	/** Creates a mesh out of the chunk, returning the number of indices produced
 	 * @return the number of vertices produced */
 	public int calculateVertices(float[] vertices) {
@@ -111,55 +123,110 @@ public class Chunk {
 		for (int y = 0; y < height; y++) {
 			for (int z = 0; z < size; z++) {
 				for (int x = 0; x < size; x++, i++) {
-					Block block = blocks[i];
-
-//					if (pos.x != 0 && pos.z != 0) System.out.println("block = " + block);
+					Block block = get(x, y, z);
 
 					if (block == null || block == Blocks.AIR) continue;
+					if (block.isTransparent()) continue;
 
 					BakedCubeModel model = block.bakedModel();
-
-//					if (pos.x != 0 && pos.z != 0) System.out.println("model = " + model);
 
 					if (model == null) continue;
 
 					if (y < height - 1) {
-						if (blocks[i + topOffset] == null || blocks[i + topOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
-						if (blocks[i + bottomOffset] == null || blocks[i + bottomOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
-						if (blocks[i + leftOffset] == null || blocks[i + leftOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < size - 1) {
-						if (blocks[i + rightOffset] == null || blocks[i + rightOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
-						if (blocks[i + frontOffset] == null || blocks[i + frontOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < size - 1) {
-						if (blocks[i + backOffset] == null || blocks[i + backOffset] == Blocks.AIR || blocks[i + topOffset].isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}
 				}
 			}
 		}
-		return vertexOffset / VERTEX_SIZE;
+		return vertexOffset / VERTEX_SIZE + 1;
 	}
 
-	public static int createTop(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	private Block getB(int x, int y, int z) {
+//		return world.get(new GridPoint3(pos.x * size + x, y, pos.z * size + z));
+		return get(new GridPoint3(x, y, z));
+	}
+
+	/** Creates a mesh out of the chunk, returning the number of indices produced
+	 * @return the number of vertices produced */
+	public int calculateTransparentVertices(float[] vertices) {
+		int i = 0;
+		int vertexOffset = 0;
+		for (int y = 0; y < height; y++) {
+			for (int z = 0; z < size; z++) {
+				for (int x = 0; x < size; x++, i++) {
+					Block block = blocks[i];
+
+					if (block == null || block == Blocks.AIR) continue;
+					if (!block.isTransparent()) continue;
+
+					BakedCubeModel model = block.bakedModel();
+
+					if (model == null) continue;
+
+					if (y < height - 1) {
+						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+					}
+					if (y > 0) {
+						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+					}
+					if (x > 0) {
+						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+					}
+					if (x < size - 1) {
+						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+					}
+					if (z > 0) {
+						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+					}
+					if (z < size - 1) {
+						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+					} else {
+//						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+					}
+				}
+			}
+		}
+		return vertexOffset / VERTEX_SIZE + 1;
+	}
+
+	public static int createTop(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y + 1;
 		vertices[vertexOffset++] = offset.z + z;
@@ -198,7 +265,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createBottom(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public static int createBottom(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -237,7 +304,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createLeft(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public static int createLeft(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -276,7 +343,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createRight(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public static int createRight(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x + 1;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -315,7 +382,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createFront(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public static int createFront(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -354,7 +421,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createBack(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public static int createBack(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z + 1;
@@ -394,11 +461,12 @@ public class Chunk {
 	}
 
 	public void dispose() {
-		final Mesh mesh = this.mesh;
-		UltreonCraft.get().runLater(mesh::dispose);
+		UltreonCraft.get().runLater(this.mesh::dispose);
+		UltreonCraft.get().runLater(this.transparentMesh::dispose);
 		this.material = null;
 		this.blocks = null;
 		this.mesh = null;
+		this.transparentMesh = null;
 	}
 
 	@Override

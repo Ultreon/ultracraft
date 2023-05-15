@@ -56,9 +56,9 @@ public class World implements RenderableProvider {
 	private boolean doRender = false;
 
 	private final BiomeGenerator biome = BiomeGenerator.builder()
-			.noise(NoiseSettingsInit.DOMAIN_X)
+			.noise(NoiseSettingsInit.DEFAULT)
 			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y))
-//			.layer(new WaterTerrainLayer(16))
+			.layer(new WaterTerrainLayer(64))
 			.layer(new AirTerrainLayer())
 			.layer(new SurfaceTerrainLayer())
 			.layer(new StoneTerrainLayer())
@@ -66,8 +66,7 @@ public class World implements RenderableProvider {
 			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
 			.build();
 	private final long seed = 512;
-	public int renderedChunks;
-	public int numChunks;
+	private int renderedChunks;
 
 	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
 	private TerrainGenerator terrainGen;
@@ -75,6 +74,7 @@ public class World implements RenderableProvider {
 	private int playTime;
 	private int curId;
 	private final UltreonCraft game = UltreonCraft.get();
+	private int totalChunks;
 
 	public World(Texture texture, int chunksX, int chunksZ) {
 		this.texture = texture;
@@ -164,6 +164,8 @@ public class World implements RenderableProvider {
 		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
 		worldGenInfo.toRemove.forEach(this::unloadChunk);
 		worldGenInfo.toCreate.forEach(this::generateChunk);
+		worldGenInfo.toCreate = null;
+		worldGenInfo.toRemove = null;
 	}
 
 	private void unloadChunk(ChunkPos chunkPos) {
@@ -184,11 +186,7 @@ public class World implements RenderableProvider {
 
 	@Deprecated
 	public void generateWorld() {
-
-
 		doRender = true;
-
-		Debugger.dumpLayerInfo();
 	}
 
 	protected void generateChunk(ChunkPos pos) {
@@ -197,13 +195,15 @@ public class World implements RenderableProvider {
 
 	protected void generateChunk(int x, int z) {
 		ChunkPos chunkPos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
+		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
 		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 		chunk.dirty = false;
 		chunk.numVertices = 0;
 		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
-		chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
@@ -215,6 +215,9 @@ public class World implements RenderableProvider {
 			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 			chunk.mesh.setIndices(indices);
+			chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+			chunk.transparentMesh.setIndices(indices);
 			chunk.ready = true;
 			chunk.dirty = true;
 			putChunk(chunkPos, chunk);
@@ -248,7 +251,7 @@ public class World implements RenderableProvider {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				Chunk newChunk = terrainGen.generateChunkData(chunk, seed);
 			}
 			return map;
@@ -342,28 +345,43 @@ public class World implements RenderableProvider {
 		if (!doRender) return;
 
 		renderedChunks = 0;
+		totalChunks = chunks.size();
 		for (Chunk chunk : chunks.values()) {
 			synchronized (chunk.lock) {
 				if (!chunk.ready) continue;
 
 				Mesh mesh = chunk.mesh;
+				Mesh transparentMesh = chunk.transparentMesh;
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
 					mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
+
+					int numTransparentVertices = chunk.calculateTransparentVertices(this.vertices);
+					chunk.numTransparentVertices = numTransparentVertices / 4 * 6;
+					transparentMesh.setVertices(this.vertices, 0, numTransparentVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
 					continue;
 				}
-				Renderable renderable = pool.obtain();
-				renderable.material = chunk.material;
-				renderable.meshPart.mesh = mesh;
-				renderable.meshPart.offset = 0;
-				renderable.meshPart.size = chunk.numVertices;
-				renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
-				renderables.add(renderable);
-				renderedChunks++;
+				Renderable solidMesh = pool.obtain();
+				Renderable transparentRenderable = pool.obtain();
+
+				solidMesh.material = chunk.material;
+				solidMesh.meshPart.mesh = mesh;
+				solidMesh.meshPart.offset = 0;
+				solidMesh.meshPart.size = chunk.numVertices;
+				solidMesh.meshPart.primitiveType = GL20.GL_TRIANGLES;
+				transparentRenderable.material = chunk.transparentMaterial;
+				transparentRenderable.meshPart.mesh = transparentMesh;
+				transparentRenderable.meshPart.offset = 0;
+				transparentRenderable.meshPart.size = chunk.numTransparentVertices;
+				transparentRenderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+
+				renderables.add(solidMesh);
+				renderables.add(transparentRenderable);
+				renderedChunks = getRenderedChunks() + 1;
 			}
 		}
 	}
@@ -450,5 +468,13 @@ public class World implements RenderableProvider {
 
 	public void updateChunksForPlayer(float spawnX, float spawnZ) {
 		this.updateChunksForPlayer(new Vector3(spawnX, 0, spawnZ));
+	}
+
+	public int getRenderedChunks() {
+		return renderedChunks;
+	}
+
+	public int getTotalChunks() {
+		return totalChunks;
 	}
 }

@@ -15,8 +15,12 @@ public class Hud implements GameRenderable {
     private final UltreonCraft game;
     private final GlyphLayout layout = new GlyphLayout();
 
+    private final Texture texture;
+
+
     public Hud(UltreonCraft game) {
         this.game = game;
+        this.texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
     }
 
     @Override
@@ -24,8 +28,10 @@ public class Hud implements GameRenderable {
         Player player = this.game.player;
         if (player == null) return;
 
-        Texture texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
+        renderHotbar(renderer, player);
+    }
 
+    private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 18;
         Block selectedBlock = player.getSelectedBlock();
         Identifier key = Registries.BLOCK.getKey(selectedBlock);
