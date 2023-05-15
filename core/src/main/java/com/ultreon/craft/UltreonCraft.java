@@ -69,7 +69,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
@@ -113,6 +113,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+	private ScheduledExecutorService gcExecutor;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -137,6 +138,9 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void create() {
 		this.textureManager = new TextureManager();
 		this.spriteBatch = new SpriteBatch();
+
+		gcExecutor = Executors.newScheduledThreadPool(1, r -> new Thread(r, "GC Executor"));
+		gcExecutor.scheduleAtFixedRate(System::gc, 5, 5, TimeUnit.SECONDS);
 
 		createDir("screenshots/");
 
@@ -568,6 +572,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.modelBatch.dispose();
 		this.spriteBatch.dispose();
 		this.font.dispose();
+
+		this.gcExecutor.shutdownNow();
 	}
 
 	public long getWindowHandle() {

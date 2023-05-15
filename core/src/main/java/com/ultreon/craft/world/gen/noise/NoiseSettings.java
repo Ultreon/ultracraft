@@ -97,4 +97,7 @@ public final class NoiseSettings {
                 "exponent=" + exponent + ']';
     }
 
+    public NoiseSettings subSeed(long seed) {
+        return new NoiseSettings(this.noiseZoom, this.octaves, this.offset, this.seed ^ seed, persistence, redistributionModifier, exponent);
+    }
 }

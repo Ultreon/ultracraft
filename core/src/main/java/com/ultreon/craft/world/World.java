@@ -20,7 +20,6 @@ import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -31,6 +30,7 @@ import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.MapType;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
@@ -55,16 +55,6 @@ public class World implements RenderableProvider {
 	private float[] vertices;
 	private boolean doRender = false;
 
-	private final BiomeGenerator biome = BiomeGenerator.builder()
-			.noise(NoiseSettingsInit.DEFAULT)
-			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y))
-			.layer(new WaterTerrainLayer(64))
-			.layer(new AirTerrainLayer())
-			.layer(new SurfaceTerrainLayer())
-			.layer(new StoneTerrainLayer())
-			.layer(new UndergroundTerrainLayer())
-			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
-			.build();
 	private final long seed = 512;
 	private int renderedChunks;
 
@@ -78,6 +68,50 @@ public class World implements RenderableProvider {
 
 	public World(Texture texture, int chunksX, int chunksZ) {
 		this.texture = texture;
+
+		DomainWarping domainWarping = new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y);
+		NoiseSettings terrainNoise = NoiseSettingsInit.TERRAIN;
+		this.terrainGen = TerrainGenerator.builder(domainWarping, terrainNoise.subSeed(seed))
+				.biome(0.0F, 0.2F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_DEEP_SEA.subSeed(seed))
+						.domainWarping(domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.DIRT))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.5F, NoiseSettingsInit.STONE_PATCH, domainWarping))
+						.build())
+				.biome(0.2F, 0.5F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_SEA.subSeed(seed))
+						.domainWarping(domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.DIRT))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.6F, NoiseSettingsInit.STONE_PATCH, domainWarping))
+						.build())
+				.biome(0.5F, 0.8F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_PLAINS.subSeed(seed))
+						.domainWarping(domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.7F, NoiseSettingsInit.STONE_PATCH, domainWarping))
+						.build())
+				.biome(0.8F, 1.0F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_DESERT.subSeed(seed))
+						.domainWarping(domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.SAND))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.build())
+				.build();
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 
@@ -161,6 +195,8 @@ public class World implements RenderableProvider {
 	}
 
 	private void updateChunksForPlayer(Vector3 player) {
+		terrainGen.generateBiomePoints(player, getRenderDistance(), CHUNK_SIZE);
+
 		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
 		worldGenInfo.toRemove.forEach(this::unloadChunk);
 		worldGenInfo.toCreate.forEach(this::generateChunk);
@@ -205,22 +241,19 @@ public class World implements RenderableProvider {
 		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
-		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-			for (int by = 0; by < CHUNK_SIZE; by++) {
-				biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
-			}
-		}
+		chunk = terrainGen.generateChunkData(chunk, seed);
 
+		final Chunk finalChunk = chunk;
 		game.runLater(() -> {
-			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+			finalChunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.mesh.setIndices(indices);
-			chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+			finalChunk.mesh.setIndices(indices);
+			finalChunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.transparentMesh.setIndices(indices);
-			chunk.ready = true;
-			chunk.dirty = true;
-			putChunk(chunkPos, chunk);
+			finalChunk.transparentMesh.setIndices(indices);
+			finalChunk.ready = true;
+			finalChunk.dirty = true;
+			putChunk(chunkPos, finalChunk);
 		});
 	}
 
