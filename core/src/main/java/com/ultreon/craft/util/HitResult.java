@@ -7,16 +7,16 @@ import com.ultreon.craft.block.Block;
 
 public class HitResult {
     // input
-    public Ray ray;
-    public float distanceMax = 5.0F;
+    protected Ray ray;
+    protected float distanceMax = 5.0F;
     // output
-    public Vector3 position = new Vector3();
-    public Vector3 normal = new Vector3();
-    public GridPoint3 pos = new GridPoint3();
-    public GridPoint3 next = new GridPoint3();
-    public Block block;
-    public boolean collide;
-    public float distance;
+    protected Vector3 position = new Vector3();
+    protected Vector3 normal = new Vector3();
+    protected GridPoint3 pos = new GridPoint3();
+    protected GridPoint3 next = new GridPoint3();
+    protected Block block;
+    protected boolean collide;
+    protected float distance;
 
     public HitResult() {
 
@@ -26,8 +26,48 @@ public class HitResult {
         this.ray = ray;
     }
 
+    public HitResult(Ray ray, float distanceMax) {
+        this.ray = ray;
+    }
+
     public HitResult setInput(Ray ray){
         this.ray = ray;
         return this;
+    }
+
+    public Ray getRay() {
+        return ray;
+    }
+
+    public float getDistanceMax() {
+        return distanceMax;
+    }
+
+    public Vector3 getPosition() {
+        return position;
+    }
+
+    public Vector3 getNormal() {
+        return normal;
+    }
+
+    public GridPoint3 getPos() {
+        return pos;
+    }
+
+    public GridPoint3 getNext() {
+        return next;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public boolean isCollide() {
+        return collide;
+    }
+
+    public float getDistance() {
+        return distance;
     }
 }

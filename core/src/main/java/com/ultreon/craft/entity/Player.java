@@ -5,10 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
-import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
@@ -16,7 +16,7 @@ import com.ultreon.craft.world.World;
 
 public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
-    public static final Block[] ALLOWED = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
+    public static final Item[] ALLOWED = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.WATER};
     public int selected;
     private boolean running;
     private float walkingSpeed = .05F;
@@ -35,8 +35,8 @@ public class Player extends LivingEntity {
         selected = i % 9;
     }
 
-    public Block getSelectedBlock() {
-        return this.selected >= ALLOWED.length ? Blocks.AIR : ALLOWED[this.selected];
+    public Item getSelectedItem() {
+        return this.selected >= ALLOWED.length ? Items.AIR : ALLOWED[this.selected];
 
     }
 

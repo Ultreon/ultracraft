@@ -7,6 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.item.BlockItem;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v0.Language;
@@ -27,23 +30,26 @@ public class Hud implements GameRenderable {
         Texture texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
 
         int x = player.selected * 18;
-        Block selectedBlock = player.getSelectedBlock();
-        Identifier key = Registries.BLOCK.getKey(selectedBlock);
+        Item selectedItem = player.getSelectedItem();
+        Identifier key = Registries.ITEMS.getKey(selectedItem);
 
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81, 0, 162, 39, 0, 42);
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81 + x, 0, 18, 22, 0, 81);
 
-        Block[] allowed = Player.ALLOWED;
+        Item[] allowed = Player.ALLOWED;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
-            Block block = allowed[i];
+            Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
-            UV front = block.getModel().front();
-            UV top = block.getModel().top();
-            Texture blocks = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/blocks.png"));
-            renderer.setTextureColor(Color.white.darker());
-            renderer.texture(blocks, ix, 5, 16, 6, front.u() * 16, front.v() * 16);
-            renderer.setTextureColor(Color.white);
-            renderer.texture(blocks, ix, 11, 16, 16, top.u() * 16, top.v() * 16);
+            if (item instanceof BlockItem blockItem) {
+                Block block = blockItem.getBlock();
+                UV front = block.getModel().front();
+                UV top = block.getModel().top();
+                Texture blocks = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/blocks.png"));
+                renderer.setTextureColor(Color.white.darker());
+                renderer.texture(blocks, ix, 5, 16, 6, front.u() * 16, front.v() * 16);
+                renderer.setTextureColor(Color.white);
+                renderer.texture(blocks, ix, 11, 16, 16, top.u() * 16, top.v() * 16);
+            }
         }
 
         float healthRatio = player.getHealth() / player.getMaxHeath();
@@ -52,9 +58,9 @@ public class Hud implements GameRenderable {
         else renderer.setColor(Color.rgb(0xd00000));
 
         renderer.text((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37);
-        if (key != null && !selectedBlock.isAir()) {
+        if (key != null && selectedItem != Items.AIR) {
             ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
-            String name = Language.translate(key.location() + "/block/" + key.path() + "/name");
+            String name = Language.translate(key.location() + "/item/" + key.path() + "/name");
             renderer.setColor(Color.rgb(0xffffff));
             this.layout.setText(this.game.font, name);
             renderer.setColor(Color.rgb(0xffffff).darker().darker());

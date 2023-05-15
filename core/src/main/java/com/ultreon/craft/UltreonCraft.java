@@ -34,6 +34,7 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.options.GameSettings;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
@@ -196,6 +197,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		Registries.nopInit();
 
 		Blocks.nopInit();
+		Items.nopInit();
 		NoiseSettingsInit.nopInit();
 		Entities.nopInit();
 		Fonts.nopInit();

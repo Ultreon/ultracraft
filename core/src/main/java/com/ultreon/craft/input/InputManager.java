@@ -13,6 +13,8 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
@@ -164,15 +166,17 @@ public class InputManager extends InputAdapter {
                 Player player = this.game.player;
                 if (player != null) {
                     HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    GridPoint3 pos = hitResult.pos;
+                    GridPoint3 pos = hitResult.getPos();
                     Block block = world.get(pos);
-                    GridPoint3 posNext = hitResult.next;
+                    GridPoint3 posNext = hitResult.getNext();
                     Block blockNext = world.get(posNext);
-                    if (hitResult.collide && block != null && !block.isAir()) {
+                    if (hitResult.isCollide() && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
                             world.set(pos, Blocks.AIR);
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
-                            world.set(posNext, this.game.player.getSelectedBlock());
+                            UseItemContext context = new UseItemContext(world, player, hitResult);
+                            Item item = player.getSelectedItem();
+                            item.use(context);
                         }
                     }
                 }
