@@ -252,7 +252,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void pause() {
 		super.pause();
 
-		if (this.currentScreen != null && this.world != null) {
+		if (this.currentScreen == null && this.world != null) {
 			showScreen(new PauseScreen());
 		}
 	}
