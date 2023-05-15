@@ -14,7 +14,8 @@ public final class Blocks extends UtilityClass {
     public static final Block DIRT = register("dirt", new Block(2, new CubeModel(UV.blockUV(2, 0))));
     public static final Block SAND = register("sand", new Block(3, new CubeModel(UV.blockUV(4, 0))));
     public static final Block STONE = register("stone", new Block(4, new CubeModel(UV.blockUV(1, 0))));
-    public static final Block WATER = register("water", new Block(5, true, new CubeModel(UV.blockUV(0, 1))));
+    public static final Block COBBLESTONE = register("cobblestone", new Block(5, new CubeModel(UV.blockUV(5, 0))));
+    public static final Block WATER = register("water", new Block(6, true, new CubeModel(UV.blockUV(0, 1))));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new Identifier(name), block);

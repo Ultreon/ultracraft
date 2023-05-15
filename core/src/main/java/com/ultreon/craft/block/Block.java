@@ -2,9 +2,13 @@ package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.translations.v0.Language;
+import org.jetbrains.annotations.NotNull;
 
 public class Block {
     private final int id;
@@ -53,5 +57,15 @@ public class Block {
 
     public boolean isTransparent() {
         return transparent;
+    }
+
+    public String getTranslation() {
+        return Language.translate(getTranslationId());
+    }
+
+    @NotNull
+    public String getTranslationId() {
+        Identifier key = Registries.BLOCK.getKey(this);
+        return key == null ? "craft/block/air/name" : key.location() + "/block/" + key.path() + "/name";
     }
 }

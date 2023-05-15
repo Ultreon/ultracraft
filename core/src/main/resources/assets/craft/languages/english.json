@@ -5,16 +5,12 @@
       "grass_block": { "name": "Grass" },
       "dirt":  { "name": "Dirt"  },
       "stone": { "name": "Stone" },
+      "cobblestone": { "name": "Cobblestone" },
       "water": { "name": "Water" },
       "air": { "name": "Air" }
     },
     "item": {
-      "sand":  { "name": "Sand"  },
-      "grass_block": { "name": "Grass" },
-      "dirt":  { "name": "Dirt"  },
-      "stone": { "name": "Stone" },
-      "water": { "name": "Water" },
-      "air": { "name": "Air" }
+
     },
     "screen": {
       "world_load": {

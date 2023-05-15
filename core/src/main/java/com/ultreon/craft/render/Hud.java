@@ -60,7 +60,7 @@ public class Hud implements GameRenderable {
         renderer.text((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37);
         if (key != null && selectedItem != Items.AIR) {
             ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
-            String name = Language.translate(key.location() + "/item/" + key.path() + "/name");
+            String name = selectedItem.getTranslation();
             renderer.setColor(Color.rgb(0xffffff));
             this.layout.setText(this.game.font, name);
             renderer.setColor(Color.rgb(0xffffff).darker().darker());
