@@ -156,7 +156,7 @@ public class Chunk {
 				}
 			}
 		}
-		return vertexOffset / VERTEX_SIZE;
+		return vertexOffset / VERTEX_SIZE + 1;
 	}
 
 	public static int createTop(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {

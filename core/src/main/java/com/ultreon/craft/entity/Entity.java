@@ -144,7 +144,7 @@ public class Entity {
 
     }
 
-    private BoundingBox getBoundingBox() {
+    public BoundingBox getBoundingBox() {
         return getBoundingBox(getSize());
     }
 
@@ -229,7 +229,7 @@ public class Entity {
     public Vector3 getLookVector() {
         // Calculate the direction vector
         Vector3 direction = new Vector3();
-        var yRot = Mth.clamp(this.yRot, -89.9F, 90);
+        var yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
         direction.x = MathUtils.cosDeg(yRot) * MathUtils.sinDeg(this.xRot);
         direction.z = MathUtils.cosDeg(yRot) * MathUtils.cosDeg(this.xRot);
         direction.y = MathUtils.sinDeg(yRot);
