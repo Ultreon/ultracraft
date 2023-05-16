@@ -45,7 +45,7 @@ public class Player extends LivingEntity {
 
     @Override
     public void tick() {
-        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
 
         if (this.topView) {
             this.noGravity = true;
@@ -54,7 +54,7 @@ public class Player extends LivingEntity {
         }
         super.tick();
 
-        setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT));
+        setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched());
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) flying = noGravity = !flying;
         if (!flying) crouching = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
