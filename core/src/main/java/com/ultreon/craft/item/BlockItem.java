@@ -24,7 +24,9 @@ public class BlockItem extends Item {
 
         World world = useItemContext.world();
         GridPoint3 next = useItemContext.result().getNext();
-        world.set(next, this.block);
+        if (!world.intersectEntities(block.getBoundingBox(next))) {
+            world.set(next, this.block);
+        }
     }
 
     @Override

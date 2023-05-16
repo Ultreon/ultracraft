@@ -451,4 +451,11 @@ public class World implements RenderableProvider {
 	public void updateChunksForPlayer(float spawnX, float spawnZ) {
 		this.updateChunksForPlayer(new Vector3(spawnX, 0, spawnZ));
 	}
+
+	public boolean intersectEntities(BoundingBox boundingBox) {
+		for (var entity : entities.values())
+			if (entity.getBoundingBox().intersects(boundingBox)) return true;
+
+		return false;
+	}
 }
