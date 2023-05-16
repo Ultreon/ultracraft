@@ -4,7 +4,7 @@ package com.ultreon.craft.world.gen.noise;
  * OpenSimplex (Simplectic) Noise in Java.
  * (v1.0.1 With new gradient set and corresponding normalization factor, 9/19/14)
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class OpenSimplexNoise {
 
 	private static final double STRETCH_CONSTANT_3D = -1.0 / 6;

@@ -2,6 +2,7 @@ package com.ultreon.craft.world.gen.noise;
 
 import java.util.Random;
 
+@Deprecated
 public class PerlinNoise {
 	private double seed;
 	private long default_size;
