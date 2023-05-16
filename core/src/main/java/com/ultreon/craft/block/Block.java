@@ -1,6 +1,7 @@
 package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
@@ -53,5 +54,9 @@ public class Block {
 
     public boolean isTransparent() {
         return transparent;
+    }
+
+    public BoundingBox getBoundingBox(GridPoint3 posNext) {
+        return getBoundingBox(posNext.x, posNext.y, posNext.z);
     }
 }

@@ -168,11 +168,13 @@ public class InputManager extends InputAdapter {
                     Block block = world.get(pos);
                     GridPoint3 posNext = hitResult.next;
                     Block blockNext = world.get(posNext);
+                    Block selectedBlock = this.game.player.getSelectedBlock();
                     if (hitResult.collide && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
                             world.set(pos, Blocks.AIR);
-                        } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
-                            world.set(posNext, this.game.player.getSelectedBlock());
+                        } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()
+                                && !selectedBlock.getBoundingBox(posNext).intersects(this.game.player.getBoundingBox())) {
+                            world.set(posNext, selectedBlock);
                         }
                     }
                 }
