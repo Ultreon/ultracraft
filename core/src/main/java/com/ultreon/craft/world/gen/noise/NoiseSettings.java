@@ -34,6 +34,10 @@ public final class NoiseSettings {
         this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);
     }
 
+    public NoiseSettings subSeed(long seed) {
+        return new NoiseSettings(this.noiseZoom, this.octaves, this.offset, this.seed ^ seed, persistence, redistributionModifier, exponent);
+    }
+
     public SimplexNoise getNoise() {
         return this.noise;
     }
@@ -95,9 +99,5 @@ public final class NoiseSettings {
                 "persistence=" + persistence + ", " +
                 "redistributionModifier=" + redistributionModifier + ", " +
                 "exponent=" + exponent + ']';
-    }
-
-    public NoiseSettings subSeed(long seed) {
-        return new NoiseSettings(this.noiseZoom, this.octaves, this.offset, this.seed ^ seed, persistence, redistributionModifier, exponent);
     }
 }

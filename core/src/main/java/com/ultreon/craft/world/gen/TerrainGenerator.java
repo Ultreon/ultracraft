@@ -33,7 +33,7 @@ public class TerrainGenerator {
     }
 
     public Chunk generateChunkData(Chunk chunk, long seed) {
-        BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.offset, chunk, false);
+        BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.offset.cpy(), chunk, true);
         //TreeData treeData = biomeGenerator.GetTreeData(chunk, seed);
         chunk.treeData = biomeSelection.biomeGenerator.getTreeData(chunk, seed);
 
@@ -98,7 +98,7 @@ public class TerrainGenerator {
 
     public void generateBiomePoints(Vector3 player, int drawRange, int chunkSize) {
         biomeCenters = new ArrayList<>();
-        biomeCenters = BiomeCenterFinder.CalculatedBiomeCenters(player, drawRange, chunkSize);
+        biomeCenters = BiomeCenterFinder.calcBiomeCenters(player, drawRange, chunkSize);
 
         for (GridPoint3 biomeCenter : biomeCenters) {
             GridPoint2 domainWarpingOffset = biomeWarp.generateDomainOffsetInt(biomeCenter.x, biomeCenter.z);

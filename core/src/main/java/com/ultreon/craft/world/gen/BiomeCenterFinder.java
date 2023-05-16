@@ -22,10 +22,10 @@ public class BiomeCenterFinder {
             new GridPoint2(-1, 1)
     );
 
-    public static List<GridPoint3> CalculatedBiomeCenters(Vector3 playerPosition, int drawRange, int chunkSize) {
-        int biomeLength = drawRange * chunkSize;
+    public static List<GridPoint3> calcBiomeCenters(Vector3 playerPosition, int drawRange, int chunkSize) {
+        int biomeLength = chunkSize;
 
-        GridPoint3 origin = new GridPoint3(MathUtils.round(playerPosition.x / biomeLength) * biomeLength, 0, MathUtils.round(playerPosition.y / biomeLength));
+        GridPoint3 origin = new GridPoint3(MathUtils.round(playerPosition.x / biomeLength) * biomeLength, 0, MathUtils.round(playerPosition.z / biomeLength));
         Set<GridPoint3> biomeCentersTemp = new HashSet<>();
 
         biomeCentersTemp.add(origin);

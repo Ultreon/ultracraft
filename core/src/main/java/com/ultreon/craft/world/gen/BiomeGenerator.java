@@ -35,9 +35,9 @@ public class BiomeGenerator {
     }
 
     public Chunk processColumn(Chunk chunk, int x, int z, long seed, @Nullable Integer height) {
-        biomeNoise.setSeed(seed);
-        domainWarping.noiseDomainX.setSeed(seed);
-        domainWarping.noiseDomainY.setSeed(seed);
+//        biomeNoise.setSeed(seed);
+//        domainWarping.noiseDomainX.setSeed(seed);
+//        domainWarping.noiseDomainY.setSeed(seed);
 
         final int chunkAmplitude = 1;
         int groundPos = getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;

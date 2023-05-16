@@ -33,6 +33,8 @@ import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.MapType;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +55,7 @@ public class World implements RenderableProvider {
 	public static final int WORLD_DEPTH = 0;
 	private final Texture texture;
 	private final short[] indices;
-	private float[] vertices;
+	private FloatList vertices;
 	private boolean doRender = false;
 
 	private final long seed = new Random().nextInt(0, (int) (Integer.MAX_VALUE / Math.pow(2, 10)));
@@ -71,8 +73,9 @@ public class World implements RenderableProvider {
 		this.texture = texture;
 
 		DomainWarping domainWarping = new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y);
+		DomainWarping biomeDomain = new DomainWarping(NoiseSettingsInit.BIOME_DOMAIN_X, NoiseSettingsInit.BIOME_DOMAIN_Y);
 		NoiseSettings terrainNoise = NoiseSettingsInit.TERRAIN;
-		this.terrainGen = TerrainGenerator.builder(domainWarping, terrainNoise.subSeed(seed))
+		this.terrainGen = TerrainGenerator.builder(biomeDomain, terrainNoise.subSeed(seed))
 				.biome(0.0F, 0.2F, BiomeGenerator.builder()
 						.noise(NoiseSettingsInit.BIOME_DEEP_SEA.subSeed(seed))
 						.domainWarping(domainWarping)
@@ -114,7 +117,7 @@ public class World implements RenderableProvider {
 						.build())
 				.build();
 
-		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
+		this.vertices = new FloatArrayList();
 
 		int len = World.CHUNK_SIZE * World.CHUNK_HEIGHT * World.CHUNK_SIZE * 6 * 6 / 3;
 
@@ -196,8 +199,6 @@ public class World implements RenderableProvider {
 	}
 
 	private void updateChunksForPlayer(Vector3 player) {
-		terrainGen.generateBiomePoints(player, getRenderDistance(), CHUNK_SIZE);
-
 		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
 		worldGenInfo.toRemove.forEach(this::unloadChunk);
 		worldGenInfo.toCreate.forEach(this::generateChunk);
@@ -231,6 +232,7 @@ public class World implements RenderableProvider {
 	}
 
 	protected void generateChunk(int x, int z) {
+		ChunkBuilder chunkBuilder = new ChunkBuilder(this, new ChunkPos(x, z));
 		ChunkPos chunkPos = new ChunkPos(x, z);
 		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
 		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
@@ -242,13 +244,15 @@ public class World implements RenderableProvider {
 		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
+		terrainGen.generateBiomePoints(new Vector3(chunk.offset.x, chunk.offset.y, chunk.offset.z), getRenderDistance(), CHUNK_SIZE);
+
 		chunk = terrainGen.generateChunkData(chunk, seed);
 
 		final Chunk finalChunk = chunk;
 		game.runLater(() -> {
 			finalChunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			finalChunk.mesh.setIndices(indices);
+			finalChunk.mesh.setIndices(this.indices);
 			finalChunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
 			finalChunk.transparentMesh.setIndices(indices);
@@ -389,11 +393,14 @@ public class World implements RenderableProvider {
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
+					mesh.setVertices(this.vertices.toFloatArray(), 0, numVertices * Chunk.VERTEX_SIZE);
+					this.vertices.clear();
 
 					int numTransparentVertices = chunk.calculateTransparentVertices(this.vertices);
 					chunk.numTransparentVertices = numTransparentVertices / 4 * 6;
-					transparentMesh.setVertices(this.vertices, 0, numTransparentVertices * Chunk.VERTEX_SIZE);
+					transparentMesh.setVertices(this.vertices.toFloatArray(), 0, numTransparentVertices * Chunk.VERTEX_SIZE);
+					this.vertices.clear();
+
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
