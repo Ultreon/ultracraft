@@ -39,11 +39,13 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.SkyBox;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.render.gui.screens.TitleScreen;
 import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -114,6 +116,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+	private SkyBox skyBox;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -136,17 +139,24 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void create() {
-		this.textureManager = new TextureManager();
-		this.spriteBatch = new SpriteBatch();
-
-		createDir("screenshots/");
-
 		this.resourceManager = new ResourceManager("assets");
+
 		try {
 			this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+
+		this.textureManager = new TextureManager();
+		this.spriteBatch = new SpriteBatch();
+
+		this.skyBox = new SkyBox(
+				new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")),
+				new ResourceFileHandle(UltreonCraft.id("misc/skybox_top.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_bottom.png")),
+				new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png"))
+		);
+
+		createDir("screenshots/");
 
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
 		FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
@@ -333,6 +343,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 
 		if (this.renderWorld && world != null) {
+			this.skyBox.render(this.camera);
+
 			this.modelBatch.begin(this.camera);
 			this.modelBatch.render(world, this.env);
 			this.modelBatch.end();
