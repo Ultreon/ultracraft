@@ -275,7 +275,15 @@ public class World implements RenderableProvider {
 		if (chunkAt == null) {
 			return Blocks.AIR;
 		}
-		return chunkAt.get(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE);
+
+		int cx = x % CHUNK_SIZE;
+		int cy = y % CHUNK_HEIGHT;
+		int cz = z % CHUNK_SIZE;
+
+		if (cx < 0) cx += CHUNK_SIZE;
+		if (cz < 0) cz += CHUNK_SIZE;
+
+		return chunkAt.get(cx, cy, cz);
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
@@ -287,8 +295,15 @@ public class World implements RenderableProvider {
 	}
 
 	public Chunk getChunkAt(GridPoint3 pos) {
-		ChunkPos chunkPos = new ChunkPos(Math.floorDiv(pos.x, CHUNK_SIZE), Math.floorDiv(pos.z, CHUNK_SIZE));
-		return getChunk(chunkPos);
+		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
+		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
+
+//		System.out.println("chunkX = " + chunkX);
+//		System.out.println("chunkZ = " + chunkZ);
+		ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
+		Chunk chunk = getChunk(chunkPos);
+//		System.out.println("chunk = " + chunk);
+		return chunk;
 	}
 
 	public int getHighest(int x, int z) {
@@ -428,6 +443,9 @@ public class World implements RenderableProvider {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
+					if (block == Blocks.AIR && (x < 0 || z < 0)) {
+						System.out.println("AIR WHAT");
+					}
 					if (block != null && block.isSolid()) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
 						if (blockBox != null && blockBox.intersects(box)) {
