@@ -443,9 +443,6 @@ public class World implements RenderableProvider {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
-					if (block == Blocks.AIR && (x < 0 || z < 0)) {
-						System.out.println("AIR WHAT");
-					}
 					if (block != null && block.isSolid()) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
 						if (blockBox != null && blockBox.intersects(box)) {
