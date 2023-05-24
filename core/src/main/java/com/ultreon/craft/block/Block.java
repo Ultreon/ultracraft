@@ -8,18 +8,21 @@ import com.ultreon.craft.render.model.CubeModel;
 import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Block {
+    private static int globalId;
     private final int id;
     private final boolean transparent;
+    private final boolean solid;
     private final CubeModel model;
     private BakedCubeModel bakedModel;
 
-    public Block(int id,  CubeModel model) {
-        this(id, false, model);
+    public Block(CubeModel model) {
+        this(model, new Properties());
     }
 
-    public Block(int id, boolean transparent, CubeModel model) {
-        this.id = id;
-        this.transparent = transparent;
+    public Block(CubeModel model, Properties properties) {
+        this.id = globalId++;
+        this.transparent = properties.transparent;
+        this.solid = properties.solid;
         this.model = model;
     }
 
@@ -31,6 +34,7 @@ public class Block {
         return bakedModel;
     }
 
+    @Deprecated
     public byte id() {
         return (byte) id;
     }
@@ -58,5 +62,20 @@ public class Block {
 
     public BoundingBox getBoundingBox(GridPoint3 posNext) {
         return getBoundingBox(posNext.x, posNext.y, posNext.z);
+    }
+
+    public static class Properties {
+        private boolean transparent = false;
+        private boolean solid = true;
+
+        public Properties transparent() {
+            this.transparent = true;
+            return this;
+        }
+
+        public Properties noCollision() {
+            this.solid = false;
+            return this;
+        }
     }
 }
