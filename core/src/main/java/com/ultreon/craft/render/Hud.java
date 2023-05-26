@@ -12,7 +12,6 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v0.Language;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -49,6 +48,18 @@ public class Hud implements GameRenderable {
                 renderer.texture(blocks, ix, 5, 16, 6, front.u() * 16, front.v() * 16);
                 renderer.setTextureColor(Color.white);
                 renderer.texture(blocks, ix, 11, 16, 16, top.u() * 16, top.v() * 16);
+            } else {
+                UV uv = item.getTextureUV();
+
+                renderItem:
+                {
+                    if (uv == null) break renderItem;
+                    Texture items = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/items.png"));
+                    renderer.setTextureColor(Color.white.darker());
+                    renderer.texture(items, ix, 5, 16, 16, uv.u() * 16, uv.v() * 16);
+                    renderer.setTextureColor(Color.white);
+                    renderer.texture(items, ix, 6, 16, 16, uv.u() * 16, uv.v() * 16);
+                }
             }
         }
 

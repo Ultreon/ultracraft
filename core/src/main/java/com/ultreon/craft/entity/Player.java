@@ -16,7 +16,7 @@ import com.ultreon.craft.world.World;
 
 public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
-    public static final Item[] ALLOWED = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER};
+    public static final Item[] ALLOWED = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE};
     public int selected;
     private boolean running;
     private float walkingSpeed = .05F;
