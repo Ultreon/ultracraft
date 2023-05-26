@@ -14,7 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 public class Entity {
     private final EntityType<? extends Entity> type;
-    private final World world;
+    protected final World world;
     protected float x;
     protected float y;
     protected float z;
@@ -218,7 +218,7 @@ public class Entity {
         this.z = z;
     }
 
-    public GridPoint3 getGridPoint3() {
+    public GridPoint3 blockPosition() {
         return new GridPoint3((int) this.x, (int) this.y, (int) this.z);
     }
 

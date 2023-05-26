@@ -11,7 +11,7 @@ public class TreeGenerator {
 
     public TreeData generateTreeData(Chunk chunkData, long seed)
     {
-        treeNoiseSettings.seed = seed;
+        treeNoiseSettings.setSeed(seed);
         TreeData treeData = new TreeData();
         float[][] noiseData = generateTreeNoise(chunkData, treeNoiseSettings);
         treeData.treePositions = DataProcessing.findLocalMaxima(noiseData, (int)chunkData.offset.x, (int)chunkData.offset.z);
