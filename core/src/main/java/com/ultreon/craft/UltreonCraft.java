@@ -68,7 +68,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -351,11 +350,11 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
 		if (world != null) {
 			this.font.setColor(Color.rgb(0xffffff).toGdx());
-			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.renderedChunks + "/"
-					+ world.numChunks, 20, 20);
+			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
+					+ world.getTotalChunks(), 20, 20);
 			if (this.player != null) {
-				this.font.draw(this.spriteBatch, "xyz: " + this.player.getGridPoint3(), 20, 30);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.getGridPoint3()) != null), 20, 40);
+				this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, 30);
+				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, 40);
 			}
 			this.hud.render(renderer, deltaTime);
 		}

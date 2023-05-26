@@ -12,18 +12,21 @@ import com.ultreon.libs.translations.v0.Language;
 import org.jetbrains.annotations.NotNull;
 
 public class Block {
+    private static int globalId;
     private final int id;
     private final boolean transparent;
+    private final boolean solid;
     private final CubeModel model;
     private BakedCubeModel bakedModel;
 
-    public Block(int id,  CubeModel model) {
-        this(id, false, model);
+    public Block(CubeModel model) {
+        this(model, new Properties());
     }
 
-    public Block(int id, boolean transparent, CubeModel model) {
-        this.id = id;
-        this.transparent = transparent;
+    public Block(CubeModel model, Properties properties) {
+        this.id = globalId++;
+        this.transparent = properties.transparent;
+        this.solid = properties.solid;
         this.model = model;
     }
 
@@ -35,6 +38,7 @@ public class Block {
         return bakedModel;
     }
 
+    @Deprecated
     public byte id() {
         return (byte) id;
     }
@@ -72,5 +76,20 @@ public class Block {
     public String getTranslationId() {
         Identifier key = Registries.BLOCK.getKey(this);
         return key == null ? "craft/block/air/name" : key.location() + "/block/" + key.path() + "/name";
+    }
+
+    public static class Properties {
+        private boolean transparent = false;
+        private boolean solid = true;
+
+        public Properties transparent() {
+            this.transparent = true;
+            return this;
+        }
+
+        public Properties noCollision() {
+            this.solid = false;
+            return this;
+        }
     }
 }

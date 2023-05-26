@@ -1,5 +1,6 @@
 package com.ultreon.craft.world.gen.noise;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.util.Mth;
 
@@ -13,17 +14,17 @@ public class DomainWarping {
     }
 
     public float generateDomainNoise(int x, int z, NoiseSettings defaultNoiseSettings) {
-        Vector2 domainOffset = GenerateDomainOffset(x, z);
-        return MyNoise.octavePerlin(x, z, noiseDomainX);
+        Vector2 domainOffset = generateDomainOffset(x, z);
+        return MyNoise.octavePerlin(x + domainOffset.x, z + domainOffset.y, noiseDomainX);
     }
 
-    public Vector2 GenerateDomainOffset(int x, int z) {
+    public Vector2 generateDomainOffset(int x, int z) {
         var noiseX = MyNoise.octavePerlin(x, z, noiseDomainX) * amplitudeX;
         var noiseY = MyNoise.octavePerlin(x, z, noiseDomainY) * amplitudeY;
         return new Vector2(noiseX, noiseY);
     }
 
-    public Vector2 GenerateDomainOffsetInt(int x, int z) {
-        return Mth.round(GenerateDomainOffset(x, z));
+    public GridPoint2 generateDomainOffsetInt(int x, int z) {
+        return Mth.round(generateDomainOffset(x, z));
     }
 }
