@@ -28,67 +28,22 @@ public class MyNoise {
         x += settings.noiseZoom();
         z += settings.noiseZoom();
 
-        float total = 0;
-        float frequency = 1f;
-        float amplitude = 1f;
-        float amplitudeSum = 0;  // Used for normalizing result to 0.0 - 1.0 range
-        if (Flags.enableWorldGenLogging) {
-            System.out.println(">>------- START -------<<");
-        }
+        float total = 0.0F;
+        float frequency = 1.0F;
+        float amplitude = 1.0F;
+        float amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
+
+        long seed = settings.seed;
         for (int i = 0; i < settings.octaves(); i++) {
-            long seed = settings.seed;
-//            if (Flags.enableWorldGenLogging) {
-//                System.out.println("seed = " + seed);
-//            }
-            float x2 = settings.offset().x;
-            float z2 = settings.offset().y;
-//            if (Flags.enableWorldGenLogging) {
-//                System.out.println("x2 = " + x2 + ", z2 = " + z2);
-//                System.out.println("x  = " + x + ", z  = " + z);
-//            }
-            float x1 = (x2 + seed + x) * frequency;
-            float z1 = (z2 + seed + z) * frequency;
-//            if (Flags.enableWorldGenLogging) {
-//                System.out.println("x1 = " + x1 + ", z1 = " + z1);
-//            }
-            double evaluated = new OpenSimplexNoise(seed).eval(x1, z1, 1) * amplitude;
-//            if (Flags.enableWorldGenLogging) {
-//                System.out.println("amplitude = " + amplitude);
-//                System.out.println("i = " + i + ", evaluated = " + evaluated);
-//            }
-            Debugger.evaluatedMax = Math.max(evaluated, Debugger.evaluatedMax);
-            total += evaluated;
-            if (Flags.enableWorldGenLogging) {
-                System.out.println("total = " + total);
-            }
+            total += settings.getNoise().eval((settings.offset().x + seed + x) * frequency, (settings.offset().y + seed + z) * frequency) * amplitude;
 
             amplitudeSum += amplitude;
-            if (Flags.enableWorldGenLogging) {
-                System.out.println("amplitudeSum = " + amplitudeSum);
-            }
 
             amplitude *= settings.persistence();
-            if (Flags.enableWorldGenLogging) {
-                System.out.println("amplitude = " + amplitude);
-            }
             frequency *= 2;
-
-            if (Flags.enableWorldGenLogging) {
-                System.out.println("frequency = " + frequency);
-            }
         }
-        float octave = total / amplitudeSum;
-        if (Flags.enableWorldGenLogging) {
-            System.out.println("octave = " + octave);
-        }
-        if (Flags.enableWorldGenLogging) {
-            System.out.println(">>-------- END --------<<");
-        }
-        Debugger.octaveMax = Math.max(octave, Debugger.octaveMax);
 
-//        new RuntimeException("" + octave).printStackTrace();
-
-        return octave;
+        return (total / amplitudeSum + 1) / 2;
     }
 
     private static class Flags {
