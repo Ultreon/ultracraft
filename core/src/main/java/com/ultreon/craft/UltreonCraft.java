@@ -40,12 +40,14 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.Shaders;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.render.gui.screens.TitleScreen;
 import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.util.ImGuiEx;
+import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -68,7 +70,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -149,6 +150,14 @@ public class UltreonCraft extends ApplicationAdapter {
 			throw new RuntimeException(e);
 		}
 
+		final int breakStages = 6;
+		Texture texture = this.textureManager.getTexture(new Identifier("textures/break_stages.png"));
+
+		for (int i = 0; i < breakStages; i++) {
+			TextureRegion region = new TextureRegion(texture, 0.0F, (float) i / breakStages, 1.0F, (float) (i + 1) / breakStages);
+			Chunk.BREAK_TEX.add(region);
+		}
+
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
 		FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
 		fontParameter.size = 8;
@@ -202,6 +211,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		Entities.nopInit();
 		Fonts.nopInit();
 		Sounds.nopInit();
+		Shaders.nopInit();
 
 		for (var registry : Registry.getRegistries()) {
 			RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);

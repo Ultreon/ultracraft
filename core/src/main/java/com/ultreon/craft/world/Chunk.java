@@ -26,9 +26,16 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.gen.TreeData;
+import it.unimi.dsi.fastutil.objects.Reference2FloatArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2FloatMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
+	public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
+	private final Reference2FloatMap<GridPoint3> breaking = new Reference2FloatArrayMap<>();
 	public final ChunkPos pos;
 	protected final Object lock = new Object();
 	protected boolean modifiedByPlayer;
@@ -159,7 +166,7 @@ public class Chunk {
 		return vertexOffset / VERTEX_SIZE + 1;
 	}
 
-	public static int createTop(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createTop(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y + 1;
 		vertices[vertexOffset++] = offset.z + z;
@@ -198,7 +205,19 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createBottom(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	private static TextureRegion getBreakTex(float progress) {
+		return BREAK_TEX.get((int) (BREAK_TEX.size() * progress));
+	}
+
+	private float getBreakProgress(float x, float y, float z) {
+		GridPoint3 pos = new GridPoint3((int) x, (int) y, (int) z);
+		if (breaking.containsKey(pos)) {
+			return breaking.getFloat(pos);
+		}
+		return 0.0F;
+	}
+
+	public int createBottom(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -237,7 +256,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createLeft(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createLeft(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -276,7 +295,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createRight(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createRight(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x + 1;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -315,7 +334,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createFront(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createFront(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z;
@@ -354,7 +373,7 @@ public class Chunk {
 		return vertexOffset;
 	}
 
-	public static int createBack(Vector3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createBack(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y;
 		vertices[vertexOffset++] = offset.z + z + 1;
