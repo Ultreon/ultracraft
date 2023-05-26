@@ -229,7 +229,7 @@ public class Chunk {
 		return 0.0F;
 	}
 
-	public int createTop(Vector3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
+	public int createTop(GridPoint3 offset, float x, float y, float z, TextureRegion region, float[] vertices, int vertexOffset) {
 		vertices[vertexOffset++] = offset.x + x;
 		vertices[vertexOffset++] = offset.y + y + 1;
 		vertices[vertexOffset++] = offset.z + z;
