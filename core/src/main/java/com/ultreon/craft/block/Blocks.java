@@ -15,7 +15,7 @@ import com.ultreon.libs.commons.v0.Identifier;
         public static final Block SAND = register("sand", new Block(new CubeModel(UV.blockUV(4, 0))));
         public static final Block STONE = register("stone", new Block(new CubeModel(UV.blockUV(1, 0))));
         public static final Block COBBLESTONE = register("cobblestone", new Block(new CubeModel(UV.blockUV(5, 0))));
-        public static final Block WATER = register("water", new Block(new CubeModel(UV.blockUV(0, 1)), new Block.Properties().transparent().noCollision())));
+        public static final Block WATER = register("water", new Block(new CubeModel(UV.blockUV(0, 1)), new Block.Properties().transparent().noCollision()));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new Identifier(name), block);
