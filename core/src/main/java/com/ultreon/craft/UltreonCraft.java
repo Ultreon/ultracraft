@@ -17,9 +17,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.audio.SoundEvent;
@@ -36,6 +34,7 @@ import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.item.Items;
+import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.options.GameSettings;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
@@ -438,17 +437,20 @@ public class UltreonCraft extends ApplicationAdapter {
 			WorldEvents.POST_TICK.factory().onPostTick(world);
 		}
 
-		if (this.world != null && this.breaking != null) {
+		GridPoint3 breaking = this.breaking;
+		if (this.world != null && breaking != null) {
 			var hitResult = this.hitResult;
-			GridPoint3 breakNow = null;
 
-			if (!hitResult.getPos().equals(this.breaking) || !hitResult.getBlock().equals(this.breakingBlock)) {
+			if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock)) {
 				resetBreaking(hitResult);
 			} else {
-				if (this.breaking != null) {
-					if (!this.world.continueBreaking(this.breaking, 1.0F / (Math.max(breakingBlock.getHardness() * TPS, 0) + 1))) {
-						stopBreaking();
-					}
+				var efficiency = 1.0F;
+				if (this.player.getSelectedItem() instanceof ToolItem toolItem &&
+						this.breakingBlock.getEffectiveTool() == toolItem.getToolType()) {
+					efficiency = toolItem.getEfficiency();
+				}
+				if (!this.world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
+					stopBreaking();
 				}
 			}
 		}
