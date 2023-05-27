@@ -87,7 +87,7 @@ public class Entity {
             y += dy;
             z += dz;
         } else {
-            var boxes = world.collide(ext);
+            var boxes = world.collide(ext, false);
             var pBox = getBoundingBox();
             isColliding = false;
             isCollidingY = false;

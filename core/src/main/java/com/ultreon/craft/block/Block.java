@@ -16,6 +16,8 @@ public class Block {
     private final int id;
     private final boolean transparent;
     private final boolean solid;
+    private final boolean fluid;
+    private final float hardness;
     private final CubeModel model;
     private BakedCubeModel bakedModel;
 
@@ -27,6 +29,8 @@ public class Block {
         this.id = globalId++;
         this.transparent = properties.transparent;
         this.solid = properties.solid;
+        this.fluid = properties.fluid;
+        this.hardness = properties.hardness;
         this.model = model;
     }
 
@@ -53,7 +57,11 @@ public class Block {
     }
 
     public boolean isSolid() {
-        return this != Blocks.AIR;
+        return this != Blocks.AIR && solid && !fluid;
+    }
+
+    public boolean isFluid() {
+        return fluid;
     }
 
     public BoundingBox getBoundingBox(int x, int y, int z) {
@@ -78,9 +86,15 @@ public class Block {
         return key == null ? "craft/block/air/name" : key.location() + "/block/" + key.path() + "/name";
     }
 
+    public float getHardness() {
+        return hardness;
+    }
+
     public static class Properties {
+        private float hardness = 0.0F;
         private boolean transparent = false;
         private boolean solid = true;
+        private boolean fluid;
 
         public Properties transparent() {
             this.transparent = true;
@@ -89,6 +103,16 @@ public class Block {
 
         public Properties noCollision() {
             this.solid = false;
+            return this;
+        }
+
+        public Properties hardness(float hardness) {
+            this.hardness = hardness;
+            return this;
+        }
+
+        public Properties fluid() {
+            this.fluid = true;
             return this;
         }
     }

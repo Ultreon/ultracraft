@@ -20,7 +20,6 @@ import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -51,6 +50,7 @@ public class World implements RenderableProvider {
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
 	private final Texture texture;
+	private final Texture breakingTex;
 	private final short[] indices;
 	private float[] vertices;
 	private boolean doRender = false;
@@ -78,6 +78,7 @@ public class World implements RenderableProvider {
 
 	public World(Texture texture, int chunksX, int chunksZ) {
 		this.texture = texture;
+		this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 
@@ -204,6 +205,9 @@ public class World implements RenderableProvider {
 		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
 		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+		chunk.overlayMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, breakingTex));
+		chunk.overlayMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+		chunk.overlayMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
@@ -262,10 +266,10 @@ public class World implements RenderableProvider {
 		set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
-	public void set(int x, int y, int z, Block voxel) {
+	public void set(int x, int y, int z, Block block) {
 		Chunk chunk = getChunkAt(x, y, z);
-		chunk.set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
-		chunk.dirty = true;
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		chunk.set(cp.x, cp.y, cp.z, block);
 	}
 
 	public Block get(GridPoint3 pos) {
@@ -279,6 +283,15 @@ public class World implements RenderableProvider {
 			return Blocks.AIR;
 		}
 
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		return chunkAt.get(cp.x, cp.y, cp.z);
+	}
+
+	private GridPoint3 toChunkCoords(GridPoint3 worldCoords) {
+		return toChunkCoords(worldCoords.x, worldCoords.y, worldCoords.z);
+	}
+
+	private GridPoint3 toChunkCoords(int x, int y, int z) {
 		int cx = x % CHUNK_SIZE;
 		int cy = y % CHUNK_HEIGHT;
 		int cz = z % CHUNK_SIZE;
@@ -286,7 +299,7 @@ public class World implements RenderableProvider {
 		if (cx < 0) cx += CHUNK_SIZE;
 		if (cz < 0) cz += CHUNK_SIZE;
 
-		return chunkAt.get(cx, cy, cz);
+		return new GridPoint3(cx, cy, cz);
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
@@ -301,12 +314,8 @@ public class World implements RenderableProvider {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
-//		System.out.println("chunkX = " + chunkX);
-//		System.out.println("chunkZ = " + chunkZ);
 		ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-		Chunk chunk = getChunk(chunkPos);
-//		System.out.println("chunk = " + chunk);
-		return chunk;
+		return getChunk(chunkPos);
 	}
 
 	public int getHighest(int x, int z) {
@@ -367,6 +376,7 @@ public class World implements RenderableProvider {
 
 				Mesh mesh = chunk.mesh;
 				Mesh transparentMesh = chunk.transparentMesh;
+				Mesh overlayMesh = chunk.overlayMesh;
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
@@ -376,25 +386,36 @@ public class World implements RenderableProvider {
 					chunk.numTransparentVertices = numTransparentVertices / 4 * 6;
 					transparentMesh.setVertices(this.vertices, 0, numTransparentVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
+
+					int numOverlayVertices = chunk.calculateOverlayVertices(this.vertices);
+					chunk.numOverlayVertices = numOverlayVertices / 4 * 6;
+					transparentMesh.setVertices(this.vertices, 0, numOverlayVertices * Chunk.VERTEX_SIZE);
+					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
 					continue;
 				}
-				Renderable solidMesh = pool.obtain();
+				Renderable solidRenderable = pool.obtain();
 				Renderable transparentRenderable = pool.obtain();
+				Renderable overlay = pool.obtain();
 
-				solidMesh.material = chunk.material;
-				solidMesh.meshPart.mesh = mesh;
-				solidMesh.meshPart.offset = 0;
-				solidMesh.meshPart.size = chunk.numVertices;
-				solidMesh.meshPart.primitiveType = GL20.GL_TRIANGLES;
+				solidRenderable.material = chunk.material;
+				solidRenderable.meshPart.mesh = mesh;
+				solidRenderable.meshPart.offset = 0;
+				solidRenderable.meshPart.size = chunk.numVertices;
+				solidRenderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
 				transparentRenderable.material = chunk.transparentMaterial;
 				transparentRenderable.meshPart.mesh = transparentMesh;
 				transparentRenderable.meshPart.offset = 0;
 				transparentRenderable.meshPart.size = chunk.numTransparentVertices;
 				transparentRenderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+				overlay.material = chunk.overlayMaterial;
+				overlay.meshPart.mesh = overlayMesh;
+				overlay.meshPart.offset = 0;
+				overlay.meshPart.size = chunk.numTransparentVertices;
+				overlay.meshPart.primitiveType = GL20.GL_TRIANGLES;
 
-				renderables.add(solidMesh);
+				renderables.add(solidRenderable);
 				renderables.add(transparentRenderable);
 				renderedChunks = getRenderedChunks() + 1;
 			}
@@ -448,7 +469,7 @@ public class World implements RenderableProvider {
 		return entities.get(id);
 	}
 
-	public List<BoundingBox> collide(BoundingBox box) {
+	public List<BoundingBox> collide(BoundingBox box, boolean collideFluid) {
 		List<BoundingBox> boxes = new ArrayList<>();
 		int xMin = MathUtils.floor(box.min.x);
 		int xMax = MathUtils.floor(box.max.x);
@@ -461,7 +482,7 @@ public class World implements RenderableProvider {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
-					if (block != null && block.isSolid()) {
+					if (block != null && block.isSolid() && (!collideFluid || block.isFluid())) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
 						if (blockBox != null && blockBox.intersects(box)) {
 							boxes.add(blockBox);
@@ -498,5 +519,34 @@ public class World implements RenderableProvider {
 			if (entity.getBoundingBox().intersects(boundingBox)) return true;
 
 		return false;
+	}
+
+	public void startBreaking(GridPoint3 breaking) {
+		Chunk chunkAt = getChunkAt(breaking);
+		if (chunkAt == null) return;
+		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		chunkAt.startBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
+	}
+
+	public boolean continueBreaking(GridPoint3 breaking, float amount) {
+		Chunk chunkAt = getChunkAt(breaking);
+		if (chunkAt == null) return false;
+		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		chunkAt.continueBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z, amount);
+		return true;
+	}
+
+	public void stopBreaking(GridPoint3 breaking) {
+		Chunk chunkAt = getChunkAt(breaking);
+		if (chunkAt == null) return;
+		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		chunkAt.stopBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
+	}
+
+	public float getBreakProgress(GridPoint3 pos) {
+		Chunk chunkAt = getChunkAt(pos);
+		if (chunkAt == null) return 0.0F;
+		GridPoint3 chunkCoords = toChunkCoords(pos);
+		return chunkAt.getBreakProgress(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 }

@@ -8,10 +8,8 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.UseItemContext;
@@ -99,10 +97,6 @@ public class InputManager extends InputAdapter {
     public static boolean isKeyDown(int keycode) {
         return keys.contains(keycode);
     }
-    
-    public void update() {
-        update(Gdx.graphics.getDeltaTime());
-    }
 
     private void updatePlayerMovement(int screenX, int screenY) {
         if (this.game.player == null) return;
@@ -164,15 +158,15 @@ public class InputManager extends InputAdapter {
                 }
 
                 Player player = this.game.player;
-                if (player != null) {
-                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                HitResult hitResult = this.game.hitResult;
+                if (player != null && hitResult != null) {
                     GridPoint3 pos = hitResult.getPos();
                     Block block = world.get(pos);
                     GridPoint3 posNext = hitResult.getNext();
                     Block blockNext = world.get(posNext);
                     if (hitResult.isCollide() && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
-                            world.set(pos, Blocks.AIR);
+                            this.game.startBreaking();
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
                             UseItemContext context = new UseItemContext(world, player, hitResult);
                             Item item = player.getSelectedItem();
@@ -200,6 +194,7 @@ public class InputManager extends InputAdapter {
                 currentScreen.mouseClick((int) (screenX / game.getGuiScale()), (int) (screenY / game.getGuiScale()), button, 1);
             }
         }
+        game.stopBreaking();
         return super.touchUp(screenX, screenY, pointer, button);
     }
 
@@ -222,7 +217,7 @@ public class InputManager extends InputAdapter {
         return super.scrolled(amountX, amountY);
     }
 
-    public void update(float deltaTime) {
+    public void update() {
 
     }
 }

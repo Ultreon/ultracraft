@@ -5,9 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -19,6 +17,9 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.audio.SoundEvent;
@@ -46,6 +47,7 @@ import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.render.gui.screens.TitleScreen;
 import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
@@ -116,6 +118,9 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+	public HitResult hitResult;
+	private GridPoint3 breaking;
+	private Block breakingBlock;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -338,6 +343,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.tasks.remove(runnable);
 		});
 
+		Player player = this.player;
+		this.hitResult = player == null ? null : player.rayCast();
 		this.input.update();
 
 		ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
@@ -363,9 +370,10 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.font.setColor(Color.rgb(0xffffff).toGdx());
 			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
 					+ world.getTotalChunks(), 20, 20);
-			if (this.player != null) {
-				this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, 30);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, 40);
+			if (player != null) {
+				this.font.draw(this.spriteBatch, "xyz: " + player.blockPosition(), 20, 30);
+				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(player.blockPosition()) != null), 20, 40);
+				this.font.draw(this.spriteBatch, "break progress: " + world.getBreakProgress(this.hitResult.getPos()), 20, 50);
 			}
 			this.hud.render(renderer, deltaTime);
 		}
@@ -430,6 +438,21 @@ public class UltreonCraft extends ApplicationAdapter {
 			WorldEvents.POST_TICK.factory().onPostTick(world);
 		}
 
+		if (this.world != null && this.breaking != null) {
+			var hitResult = this.hitResult;
+			GridPoint3 breakNow = null;
+
+			if (!hitResult.getPos().equals(this.breaking) || !hitResult.getBlock().equals(this.breakingBlock)) {
+				resetBreaking(hitResult);
+			} else {
+				if (this.breaking != null) {
+					if (!this.world.continueBreaking(this.breaking, 1.0F / (Math.max(breakingBlock.getHardness() * TPS, 0) + 1))) {
+						stopBreaking();
+					}
+				}
+			}
+		}
+
 		Player player = this.player;
 		if (player != null) {
 			this.camera.update(player);
@@ -439,7 +462,19 @@ public class UltreonCraft extends ApplicationAdapter {
 				world.updateChunksForPlayerAsync(player);
 			}
 		}
-		this.input.update();
+	}
+
+	private void resetBreaking(HitResult hitResult) {
+		this.world.stopBreaking(this.breaking);
+		Block block = hitResult.getBlock();
+		if (block == null || block.isAir()) {
+			this.breaking = null;
+			this.breakingBlock = null;
+		} else {
+			this.breaking = hitResult.getPos();
+			this.breakingBlock = block;
+			this.world.startBreaking(hitResult.getPos());
+		}
 	}
 
 	private void showPlayerUtilsWindow() {
@@ -661,5 +696,21 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void filesDropped(String[] files) {
 
+	}
+
+	public void startBreaking() {
+		HitResult hitResult = this.hitResult;
+		if (hitResult == null) return;
+		this.world.startBreaking(hitResult.getPos());
+		this.breaking = hitResult.getPos();
+		this.breakingBlock = hitResult.getBlock();
+	}
+
+	public void stopBreaking() {
+		HitResult hitResult = this.hitResult;
+		if (hitResult == null) return;
+		this.world.stopBreaking(hitResult.getPos());
+		this.breaking = null;
+		this.breakingBlock = null;
 	}
 }
