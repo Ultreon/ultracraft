@@ -356,6 +356,15 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.modelBatch.render(world, this.env);
 			this.modelBatch.end();
 
+			HitResult hitResult = this.hitResult;
+			GridPoint3 blockPos = hitResult.getPos();
+
+			var blockX = blockPos.x;
+			var blockY = blockPos.y;
+			var blockZ = blockPos.z;
+
+			drawOutline(blockX, blockY, blockZ);
+
 			if (InputManager.isKeyDown(Input.Keys.F9)) {
 				world.regen();
 			}
@@ -429,6 +438,79 @@ public class UltreonCraft extends ApplicationAdapter {
 
         this.spriteBatch.end();
     }
+
+	private void drawOutline(int blockX, int blockY, int blockZ) {
+		// Create a new mesh that contains only the vertices for the desired block
+		Mesh blockMesh = new Mesh(true, 24, 36, VertexAttribute.Position(), VertexAttribute.Normal());
+		float[] vertices = {
+				// Bottom face
+				blockX, blockY, blockZ,
+				blockX, blockY, blockZ + 1,
+				blockX + 1, blockY, blockZ + 1,
+				blockX + 1, blockY, blockZ,
+
+				// Top face
+				blockX, blockY + 1, blockZ,
+				blockX + 1, blockY + 1, blockZ,
+				blockX + 1, blockY + 1, blockZ + 1,
+				blockX, blockY + 1, blockZ + 1,
+
+				// Right face
+				blockX + 1, blockY, blockZ,
+				blockX + 1, blockY, blockZ + 1,
+				blockX + 1, blockY + 1, blockZ + 1,
+				blockX + 1, blockY + 1, blockZ,
+
+				// Left face
+				blockX, blockY, blockZ,
+				blockX, blockY + 1, blockZ,
+				blockX, blockY + 1, blockZ + 1,
+				blockX, blockY, blockZ + 1,
+
+				// Back face
+				blockX, blockY, blockZ,
+				blockX + 1, blockY, blockZ,
+				blockX + 1, blockY + 1, blockZ,
+				blockX, blockY + 1, blockZ,
+
+				// Front face
+				blockX, blockY, blockZ + 1,
+				blockX, blockY + 1, blockZ + 1,
+				blockX + 1, blockY + 1, blockZ + 1,
+				blockX + 1, blockY, blockZ + 1,
+		};
+		short[] indices = {
+				0, 1, 2,
+				0, 2, 3,
+				4, 6, 5,
+				4, 7, 6,
+				8, 10, 9,
+				8, 11, 10,
+				12, 13, 14,
+				12, 14, 15,
+				16, 17, 18,
+				16, 18, 19,
+				20, 22, 21,
+				20, 23, 22
+		};
+		blockMesh.setVertices(vertices);
+		blockMesh.setIndices(indices);
+
+		// Draw the outline using the new block mesh
+		Gdx.gl.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
+		Gdx.gl.glPolygonOffset(-1f, -1f);
+		ShaderProgram outlineShader = Shaders.OUTLINE;
+		outlineShader.setUniformMatrix("u_projTrans", this.camera.combined);
+		outlineShader.setUniformf("u_thickness", 0.05f);
+		outlineShader.setUniformf("u_blockPosition", new Vector3(blockX, blockY, blockZ));
+//		outlineShader.setUniformf("u_color", Color.black.toGdx());
+		Gdx.gl.glLineWidth(2);
+		blockMesh.render(outlineShader, GL30.GL_LINES);
+		Gdx.gl.glDisable(GL20.GL_POLYGON_OFFSET_FILL);
+
+		// Dispose of the new mesh when you're done with it
+		blockMesh.dispose();
+	}
 
 	public void tick() {
 		World world = this.world;
