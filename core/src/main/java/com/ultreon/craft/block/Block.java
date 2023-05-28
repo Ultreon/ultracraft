@@ -63,7 +63,7 @@ public class Block {
     }
 
     public boolean isSolid() {
-        return this != Blocks.AIR && solid && !fluid;
+        return this != Blocks.AIR && solid;
     }
 
     public boolean isFluid() {

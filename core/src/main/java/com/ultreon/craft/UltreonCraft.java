@@ -700,9 +700,18 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	}
 
+	public void resetBreaking() {
+		HitResult hitResult = this.hitResult;
+		if (hitResult == null || this.world == null || this.breaking == null) return;
+		this.world.stopBreaking(hitResult.getPos());
+		this.world.startBreaking(hitResult.getPos());
+		this.breaking = hitResult.getPos();
+		this.breakingBlock = hitResult.getBlock();
+	}
+
 	public void startBreaking() {
 		HitResult hitResult = this.hitResult;
-		if (hitResult == null) return;
+		if (hitResult == null || this.world == null) return;
 		this.world.startBreaking(hitResult.getPos());
 		this.breaking = hitResult.getPos();
 		this.breakingBlock = hitResult.getBlock();
@@ -710,7 +719,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void stopBreaking() {
 		HitResult hitResult = this.hitResult;
-		if (hitResult == null) return;
+		if (hitResult == null || this.world == null) return;
 		this.world.stopBreaking(hitResult.getPos());
 		this.breaking = null;
 		this.breakingBlock = null;

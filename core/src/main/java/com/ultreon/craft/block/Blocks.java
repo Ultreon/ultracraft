@@ -1,5 +1,6 @@
 package com.ultreon.craft.block;
 
+import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.UV;
 import com.ultreon.craft.render.model.CubeModel;
@@ -13,8 +14,8 @@ import com.ultreon.libs.commons.v0.Identifier;
 
         public static final Block DIRT = register("dirt", new Block(new CubeModel(UV.blockUV(2, 0)), new Block.Properties().hardness(5.0F)));
         public static final Block SAND = register("sand", new Block(new CubeModel(UV.blockUV(4, 0)), new Block.Properties().hardness(5.0F)));
-        public static final Block STONE = register("stone", new Block(new CubeModel(UV.blockUV(1, 0)), new Block.Properties().hardness(16.0F)));
-        public static final Block COBBLESTONE = register("cobblestone", new Block(new CubeModel(UV.blockUV(5, 0)), new Block.Properties().hardness(15.0F)));
+        public static final Block STONE = register("stone", new Block(new CubeModel(UV.blockUV(1, 0)), new Block.Properties().hardness(16.0F).effectiveTool(ToolType.PICKAXE).requiresTool()));
+        public static final Block COBBLESTONE = register("cobblestone", new Block(new CubeModel(UV.blockUV(5, 0)), new Block.Properties().hardness(15.0F).effectiveTool(ToolType.PICKAXE).requiresTool()));
         public static final Block WATER = register("water", new Block(new CubeModel(UV.blockUV(0, 1)), new Block.Properties().transparent().noCollision().fluid().hardness(16.0F)));
 
     private static <T extends Block> T register(String name, T block) {
