@@ -216,12 +216,6 @@ public class World implements RenderableProvider {
 		}
 
 		game.runLater(() -> {
-			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.mesh.setIndices(indices);
-			chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.transparentMesh.setIndices(indices);
 			chunk.ready = true;
 			chunk.dirty = true;
 			putChunk(chunkPos, chunk);
@@ -374,6 +368,17 @@ public class World implements RenderableProvider {
 			synchronized (chunk.lock) {
 				if (!chunk.ready) continue;
 
+				if (chunk.mesh != null) chunk.mesh.dispose();
+				if (chunk.transparentMesh != null) chunk.transparentMesh.dispose();
+				if (chunk.overlayMesh != null) chunk.overlayMesh.dispose();
+
+				chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+						CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+				chunk.mesh.setIndices(indices);
+				chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+						CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+				chunk.transparentMesh.setIndices(indices);
+
 				Mesh mesh = chunk.mesh;
 				Mesh transparentMesh = chunk.transparentMesh;
 				Mesh overlayMesh = chunk.overlayMesh;
@@ -389,7 +394,7 @@ public class World implements RenderableProvider {
 
 					int numOverlayVertices = chunk.calculateOverlayVertices(this.vertices);
 					chunk.numOverlayVertices = numOverlayVertices / 4 * 6;
-					transparentMesh.setVertices(this.vertices, 0, numOverlayVertices * Chunk.VERTEX_SIZE);
+					overlayMesh.setVertices(this.vertices, 0, numOverlayVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
@@ -412,7 +417,7 @@ public class World implements RenderableProvider {
 				overlay.material = chunk.overlayMaterial;
 				overlay.meshPart.mesh = overlayMesh;
 				overlay.meshPart.offset = 0;
-				overlay.meshPart.size = chunk.numTransparentVertices;
+				overlay.meshPart.size = chunk.numOverlayVertices;
 				overlay.meshPart.primitiveType = GL20.GL_TRIANGLES;
 
 				renderables.add(solidRenderable);

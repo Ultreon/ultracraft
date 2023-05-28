@@ -244,43 +244,34 @@ public class Chunk {
 		for (int y = 0; y < height; y++) {
 			for (int z = 0; z < size; z++) {
 				for (int x = 0; x < size; x++, i++) {
-					Block block = blocks[i];
+					float magik = -0.01F;
 
-					if (block == null || block == Blocks.AIR) continue;
-					if (!block.isTransparent()) continue;
-
-					BakedCubeModel model = block.bakedModel();
-
-					if (model == null) continue;
-
-					float magik = 0.01F;
-
-					if (y < height - 1 && (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR)) {
+					if (y < height - 1) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createTop(offset, x, y + magik, z, getBreakTex(progress), vertices, vertexOffset);
 					}
-					if (y > 0 && (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR)) {
+					if (y > 0) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createBottom(offset, x, y - magik, 0, getBreakTex(progress), vertices, vertexOffset);
 					}
-					if (x > 0 && (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR)) {
+					if (x > 0) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createLeft(offset, x - magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					}
-					if (x < size - 1 && (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR)) {
+					if (x < size - 1) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createRight(offset, x + magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					}
-					if (z > 0 && (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR)) {
+					if (z > 0) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createFront(offset, x, y, z - magik, getBreakTex(progress), vertices, vertexOffset);
 					}
-					if (z < size - 1 && (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR)) {
+					if (z < size - 1) {
 						float progress = getBreakProgress(x, y, z);
 						if (progress >= 0.0F)
 							vertexOffset += createBottom(offset, x, y, z + magik, getBreakTex(progress), vertices, vertexOffset);
@@ -555,8 +546,8 @@ public class Chunk {
 	}
 
 	public void dispose() {
-		UltreonCraft.get().runLater(this.mesh::dispose);
-		UltreonCraft.get().runLater(this.transparentMesh::dispose);
+		if (this.mesh != null) UltreonCraft.get().runLater(this.mesh::dispose);
+		if (this.transparentMesh != null) UltreonCraft.get().runLater(this.transparentMesh::dispose);
 		this.material = null;
 		this.blocks = null;
 		this.mesh = null;
