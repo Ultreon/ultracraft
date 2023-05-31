@@ -52,6 +52,8 @@ import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.crash.v0.ApplicationCrash;
+import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
@@ -68,6 +70,8 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
@@ -82,6 +86,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
 	private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
 	private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+	private static final Logger LOGGER = LoggerFactory.getLogger("UltreonCraft");
 	private final ImGuiImplGlfw imGuiGlfw;
 	private final ImGuiImplGl3 imGuiGl3;
 	public static final int TPS = 20;
@@ -119,17 +124,28 @@ public class UltreonCraft extends ApplicationAdapter {
 	private Hud hud;
 	private int chunkRefresh;
 
+	// Startup time
+	private final long bootStartMillis;
+
 	// Texture Atlases
 	public TextureAtlas blocksTextureAtlas;
 	private BakedModelRegistry bakedBlockModels;
 
 	public UltreonCraft(String[] args) {
+		this.bootStartMillis = System.currentTimeMillis();
+
+		LOGGER.info("Booting game!");
+
 		Identifier.setDefaultNamespace(NAMESPACE);
 		imGuiGlfw = new ImGuiImplGlfw();
 		imGuiGl3 = new ImGuiImplGl3();
 
 		List<String> argList = List.of(args);
 		isDevMode = argList.contains("--dev");
+
+		if (isDevMode) {
+			LOGGER.debug("Developer mode is enabled");
+		}
 
 		instance = this;
 	}
@@ -144,6 +160,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void create() {
+		LOGGER.info("Initializing game");
 		this.textureManager = new TextureManager();
 		this.spriteBatch = new SpriteBatch();
 
@@ -151,11 +168,13 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.resourceManager = new ResourceManager("assets");
 		try {
+			LOGGER.info("Importing resources");
 			this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
+		LOGGER.info("Generating bitmap fonts");
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
 		FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
 		fontParameter.size = 8;
@@ -176,6 +195,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		xlFontParameter.mono = true;
 		this.xlFont = generator.generateFont(xlFontParameter);
 
+		LOGGER.info("Initializing rendering stuffs");
 		DefaultShader.Config config = new DefaultShader.Config();
 		config.defaultCullFace = GL20.GL_FRONT;
 		this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
@@ -192,15 +212,18 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
 
+		LOGGER.info("Setting up environment");
 		this.env = new Environment();
 		this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
 		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
 		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
 
+		LOGGER.info("Loading languages");
 		LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
 		LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
 		LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
 
+		LOGGER.info("Registering stuff");
 		Registries.nopInit();
 
 		Blocks.nopInit();
@@ -214,10 +237,13 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 		Registry.freeze();
 
+		LOGGER.info("Registering models");
 		registerModels();
 
+		LOGGER.info("Stitching textures");
 		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
+		LOGGER.info("Initializing sounds");
 		for (SoundEvent sound : Registries.SOUNDS.values()) {
 			if (sound == null) {
 				continue;
@@ -225,12 +251,16 @@ public class UltreonCraft extends ApplicationAdapter {
 			sound.register();
 		}
 
+		LOGGER.info("Baking models");
 		this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
+		LOGGER.info("Setting up HUD");
 		this.hud = new Hud(this);
 
+		LOGGER.info("Opening title screen");
 		showScreen(new TitleScreen());
 
+		LOGGER.info("Setting up ImGui");
 		GLFWErrorCallback.createPrint(System.err).set();
 		if (!GLFW.glfwInit()) {
 			throw new IllegalStateException("Unable to initialize GLFW");
@@ -244,6 +274,8 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		imGuiGlfw.init(windowHandle, true);
 		imGuiGl3.init("#version 150");
+
+		LOGGER.info("Game booted in " + (System.currentTimeMillis() - this.bootStartMillis) + "ms");
 	}
 
 	private void registerModels() {
@@ -292,6 +324,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			EventResult result = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
 			if (result.isCanceled()) return false;
 
+			LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
+
 			cur.hide();
 			this.currentScreen = null;
 			Gdx.input.setCursorCatched(true);
@@ -303,9 +337,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			return false;
 		}
 
-		Screen openInstead = openResult.getValue();
-		if (openInstead != null) {
-			open = openInstead;
+		if (openResult.isInterrupted()) {
+			open = openResult.getValue();
 		}
 
 		if (cur != null) {
@@ -313,11 +346,24 @@ public class UltreonCraft extends ApplicationAdapter {
 			if (closeResult.isCanceled()) return false;
 
 			cur.hide();
+			if (open != null) {
+				LOGGER.debug("Changing screen to: " + open.getClass());
+			} else {
+				LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
+			}
 		} else {
-			Gdx.input.setCursorCatched(false);
+			if (open != null) {
+				Gdx.input.setCursorCatched(false);
+				LOGGER.debug("Opening screen: " + open.getClass());
+			} else {
+				return false;
+			}
 		}
+
 		this.currentScreen = open;
-		this.currentScreen.show();
+		if (this.currentScreen != null) {
+			this.currentScreen.show();
+		}
 
 		return true;
 	}
@@ -420,7 +466,7 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.imGuiGl3.renderDrawData(ImGui.getDrawData());
 		}
 
-        this.spriteBatch.end();
+		this.spriteBatch.end();
     }
 
 	public void tick() {

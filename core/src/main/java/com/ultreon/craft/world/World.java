@@ -33,6 +33,8 @@ import com.ultreon.data.types.MapType;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
+	private static final Logger LOGGER = LoggerFactory.getLogger("World");
 	private final short[] indices;
 	private float[] vertices;
 
@@ -393,7 +396,7 @@ public class World implements RenderableProvider {
 
 	@Deprecated
 	public void regen() {
-
+		LOGGER.warn("Regenerating world not supported");
 	}
 
 	public int getPlayTime() {
