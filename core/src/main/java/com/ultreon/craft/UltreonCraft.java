@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -45,6 +44,10 @@ import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.render.gui.screens.TitleScreen;
 import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.render.model.BakedCubeModel;
+import com.ultreon.craft.render.model.BakedModelRegistry;
+import com.ultreon.craft.render.model.CubeModel;
+import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -118,6 +121,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	// Texture Atlases
 	public TextureAtlas blocksTextureAtlas;
+	private BakedModelRegistry bakedBlockModels;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -212,9 +216,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		registerModels();
 
-		this.blocksTextureAtlas = BlockModelRegistry.bake().textureAtlas();
-
-		this.tilesTex = textureManager.registerTexture(id("textures/blocks.png"));
+		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
 		for (SoundEvent sound : Registries.SOUNDS.values()) {
 			if (sound == null) {
@@ -222,6 +224,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			}
 			sound.register();
 		}
+
+		this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
 		this.hud = new Hud(this);
 
@@ -243,7 +247,11 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	private void registerModels() {
-		BlockModelRegistry.register();
+		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
+		BlockModelRegistry.registerDefault(Blocks.DIRT);
+		BlockModelRegistry.registerDefault(Blocks.SAND);
+		BlockModelRegistry.registerDefault(Blocks.WATER);
+		BlockModelRegistry.registerDefault(Blocks.STONE);
 	}
 
 	private static void createDir(String dirName) {
@@ -571,6 +579,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.imGuiGlfw.dispose();
 		ImGui.destroyContext();
 
+		this.blocksTextureAtlas.dispose();
+
 		this.modelBatch.dispose();
 		this.spriteBatch.dispose();
 		this.font.dispose();
@@ -655,5 +665,9 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void filesDropped(String[] files) {
 
+	}
+
+	public BakedCubeModel getBakedBlockModel(Block block) {
+		return bakedBlockModels.bakedModels().get(block);
 	}
 }

@@ -1,11 +1,15 @@
 package com.ultreon.craft.render.model;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.libs.commons.v0.Identifier;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class CubeModel {
     private final Identifier top;
@@ -26,23 +30,23 @@ public final class CubeModel {
         this.back = back;
     }
 
-    public CubeModel all(Identifier all) {
+    public static CubeModel of(Identifier all) {
         return of(all, all, all);
     }
 
-    private CubeModel of(Identifier top, Identifier bottom, Identifier side) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side) {
         return of(top, bottom, side, side, side, side);
     }
 
-    private CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front) {
         return of(top, bottom, side, side, front, side);
     }
 
-    private CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back) {
         return of(top, bottom, side, side, front, back);
     }
 
-    private CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back) {
         return new CubeModel(top, bottom, left, right, front, back);
     }
 
@@ -57,12 +61,12 @@ public final class CubeModel {
     }
 
     public BakedCubeModel bake(TextureAtlas texture) {
-        Texture topTex = texture.findRegion(top.toString()).getTexture();
-        Texture bottomTex = texture.findRegion(bottom.toString()).getTexture();
-        Texture leftTex = texture.findRegion(left.toString()).getTexture();
-        Texture rightTex = texture.findRegion(right.toString()).getTexture();
-        Texture frontTex = texture.findRegion(front.toString()).getTexture();
-        Texture backTex = texture.findRegion(back.toString()).getTexture();
+        var topTex = texture.get(this.top);
+        var bottomTex = texture.get(this.bottom);
+        var leftTex = texture.get(this.left);
+        var rightTex = texture.get(this.right);
+        var frontTex = texture.get(this.front);
+        var backTex = texture.get(this.back);
         return new BakedCubeModel(
                 topTex, bottomTex,
                 leftTex, rightTex,
@@ -124,6 +128,6 @@ public final class CubeModel {
     }
 
     public Set<Identifier> all() {
-        return Set.of(top, bottom, left, right, front, back);
+        return new ReferenceArraySet<>(new Object[]{top, bottom, left, right, front, back});
     }
 }
