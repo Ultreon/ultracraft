@@ -2,15 +2,16 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 
 public class Hud implements GameRenderable {
@@ -46,26 +47,19 @@ public class Hud implements GameRenderable {
             Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
             if (item instanceof BlockItem blockItem) {
-                Block block = blockItem.getBlock();
-                UV front = block.getModel().front();
-                UV top = block.getModel().top();
-                Texture blocks = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/blocks.png"));
+                BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
+                TextureRegion front = bakedBlockModel.front();
+                TextureRegion top = bakedBlockModel.top();
                 renderer.setTextureColor(Color.white.darker());
-                renderer.texture(blocks, ix, 5, 16, 6, front.u() * 16, front.v() * 16);
+                renderer.texture(front, ix, 5, 16, 6);
                 renderer.setTextureColor(Color.white);
-                renderer.texture(blocks, ix, 11, 16, 16, top.u() * 16, top.v() * 16);
+                renderer.texture(top, ix, 11, 16, 16);
             } else {
-                UV uv = item.getTextureUV();
-
-                renderItem:
-                {
-                    if (uv == null) break renderItem;
-                    Texture items = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/items.png"));
-                    renderer.setTextureColor(Color.white.darker());
-                    renderer.texture(items, ix, 5, 16, 16, uv.u() * 16, uv.v() * 16);
-                    renderer.setTextureColor(Color.white);
-                    renderer.texture(items, ix, 6, 16, 16, uv.u() * 16, uv.v() * 16);
-                }
+                TextureRegion texture = this.game.itemTextureAtlas.get(key.mapPath(path -> "textures/items/" + path + ".png"));
+                renderer.setTextureColor(Color.white.darker());
+                renderer.texture(texture, ix, 5, 16, 16);
+                renderer.setTextureColor(Color.white);
+                renderer.texture(texture, ix, 6, 16, 16);
             }
         }
 
