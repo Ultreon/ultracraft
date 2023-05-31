@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.item.Item;

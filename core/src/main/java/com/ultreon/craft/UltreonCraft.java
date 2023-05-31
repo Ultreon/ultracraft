@@ -34,6 +34,8 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameCamera;
 import com.ultreon.craft.input.InputManager;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.item.BlockItem;
+import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.options.GameSettings;
 import com.ultreon.craft.registry.Registries;
@@ -49,6 +51,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.render.texture.atlas.TextureStitcher;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -74,6 +77,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
@@ -122,6 +126,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	// Texture Atlases
 	public TextureAtlas blocksTextureAtlas;
+	public TextureAtlas itemTextureAtlas;
 	private BakedModelRegistry bakedBlockModels;
 
 	public UltreonCraft(String[] args) {
@@ -218,7 +223,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		registerModels();
 
-		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+		stitchTextures();
 
 		for (SoundEvent sound : Registries.SOUNDS.values()) {
 			if (sound == null) {
@@ -246,6 +251,21 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		imGuiGlfw.init(windowHandle, true);
 		imGuiGl3.init("#version 150");
+	}
+
+	private void stitchTextures() {
+		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+
+		TextureStitcher itemTextures = new TextureStitcher();
+		for (Map.Entry<Identifier, Item> e : Registries.ITEMS.entries()) {
+			if (e.getValue() == Items.AIR) continue;
+			if (e.getValue() instanceof BlockItem) continue;
+
+			Identifier texId = e.getKey().mapPath(path -> "textures/items/" + path + ".png");
+			Texture tex = this.textureManager.getTexture(texId);
+			itemTextures.add(texId, tex);
+		}
+		this.itemTextureAtlas = itemTextures.stitch();
 	}
 
 	private void registerModels() {

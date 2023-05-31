@@ -47,19 +47,30 @@ public class Hud implements GameRenderable {
             Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
             if (item instanceof BlockItem blockItem) {
-                BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
-                TextureRegion front = bakedBlockModel.front();
-                TextureRegion top = bakedBlockModel.top();
-                renderer.setTextureColor(Color.white.darker());
-                renderer.texture(front, ix, 5, 16, 6);
-                renderer.setTextureColor(Color.white);
-                renderer.texture(top, ix, 11, 16, 16);
+                BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(blockItem.getBlock());
+                if (bakedBlockModel == null) {
+                    renderer.setTextureColor(Color.white);
+                    renderer.texture((TextureRegion) null, ix, 5, 16, 16);
+                } else {
+                    TextureRegion front = bakedBlockModel.front();
+                    TextureRegion top = bakedBlockModel.top();
+                    renderer.setTextureColor(Color.white.darker());
+                    renderer.texture(front, ix, 5, 16, 6);
+                    renderer.setTextureColor(Color.white);
+                    renderer.texture(top, ix, 11, 16, 16);
+                }
             } else {
-                TextureRegion texture = this.game.itemTextureAtlas.get(key.mapPath(path -> "textures/items/" + path + ".png"));
-                renderer.setTextureColor(Color.white.darker());
-                renderer.texture(texture, ix, 5, 16, 16);
-                renderer.setTextureColor(Color.white);
-                renderer.texture(texture, ix, 6, 16, 16);
+                Identifier curKey = Registries.ITEMS.getKey(item);
+                if (curKey == null) {
+                    renderer.setTextureColor(Color.white);
+                    renderer.texture((TextureRegion) null, ix, 5, 16, 16);
+                } else {
+                    TextureRegion texture = this.game.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
+                    renderer.setTextureColor(Color.white.darker());
+                    renderer.texture(texture, ix, 5, 16, 16);
+                    renderer.setTextureColor(Color.white);
+                    renderer.texture(texture, ix, 6, 16, 16);
+                }
             }
         }
 
