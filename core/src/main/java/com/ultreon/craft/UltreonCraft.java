@@ -44,6 +44,10 @@ import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.render.gui.screens.TitleScreen;
 import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.render.model.BakedCubeModel;
+import com.ultreon.craft.render.model.BakedModelRegistry;
+import com.ultreon.craft.render.model.CubeModel;
+import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -107,12 +111,17 @@ public class UltreonCraft extends ApplicationAdapter {
 	private TextureRegion white;
 	private TextureManager textureManager;
 	private ResourceManager resourceManager;
+	@Deprecated
 	private Texture tilesTex;
 	private float guiScale = 2;
 	public boolean renderWorld = false;
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+
+	// Texture Atlases
+	public TextureAtlas blocksTextureAtlas;
+	private BakedModelRegistry bakedBlockModels;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -205,21 +214,18 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 		Registry.freeze();
 
-		this.tilesTex = textureManager.registerTexture(id("textures/blocks.png"));
+		registerModels();
+
+		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
 		for (SoundEvent sound : Registries.SOUNDS.values()) {
 			if (sound == null) {
-				break;
+				continue;
 			}
 			sound.register();
 		}
 
-		for (Block block : Registries.BLOCK.values()) {
-			if (block == null) {
-				break;
-			}
-			block.bake(this.tilesTex);
-		}
+		this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
 		this.hud = new Hud(this);
 
@@ -238,6 +244,14 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		imGuiGlfw.init(windowHandle, true);
 		imGuiGl3.init("#version 150");
+	}
+
+	private void registerModels() {
+		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
+		BlockModelRegistry.registerDefault(Blocks.DIRT);
+		BlockModelRegistry.registerDefault(Blocks.SAND);
+		BlockModelRegistry.registerDefault(Blocks.WATER);
+		BlockModelRegistry.registerDefault(Blocks.STONE);
 	}
 
 	private static void createDir(String dirName) {
@@ -565,6 +579,8 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.imGuiGlfw.dispose();
 		ImGui.destroyContext();
 
+		this.blocksTextureAtlas.dispose();
+
 		this.modelBatch.dispose();
 		this.spriteBatch.dispose();
 		this.font.dispose();
@@ -602,6 +618,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		return textureManager;
 	}
 
+	@Deprecated
 	public Texture getTilesTex() {
 		return tilesTex;
 	}
@@ -648,5 +665,9 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void filesDropped(String[] files) {
 
+	}
+
+	public BakedCubeModel getBakedBlockModel(Block block) {
+		return bakedBlockModels.bakedModels().get(block);
 	}
 }
