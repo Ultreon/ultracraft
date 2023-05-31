@@ -274,6 +274,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		BlockModelRegistry.registerDefault(Blocks.SAND);
 		BlockModelRegistry.registerDefault(Blocks.WATER);
 		BlockModelRegistry.registerDefault(Blocks.STONE);
+		BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
 	}
 
 	private static void createDir(String dirName) {
