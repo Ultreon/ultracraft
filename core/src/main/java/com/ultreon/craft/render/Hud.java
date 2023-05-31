@@ -49,13 +49,9 @@ public class Hud implements GameRenderable {
             TextureRegion front = bakedBlockModel.front();
             TextureRegion top = bakedBlockModel.top();
             renderer.setTextureColor(Color.white.darker());
-            renderer.texture(front.getTexture(), ix, 5, 16, 6,
-                    front.getRegionX(), front.getRegionY(), front.getRegionWidth(), front.getRegionHeight(),
-                    front.getTexture().getWidth(), front.getTexture().getHeight());
+            renderer.texture(front, ix, 5, 16, 6);
             renderer.setTextureColor(Color.white);
-            renderer.texture(top.getTexture(), ix, 11, 16, 16,
-                    top.getRegionX(), top.getRegionY(), top.getRegionWidth(), top.getRegionHeight(),
-                    top.getTexture().getWidth(), top.getTexture().getHeight());
+            renderer.texture(top, ix, 11, 16, 16);
         }
 
         float healthRatio = player.getHealth() / player.getMaxHeath();
