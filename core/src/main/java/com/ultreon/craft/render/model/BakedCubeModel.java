@@ -1,21 +1,8 @@
 package com.ultreon.craft.render.model;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.ultreon.craft.render.UV;
+import com.badlogic.gdx.graphics.Texture;
 
-public record BakedCubeModel(TextureRegion top, TextureRegion bottom,
-                             TextureRegion left, TextureRegion right,
-                             TextureRegion front, TextureRegion back) {
-
-    public BakedCubeModel(TextureRegion top, TextureRegion bottom, TextureRegion side) {
-        this(top, bottom, side, side, side, side);
-    }
-
-    public BakedCubeModel(TextureRegion top, TextureRegion bottom, TextureRegion front, TextureRegion side) {
-        this(top, bottom, side, side, front, side);
-    }
-
-    public BakedCubeModel(TextureRegion top, TextureRegion bottom, TextureRegion front, TextureRegion back, TextureRegion side) {
-        this(top, bottom, side, side, front, back);
-    }
+public record BakedCubeModel(Texture top, Texture bottom,
+                             Texture left, Texture right,
+                             Texture front, Texture back) {
 }

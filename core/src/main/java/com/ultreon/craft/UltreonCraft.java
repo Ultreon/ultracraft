@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -107,12 +108,16 @@ public class UltreonCraft extends ApplicationAdapter {
 	private TextureRegion white;
 	private TextureManager textureManager;
 	private ResourceManager resourceManager;
+	@Deprecated
 	private Texture tilesTex;
 	private float guiScale = 2;
 	public boolean renderWorld = false;
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+
+	// Texture Atlases
+	public TextureAtlas blocksTextureAtlas;
 
 	public UltreonCraft(String[] args) {
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -205,20 +210,17 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 		Registry.freeze();
 
+		registerModels();
+
+		this.blocksTextureAtlas = BlockModelRegistry.bake().textureAtlas();
+
 		this.tilesTex = textureManager.registerTexture(id("textures/blocks.png"));
 
 		for (SoundEvent sound : Registries.SOUNDS.values()) {
 			if (sound == null) {
-				break;
+				continue;
 			}
 			sound.register();
-		}
-
-		for (Block block : Registries.BLOCK.values()) {
-			if (block == null) {
-				break;
-			}
-			block.bake(this.tilesTex);
 		}
 
 		this.hud = new Hud(this);
@@ -238,6 +240,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		imGuiGlfw.init(windowHandle, true);
 		imGuiGl3.init("#version 150");
+	}
+
+	private void registerModels() {
+		BlockModelRegistry.register();
 	}
 
 	private static void createDir(String dirName) {
@@ -602,6 +608,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		return textureManager;
 	}
 
+	@Deprecated
 	public Texture getTilesTex() {
 		return tilesTex;
 	}

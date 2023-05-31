@@ -1,9 +1,7 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
@@ -20,7 +18,6 @@ import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -50,7 +47,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
-	private final Texture texture;
+	private final TextureAtlas texture;
 	private final short[] indices;
 	private float[] vertices;
 	private boolean doRender = false;
@@ -76,7 +73,7 @@ public class World implements RenderableProvider {
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
 
-	public World(Texture texture, int chunksX, int chunksZ) {
+	public World(TextureAtlas texture, int chunksX, int chunksZ) {
 		this.texture = texture;
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
@@ -199,7 +196,7 @@ public class World implements RenderableProvider {
 		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 		chunk.dirty = false;
 		chunk.numVertices = 0;
-		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture.));
 		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
 		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
@@ -212,11 +209,11 @@ public class World implements RenderableProvider {
 		}
 
 		game.runLater(() -> {
-			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+			chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
 			chunk.mesh.setIndices(indices);
-			chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+			chunk.transparentMesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
 			chunk.transparentMesh.setIndices(indices);
 			chunk.ready = true;
 			chunk.dirty = true;
