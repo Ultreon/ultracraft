@@ -61,7 +61,7 @@ public class TextureStitcher {
             var id = e.getKey();
             spriteBatch.draw(texture, x, y);
 
-            var uv = new UV(x, y, texture.getWidth(), texture.getHeight(), width, height);
+            var uv = new UV(x, y + texture.getHeight(), texture.getWidth(), -texture.getHeight(), width, height);
             uvMap.put(id, uv);
 
             texHeight = Math.max(texture.getHeight(), texHeight);
@@ -77,6 +77,7 @@ public class TextureStitcher {
 
         // Create a new Texture from the packed FrameBuffer
         Texture textureAtlas = this.fbo.getColorBufferTexture();
+        textureAtlas.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         textureAtlas.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         // Clean up resources
