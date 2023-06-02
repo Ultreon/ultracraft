@@ -1,9 +1,6 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
@@ -22,6 +19,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
@@ -32,9 +30,13 @@ import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.crash.v0.CrashCategory;
+import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +51,11 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
+	private static final Logger LOGGER = LoggerFactory.getLogger("World");
 	private final Texture texture;
 	private final Texture breakingTex;
 	private final short[] indices;
 	private float[] vertices;
-	private boolean doRender = false;
 
 	private final BiomeGenerator biome = BiomeGenerator.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
@@ -76,8 +78,7 @@ public class World implements RenderableProvider {
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
 
-	public World(Texture texture, int chunksX, int chunksZ) {
-		this.texture = texture;
+	public World(int chunksX, int chunksZ) {
 		this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
@@ -185,11 +186,6 @@ public class World implements RenderableProvider {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
-	@Deprecated
-	public void generateWorld() {
-		doRender = true;
-	}
-
 	protected void generateChunk(ChunkPos pos) {
 		generateChunk(pos.x, pos.z);
 	}
@@ -200,9 +196,9 @@ public class World implements RenderableProvider {
 		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 		chunk.dirty = false;
 		chunk.numVertices = 0;
-		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
 		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
-		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture));
+		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
 		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 		chunk.overlayMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, breakingTex));
@@ -216,12 +212,6 @@ public class World implements RenderableProvider {
 		}
 
 		game.runLater(() -> {
-			chunk.mesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.mesh.setIndices(indices);
-			chunk.transparentMesh = new Mesh(true, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
-			chunk.transparentMesh.setIndices(indices);
 			chunk.ready = true;
 			chunk.dirty = true;
 			putChunk(chunkPos, chunk);
@@ -366,13 +356,25 @@ public class World implements RenderableProvider {
 
 	@Override
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-		if (!doRender) return;
-
 		renderedChunks = 0;
 		totalChunks = chunks.size();
 		for (Chunk chunk : chunks.values()) {
 			synchronized (chunk.lock) {
-				if (!chunk.ready) continue;
+				if (!chunk.ready) {
+					System.out.println("Chunk Not Ready");
+					continue;
+				}
+
+				if (chunk.mesh != null) chunk.mesh.dispose();
+				if (chunk.transparentMesh != null) chunk.transparentMesh.dispose();
+				if (chunk.overlayMesh != null) chunk.overlayMesh.dispose();
+
+				chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+						CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
+				chunk.mesh.setIndices(indices);
+				chunk.transparentMesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
+						CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
+				chunk.transparentMesh.setIndices(indices);
 
 				Mesh mesh = chunk.mesh;
 				Mesh transparentMesh = chunk.transparentMesh;
@@ -389,10 +391,11 @@ public class World implements RenderableProvider {
 
 					int numOverlayVertices = chunk.calculateOverlayVertices(this.vertices);
 					chunk.numOverlayVertices = numOverlayVertices / 4 * 6;
-					transparentMesh.setVertices(this.vertices, 0, numOverlayVertices * Chunk.VERTEX_SIZE);
+					overlayMesh.setVertices(this.vertices, 0, numOverlayVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
-				if (chunk.numVertices == 0) {
+				if (chunk.numVertices == 0 && chunk.numTransparentVertices == 0) {
+					System.out.println("Empty Vertices");
 					continue;
 				}
 				Renderable solidRenderable = pool.obtain();
@@ -412,19 +415,19 @@ public class World implements RenderableProvider {
 				overlay.material = chunk.overlayMaterial;
 				overlay.meshPart.mesh = overlayMesh;
 				overlay.meshPart.offset = 0;
-				overlay.meshPart.size = chunk.numTransparentVertices;
+				overlay.meshPart.size = chunk.numOverlayVertices;
 				overlay.meshPart.primitiveType = GL20.GL_TRIANGLES;
 
 				renderables.add(solidRenderable);
 				renderables.add(transparentRenderable);
-				renderedChunks = getRenderedChunks() + 1;
+				renderedChunks = renderedChunks + 1;
 			}
 		}
 	}
 
 	@Deprecated
 	public void regen() {
-
+		LOGGER.warn("Regenerating world not supported");
 	}
 
 	public int getPlayTime() {
@@ -512,6 +515,15 @@ public class World implements RenderableProvider {
 
 	public int getTotalChunks() {
 		return totalChunks;
+	}
+
+	public void fillCrashInfo(CrashLog crashLog) {
+		CrashCategory cat = new CrashCategory("World Details");
+		cat.add("Total chunks", this.totalChunks); // Too many chunks?
+		cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+		cat.add("Seed", this.seed); // For weird world generation glitches
+
+		crashLog.addCategory(cat);
 	}
 
 	public boolean intersectEntities(BoundingBox boundingBox) {

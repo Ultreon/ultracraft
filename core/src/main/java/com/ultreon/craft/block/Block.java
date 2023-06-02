@@ -3,6 +3,7 @@ package com.ultreon.craft.block;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v0.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Block {
     private static int globalId;
@@ -17,27 +19,52 @@ public class Block {
     private final boolean transparent;
     private final boolean solid;
     private final boolean fluid;
+    private final boolean requiresTool;
     private final float hardness;
+    @Deprecated
     private final CubeModel model;
+    @Deprecated
     private BakedCubeModel bakedModel;
+    private final ToolType effectiveTool;
 
+    public Block() {
+        this(new Properties());
+    }
+
+    public Block(Properties properties) {
+        this.id = globalId++;
+        this.transparent = properties.transparent;
+        this.solid = properties.solid;
+        this.fluid = properties.fluid;
+        this.hardness = properties.hardness;
+        this.effectiveTool = properties.effectiveTool;
+        this.requiresTool = properties.requiresTool;
+        this.model = null;
+    }
+
+    @Deprecated
     public Block(CubeModel model) {
         this(model, new Properties());
     }
 
+    @Deprecated
     public Block(CubeModel model, Properties properties) {
         this.id = globalId++;
         this.transparent = properties.transparent;
         this.solid = properties.solid;
         this.fluid = properties.fluid;
         this.hardness = properties.hardness;
+        this.effectiveTool = properties.effectiveTool;
+        this.requiresTool = properties.requiresTool;
         this.model = model;
     }
 
+    @Deprecated
     public CubeModel getModel() {
         return model;
     }
 
+    @Deprecated
     public BakedCubeModel bakedModel() {
         return bakedModel;
     }
@@ -47,6 +74,7 @@ public class Block {
         return (byte) id;
     }
 
+    @Deprecated
     public void bake(Texture texture) {
         if (this == Blocks.AIR) return;
         this.bakedModel = model.bake(texture);
@@ -57,7 +85,7 @@ public class Block {
     }
 
     public boolean isSolid() {
-        return this != Blocks.AIR && solid && !fluid;
+        return this != Blocks.AIR && solid;
     }
 
     public boolean isFluid() {
@@ -90,11 +118,22 @@ public class Block {
         return hardness;
     }
 
+    @Nullable
+    public ToolType getEffectiveTool() {
+        return effectiveTool;
+    }
+
+    public boolean getRequiresTool() {
+        return requiresTool;
+    }
+
     public static class Properties {
+        private ToolType effectiveTool = null;
         private float hardness = 0.0F;
         private boolean transparent = false;
         private boolean solid = true;
-        private boolean fluid;
+        private boolean fluid = false;
+        private boolean requiresTool = false;
 
         public Properties transparent() {
             this.transparent = true;
@@ -108,6 +147,16 @@ public class Block {
 
         public Properties hardness(float hardness) {
             this.hardness = hardness;
+            return this;
+        }
+
+        public Properties effectiveTool(ToolType toolType) {
+            this.effectiveTool = toolType;
+            return this;
+        }
+
+        public Properties requiresTool() {
+            this.requiresTool = true;
             return this;
         }
 
