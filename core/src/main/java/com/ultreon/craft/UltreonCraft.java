@@ -562,18 +562,30 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	public static void crash(Exception e) {
-		CrashLog crashLog = new CrashLog("An error occurred", e);
-		crash(crashLog);
+		try {
+			CrashLog crashLog = new CrashLog("An error occurred", e);
+			crash(crashLog);
+		} catch (Throwable t) {
+			LOGGER.error("Fatal error occurred when handling crash:", t);
+			Gdx.app.exit();
+		}
 	}
 
 	public static void crash(CrashLog crashLog) {
-		UltreonCraft.instance.fillGameInfo(crashLog);
-		ApplicationCrash crash = crashLog.createCrash();
-		crash(crash);
+		try {
+			UltreonCraft.instance.fillGameInfo(crashLog);
+			ApplicationCrash crash = crashLog.createCrash();
+			crash(crash);
+		} catch (Throwable t) {
+			LOGGER.error("Fatal error occurred when handling crash:", t);
+			Gdx.app.exit();
+		}
 	}
 
 	private void fillGameInfo(CrashLog crashLog) {
-		this.world.fillCrashInfo(crashLog);
+		if (this.world != null) {
+			this.world.fillCrashInfo(crashLog);
+		}
 
 		CrashCategory game = new CrashCategory("Game Details");
 		game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
@@ -582,9 +594,14 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	private static void crash(ApplicationCrash crash) {
-		crash.printCrash();
-		crash.getCrashLog().defaultSave();
-		Gdx.app.exit();
+		try {
+			crash.printCrash();
+			crash.getCrashLog().defaultSave();
+			Gdx.app.exit();
+		} catch (Throwable t) {
+			LOGGER.error("Fatal error occurred when handling crash:", t);
+			Gdx.app.exit();
+		}
 	}
 
 	public void tick() {
