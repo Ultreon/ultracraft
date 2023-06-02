@@ -90,6 +90,7 @@ public class Chunk {
 
 	public void setFast(int x, int y, int z, Block block) {
 		blocks[x + z * size + y * sizeTimesHeight] = block;
+		dirty = true;
 	}
 
 	private GridPoint3 reverse(int index) {
