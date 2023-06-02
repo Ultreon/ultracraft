@@ -84,6 +84,15 @@ dependencies {
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 
+    // Apache Log4J
+    implementation "org.apache.logging.log4j:log4j:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+
+    // SLF4J
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
+
     // Misc. Libraries
     implementation 'it.unimi.dsi:fastutil:8.5.11'
     implementation 'com.google.guava:guava:31.1-jre'

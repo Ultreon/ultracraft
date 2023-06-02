@@ -1,5 +1,7 @@
 package com.ultreon.craft.util;
 
+import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import de.articdive.jnoise.core.util.vectors.Vector1D;
@@ -8,12 +10,12 @@ import de.articdive.jnoise.core.util.vectors.Vector3D;
 import de.articdive.jnoise.core.util.vectors.Vector4D;
 
 public final class Mth extends UtilityClass {
-    public static Vector2 round(Vector2 vec) {
-        return new Vector2(Math.round(vec.x), Math.round(vec.y));
+    public static GridPoint2 round(Vector2 vec) {
+        return new GridPoint2(Math.round(vec.x), Math.round(vec.y));
     }
 
-    public static Vector3 round(Vector3 vec) {
-        return new Vector3(Math.round(vec.x), Math.round(vec.y), Math.round(vec.z));
+    public static GridPoint3 round(Vector3 vec) {
+        return new GridPoint3(Math.round(vec.x), Math.round(vec.y), Math.round(vec.z));
     }
 
     public static Vector1D round(Vector1D vec) {

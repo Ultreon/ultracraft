@@ -17,12 +17,10 @@ public class WaterTerrainLayer extends TerrainLayer {
 
     @Override
     public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
-        Debugger.layersTriggered.add(this);
         if (y > height && y <= waterLevel) {
             chunk.set(x, y, z, Blocks.WATER);
             if (y == height + 1) {
                 chunk.set(x, height, z, Blocks.SAND);
-                Debugger.layersHandled.add(this);
             }
             return true;
         }
