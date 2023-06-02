@@ -9,6 +9,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 public class Shaders {
     // Create a new shader that modifies the texture coordinates
     public static final ShaderProgram MINING = create(UltreonCraft.id("mining"));
+    public static final ShaderProgram OUTLINE = create(UltreonCraft.id("outline"));
 
     private static ShaderProgram create(Identifier id) {
         return new ShaderProgram(
