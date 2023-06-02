@@ -16,9 +16,10 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.audio.SoundEvent;
@@ -126,6 +127,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+	public boolean showDebugHud = false;
 
 	// Startup time
 	public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
@@ -430,71 +432,82 @@ public class UltreonCraft extends ApplicationAdapter {
 			Screen screen = this.currentScreen;
 			Renderer renderer = new Renderer(this.shapes);
 			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
-			if (world != null) {
-				this.font.setColor(Color.rgb(0xffffff).toGdx());
-				this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
-						+ world.getTotalChunks(), 20, 20);
-				if (this.player != null) {
-					this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, 30);
-					this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, 40);
-				}
-				this.hud.render(renderer, deltaTime);
-			}
-			if (screen != null) {
-				screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
-			}
+			renderGame(renderer, screen, world, deltaTime);
 			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
 
-			if (this.showImGui.get()) {
-				// render 3D scene
-				this.imGuiGlfw.newFrame();
-
-				ImGui.newFrame();
-				ImGui.setNextWindowPos(0, 0);
-				ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
-				ImGui.setNextWindowCollapsed(true);
-
-				if (Gdx.input.isCursorCatched()) {
-					ImGui.getIO().setMouseDown(new boolean[5]);
-					ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
-				}
-
-				if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-						ImGuiWindowFlags.NoCollapse |
-						ImGuiWindowFlags.AlwaysAutoResize |
-						ImGuiWindowFlags.NoTitleBar |
-						ImGuiWindowFlags.MenuBar |
-						ImGuiInputTextFlags.AllowTabInput)) {
-					if (ImGui.beginMenuBar()) {
-						if (ImGui.beginMenu("View")) {
-							ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
-							ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
-							ImGui.endMenu();
-						}
-						if (ImGui.beginMenu("Debug")) {
-							ImGui.menuItem("Utils", null, SHOW_UTILS);
-							ImGui.endMenu();
-						}
-
-						ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
-						ImGui.endMenuBar();
-					}
-					ImGui.end();
-				}
-
-				if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
-				if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
-				if (SHOW_UTILS.get()) showUtils();
-
-				ImGui.render();
-				this.imGuiGl3.renderDrawData(ImGui.getDrawData());
-			}
+			renderImGui();
 
 			this.spriteBatch.end();
 		} catch (Exception e) {
 			crash(e);
 		}
     }
+
+	private void renderImGui() {
+		if (this.showImGui.get()) {
+			// render 3D scene
+			this.imGuiGlfw.newFrame();
+
+			ImGui.newFrame();
+			ImGui.setNextWindowPos(0, 0);
+			ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
+			ImGui.setNextWindowCollapsed(true);
+
+			if (Gdx.input.isCursorCatched()) {
+				ImGui.getIO().setMouseDown(new boolean[5]);
+				ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+			}
+
+			if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
+					ImGuiWindowFlags.NoCollapse |
+					ImGuiWindowFlags.AlwaysAutoResize |
+					ImGuiWindowFlags.NoTitleBar |
+					ImGuiWindowFlags.MenuBar |
+					ImGuiInputTextFlags.AllowTabInput)) {
+				if (ImGui.beginMenuBar()) {
+					if (ImGui.beginMenu("View")) {
+						ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
+						ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
+						ImGui.endMenu();
+					}
+					if (ImGui.beginMenu("Debug")) {
+						ImGui.menuItem("Utils", null, SHOW_UTILS);
+						ImGui.endMenu();
+					}
+
+					ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
+					ImGui.endMenuBar();
+				}
+				ImGui.end();
+			}
+
+			if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
+			if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
+			if (SHOW_UTILS.get()) showUtils();
+
+			ImGui.render();
+			this.imGuiGl3.renderDrawData(ImGui.getDrawData());
+		}
+	}
+
+	private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
+		if (world != null) {
+			if (this.showDebugHud) {
+				this.font.setColor(Color.rgb(0xffffff).toGdx());
+				this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
+						+ world.getTotalChunks(), 20, getScaledHeight() - 20);
+				if (this.player != null) {
+					this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, getScaledHeight() - 30);
+					this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, getScaledHeight() - 40);
+				}
+			}
+
+			this.hud.render(renderer, deltaTime);
+		}
+		if (screen != null) {
+			screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
+		}
+	}
 
 	public static void crash(Exception e) {
 		CrashLog crashLog = new CrashLog("An error occurred", e);
@@ -680,7 +693,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.blocksTextureAtlas.dispose();
 
-		this.modelBatch.dispose();
+		this.batch.dispose();
 		this.spriteBatch.dispose();
 		this.font.dispose();
 	}
