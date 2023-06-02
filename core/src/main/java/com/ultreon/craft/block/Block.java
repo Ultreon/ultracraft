@@ -21,14 +21,33 @@ public class Block {
     private final boolean fluid;
     private final boolean requiresTool;
     private final float hardness;
+    @Deprecated
     private final CubeModel model;
+    @Deprecated
     private BakedCubeModel bakedModel;
     private final ToolType effectiveTool;
 
+    public Block() {
+        this(new Properties());
+    }
+
+    public Block(Properties properties) {
+        this.id = globalId++;
+        this.transparent = properties.transparent;
+        this.solid = properties.solid;
+        this.fluid = properties.fluid;
+        this.hardness = properties.hardness;
+        this.effectiveTool = properties.effectiveTool;
+        this.requiresTool = properties.requiresTool;
+        this.model = null;
+    }
+
+    @Deprecated
     public Block(CubeModel model) {
         this(model, new Properties());
     }
 
+    @Deprecated
     public Block(CubeModel model, Properties properties) {
         this.id = globalId++;
         this.transparent = properties.transparent;
@@ -40,10 +59,12 @@ public class Block {
         this.model = model;
     }
 
+    @Deprecated
     public CubeModel getModel() {
         return model;
     }
 
+    @Deprecated
     public BakedCubeModel bakedModel() {
         return bakedModel;
     }
@@ -53,6 +74,7 @@ public class Block {
         return (byte) id;
     }
 
+    @Deprecated
     public void bake(Texture texture) {
         if (this == Blocks.AIR) return;
         this.bakedModel = model.bake(texture);

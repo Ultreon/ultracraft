@@ -14,13 +14,12 @@ public class WorldLoadScreen extends Screen {
     public void show() {
         super.show();
 
-        game.world = new World(game.getTilesTex(), 16, 16);
+        game.world = new World(16, 16);
         new Thread(this::run, "World Loading").start();
     }
 
     public void run() {
         MathUtils.random.setSeed(0);
-        game.world.generateWorld();
 
         game.respawn();
 

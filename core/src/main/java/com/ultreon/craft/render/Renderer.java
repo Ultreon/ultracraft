@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
@@ -263,17 +264,29 @@ public class Renderer {
     ///////////////////
     public void texture(TextureRegion tex, float x, float y) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, 16, 16);
+        } else {
+            batch.draw(tex, x, y);
+        }
     }
 
     public void texture(TextureRegion tex, float x, float y, float width, float height) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y, width, height);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, width, height);
+        } else {
+            batch.draw(tex, x, y, width, height);
+        }
     }
 
     public void texture(Texture tex, float x, float y) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, 16, 16);
+        } else {
+            batch.draw(tex, x, y);
+        }
     }
 
 
@@ -281,7 +294,11 @@ public class Renderer {
         setColor(backgroundColor);
         rect(x, y, tex.getWidth(), tex.getHeight());
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, 16, 16);
+        } else {
+            batch.draw(tex, x, y);
+        }
     }
 
     public void texture(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
@@ -300,8 +317,12 @@ public class Renderer {
         setColor(backgroundColor);
         rect(x, y, width, height);
         batch.setColor(textureColor.toGdx());
-        TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
-        batch.draw(textureRegion, x, y, width, height);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, width, height);
+        } else {
+            TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
+            batch.draw(textureRegion, x, y, width, height);
+        }
     }
 
     public void texture(Texture tex, float x, float y, float width, float height) {
@@ -318,8 +339,12 @@ public class Renderer {
 
     public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
         batch.setColor(textureColor.toGdx());
-        TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
-        batch.draw(textureRegion, x, y, width, height);
+        if (tex == null) {
+            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, width, height);
+        } else {
+            TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
+            batch.draw(textureRegion, x, y, width, height);
+        }
     }
 
     //////////////////

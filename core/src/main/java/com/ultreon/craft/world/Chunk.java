@@ -126,7 +126,7 @@ public class Chunk {
 					if (block == null || block == Blocks.AIR) continue;
 					if (block.isTransparent()) continue;
 
-					BakedCubeModel model = block.bakedModel();
+					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
 
@@ -184,7 +184,7 @@ public class Chunk {
 					if (block == null || block == Blocks.AIR) continue;
 					if (!block.isTransparent()) continue;
 
-					BakedCubeModel model = block.bakedModel();
+					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
 
