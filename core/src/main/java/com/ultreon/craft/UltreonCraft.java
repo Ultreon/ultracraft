@@ -17,8 +17,10 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.audio.SoundEvent;
@@ -102,7 +104,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	public Player player;
 	public int renderDistance = 8;
 	private SpriteBatch spriteBatch;
-	private ModelBatch modelBatch;
+	private ModelBatch batch;
 	private GameCamera camera;
 	private Environment env;
 	private float timeUntilNextTick;
@@ -122,10 +124,13 @@ public class UltreonCraft extends ApplicationAdapter {
 	@Deprecated
 	private Texture tilesTex;
 	private float guiScale = 2;
-	public boolean renderWorld = false;
 	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
 	private Hud hud;
 	private int chunkRefresh;
+
+	// Public Flags
+	public boolean renderWorld = false;
+	public boolean advancedShadows = true;
 
 	// Startup time
 	public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
@@ -133,6 +138,10 @@ public class UltreonCraft extends ApplicationAdapter {
 	// Texture Atlases
 	public TextureAtlas blocksTextureAtlas;
 	private BakedModelRegistry bakedBlockModels;
+
+	// Advanced Shadows
+	private DirectionalShadowLight shadowLight;
+	private ModelBatch shadowBatch;
 
 	public UltreonCraft(String[] args) {
 		LOGGER.info("Booting game!");
@@ -216,7 +225,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			LOGGER.info("Initializing rendering stuffs");
 			DefaultShader.Config config = new DefaultShader.Config();
 			config.defaultCullFace = GL20.GL_FRONT;
-			this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
+			this.batch = new ModelBatch(new DefaultShaderProvider(config));
+			this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
 			this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 			this.camera.near = 0.01f;
 			this.camera.far = 1000;
@@ -232,9 +242,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
 			LOGGER.info("Setting up environment");
 			this.env = new Environment();
-			this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-			this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
-			this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
+			this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+			this.env.add(new DirectionalLight().set(.6f, .6f, .6f, .8f, 0, -.6f));
+			this.env.add(new DirectionalLight().set(.6f, .6f, .6f, -.8f, 0, .6f));
+			this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
 
 			LOGGER.info("Loading languages");
 			LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
@@ -416,9 +427,9 @@ public class UltreonCraft extends ApplicationAdapter {
 			Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 
 			if (this.renderWorld && world != null) {
-				this.modelBatch.begin(this.camera);
-				this.modelBatch.render(world, this.env);
-				this.modelBatch.end();
+				this.batch.begin(this.camera);
+				this.batch.render(world, this.env);
+				this.batch.end();
 
 				if (InputManager.isKeyDown(Input.Keys.F9)) {
 					world.regen();
@@ -680,7 +691,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
 		this.blocksTextureAtlas.dispose();
 
-		this.modelBatch.dispose();
+		this.batch.dispose();
 		this.spriteBatch.dispose();
 		this.font.dispose();
 	}
