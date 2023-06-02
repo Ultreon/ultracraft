@@ -30,6 +30,8 @@ import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.crash.v0.CrashCategory;
+import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
@@ -422,7 +424,6 @@ public class World implements RenderableProvider {
 			throw new IllegalStateException("Entity already spawned: " + entity);
 		}
 		int newId = oldId > 0 ? oldId : nextId();
-		entity.setId(newId);
 	}
 
 	private int nextId() {
@@ -484,5 +485,14 @@ public class World implements RenderableProvider {
 
 	public int getTotalChunks() {
 		return totalChunks;
+	}
+
+	public void fillCrashInfo(CrashLog crashLog) {
+		CrashCategory cat = new CrashCategory("World Details");
+		cat.add("Total chunks", this.totalChunks); // Too many chunks?
+		cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+		cat.add("Seed", this.seed); // For weird world generation glitches
+
+		crashLog.addCategory(cat);
 	}
 }
