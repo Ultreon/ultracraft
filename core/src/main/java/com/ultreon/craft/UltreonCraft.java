@@ -53,6 +53,7 @@ import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
+import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.registries.v0.Registry;
@@ -75,6 +76,7 @@ import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -87,6 +89,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
 	private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
 	private static final Logger LOGGER = LoggerFactory.getLogger("UltreonCraft");
+	private boolean booted = false;
 	private final ImGuiImplGlfw imGuiGlfw;
 	private final ImGuiImplGl3 imGuiGl3;
 	public static final int TPS = 20;
@@ -125,15 +128,13 @@ public class UltreonCraft extends ApplicationAdapter {
 	private int chunkRefresh;
 
 	// Startup time
-	private final long bootStartMillis;
+	public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
 
 	// Texture Atlases
 	public TextureAtlas blocksTextureAtlas;
 	private BakedModelRegistry bakedBlockModels;
 
 	public UltreonCraft(String[] args) {
-		this.bootStartMillis = System.currentTimeMillis();
-
 		LOGGER.info("Booting game!");
 
 		Identifier.setDefaultNamespace(NAMESPACE);
@@ -148,6 +149,20 @@ public class UltreonCraft extends ApplicationAdapter {
 		}
 
 		instance = this;
+
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+			CrashLog crashLog = new CrashLog("Exception in thread", e);
+			CrashCategory cat = new CrashCategory("Thread");
+			crashLog.addCategory(cat);
+			delayCrash(crashLog);
+		});
+	}
+
+	private void delayCrash(CrashLog crashLog) {
+		Gdx.app.postRunnable(() -> {
+			CrashLog finalCrash = new CrashLog("An error occurred", crashLog, new RuntimeException("Delayed crash"));
+			crash(finalCrash);
+		});
 	}
 
 	public static UltreonCraft get() {
@@ -160,122 +175,130 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void create() {
-		LOGGER.info("Initializing game");
-		this.textureManager = new TextureManager();
-		this.spriteBatch = new SpriteBatch();
-
-		createDir("screenshots/");
-
-		this.resourceManager = new ResourceManager("assets");
 		try {
-			LOGGER.info("Importing resources");
-			this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+			LOGGER.info("Initializing game");
+			this.textureManager = new TextureManager();
+			this.spriteBatch = new SpriteBatch();
 
-		LOGGER.info("Generating bitmap fonts");
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
-		FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
-		fontParameter.size = 8;
-		fontParameter.minFilter = Texture.TextureFilter.Nearest;
-		fontParameter.magFilter = Texture.TextureFilter.Nearest;
-		fontParameter.mono = true;
-		this.font = generator.generateFont(fontParameter);
-		FreeTypeFontParameter largeFontParameter = new FreeTypeFontParameter();
-		largeFontParameter.size = 16;
-		largeFontParameter.minFilter = Texture.TextureFilter.Nearest;
-		largeFontParameter.magFilter = Texture.TextureFilter.Nearest;
-		largeFontParameter.mono = true;
-		this.largeFont = generator.generateFont(largeFontParameter);
-		FreeTypeFontParameter xlFontParameter = new FreeTypeFontParameter();
-		xlFontParameter.size = 24;
-		xlFontParameter.minFilter = Texture.TextureFilter.Nearest;
-		xlFontParameter.magFilter = Texture.TextureFilter.Nearest;
-		xlFontParameter.mono = true;
-		this.xlFont = generator.generateFont(xlFontParameter);
+			createDir("screenshots/");
+			createDir("game-crashes/");
+			createDir("logs/");
 
-		LOGGER.info("Initializing rendering stuffs");
-		DefaultShader.Config config = new DefaultShader.Config();
-		config.defaultCullFace = GL20.GL_FRONT;
-		this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
-		this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		this.camera.near = 0.01f;
-		this.camera.far = 1000;
-		this.input = new InputManager(this, this.camera);
-		Gdx.input.setInputProcessor(this.input);
-
-		Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pixmap.setColor(1F, 1F, 1F, 1F);
-		pixmap.drawPixel(0, 0);
-		this.white = new TextureRegion(new Texture(pixmap));
-
-		this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
-
-		LOGGER.info("Setting up environment");
-		this.env = new Environment();
-		this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
-		this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
-
-		LOGGER.info("Loading languages");
-		LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
-		LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
-		LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
-
-		LOGGER.info("Registering stuff");
-		Registries.nopInit();
-
-		Blocks.nopInit();
-		NoiseSettingsInit.nopInit();
-		Entities.nopInit();
-		Fonts.nopInit();
-		Sounds.nopInit();
-
-		for (var registry : Registry.getRegistries()) {
-			RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
-		}
-		Registry.freeze();
-
-		LOGGER.info("Registering models");
-		registerModels();
-
-		LOGGER.info("Stitching textures");
-		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
-
-		LOGGER.info("Initializing sounds");
-		for (SoundEvent sound : Registries.SOUNDS.values()) {
-			if (sound == null) {
-				continue;
+			this.resourceManager = new ResourceManager("assets");
+			try {
+				LOGGER.info("Importing resources");
+				this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
-			sound.register();
+
+			LOGGER.info("Generating bitmap fonts");
+			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
+			FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
+			fontParameter.size = 8;
+			fontParameter.minFilter = Texture.TextureFilter.Nearest;
+			fontParameter.magFilter = Texture.TextureFilter.Nearest;
+			fontParameter.mono = true;
+			this.font = generator.generateFont(fontParameter);
+			FreeTypeFontParameter largeFontParameter = new FreeTypeFontParameter();
+			largeFontParameter.size = 16;
+			largeFontParameter.minFilter = Texture.TextureFilter.Nearest;
+			largeFontParameter.magFilter = Texture.TextureFilter.Nearest;
+			largeFontParameter.mono = true;
+			this.largeFont = generator.generateFont(largeFontParameter);
+			FreeTypeFontParameter xlFontParameter = new FreeTypeFontParameter();
+			xlFontParameter.size = 24;
+			xlFontParameter.minFilter = Texture.TextureFilter.Nearest;
+			xlFontParameter.magFilter = Texture.TextureFilter.Nearest;
+			xlFontParameter.mono = true;
+			this.xlFont = generator.generateFont(xlFontParameter);
+
+			LOGGER.info("Initializing rendering stuffs");
+			DefaultShader.Config config = new DefaultShader.Config();
+			config.defaultCullFace = GL20.GL_FRONT;
+			this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
+			this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			this.camera.near = 0.01f;
+			this.camera.far = 1000;
+			this.input = new InputManager(this, this.camera);
+			Gdx.input.setInputProcessor(this.input);
+
+			Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+			pixmap.setColor(1F, 1F, 1F, 1F);
+			pixmap.drawPixel(0, 0);
+			this.white = new TextureRegion(new Texture(pixmap));
+
+			this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
+
+			LOGGER.info("Setting up environment");
+			this.env = new Environment();
+			this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+			this.env.add(new DirectionalLight().set(.5f, .5f, .5f, -0.4f, -1, -0.2f));
+			this.env.add(new DirectionalLight().set(.5f, .5f, .5f, 0.4f, -1, 0.2f));
+
+			LOGGER.info("Loading languages");
+			LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
+			LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
+			LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
+
+			LOGGER.info("Registering stuff");
+			Registries.nopInit();
+
+			Blocks.nopInit();
+			NoiseSettingsInit.nopInit();
+			Entities.nopInit();
+			Fonts.nopInit();
+			Sounds.nopInit();
+
+			for (var registry : Registry.getRegistries()) {
+				RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
+			}
+			Registry.freeze();
+
+			LOGGER.info("Registering models");
+			registerModels();
+
+			LOGGER.info("Stitching textures");
+			this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+
+			LOGGER.info("Initializing sounds");
+			for (SoundEvent sound : Registries.SOUNDS.values()) {
+				if (sound == null) {
+					continue;
+				}
+				sound.register();
+			}
+
+			LOGGER.info("Baking models");
+			this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
+
+			LOGGER.info("Setting up HUD");
+			this.hud = new Hud(this);
+
+			LOGGER.info("Opening title screen");
+			showScreen(new TitleScreen());
+
+			LOGGER.info("Setting up ImGui");
+			GLFWErrorCallback.createPrint(System.err).set();
+			if (!GLFW.glfwInit()) {
+				throw new IllegalStateException("Unable to initialize GLFW");
+			}
+			ImGui.createContext();
+			final ImGuiIO io = ImGui.getIO();
+			io.setIniFilename(null);
+			io.getFonts().addFontDefault();
+
+			windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
+
+			imGuiGlfw.init(windowHandle, true);
+			imGuiGl3.init("#version 150");
+
+		} catch (Exception e) {
+			crash(e);
 		}
 
-		LOGGER.info("Baking models");
-		this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
-
-		LOGGER.info("Setting up HUD");
-		this.hud = new Hud(this);
-
-		LOGGER.info("Opening title screen");
-		showScreen(new TitleScreen());
-
-		LOGGER.info("Setting up ImGui");
-		GLFWErrorCallback.createPrint(System.err).set();
-		if (!GLFW.glfwInit()) {
-			throw new IllegalStateException("Unable to initialize GLFW");
-		}
-		ImGui.createContext();
-		final ImGuiIO io = ImGui.getIO();
-		io.setIniFilename(null);
-		io.getFonts().addFontDefault();
-
-		windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
-
-		imGuiGlfw.init(windowHandle, true);
-		imGuiGl3.init("#version 150");
-
-		LOGGER.info("Game booted in " + (System.currentTimeMillis() - this.bootStartMillis) + "ms");
+		booted = true;
+		LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
 	}
 
 	private void registerModels() {
@@ -370,104 +393,134 @@ public class UltreonCraft extends ApplicationAdapter {
 
     @Override
     public void render() {
-		final var tickTime = 1f / TPS;
+		try {
+			final var tickTime = 1f / TPS;
 
-		float deltaTime = Gdx.graphics.getDeltaTime();
-		this.timeUntilNextTick -= deltaTime;
-		if (this.timeUntilNextTick < 0) {
-			this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
+			float deltaTime = Gdx.graphics.getDeltaTime();
+			this.timeUntilNextTick -= deltaTime;
+			if (this.timeUntilNextTick < 0) {
+				this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
 
-			tick();
-		}
-
-		this.tasks.forEach(runnable -> {
-			runnable.run();
-			this.tasks.remove(runnable);
-		});
-
-		this.input.update();
-
-		ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
-		World world = this.world;
-		Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
-
-		if (this.renderWorld && world != null) {
-			this.modelBatch.begin(this.camera);
-			this.modelBatch.render(world, this.env);
-			this.modelBatch.end();
-
-			if (InputManager.isKeyDown(Input.Keys.F9)) {
-				world.regen();
-			}
-		}
-
-		this.spriteBatch.begin();
-
-		Screen screen = this.currentScreen;
-		Renderer renderer = new Renderer(this.shapes);
-		this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
-		if (world != null) {
-			this.font.setColor(Color.rgb(0xffffff).toGdx());
-			this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
-					+ world.getTotalChunks(), 20, 20);
-			if (this.player != null) {
-				this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, 30);
-				this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, 40);
-			}
-			this.hud.render(renderer, deltaTime);
-		}
-		if (screen != null) {
-			screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
-		}
-		this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
-
-		if (this.showImGui.get()) {
-			// render 3D scene
-			this.imGuiGlfw.newFrame();
-
-			ImGui.newFrame();
-			ImGui.setNextWindowPos(0, 0);
-			ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
-			ImGui.setNextWindowCollapsed(true);
-
-			if (Gdx.input.isCursorCatched()) {
-				ImGui.getIO().setMouseDown(new boolean[5]);
-				ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+				tick();
 			}
 
-			if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-					ImGuiWindowFlags.NoCollapse |
-					ImGuiWindowFlags.AlwaysAutoResize |
-					ImGuiWindowFlags.NoTitleBar |
-					ImGuiWindowFlags.MenuBar |
-					ImGuiInputTextFlags.AllowTabInput)) {
-				if (ImGui.beginMenuBar()) {
-					if (ImGui.beginMenu("View")) {
-						ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
-						ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
-						ImGui.endMenu();
-					}
-					if (ImGui.beginMenu("Debug")) {
-						ImGui.menuItem("Utils", null, SHOW_UTILS);
-						ImGui.endMenu();
-					}
+			this.tasks.forEach(runnable -> {
+				runnable.run();
+				this.tasks.remove(runnable);
+			});
 
-					ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
-					ImGui.endMenuBar();
+			this.input.update();
+
+			ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
+			World world = this.world;
+			Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
+
+			if (this.renderWorld && world != null) {
+				this.modelBatch.begin(this.camera);
+				this.modelBatch.render(world, this.env);
+				this.modelBatch.end();
+
+				if (InputManager.isKeyDown(Input.Keys.F9)) {
+					world.regen();
 				}
-				ImGui.end();
 			}
 
-			if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
-			if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
-			if (SHOW_UTILS.get()) showUtils();
+			this.spriteBatch.begin();
 
-			ImGui.render();
-			this.imGuiGl3.renderDrawData(ImGui.getDrawData());
+			Screen screen = this.currentScreen;
+			Renderer renderer = new Renderer(this.shapes);
+			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
+			if (world != null) {
+				this.font.setColor(Color.rgb(0xffffff).toGdx());
+				this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
+						+ world.getTotalChunks(), 20, 20);
+				if (this.player != null) {
+					this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, 30);
+					this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, 40);
+				}
+				this.hud.render(renderer, deltaTime);
+			}
+			if (screen != null) {
+				screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
+			}
+			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
+
+			if (this.showImGui.get()) {
+				// render 3D scene
+				this.imGuiGlfw.newFrame();
+
+				ImGui.newFrame();
+				ImGui.setNextWindowPos(0, 0);
+				ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
+				ImGui.setNextWindowCollapsed(true);
+
+				if (Gdx.input.isCursorCatched()) {
+					ImGui.getIO().setMouseDown(new boolean[5]);
+					ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+				}
+
+				if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
+						ImGuiWindowFlags.NoCollapse |
+						ImGuiWindowFlags.AlwaysAutoResize |
+						ImGuiWindowFlags.NoTitleBar |
+						ImGuiWindowFlags.MenuBar |
+						ImGuiInputTextFlags.AllowTabInput)) {
+					if (ImGui.beginMenuBar()) {
+						if (ImGui.beginMenu("View")) {
+							ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
+							ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
+							ImGui.endMenu();
+						}
+						if (ImGui.beginMenu("Debug")) {
+							ImGui.menuItem("Utils", null, SHOW_UTILS);
+							ImGui.endMenu();
+						}
+
+						ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
+						ImGui.endMenuBar();
+					}
+					ImGui.end();
+				}
+
+				if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
+				if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
+				if (SHOW_UTILS.get()) showUtils();
+
+				ImGui.render();
+				this.imGuiGl3.renderDrawData(ImGui.getDrawData());
+			}
+
+			this.spriteBatch.end();
+		} catch (Exception e) {
+			crash(e);
 		}
-
-		this.spriteBatch.end();
     }
+
+	public static void crash(Exception e) {
+		CrashLog crashLog = new CrashLog("An error occurred", e);
+		crash(crashLog);
+	}
+
+	public static void crash(CrashLog crashLog) {
+		UltreonCraft.instance.fillGameInfo(crashLog);
+		ApplicationCrash crash = crashLog.createCrash();
+		crash(crash);
+	}
+
+	private void fillGameInfo(CrashLog crashLog) {
+		this.world.fillCrashInfo(crashLog);
+
+		CrashCategory game = new CrashCategory("Game Details");
+		game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
+		game.add("Game booted", this.booted); // Could be the game isn't booted yet.
+		crashLog.addCategory(game);
+	}
+
+	private static void crash(ApplicationCrash crash) {
+		crash.printCrash();
+		crash.getCrashLog().defaultSave();
+		Gdx.app.exit();
+	}
 
 	public void tick() {
 		World world = this.world;
