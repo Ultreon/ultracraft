@@ -255,10 +255,10 @@ public class World implements RenderableProvider {
 		set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
-	public void set(int x, int y, int z, Block voxel) {
+	public void set(int x, int y, int z, Block block) {
 		Chunk chunk = getChunkAt(x, y, z);
-		chunk.set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
-		chunk.dirty = true;
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		chunk.set(cp.x, cp.y, cp.z, block);
 	}
 
 	public Block get(GridPoint3 pos) {
@@ -272,6 +272,15 @@ public class World implements RenderableProvider {
 			return Blocks.AIR;
 		}
 
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		return chunkAt.get(cp.x, cp.y, cp.z);
+	}
+
+	private GridPoint3 toChunkCoords(GridPoint3 worldCoords) {
+		return toChunkCoords(worldCoords.x, worldCoords.y, worldCoords.z);
+	}
+
+	private GridPoint3 toChunkCoords(int x, int y, int z) {
 		int cx = x % CHUNK_SIZE;
 		int cy = y % CHUNK_HEIGHT;
 		int cz = z % CHUNK_SIZE;
@@ -279,7 +288,7 @@ public class World implements RenderableProvider {
 		if (cx < 0) cx += CHUNK_SIZE;
 		if (cz < 0) cz += CHUNK_SIZE;
 
-		return chunkAt.get(cx, cy, cz);
+		return new GridPoint3(cx, cy, cz);
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
