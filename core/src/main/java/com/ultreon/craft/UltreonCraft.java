@@ -522,8 +522,6 @@ public class UltreonCraft extends ApplicationAdapter {
 			ImGui.render();
 			this.imGuiGl3.renderDrawData(ImGui.getDrawData());
 		}
-
-        this.spriteBatch.end();
 	}
 
 	private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
