@@ -30,9 +30,13 @@ import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.crash.v0.CrashCategory;
+import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +51,7 @@ public class World implements RenderableProvider {
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
+	private static final Logger LOGGER = LoggerFactory.getLogger("World");
 	private final short[] indices;
 	private float[] vertices;
 
@@ -250,10 +255,10 @@ public class World implements RenderableProvider {
 		set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
-	public void set(int x, int y, int z, Block voxel) {
+	public void set(int x, int y, int z, Block block) {
 		Chunk chunk = getChunkAt(x, y, z);
-		chunk.set(x % CHUNK_SIZE, y % CHUNK_HEIGHT, z % CHUNK_SIZE, voxel);
-		chunk.dirty = true;
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		chunk.set(cp.x, cp.y, cp.z, block);
 	}
 
 	public Block get(GridPoint3 pos) {
@@ -267,6 +272,15 @@ public class World implements RenderableProvider {
 			return Blocks.AIR;
 		}
 
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		return chunkAt.get(cp.x, cp.y, cp.z);
+	}
+
+	private GridPoint3 toChunkCoords(GridPoint3 worldCoords) {
+		return toChunkCoords(worldCoords.x, worldCoords.y, worldCoords.z);
+	}
+
+	private GridPoint3 toChunkCoords(int x, int y, int z) {
 		int cx = x % CHUNK_SIZE;
 		int cy = y % CHUNK_HEIGHT;
 		int cz = z % CHUNK_SIZE;
@@ -274,7 +288,7 @@ public class World implements RenderableProvider {
 		if (cx < 0) cx += CHUNK_SIZE;
 		if (cz < 0) cz += CHUNK_SIZE;
 
-		return chunkAt.get(cx, cy, cz);
+		return new GridPoint3(cx, cy, cz);
 	}
 
 	public Chunk getChunk(ChunkPos chunkPos) {
@@ -393,7 +407,7 @@ public class World implements RenderableProvider {
 
 	@Deprecated
 	public void regen() {
-
+		LOGGER.warn("Regenerating world not supported");
 	}
 
 	public int getPlayTime() {
@@ -481,6 +495,15 @@ public class World implements RenderableProvider {
 
 	public int getTotalChunks() {
 		return totalChunks;
+	}
+
+	public void fillCrashInfo(CrashLog crashLog) {
+		CrashCategory cat = new CrashCategory("World Details");
+		cat.add("Total chunks", this.totalChunks); // Too many chunks?
+		cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+		cat.add("Seed", this.seed); // For weird world generation glitches
+
+		crashLog.addCategory(cat);
 	}
 
 	public boolean intersectEntities(BoundingBox boundingBox) {
