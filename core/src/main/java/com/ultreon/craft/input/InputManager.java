@@ -26,8 +26,9 @@ import java.util.zip.Deflater;
 public class InputManager extends InputAdapter {
     private static final float DEG_PER_PIXEL = 0.6384300433839F;
     public int pauseKey = Input.Keys.ESCAPE;
-    public int imGuiKey = Input.Keys.F3;
-    public int imGuiFocusKey = Input.Keys.F4;
+    public int imGuiKey = Input.Keys.F9;
+    public int imGuiFocusKey = Input.Keys.F10;
+    public int debugHudKey = Input.Keys.F3;
     public int screenshotKey = Input.Keys.F2;
     private static final IntArraySet keys = new IntArraySet();
     private final UltreonCraft game;
@@ -79,14 +80,17 @@ public class InputManager extends InputAdapter {
     @Override
     public boolean keyUp(int keycode) {
         keys.remove(keycode);
-        if (imGuiKey == keycode) {
-            if (game.isShowingImGui() && game.world != null) {
+        if (keycode == this.imGuiKey) {
+            if (this.game.isShowingImGui() && this.game.world != null) {
                 Gdx.input.setCursorCatched(true);
             }
-            game.setShowingImGui(!game.isShowingImGui());
-        }
-        if (imGuiFocusKey == keycode && game.isShowingImGui() && game.world != null && game.currentScreen == null) {
-            Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+            this.game.setShowingImGui(!this.game.isShowingImGui());
+        } else if (keycode == this.imGuiFocusKey) {
+            if (this.game.isShowingImGui() && this.game.world != null && this.game.currentScreen == null) {
+                Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
+            }
+        } else if (keycode == this.debugHudKey) {
+            this.game.showDebugHud = !this.game.showDebugHud;
         }
 
         Screen currentScreen = game.currentScreen;
