@@ -29,7 +29,7 @@ public class TextureManager {
 
     public Texture getTexture(Identifier id) {
         if (!cache.containsKey(id)) {
-            registerTexture(id);
+            return registerTexture(id);
         }
         return Preconditions.checkNotNull(cache.get(id), "Texture not registered");
     }

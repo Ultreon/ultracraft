@@ -472,10 +472,6 @@ public class UltreonCraft extends ApplicationAdapter {
 				this.batch.begin(this.camera);
 				this.batch.render(world, this.env);
 				this.batch.end();
-
-				if (InputManager.isKeyDown(Input.Keys.F9)) {
-					world.regen();
-				}
 			}
 
 			this.spriteBatch.begin();
