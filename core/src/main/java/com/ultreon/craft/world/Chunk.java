@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -30,13 +29,10 @@ public class Chunk {
 	private final int backOffset;
 	public TreeData treeData;
 	protected Mesh mesh;
-	protected Mesh transparentMesh;
 	protected Material material;
-	protected Material transparentMaterial;
 	protected boolean dirty;
 
 	protected int numVertices;
-	protected int numTransparentVertices;
 	private final World world;
 
 	public Chunk(World world, int size, int height, ChunkPos pos) {
@@ -111,7 +107,6 @@ public class Chunk {
 					Block block = get(x, y, z);
 
 					if (block == null || block == Blocks.AIR) continue;
-					if (block.isTransparent()) continue;
 
 					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
@@ -156,59 +151,6 @@ public class Chunk {
 	private Block getB(int x, int y, int z) {
 //		return world.get(new GridPoint3(pos.x * size + x, y, pos.z * size + z));
 		return get(new GridPoint3(x, y, z));
-	}
-
-	/** Creates a mesh out of the chunk, returning the number of indices produced
-	 * @return the number of vertices produced */
-	public int calculateTransparentVertices(float[] vertices) {
-		int i = 0;
-		int vertexOffset = 0;
-		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < size; z++) {
-				for (int x = 0; x < size; x++, i++) {
-					Block block = blocks[i];
-
-					if (block == null || block == Blocks.AIR) continue;
-					if (!block.isTransparent()) continue;
-
-					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
-
-					if (model == null) continue;
-
-					if (y < height - 1) {
-						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
-					}
-					if (y > 0) {
-						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
-					}
-					if (x > 0) {
-						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
-					}
-					if (x < size - 1) {
-						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
-					}
-					if (z > 0) {
-						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
-					}
-					if (z < size - 1) {
-						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
-					} else {
-//						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
-					}
-				}
-			}
-		}
-		return vertexOffset / VERTEX_SIZE + 1;
 	}
 
 	public static int createTop(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
@@ -447,11 +389,9 @@ public class Chunk {
 
 	public void dispose() {
 		UltreonCraft.get().runLater(this.mesh::dispose);
-		UltreonCraft.get().runLater(this.transparentMesh::dispose);
 		this.material = null;
 		this.blocks = null;
 		this.mesh = null;
-		this.transparentMesh = null;
 	}
 
 	@Override
