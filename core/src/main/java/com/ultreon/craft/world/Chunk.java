@@ -4,11 +4,13 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
@@ -34,6 +38,7 @@ public class Chunk {
 	protected Mesh mesh;
 	protected Material material;
 	protected boolean dirty;
+	protected boolean updateNeighbours;
 
 	protected int numVertices;
 	private final World world;
@@ -84,6 +89,7 @@ public class Chunk {
 	public void setFast(int x, int y, int z, Block block) {
 		blocks[x + z * size + y * sizeTimesHeight] = block;
 		dirty = true;
+		updateNeighbours = true;
 	}
 
 	private GridPoint3 reverse(int index) {
@@ -108,53 +114,62 @@ public class Chunk {
 					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
-					float magik = -0.01F;
+					float magik = -1F;
 
+					float progress = getBreakProgress(x, y, z);
+//					TextureRegion breakTex = getBreakTex(progress);
+					TextureRegion breakTex = TextureManager.DEFAULT_TEXTURE_REG;
+
+					if (progress >= 0.0F) {
+						vertexOffset = createTop(offset, x, y + magik, z, breakTex, vertices, vertexOffset);
+					}
 					if (y < height - 1) {
 						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createTop(offset, x, y + magik, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
+
+					if (progress >= 0.0F) {
+						vertexOffset = createBottom(offset, x, y - magik, 0, breakTex, vertices, vertexOffset);
+					}
 					if (y > 0) {
 						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createBottom(offset, x, y - magik, 0, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
+
+					if (progress >= 0.0F) {
+						vertexOffset = createLeft(offset, x - magik, y, z, breakTex, vertices, vertexOffset);
+					}
 					if (x > 0) {
 						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createLeft(offset, x - magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
+
+					if (progress >= 0.0F) {
+						vertexOffset = createRight(offset, x + magik, y, z, breakTex, vertices, vertexOffset);
+					}
 					if (x < size - 1) {
 						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createRight(offset, x + magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
+
+					if (progress >= 0.0F) {
+						vertexOffset = createFront(offset, x, y, z - magik, breakTex, vertices, vertexOffset);
+					}
 					if (z > 0) {
 						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createFront(offset, x, y, z - magik, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
+
+					if (progress >= 0.0F) {
+						vertexOffset = createBottom(offset, x, y, z + magik, breakTex, vertices, vertexOffset);
+					}
 					if (z < size - 1) {
 						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createBottom(offset, x, y, z + magik, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}
@@ -165,11 +180,24 @@ public class Chunk {
 	}
 
 	private Block getB(int x, int y, int z) {
+		if (x < 0 || x >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+			GridPoint3 worldCoordinate = toWorldCoordinate(x, y, z);
+			return world.get(worldCoordinate);
+		}
 		return get(new GridPoint3(x, y, z));
 	}
 
+	private GridPoint3 toWorldCoordinate(int x, int y, int z) {
+		int wx = pos.x * CHUNK_SIZE + x;
+		int wz = pos.z * CHUNK_SIZE + z;
+		return new GridPoint3(wx, y, wz);
+	}
+
 	private static TextureRegion getBreakTex(float progress) {
-		return BREAK_TEX.get((int) (BREAK_TEX.size() * progress));
+		if (progress < 0) {
+			return null;
+		}
+		return UltreonCraft.get().blocksTextureAtlas.get(new Identifier("misc/breaking" + (int) (6 * progress) + ".png"));
 	}
 
 	float getBreakProgress(float x, float y, float z) {

@@ -364,7 +364,8 @@ public class World implements RenderableProvider {
 				}
 
 				Mesh mesh = chunk.mesh;
-				if (chunk.dirty) {
+
+				if (chunk.dirty || needsUpdateByNeighbour(chunk)) {
 					if (chunk.mesh != null) chunk.mesh.dispose();
 
 					chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
@@ -392,6 +393,22 @@ public class World implements RenderableProvider {
 				renderedChunks = renderedChunks + 1;
 			}
 		}
+
+		chunks.values().forEach(chunk -> chunk.updateNeighbours = false);
+	}
+
+	private boolean needsUpdateByNeighbour(Chunk chunk) {
+		ChunkPos pos = chunk.pos;
+		var needsUpdate = false;
+		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x - 1, pos.z)));
+		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x + 1, pos.z)));
+		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x, pos.z - 1)));
+		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x, pos.z + 1)));
+		return needsUpdate;
+	}
+
+	private boolean updatesNeighbour(Chunk chunk) {
+		return chunk != null && chunk.updateNeighbours;
 	}
 
 	public int getPlayTime() {

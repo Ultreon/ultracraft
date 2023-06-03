@@ -215,14 +215,6 @@ public class UltreonCraft extends ApplicationAdapter {
 				throw new RuntimeException(e);
 			}
 
-			final int breakStages = 6;
-			Texture texture = this.textureManager.getTexture(new Identifier("textures/break_stages.png"));
-
-			for (int i = 0; i < breakStages; i++) {
-				TextureRegion region = new TextureRegion(texture, 0.0F, (float) i / breakStages, 1.0F, (float) (i + 1) / breakStages);
-				Chunk.BREAK_TEX.add(region);
-			}
-
 			LOGGER.info("Generating bitmap fonts");
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
 			FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
@@ -338,6 +330,13 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	private void stitchTextures() {
 		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+
+		final int breakStages = 6;
+
+		for (int i = 0; i < breakStages; i++) {
+			TextureRegion region = blocksTextureAtlas.get(new Identifier("misc/breaking" + (i + 1) + ".png"));
+			Chunk.BREAK_TEX.add(region);
+		}
 
 		TextureStitcher itemTextures = new TextureStitcher();
 		for (Map.Entry<Identifier, Item> e : Registries.ITEMS.entries()) {

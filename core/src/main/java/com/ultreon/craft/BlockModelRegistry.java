@@ -20,6 +20,15 @@ public class BlockModelRegistry {
     private static final Map<Block, CubeModel> REGISTRY = new HashMap<>();
     private static final Set<Identifier> TEXTURES = new HashSet<>();
 
+    static {
+        TEXTURES.add(new Identifier("misc/breaking1"));
+        TEXTURES.add(new Identifier("misc/breaking2"));
+        TEXTURES.add(new Identifier("misc/breaking3"));
+        TEXTURES.add(new Identifier("misc/breaking4"));
+        TEXTURES.add(new Identifier("misc/breaking5"));
+        TEXTURES.add(new Identifier("misc/breaking6"));
+    }
+
     public static void register(Block block, CubeModel model) {
         REGISTRY.put(block, model);
         TEXTURES.addAll(model.all());
