@@ -19,7 +19,6 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
@@ -193,10 +192,8 @@ public class World implements RenderableProvider {
 		chunk.dirty = false;
 		chunk.numVertices = 0;
 		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
+		chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
-		chunk.transparentMaterial = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
-		chunk.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-		chunk.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
@@ -208,9 +205,6 @@ public class World implements RenderableProvider {
 			chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
 			chunk.mesh.setIndices(indices);
-			chunk.transparentMesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-			chunk.transparentMesh.setIndices(indices);
 			chunk.ready = true;
 			chunk.dirty = true;
 			putChunk(chunkPos, chunk);
@@ -303,12 +297,8 @@ public class World implements RenderableProvider {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
-//		System.out.println("chunkX = " + chunkX);
-//		System.out.println("chunkZ = " + chunkZ);
 		ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-		Chunk chunk = getChunk(chunkPos);
-//		System.out.println("chunk = " + chunk);
-		return chunk;
+		return getChunk(chunkPos);
 	}
 
 	public int getHighest(int x, int z) {
@@ -322,22 +312,22 @@ public class World implements RenderableProvider {
 		return 0;
 	}
 
-	public void setColumn(int x,  int z, Block voxel) {
-		setColumn(x, CHUNK_HEIGHT, z, voxel);
+	public void setColumn(int x, int z, Block block) {
+		setColumn(x, z, CHUNK_HEIGHT, block);
 	}
 
-	public void setColumn(int x, int y, int z, Block voxel) {
-		if (getChunkAt(x, y, z) == null) return;
+	public void setColumn(int x, int z, int maxY, Block block) {
+		if (getChunkAt(x, maxY, z) == null) return;
 
 		// FIXME optimize
-		for (; y > 0; y--) {
-			set(x, y, z, voxel);
+		for (; maxY > 0; maxY--) {
+			set(x, maxY, z, block);
 		}
 	}
 
 	// TODO: Port to new chunk system.
 	@Deprecated
-	public void setCube(int x, int y, int z, int width, int height, int depth, Block voxel) {
+	public void set(int x, int y, int z, int width, int height, int depth, Block block) {
 //		int ix = x;
 //		int iy = y;
 //		int iz = z;
@@ -351,7 +341,7 @@ public class World implements RenderableProvider {
 //		for (iy = startY; iy < endY; iy++) {
 //			for (iz = startZ; iz < endZ; iz++) {
 //				for (ix = startX; ix < endX; ix++) {
-//					set(ix, iy, iz, voxel);
+//					set(ix, iy, iz, block);
 //				}
 //			}
 //		}
@@ -361,53 +351,40 @@ public class World implements RenderableProvider {
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
 		renderedChunks = 0;
 		totalChunks = chunks.size();
-		for (Chunk chunk : chunks.values()) {
+		List<Chunk> toSort = new ArrayList<>(chunks.values());
+		toSort.sort((o1, o2) -> {
+			Vector3 mid1 = new Vector3(o1.offset.x + (float) CHUNK_SIZE / 2, o1.offset.y + (float) CHUNK_HEIGHT / 2, o1.offset.z + (float) CHUNK_SIZE / 2);
+			Vector3 mid2 = new Vector3(o2.offset.x + (float) CHUNK_SIZE / 2, o2.offset.y + (float) CHUNK_HEIGHT / 2, o2.offset.z + (float) CHUNK_SIZE / 2);
+			return Float.compare(mid2.dst(this.game.player.getPosition()), mid1.dst(this.game.player.getPosition()));
+		});
+		for (Chunk chunk : toSort) {
 			synchronized (chunk.lock) {
 				if (!chunk.ready) {
-					System.out.println("Chunk Not Ready");
 					continue;
 				}
 
-				Mesh mesh = chunk.mesh;
-				Mesh transparentMesh = chunk.transparentMesh;
+				Mesh opaqueMesh = chunk.mesh;
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					mesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
-
-					int numTransparentVertices = chunk.calculateTransparentVertices(this.vertices);
-					chunk.numTransparentVertices = numTransparentVertices / 4 * 6;
-					transparentMesh.setVertices(this.vertices, 0, numTransparentVertices * Chunk.VERTEX_SIZE);
+					opaqueMesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
-				if (chunk.numVertices == 0 && chunk.numTransparentVertices == 0) {
-					System.out.println("Empty Vertices");
+				if (chunk.numVertices == 0) {
 					continue;
 				}
-				Renderable solidMesh = pool.obtain();
-				Renderable transparentRenderable = pool.obtain();
+				Renderable piece = pool.obtain();
 
-				solidMesh.material = chunk.material;
-				solidMesh.meshPart.mesh = mesh;
-				solidMesh.meshPart.offset = 0;
-				solidMesh.meshPart.size = chunk.numVertices;
-				solidMesh.meshPart.primitiveType = GL20.GL_TRIANGLES;
-				transparentRenderable.material = chunk.transparentMaterial;
-				transparentRenderable.meshPart.mesh = transparentMesh;
-				transparentRenderable.meshPart.offset = 0;
-				transparentRenderable.meshPart.size = chunk.numTransparentVertices;
-				transparentRenderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+				piece.material = chunk.material;
+				piece.meshPart.mesh = opaqueMesh;
+				piece.meshPart.offset = 0;
+				piece.meshPart.size = chunk.numVertices;
+				piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
 
-				renderables.add(solidMesh);
-				renderables.add(transparentRenderable);
+				renderables.add(piece);
 				renderedChunks = renderedChunks + 1;
 			}
 		}
-	}
-
-	@Deprecated
-	public void regen() {
-		LOGGER.warn("Regenerating world not supported");
 	}
 
 	public int getPlayTime() {
