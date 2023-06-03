@@ -387,11 +387,6 @@ public class World implements RenderableProvider {
 		}
 	}
 
-	@Deprecated
-	public void regen() {
-		LOGGER.warn("Regenerating world not supported");
-	}
-
 	public int getPlayTime() {
 		return playTime;
 	}
