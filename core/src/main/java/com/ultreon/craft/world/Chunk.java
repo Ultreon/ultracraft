@@ -91,6 +91,7 @@ public class Chunk {
 
 	public void setFast(int x, int y, int z, Block block) {
 		blocks[x + z * size + y * sizeTimesHeight] = block;
+		dirty = true;
 	}
 
 	private GridPoint3 reverse(int index) {
@@ -113,7 +114,7 @@ public class Chunk {
 					if (block == null || block == Blocks.AIR) continue;
 					if (block.isTransparent()) continue;
 
-					BakedCubeModel model = block.bakedModel();
+					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
 
@@ -171,7 +172,7 @@ public class Chunk {
 					if (block == null || block == Blocks.AIR) continue;
 					if (!block.isTransparent()) continue;
 
-					BakedCubeModel model = block.bakedModel();
+					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
 

@@ -2,12 +2,14 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v0.Language;
 
@@ -43,13 +45,13 @@ public class Hud implements GameRenderable {
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Block block = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
-            UV front = block.getModel().front();
-            UV top = block.getModel().top();
-            Texture blocks = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/blocks.png"));
+            BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
+            TextureRegion front = bakedBlockModel.front();
+            TextureRegion top = bakedBlockModel.top();
             renderer.setTextureColor(Color.white.darker());
-            renderer.texture(blocks, ix, 5, 16, 6, front.u() * 16, front.v() * 16);
+            renderer.texture(front, ix, 5, 16, 6);
             renderer.setTextureColor(Color.white);
-            renderer.texture(blocks, ix, 11, 16, 16, top.u() * 16, top.v() * 16);
+            renderer.texture(top, ix, 11, 16, 16);
         }
 
         float healthRatio = player.getHealth() / player.getMaxHeath();
