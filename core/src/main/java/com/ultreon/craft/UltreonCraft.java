@@ -41,6 +41,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.SkyBox;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
@@ -50,6 +51,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -143,6 +145,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	// Advanced Shadows
 	private DirectionalShadowLight shadowLight;
 	private ModelBatch shadowBatch;
+	private SkyBox skyBox;
 
 	public UltreonCraft(String[] args) {
 		LOGGER.info("Booting game!");
@@ -186,14 +189,6 @@ public class UltreonCraft extends ApplicationAdapter {
 	@Override
 	public void create() {
 		try {
-			LOGGER.info("Initializing game");
-			this.textureManager = new TextureManager();
-			this.spriteBatch = new SpriteBatch();
-
-			createDir("screenshots/");
-			createDir("game-crashes/");
-			createDir("logs/");
-
 			this.resourceManager = new ResourceManager("assets");
 			try {
 				LOGGER.info("Importing resources");
@@ -201,6 +196,20 @@ public class UltreonCraft extends ApplicationAdapter {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+
+			LOGGER.info("Initializing game");
+			this.textureManager = new TextureManager();
+			this.spriteBatch = new SpriteBatch();
+
+			this.skyBox = new SkyBox(
+					new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")),
+					new ResourceFileHandle(UltreonCraft.id("misc/skybox_top.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_bottom.png")),
+					new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png")), new ResourceFileHandle(UltreonCraft.id("misc/skybox_side.png"))
+			);
+
+			createDir("screenshots/");
+			createDir("game-crashes/");
+			createDir("logs/");
 
 			LOGGER.info("Generating bitmap fonts");
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
@@ -428,6 +437,8 @@ public class UltreonCraft extends ApplicationAdapter {
 			Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 
 			if (this.renderWorld && world != null) {
+				this.skyBox.render(this.camera);
+
 				this.batch.begin(this.camera);
 				this.batch.render(world, this.env);
 				this.batch.end();
