@@ -360,7 +360,6 @@ public class World implements RenderableProvider {
 		for (Chunk chunk : toSort) {
 			synchronized (chunk.lock) {
 				if (!chunk.ready) {
-					System.out.println("Chunk Not Ready");
 					continue;
 				}
 
@@ -372,7 +371,6 @@ public class World implements RenderableProvider {
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
-					System.out.println("Empty Vertices");
 					continue;
 				}
 				Renderable piece = pool.obtain();
