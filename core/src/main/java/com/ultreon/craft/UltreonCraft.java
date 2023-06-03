@@ -247,6 +247,7 @@ public class UltreonCraft extends ApplicationAdapter {
 			this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
 			this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
 			this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
+			this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
 			LOGGER.info("Loading languages");
 			LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
