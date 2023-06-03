@@ -11,8 +11,6 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import it.unimi.dsi.fastutil.objects.Reference2FloatArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2FloatMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,12 +30,6 @@ public class Chunk {
 	public final int height;
 	public final GridPoint3 offset = new GridPoint3();
 	private final int sizeTimesHeight;
-	private final int topOffset;
-	private final int bottomOffset;
-	private final int leftOffset;
-	private final int rightOffset;
-	private final int frontOffset;
-	private final int backOffset;
 	public TreeData treeData;
 	protected Mesh mesh;
 	protected Material material;
@@ -52,12 +44,6 @@ public class Chunk {
 		this.blocks = new Block[size * height * size];
 		this.size = size;
 		this.height = height;
-		this.topOffset = size * size;
-		this.bottomOffset = -size * size;
-		this.leftOffset = -1;
-		this.rightOffset = 1;
-		this.frontOffset = -size;
-		this.backOffset = size;
 		this.sizeTimesHeight = size * size;
 	}
 
@@ -122,34 +108,53 @@ public class Chunk {
 					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
 					if (model == null) continue;
+					float magik = -0.01F;
 
 					if (y < height - 1) {
 						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createTop(offset, x, y + magik, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 					if (y > 0) {
 						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createBottom(offset, x, y - magik, 0, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 					if (x > 0) {
 						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createLeft(offset, x - magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 					if (x < size - 1) {
 						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createRight(offset, x + magik, y, z, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 					if (z > 0) {
 						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createFront(offset, x, y, z - magik, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 					if (z < size - 1) {
 						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						float progress = getBreakProgress(x, y, z);
+						if (progress >= 0.0F)
+							vertexOffset += createBottom(offset, x, y, z + magik, getBreakTex(progress), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					}
@@ -160,54 +165,7 @@ public class Chunk {
 	}
 
 	private Block getB(int x, int y, int z) {
-//		return world.get(new GridPoint3(pos.x * size + x, y, pos.z * size + z));
 		return get(new GridPoint3(x, y, z));
-	}
-
-	/** Creates a mesh out of the chunk, returning the number of indices produced
-	 * @return the number of vertices produced */
-	public int calculateOverlayVertices(float[] vertices) {
-		int i = 0;
-		int vertexOffset = 0;
-		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < size; z++) {
-				for (int x = 0; x < size; x++, i++) {
-					float magik = -0.01F;
-
-					if (y < height - 1) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createTop(offset, x, y + magik, z, getBreakTex(progress), vertices, vertexOffset);
-					}
-					if (y > 0) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createBottom(offset, x, y - magik, 0, getBreakTex(progress), vertices, vertexOffset);
-					}
-					if (x > 0) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createLeft(offset, x - magik, y, z, getBreakTex(progress), vertices, vertexOffset);
-					}
-					if (x < size - 1) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createRight(offset, x + magik, y, z, getBreakTex(progress), vertices, vertexOffset);
-					}
-					if (z > 0) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createFront(offset, x, y, z - magik, getBreakTex(progress), vertices, vertexOffset);
-					}
-					if (z < size - 1) {
-						float progress = getBreakProgress(x, y, z);
-						if (progress >= 0.0F)
-							vertexOffset += createBottom(offset, x, y, z + magik, getBreakTex(progress), vertices, vertexOffset);
-					}
-				}
-			}
-		}
-		return vertexOffset / VERTEX_SIZE + 1;
 	}
 
 	private static TextureRegion getBreakTex(float progress) {
@@ -483,5 +441,9 @@ public class Chunk {
 	@Override
 	public String toString() {
 		return "Chunk[x=" + pos.x + ", z=" + pos.z + "]";
+	}
+
+	public World getWorld() {
+		return world;
 	}
 }
