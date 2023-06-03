@@ -312,22 +312,22 @@ public class World implements RenderableProvider {
 		return 0;
 	}
 
-	public void setColumn(int x,  int z, Block voxel) {
-		setColumn(x, CHUNK_HEIGHT, z, voxel);
+	public void setColumn(int x, int z, Block block) {
+		setColumn(x, z, CHUNK_HEIGHT, block);
 	}
 
-	public void setColumn(int x, int y, int z, Block voxel) {
-		if (getChunkAt(x, y, z) == null) return;
+	public void setColumn(int x, int z, int maxY, Block block) {
+		if (getChunkAt(x, maxY, z) == null) return;
 
 		// FIXME optimize
-		for (; y > 0; y--) {
-			set(x, y, z, voxel);
+		for (; maxY > 0; maxY--) {
+			set(x, maxY, z, block);
 		}
 	}
 
 	// TODO: Port to new chunk system.
 	@Deprecated
-	public void setCube(int x, int y, int z, int width, int height, int depth, Block voxel) {
+	public void set(int x, int y, int z, int width, int height, int depth, Block block) {
 //		int ix = x;
 //		int iy = y;
 //		int iz = z;
@@ -341,7 +341,7 @@ public class World implements RenderableProvider {
 //		for (iy = startY; iy < endY; iy++) {
 //			for (iz = startZ; iz < endZ; iz++) {
 //				for (ix = startX; ix < endX; ix++) {
-//					set(ix, iy, iz, voxel);
+//					set(ix, iy, iz, block);
 //				}
 //			}
 //		}
