@@ -34,6 +34,10 @@ public final class CubeModel {
         return of(all, all, all);
     }
 
+    public static CubeModel of(Identifier vertical,  Identifier side) {
+        return of(vertical, vertical, side);
+    }
+
     public static CubeModel of(Identifier top, Identifier bottom, Identifier side) {
         return of(top, bottom, side, side, side, side);
     }

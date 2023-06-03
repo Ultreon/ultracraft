@@ -33,7 +33,8 @@ public class Chunk {
 	protected boolean dirty;
 
 	protected int numVertices;
-	private final World world;
+	public final World world;
+	private final Heightmap heightmap = new Heightmap();
 
 	public Chunk(World world, int size, int height, ChunkPos pos) {
 		this.world = world;
@@ -66,7 +67,9 @@ public class Chunk {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		return blocks[x + z * size + y * sizeTimesHeight];
+		Block block = blocks[x + z * size + y * sizeTimesHeight];
+		if (block == null) block = Blocks.AIR;
+		return block;
 	}
 
 	public void set(GridPoint3 pos, Block block) {
@@ -85,8 +88,23 @@ public class Chunk {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		blocks[x + z * size + y * sizeTimesHeight] = block;
-		dirty = true;
+		if (block == null) block = Blocks.AIR;
+
+		this.blocks[x + z * this.size + y * this.sizeTimesHeight] = block;
+		if (!block.isAir()) {
+			if (this.heightmap.get(x, z) < y) {
+				this.heightmap.set(x, z, y);
+			}
+		} else if (this.heightmap.get(x, z) <= y) {
+			int curY = y - 1;
+			while (true) {
+				Block cur = getFast(x, curY, z);
+				if (!cur.isAir() || curY <= World.WORLD_DEPTH) break;
+				curY--;
+			}
+			this.heightmap.set(x, z, curY);
+		}
+		this.dirty = true;
 	}
 
 	private GridPoint3 reverse(int index) {
@@ -110,7 +128,7 @@ public class Chunk {
 
 					BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
-					if (model == null) continue;
+					if (model == null) model = BakedCubeModel.DEFAULT;
 
 					if (y < height - 1) {
 						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
@@ -388,6 +406,8 @@ public class Chunk {
 	}
 
 	public void dispose() {
+		this.ready = false;
+
 		UltreonCraft.get().runLater(this.mesh::dispose);
 		this.material = null;
 		this.blocks = null;
@@ -397,5 +417,9 @@ public class Chunk {
 	@Override
 	public String toString() {
 		return "Chunk[x=" + pos.x + ", z=" + pos.z + "]";
+	}
+
+	public int getHeight(int x, int z) {
+		return heightmap.get(x, z);
 	}
 }

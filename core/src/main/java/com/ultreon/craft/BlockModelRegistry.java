@@ -34,6 +34,8 @@ public class BlockModelRegistry {
     public static TextureAtlas stitch(TextureManager textureManager) {
         TextureStitcher textureStitcher = new TextureStitcher();
 
+        textureStitcher.add(new Identifier("missingno"), TextureManager.DEFAULT_TEXTURE);
+
         for (Identifier texture : TEXTURES) {
             textureStitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")));
         }

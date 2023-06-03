@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.google.common.collect.Range;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -23,8 +24,10 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.craft.world.gen.BiomeGenerator;
+import com.ultreon.craft.world.gen.GenerationStage;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
+import com.ultreon.craft.world.gen.feature.TreeFeature;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -62,6 +65,7 @@ public class World implements RenderableProvider {
 			.layer(new SurfaceTerrainLayer())
 			.layer(new StoneTerrainLayer())
 			.layer(new UndergroundTerrainLayer())
+			.feature(new TreeFeature(GenerationStage.TREES, Range.open(3, 5)))
 			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
 			.build();
 	private final long seed = 512;
@@ -197,7 +201,7 @@ public class World implements RenderableProvider {
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
-				biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
+				biome.processColumn(this, chunk, bx, by, seed);
 			}
 		}
 
@@ -239,7 +243,7 @@ public class World implements RenderableProvider {
 				}
 
 				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
-				Chunk newChunk = terrainGen.generateChunkData(chunk, seed);
+				Chunk newChunk = terrainGen.generateChunkData(this, chunk, seed);
 			}
 			return map;
 		});
@@ -262,7 +266,7 @@ public class World implements RenderableProvider {
 	@Nullable
 	public Block get(int x, int y, int z) {
 		Chunk chunkAt = getChunkAt(x, y, z);
-		if (chunkAt == null) {
+		if (chunkAt == null || !chunkAt.ready) {
 			return Blocks.AIR;
 		}
 
@@ -480,5 +484,9 @@ public class World implements RenderableProvider {
 		cat.add("Seed", this.seed); // For weird world generation glitches
 
 		crashLog.addCategory(cat);
+	}
+
+	public long getSeed() {
+		return seed;
 	}
 }

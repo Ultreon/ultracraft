@@ -46,6 +46,32 @@ public class MyNoise {
         return (total / amplitudeSum + 1) / 2;
     }
 
+    public static float octavePerlin(float x, float y, float z, NoiseSettings settings) {
+        x *= settings.noiseZoom();
+        y *= settings.noiseZoom();
+        z *= settings.noiseZoom();
+        x += settings.noiseZoom();
+        y += settings.noiseZoom();
+        z += settings.noiseZoom();
+
+        float total = 0.0F;
+        float frequency = 1.0F;
+        float amplitude = 1.0F;
+        float amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
+
+        long seed = settings.seed;
+        for (int i = 0; i < settings.octaves(); i++) {
+            total += settings.getNoise().eval((settings.offset().x + seed + x) * frequency, (settings.offset().y + seed + y) * frequency, (settings.offset().y + seed + z) * frequency) * amplitude;
+
+            amplitudeSum += amplitude;
+
+            amplitude *= settings.persistence();
+            frequency *= 2;
+        }
+
+        return (total / amplitudeSum + 1) / 2;
+    }
+
     private static class Flags {
         public static boolean enableWorldGenLogging = false;
     }
