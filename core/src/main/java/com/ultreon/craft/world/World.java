@@ -1,6 +1,9 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
@@ -19,7 +22,6 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
@@ -397,6 +399,7 @@ public class World implements RenderableProvider {
 	}
 
 	@Override
+	@SuppressWarnings("UnusedAssignment")
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
 		renderedChunks = 0;
 		totalChunks = chunks.size();
@@ -412,12 +415,16 @@ public class World implements RenderableProvider {
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					mesh.setVertices(this.vertices.toFloatArray(), 0, numVertices * Chunk.VERTEX_SIZE);
+					float[] floatArray = this.vertices.toFloatArray();
+					mesh.setVertices(floatArray, 0, numVertices * Chunk.VERTEX_SIZE);
+					floatArray = null;
 					this.vertices.clear();
 
 					int numTransparentVertices = chunk.calculateTransparentVertices(this.vertices);
 					chunk.numTransparentVertices = numTransparentVertices / 4 * 6;
-					transparentMesh.setVertices(this.vertices.toFloatArray(), 0, numTransparentVertices * Chunk.VERTEX_SIZE);
+					float[] transparentVertices = this.vertices.toFloatArray();
+					transparentMesh.setVertices(transparentVertices, 0, numTransparentVertices * Chunk.VERTEX_SIZE);
+					transparentVertices = null;
 					this.vertices.clear();
 
 					chunk.dirty = false;
