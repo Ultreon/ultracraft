@@ -90,10 +90,10 @@ public class LivingEntity extends Entity {
     public void load(MapType data) {
         super.load(data);
 
-        this.health = data.getFloat("health");
-        this.maxHeath = data.getFloat("maxHealth");
-        this.damageImmunity = data.getInt("damageImmunity");
-        this.isDead = data.getBoolean("isDead");
+        this.health = data.getFloat("health", this.health);
+        this.maxHeath = data.getFloat("maxHealth", this.maxHeath);
+        this.damageImmunity = data.getInt("damageImmunity", this.damageImmunity);
+        this.isDead = data.getBoolean("isDead", this.isDead);
     }
 
     @Override

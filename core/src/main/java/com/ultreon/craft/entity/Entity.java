@@ -60,30 +60,30 @@ public class Entity {
     }
 
     public void loadWithPos(MapType data) {
-        MapType position = data.getMap("Position");
-        this.x = position.getFloat("x");
-        this.y = position.getFloat("y");
-        this.z = position.getFloat("z");
+        MapType position = data.getMap("Position", new MapType());
+        this.x = position.getFloat("x", this.x);
+        this.y = position.getFloat("y", this.y);
+        this.z = position.getFloat("z", this.z);
 
         this.load(data);
     }
 
     public void load(MapType data) {
-        MapType rotation = data.getMap("Rotation");
-        this.xRot = rotation.getFloat("x");
-        this.yRot = rotation.getFloat("y");
+        MapType rotation = data.getMap("Rotation", new MapType());
+        this.xRot = rotation.getFloat("x", this.xRot);
+        this.yRot = rotation.getFloat("y", this.yRot);
 
-        MapType velocity = data.getMap("Velocity");
-        this.velocityX = velocity.getFloat("x");
-        this.velocityY = velocity.getFloat("y");
-        this.velocityZ = velocity.getFloat("z");
+        MapType velocity = data.getMap("Velocity", new MapType());
+        this.velocityX = velocity.getFloat("x", this.velocityX);
+        this.velocityY = velocity.getFloat("y", this.velocityY);
+        this.velocityZ = velocity.getFloat("z", this.velocityZ);
 
-        this.fallDistance = data.getFloat("fallDistance");
-        this.jumpVel = data.getFloat("jumpVelocity");
-        this.gravity = data.getFloat("gravity");
-        this.jumping = data.getBoolean("jumping");
-        this.noGravity = data.getBoolean("noGravity");
-        this.noClip = data.getBoolean("noClip");
+        this.fallDistance = data.getFloat("fallDistance", this.fallDistance);
+        this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
+        this.gravity = data.getFloat("gravity", this.gravity);
+        this.jumping = data.getBoolean("jumping", this.jumping);
+        this.noGravity = data.getBoolean("noGravity", this.noGravity);
+        this.noClip = data.getBoolean("noClip", this.noClip);
     }
 
 

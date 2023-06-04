@@ -193,16 +193,16 @@ public class Player extends LivingEntity {
     public void load(MapType data) {
         super.load(data);
 
-        this.selected = data.getByte("selectedItem");
-        this.flying = data.getBoolean("flying");
-        this.spectating = data.getBoolean("spectating");
-        this.crouching = data.getBoolean("crouching");
-        this.running = data.getBoolean("running");
-        this.topView = data.getBoolean("crouching");
-        this.walkingSpeed = data.getFloat("walkingSpeed");
-        this.flyingSpeed = data.getFloat("flyingSpeed");
-        this.crouchModifier = data.getFloat("crouchingModifier");
-        this.runModifier = data.getFloat("runModifier");
+        this.selected = data.getByte("selectedItem", (byte) this.selected);
+        this.flying = data.getBoolean("flying", this.flying);
+        this.spectating = data.getBoolean("spectating", this.spectating);
+        this.crouching = data.getBoolean("crouching", this.crouching);
+        this.running = data.getBoolean("running", this.running);
+        this.topView = data.getBoolean("crouching", this.topView);
+        this.walkingSpeed = data.getFloat("walkingSpeed", this.walkingSpeed);
+        this.flyingSpeed = data.getFloat("flyingSpeed", this.flyingSpeed);
+        this.crouchModifier = data.getFloat("crouchingModifier", this.crouchModifier);
+        this.runModifier = data.getFloat("runModifier", this.runModifier);
     }
 
     @Override
