@@ -14,9 +14,11 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -28,15 +30,18 @@ import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +56,7 @@ public class World implements RenderableProvider {
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
 	private static final Logger LOGGER = LoggerFactory.getLogger("World");
+	private final SavedWorld savedWorld;
 	private final short[] indices;
 	private float[] vertices;
 
@@ -75,21 +81,85 @@ public class World implements RenderableProvider {
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
 
-	public World(int chunksX, int chunksZ) {
+	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
+		this.savedWorld = savedWorld;
+
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 
 		int len = World.CHUNK_SIZE * World.CHUNK_HEIGHT * World.CHUNK_SIZE * 6 * 6 / 3;
 
-		indices = new short[len];
+		this.indices = new short[len];
 		short j = 0;
 		for (int i = 0; i < len; i += 6, j += 4) {
-			indices[i] = j;
-			indices[i + 1] = (short) (j + 1);
-			indices[i + 2] = (short) (j + 2);
-			indices[i + 3] = (short) (j + 2);
-			indices[i + 4] = (short) (j + 3);
-			indices[i + 5] = j;
+			this.indices[i] = j;
+			this.indices[i + 1] = (short) (j + 1);
+			this.indices[i + 2] = (short) (j + 2);
+			this.indices[i + 3] = (short) (j + 2);
+			this.indices[i + 4] = (short) (j + 3);
+			this.indices[i + 5] = j;
 		}
+	}
+
+	@ApiStatus.Internal
+	public void load() throws IOException {
+		this.savedWorld.createDir("data/");
+		this.savedWorld.createDir("chunks/");
+
+		if (this.savedWorld.exists("data/entities.ubo")) {
+			ListType<MapType> entitiesData = this.savedWorld.read("data/entities.ubo");
+			for (MapType entityData : entitiesData) {
+				Entity entity = Entity.loadFrom(this, entityData);
+				this.entities.put(entity.getId(), entity);
+			}
+		}
+
+		if (this.savedWorld.exists("data/player.ubo")) {
+			MapType playerData = this.savedWorld.read("data/player.ubo");
+			Player player = Entities.PLAYER.create(this);
+			player.loadWithPos(playerData);
+			UltreonCraft.get().player = player;
+		}
+	}
+
+	@ApiStatus.Internal
+	public void save() throws IOException {
+		LOGGER.info("Saving world: " + this.savedWorld.getDirectory().getName());
+
+		ListType<MapType> entitiesData = new ListType<>();
+		for (Entity entity : this.entities.values()) {
+			if (entity instanceof Player) continue;
+
+			MapType entityData = entity.save(new MapType());
+			entitiesData.add(entityData);
+		}
+		this.savedWorld.write(entitiesData, "data/entities.ubo");
+
+		MapType playerData = new MapType();
+		this.savedWorld.write(playerData, "data/player.ubo");
+
+		for (Chunk chunk : this.chunks.values()) {
+			try {
+				this.savedWorld.writeChunk(chunk.pos.x, chunk.pos.z, chunk.save());
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+
+		LOGGER.info("Saved world: " + this.savedWorld.getDirectory().getName());
+	}
+
+	@ApiStatus.Internal
+	public CompletableFuture<Boolean> saveAsync() throws IOException {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				this.save();
+				return true;
+			} catch (Exception e) {
+				LOGGER.error("Failed to save world", e);
+				return false;
+			}
+		});
 	}
 
 	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
@@ -160,20 +230,29 @@ public class World implements RenderableProvider {
 	private void updateChunksForPlayer(Vector3 player) {
 		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
 		worldGenInfo.toRemove.forEach(this::unloadChunk);
-		worldGenInfo.toCreate.forEach(this::generateChunk);
+		worldGenInfo.toCreate.forEach(this::loadChunk);
 		worldGenInfo.toCreate = null;
 		worldGenInfo.toRemove = null;
 	}
 
 	private void unloadChunk(ChunkPos chunkPos) {
-		unloadChunk(getChunk(chunkPos));
+		this.unloadChunk(this.getChunk(chunkPos));
 	}
 
-	private void unloadChunk(Chunk chunk) {
+	@CanIgnoreReturnValue
+	private CompletableFuture<Void> unloadChunk(Chunk chunk) {
 		synchronized (chunk.lock) {
 			chunk.ready = false;
-			chunks.remove(chunk.pos);
-			chunk.dispose();
+			this.chunks.remove(chunk.pos);
+			return CompletableFuture.runAsync(() -> {
+				try {
+					this.savedWorld.writeChunk(chunk.pos.x, chunk.pos.z, chunk.save());
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
+				chunk.dispose();
+			});
 		}
 	}
 
@@ -181,8 +260,31 @@ public class World implements RenderableProvider {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
+	protected void loadChunk(ChunkPos pos) {
+		this.loadChunk(pos.x, pos.z);
+	}
+
+	protected void loadChunk(int x, int z) {
+		if (this.savedWorld.chunkExists(x, z)) {
+			Chunk chunk;
+			ChunkPos pos = new ChunkPos(x, z);
+			try {
+				chunk = Chunk.load(this, pos, this.savedWorld.readChunk(x, z));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+			this.game.runLater(() -> {
+				chunk.ready = true;
+				this.putChunk(pos, chunk);
+			});
+		} else {
+			this.generateChunk(x, z);
+		}
+	}
+
 	protected void generateChunk(ChunkPos pos) {
-		generateChunk(pos.x, pos.z);
+		this.generateChunk(pos.x, pos.z);
 	}
 
 	protected void generateChunk(int x, int z) {
@@ -197,26 +299,26 @@ public class World implements RenderableProvider {
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
-				biome.processColumn(chunk, bx, by, seed, CHUNK_HEIGHT);
+				this.biome.processColumn(chunk, bx, by, this.seed, CHUNK_HEIGHT);
 			}
 		}
 
-		game.runLater(() -> {
+		this.game.runLater(() -> {
 			chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
 					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-			chunk.mesh.setIndices(indices);
+			chunk.mesh.setIndices(this.indices);
 			chunk.ready = true;
 			chunk.dirty = true;
-			putChunk(chunkPos, chunk);
+			this.putChunk(chunkPos, chunk);
 		});
 	}
 
 	private void putChunk(ChunkPos chunkPos, Chunk chunk) {
-		Chunk oldChunk = chunks.get(chunkPos);
+		Chunk oldChunk = this.chunks.get(chunkPos);
 		if (oldChunk != null) {
 			oldChunk.dispose();
 		}
-		chunks.put(chunkPos, chunk);
+		this.chunks.put(chunkPos, chunk);
 	}
 
 	public void tick() {
@@ -480,5 +582,9 @@ public class World implements RenderableProvider {
 		cat.add("Seed", this.seed); // For weird world generation glitches
 
 		crashLog.addCategory(cat);
+	}
+
+	public SavedWorld getSavedWorld() {
+		return savedWorld;
 	}
 }

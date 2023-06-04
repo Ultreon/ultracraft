@@ -9,6 +9,8 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.data.types.ListType;
+import com.ultreon.data.types.MapType;
 
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
@@ -16,7 +18,7 @@ public class Chunk {
 	protected final Object lock = new Object();
 	protected boolean modifiedByPlayer;
 	protected boolean ready;
-	private Block[] blocks;
+	private Section[] sections;
 	public final int size;
 	public final int height;
 	public final GridPoint3 offset = new GridPoint3();
@@ -36,9 +38,11 @@ public class Chunk {
 	private final World world;
 
 	public Chunk(World world, int size, int height, ChunkPos pos) {
+		int sectionCount = height / size;
+
 		this.world = world;
 		this.pos = pos;
-		this.blocks = new Block[size * height * size];
+		this.sections = new Section[sectionCount];
 		this.size = size;
 		this.height = height;
 		this.topOffset = size * size;
@@ -48,6 +52,36 @@ public class Chunk {
 		this.frontOffset = -size;
 		this.backOffset = size;
 		this.sizeTimesHeight = size * size;
+
+		for (int i = 0; i < sections.length; i++) {
+			this.sections[i] = new Section();
+		}
+	}
+
+	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+		chunk.load(mapType);
+		return chunk;
+	}
+
+	void load(MapType chunkData) {
+		ListType<MapType> sectionsData = chunkData.getList("Sections");
+		int i = 0;
+		for (MapType sectionData : sectionsData) {
+			this.sections[i].dispose();
+			this.sections[i] = new Section(sectionData);
+			i++;
+		}
+	}
+
+	public MapType save() {
+		MapType chunkData = new MapType();
+		ListType<MapType> sectionsData = new ListType<>();
+		for (Section section : this.sections) {
+			sectionsData.add(section.save());
+		}
+		chunkData.put("Sections", sectionsData);
+		return chunkData;
 	}
 
 	public Block get(GridPoint3 pos) {
@@ -66,7 +100,9 @@ public class Chunk {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		return blocks[x + z * size + y * sizeTimesHeight];
+		synchronized (this.lock) {
+			return this.sections[y / this.size].getFast(x, y % this.size, z);
+		}
 	}
 
 	public void set(GridPoint3 pos, Block block) {
@@ -85,8 +121,21 @@ public class Chunk {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		blocks[x + z * size + y * sizeTimesHeight] = block;
-		dirty = true;
+		synchronized (this.lock) {
+			this.sections[y / this.size].setFast(x, y % this.size, z, block);
+			this.dirty = true;
+		}
+	}
+
+	public Section getSection(int sectionY) {
+		synchronized (this.lock) {
+			if (sectionY < 0 || sectionY > this.sections.length) return null;
+			return this.sections[sectionY];
+		}
+	}
+
+	public Section getSectionAt(int chunkY) {
+		return this.getSection(chunkY / this.size);
 	}
 
 	private GridPoint3 reverse(int index) {
@@ -388,10 +437,17 @@ public class Chunk {
 	}
 
 	public void dispose() {
-		UltreonCraft.get().runLater(this.mesh::dispose);
-		this.material = null;
-		this.blocks = null;
-		this.mesh = null;
+		synchronized (this.lock) {
+			this.ready = false;
+
+			UltreonCraft.get().runLater(this.mesh::dispose);
+			for (Section section : this.sections) {
+				section.dispose();
+			}
+			this.material = null;
+			this.sections = null;
+			this.mesh = null;
+		}
 	}
 
 	@Override

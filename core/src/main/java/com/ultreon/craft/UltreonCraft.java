@@ -2,7 +2,6 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
@@ -20,7 +19,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.audio.SoundEvent;
@@ -51,6 +49,7 @@ import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.util.ImGuiEx;
+import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -71,16 +70,20 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
@@ -99,9 +102,9 @@ public class UltreonCraft extends ApplicationAdapter {
 	public BitmapFont largeFont;
 	public BitmapFont xlFont;
 	public InputManager input;
-	public World world;
+	@Nullable public World world;
 	private static UltreonCraft instance;
-	public Player player;
+	@Nullable public Player player;
 	public int renderDistance = 8;
 	private SpriteBatch spriteBatch;
 	private ModelBatch batch;
@@ -143,6 +146,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	// Advanced Shadows
 	private DirectionalShadowLight shadowLight;
 	private ModelBatch shadowBatch;
+	private List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
 
 	public UltreonCraft(String[] args) {
 		LOGGER.info("Booting game!");
@@ -334,7 +338,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		super.pause();
 
 		if (this.currentScreen == null && this.world != null) {
-			showScreen(new PauseScreen());
+			this.showScreen(new PauseScreen());
 		}
 	}
 
@@ -343,7 +347,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		super.resume();
 
 		if (this.world != null) {
-			showScreen(null);
+			this.showScreen(null);
 		}
 	}
 
@@ -711,6 +715,14 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
+		while (!this.futures.isEmpty()) {
+			this.futures.removeIf(CompletableFuture::isDone);
+		}
+
+		if (this.world != null) {
+			this.world.dispose();
+		}
+
 		this.imGuiGl3.dispose();
 		this.imGuiGlfw.dispose();
 		ImGui.destroyContext();
@@ -760,7 +772,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	public void startWorld() {
-		this.showScreen(new WorldLoadScreen());
+		this.showScreen(new WorldLoadScreen(new SavedWorld(new File("world"))));
 	}
 
 	public float getGuiScale() {
@@ -801,6 +813,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void filesDropped(String[] files) {
 
+	}
+
+	public void addFuture(CompletableFuture<?> future) {
+		this.futures.add(future);
 	}
 
 	public BakedCubeModel getBakedBlockModel(Block block) {

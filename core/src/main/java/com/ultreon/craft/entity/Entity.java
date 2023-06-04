@@ -6,11 +6,17 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.ultreon.craft.entity.util.EntitySize;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class Entity {
     private final EntityType<? extends Entity> type;
@@ -40,6 +46,76 @@ public class Entity {
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
         this.world = world;
+    }
+
+    public static @NotNull Entity loadFrom(World world, MapType data) {
+        Identifier typeId = Identifier.parse(data.getString("type"));
+        EntityType<?> type = Registries.ENTITIES.getValue(typeId);
+        Entity entity = type.create(world);
+
+        entity.id = data.getInt("id");
+
+        entity.loadWithPos(data);
+        return entity;
+    }
+
+    public void loadWithPos(MapType data) {
+        MapType position = data.getMap("Position");
+        this.x = position.getFloat("x");
+        this.y = position.getFloat("y");
+        this.z = position.getFloat("z");
+
+        this.load(data);
+    }
+
+    public void load(MapType data) {
+        MapType rotation = data.getMap("Rotation");
+        this.xRot = rotation.getFloat("x");
+        this.yRot = rotation.getFloat("y");
+
+        MapType velocity = data.getMap("Velocity");
+        this.velocityX = velocity.getFloat("x");
+        this.velocityY = velocity.getFloat("y");
+        this.velocityZ = velocity.getFloat("z");
+
+        this.fallDistance = data.getFloat("fallDistance");
+        this.jumpVel = data.getFloat("jumpVelocity");
+        this.gravity = data.getFloat("gravity");
+        this.jumping = data.getBoolean("jumping");
+        this.noGravity = data.getBoolean("noGravity");
+        this.noClip = data.getBoolean("noClip");
+    }
+
+
+    public MapType save(MapType data) {
+        MapType position = new MapType();
+        position.putFloat("x", this.x);
+        position.putFloat("y", this.y);
+        position.putFloat("z", this.z);
+        data.put("Position", position);
+
+        MapType rotation = new MapType();
+        rotation.putFloat("x", this.xRot);
+        rotation.putFloat("y", this.yRot);
+        data.put("Rotation", rotation);
+
+        MapType velocity = new MapType();
+        velocity.putFloat("x", this.velocityX);
+        velocity.putFloat("y", this.velocityY);
+        velocity.putFloat("z", this.velocityZ);
+        data.put("Velocity", velocity);
+
+        data.putInt("id", this.id);
+        data.putString("type", Objects.requireNonNull(Registries.ENTITIES.getKey(this.type)).toString());
+
+        data.putFloat("fallDistance", this.fallDistance);
+        data.putFloat("jumpVelocity", this.jumpVel);
+        data.putFloat("gravity", this.gravity);
+        data.putBoolean("jumping", this.jumping);
+        data.putBoolean("noGravity", this.noGravity);
+        data.putBoolean("noClip", this.noClip);
+
+        return data;
     }
 
     public EntitySize getSize() {

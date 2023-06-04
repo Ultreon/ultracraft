@@ -3,6 +3,7 @@ package com.ultreon.craft.entity;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.world.World;
+import com.ultreon.data.types.MapType;
 
 public class LivingEntity extends Entity {
     private float health;
@@ -83,5 +84,27 @@ public class LivingEntity extends Entity {
 
     public void onDeath() {
 
+    }
+
+    @Override
+    public void load(MapType data) {
+        super.load(data);
+
+        this.health = data.getFloat("health");
+        this.maxHeath = data.getFloat("maxHealth");
+        this.damageImmunity = data.getInt("damageImmunity");
+        this.isDead = data.getBoolean("isDead");
+    }
+
+    @Override
+    public MapType save(MapType data) {
+        data = super.save(data);
+
+        data.putFloat("health", this.health);
+        data.putFloat("maxHealth", this.maxHeath);
+        data.putInt("damageImmunity", this.damageImmunity);
+        data.putBoolean("isDead", this.isDead);
+
+        return data;
     }
 }

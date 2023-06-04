@@ -13,6 +13,7 @@ import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
+import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
@@ -21,13 +22,13 @@ public class Player extends LivingEntity {
     private boolean running;
     private float walkingSpeed = .05F;
     private float flyingSpeed = 0.5F;
-    public final float runModifier = 1.75F;
-    public final float crouchModifier = 0.5F;
+    public float runModifier = 1.75F;
+    public float crouchModifier = 0.5F;
     private boolean flying;
     private boolean crouching;
     private boolean spectating;
     // TODO: @DEBUG START
-    public final boolean topView = false;
+    public boolean topView = false;
     // TODO: @DEBUG END
 
     public Player(EntityType<? extends Player> entityType, World world) {
@@ -186,5 +187,39 @@ public class Player extends LivingEntity {
     @Override
     public SoundEvent getHurtSound() {
         return Sounds.PlAYER_HURT;
+    }
+
+    @Override
+    public void load(MapType data) {
+        super.load(data);
+
+        this.selected = data.getByte("selectedItem");
+        this.flying = data.getBoolean("flying");
+        this.spectating = data.getBoolean("spectating");
+        this.crouching = data.getBoolean("crouching");
+        this.running = data.getBoolean("running");
+        this.topView = data.getBoolean("crouching");
+        this.walkingSpeed = data.getFloat("walkingSpeed");
+        this.flyingSpeed = data.getFloat("flyingSpeed");
+        this.crouchModifier = data.getFloat("crouchingModifier");
+        this.runModifier = data.getFloat("runModifier");
+    }
+
+    @Override
+    public MapType save(MapType data) {
+        data = super.save(data);
+
+        data.putByte("selectedItem", this.selected);
+        data.putBoolean("flying", this.flying);
+        data.putBoolean("spectating", this.spectating);
+        data.putBoolean("crouching", this.crouching);
+        data.putBoolean("running", this.running);
+        data.putBoolean("crouching", this.topView);
+        data.putFloat("walkingSpeed", this.walkingSpeed);
+        data.putFloat("flyingSpeed", this.flyingSpeed);
+        data.putFloat("crouchingModifier", this.crouchModifier);
+        data.putFloat("runModifier", this.runModifier);
+
+        return data;
     }
 }
