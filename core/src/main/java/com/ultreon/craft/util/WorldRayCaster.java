@@ -63,7 +63,8 @@ public class WorldRayCaster {
 			if(abs.dst(origin) > result.distanceMax) return result;
 
 			if(chunk == null){
-				chunk = map.getChunkAt(abs.x, abs.y, abs.z);
+				var rawChunk = map.getChunkAt(abs.x, abs.y, abs.z);
+				if (rawChunk instanceof Chunk chunk1) chunk = chunk1;
 				if(chunk == null) return result;
 			}
 			loc.set(abs).sub((int) chunk.offset.x, (int) chunk.offset.y, (int) chunk.offset.z);

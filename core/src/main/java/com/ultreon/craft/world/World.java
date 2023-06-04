@@ -380,7 +380,8 @@ public class World implements RenderableProvider {
 			Vector3 mid2 = new Vector3(o2.offset.x + (float) CHUNK_SIZE / 2, o2.offset.y + (float) CHUNK_HEIGHT / 2, o2.offset.z + (float) CHUNK_SIZE / 2);
 			return Float.compare(mid2.dst(this.game.player.getPosition()), mid1.dst(this.game.player.getPosition()));
 		});
-		for (RawChunk chunk : toSort) {
+		for (RawChunk rawChunk : toSort) {
+			if (!(rawChunk instanceof Chunk chunk)) continue;
 			synchronized (chunk.lock) {
 				if (!chunk.ready) {
 					continue;
@@ -390,7 +391,7 @@ public class World implements RenderableProvider {
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					opaqueMesh.setVertices(this.vertices, 0, numVertices * RawChunk.VERTEX_SIZE);
+					opaqueMesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {

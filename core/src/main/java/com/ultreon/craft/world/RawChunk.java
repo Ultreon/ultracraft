@@ -120,4 +120,8 @@ public abstract class RawChunk implements WorldRW {
         this.blocks = null;
         this.heightmap.dispose();
     }
+
+    public int getHeight(int x, int z) {
+        return this.heightmap.get(x, z);
+    }
 }
