@@ -15,7 +15,7 @@ public final class Blocks extends UtilityClass {
     public static final Block STONE = register("stone", new Block());
     public static final Block WATER = register("water", new Block(new Properties().transparent().noCollision()));
     public static final Block LOG = register("log", new Block());
-    public static final Block LEAVES = register("leaves", new Block(new Properties().transparent()));
+    public static final Block LEAVES = register("leaves", new Block(new Properties().transparent().alwaysRenderFaces()));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new Identifier(name), block);

@@ -1,18 +1,16 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.RawChunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.feature.Feature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.MyNoise;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
-import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 public class BiomeGenerator {
@@ -43,7 +41,7 @@ public class BiomeGenerator {
         return new Builder();
     }
 
-    public Chunk processColumn(World world, Chunk chunk, int x, int z, long seed) {
+    public RawChunk processColumn(World world, RawChunk chunk, int x, int z, long seed) {
         this.biomeNoise.setSeed(seed);
         this.domainWarping.noiseDomainX.setSeed(seed);
         this.domainWarping.noiseDomainY.setSeed(seed);
@@ -96,7 +94,8 @@ public class BiomeGenerator {
 //        return (int) (terrainHeight * height);
     }
 
-    public TreeData getTreeData(Chunk chunk, long seed) {
+    @Deprecated
+    public TreeData getTreeData(RawChunk chunk, long seed) {
         if (treeGenerator == null)
             return new TreeData();
 

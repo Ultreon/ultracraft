@@ -11,6 +11,7 @@ public class Block {
     private static int globalId;
     private final int id;
     private final boolean transparent;
+    private final boolean alwaysRenderFaces;
     private final boolean solid;
     @Deprecated
     private final CubeModel model;
@@ -24,6 +25,7 @@ public class Block {
     public Block(Properties properties) {
         this.id = globalId++;
         this.transparent = properties.transparent;
+        this.alwaysRenderFaces = properties.alwaysRenderFaces;
         this.solid = properties.solid;
         this.model = null;
     }
@@ -37,6 +39,7 @@ public class Block {
     public Block(CubeModel model, Properties properties) {
         this.id = globalId++;
         this.transparent = properties.transparent;
+        this.alwaysRenderFaces = properties.alwaysRenderFaces;
         this.solid = properties.solid;
         this.model = model;
     }
@@ -77,6 +80,9 @@ public class Block {
     public boolean isTransparent() {
         return transparent;
     }
+    public boolean getAlwaysRenderFaces() {
+        return alwaysRenderFaces;
+    }
 
     public BoundingBox getBoundingBox(GridPoint3 posNext) {
         return getBoundingBox(posNext.x, posNext.y, posNext.z);
@@ -84,10 +90,16 @@ public class Block {
 
     public static class Properties {
         private boolean transparent = false;
+        private boolean alwaysRenderFaces = false;
         private boolean solid = true;
 
         public Properties transparent() {
             this.transparent = true;
+            return this;
+        }
+
+        public Properties alwaysRenderFaces() {
+            this.alwaysRenderFaces = true;
             return this;
         }
 

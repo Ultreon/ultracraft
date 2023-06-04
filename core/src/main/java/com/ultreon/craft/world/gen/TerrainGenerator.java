@@ -3,10 +3,7 @@ package com.ultreon.craft.world.gen;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.util.Mth;
-import com.ultreon.craft.world.BiomeData;
-import com.ultreon.craft.world.BiomeSelectionHelper;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
@@ -24,10 +21,8 @@ public class TerrainGenerator {
         this.biomeDomainWarping = biomeDomainWarping;
     }
 
-    public Chunk generateChunkData(World world, Chunk chunk, long seed) {
-        BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.offset, chunk, false);
-        //TreeData treeData = biomeGenerator.GetTreeData(chunk, seed);
-        chunk.treeData = biomeSelection.biomeGenerator.getTreeData(chunk, seed);
+    public RawChunk generateChunkData(World world, RawChunk chunk, long seed) {
+        BiomeGeneratorSelection biomeSelection;
 
         for (int x = 0; x < chunk.size; x++) {
             for (int z = 0; z < chunk.size; z++) {
@@ -38,11 +33,11 @@ public class TerrainGenerator {
         return chunk;
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk) {
+    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, RawChunk chunk) {
         return selectBiomeGenerator(worldPosition, chunk, true);
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk, boolean useDomainWarping) {
+    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, RawChunk chunk, boolean useDomainWarping) {
         if (useDomainWarping) {
             GridPoint2 domainOffset = Mth.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
             worldPosition.add(domainOffset.x, 0, domainOffset.y);

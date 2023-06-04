@@ -10,7 +10,6 @@ public final class NoiseSettings {
     private final Vector2 offset;
     private final long originalSeed;
     long seed;
-    private long oldSeed;
     private final float persistence;
     private final float redistributionModifier;
     private final float exponent;
@@ -30,8 +29,8 @@ public final class NoiseSettings {
     }
 
     public void setSeed(long seed) {
-        if (this.seed == (this.originalSeed - seed)) return;
-        this.seed = this.originalSeed - seed;
+        if (this.seed == seed) return;
+        this.seed = seed;
 
         if (this.noise != null) this.noise.dispose();
         this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);

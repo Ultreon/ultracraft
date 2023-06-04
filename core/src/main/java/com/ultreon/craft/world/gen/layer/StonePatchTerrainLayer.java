@@ -2,8 +2,7 @@ package com.ultreon.craft.world.gen.layer;
 
 import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.debug.Debugger;
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.RawChunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 
@@ -19,7 +18,7 @@ public class StonePatchTerrainLayer extends TerrainLayer {
     }
 
     @Override
-    public boolean handle(Chunk chunk, int x, int y, int z, int height, long seed) {
+    public boolean handle(RawChunk chunk, int x, int y, int z, int height, long seed) {
         if (chunk.offset.y > height)
             return false;
 

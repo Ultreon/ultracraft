@@ -317,6 +317,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	private void registerModels() {
 		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
 		BlockModelRegistry.register(Blocks.LOG, CubeModel.of(id("blocks/log_vertical"), id("blocks/log_side")));
+		BlockModelRegistry.registerDefault(Blocks.LEAVES);
 		BlockModelRegistry.registerDefault(Blocks.DIRT);
 		BlockModelRegistry.registerDefault(Blocks.SAND);
 		BlockModelRegistry.registerDefault(Blocks.WATER);

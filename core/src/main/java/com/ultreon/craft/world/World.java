@@ -1,12 +1,8 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -36,6 +32,7 @@ import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +68,7 @@ public class World implements RenderableProvider {
 	private final long seed = 512;
 	private int renderedChunks;
 
-	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
+	private final Map<ChunkPos, RawChunk> chunks = new ConcurrentHashMap<>();
 	private TerrainGenerator terrainGen;
 	private final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
 	private int playTime;
@@ -173,11 +170,13 @@ public class World implements RenderableProvider {
 		unloadChunk(getChunk(chunkPos));
 	}
 
-	private void unloadChunk(Chunk chunk) {
-		synchronized (chunk.lock) {
-			chunk.ready = false;
-			chunks.remove(chunk.pos);
-			chunk.dispose();
+	private void unloadChunk(RawChunk rawChunk) {
+		synchronized (rawChunk.lock) {
+			if (rawChunk instanceof Chunk chunk1) {
+				chunk1.ready = false;
+			}
+			chunks.remove(rawChunk.pos);
+			rawChunk.dispose();
 		}
 	}
 
@@ -190,14 +189,24 @@ public class World implements RenderableProvider {
 	}
 
 	protected void generateChunk(int x, int z) {
-		ChunkPos chunkPos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, chunkPos);
-		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
-		chunk.dirty = false;
-		chunk.numVertices = 0;
-		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
-		chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+		ChunkPos pos = new ChunkPos(x, z);
+		RawChunk oldChunk = getChunk(x, z);
+		BuilderChunk chunk;
+
+		if (oldChunk == null) chunk = new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		else if (oldChunk instanceof BuilderChunk oldBuilderChunk) chunk = oldBuilderChunk;
+		else return;
+
+		for (int dx = x - 1; dx <= x + 1; dx++) {
+			for (int dz = z - 1; dz <= z + 1; dz++) {
+				if (dx == x && dz == z) continue;
+
+				RawChunk at = getChunk(dx, dz);
+				if (at == null) {
+					putChunk(pos, new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, new ChunkPos(dx, dz)));
+				}
+			}
+		}
 
 		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (int by = 0; by < CHUNK_SIZE; by++) {
@@ -205,18 +214,12 @@ public class World implements RenderableProvider {
 			}
 		}
 
-		game.runLater(() -> {
-			chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-					CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-			chunk.mesh.setIndices(indices);
-			chunk.ready = true;
-			chunk.dirty = true;
-			putChunk(chunkPos, chunk);
-		});
+		Chunk build = chunk.build();
+		putChunk(pos, build);
 	}
 
-	private void putChunk(ChunkPos chunkPos, Chunk chunk) {
-		Chunk oldChunk = chunks.get(chunkPos);
+	private void putChunk(ChunkPos chunkPos, RawChunk chunk) {
+		RawChunk oldChunk = chunks.get(chunkPos);
 		if (oldChunk != null) {
 			oldChunk.dispose();
 		}
@@ -232,8 +235,8 @@ public class World implements RenderableProvider {
 	}
 
 	@SuppressWarnings("BlockingMethodInNonBlockingContext")
-	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
-		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
+	public CompletableFuture<ConcurrentMap<Vector3, RawChunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
+		ConcurrentMap<Vector3, RawChunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
 			for (var pos : toCreate) {
 				try {
@@ -242,8 +245,8 @@ public class World implements RenderableProvider {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
-				Chunk newChunk = terrainGen.generateChunkData(this, chunk, seed);
+				RawChunk chunk = new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				RawChunk newChunk = terrainGen.generateChunkData(this, chunk, seed);
 			}
 			return map;
 		});
@@ -254,7 +257,7 @@ public class World implements RenderableProvider {
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		Chunk chunk = getChunkAt(x, y, z);
+		RawChunk chunk = getChunkAt(x, y, z);
 		GridPoint3 cp = toChunkCoords(x, y, z);
 		chunk.set(cp.x, cp.y, cp.z, block);
 	}
@@ -263,10 +266,22 @@ public class World implements RenderableProvider {
 		return get(pos.x, pos.y, pos.z);
 	}
 
-	@Nullable
+	@NotNull
+	public Block getRaw(int x, int y, int z) {
+		RawChunk chunkAt = getChunkAt(x, y, z);
+		if (chunkAt == null) {
+			return Blocks.AIR;
+		}
+
+		GridPoint3 cp = toChunkCoords(x, y, z);
+		return chunkAt.get(cp.x, cp.y, cp.z);
+	}
+
+	@NotNull
 	public Block get(int x, int y, int z) {
-		Chunk chunkAt = getChunkAt(x, y, z);
-		if (chunkAt == null || !chunkAt.ready) {
+		RawChunk chunkAt = getChunkAt(x, y, z);
+		if (!(chunkAt instanceof Chunk chunk)) return Blocks.AIR;
+		if (!chunk.ready) {
 			return Blocks.AIR;
 		}
 
@@ -289,15 +304,19 @@ public class World implements RenderableProvider {
 		return new GridPoint3(cx, cy, cz);
 	}
 
-	public Chunk getChunk(ChunkPos chunkPos) {
+	public RawChunk getChunk(ChunkPos chunkPos) {
 		return chunks.get(chunkPos);
 	}
 
-	public Chunk getChunkAt(int x, int y, int z) {
+	public RawChunk getChunk(int x, int z) {
+		return getChunk(new ChunkPos(x, z));
+	}
+
+	public RawChunk getChunkAt(int x, int y, int z) {
 		return getChunkAt(new GridPoint3(x, y, z));
 	}
 
-	public Chunk getChunkAt(GridPoint3 pos) {
+	public RawChunk getChunkAt(GridPoint3 pos) {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
@@ -306,7 +325,7 @@ public class World implements RenderableProvider {
 	}
 
 	public int getHighest(int x, int z) {
-		Chunk chunkAt = getChunkAt(x, 0, z);
+		RawChunk chunkAt = getChunkAt(x, 0, z);
 		if (chunkAt == null) return 0;
 
 		// FIXME: Optimize by using a heightmap.
@@ -355,13 +374,13 @@ public class World implements RenderableProvider {
 	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
 		renderedChunks = 0;
 		totalChunks = chunks.size();
-		List<Chunk> toSort = new ArrayList<>(chunks.values());
+		List<RawChunk> toSort = new ArrayList<>(chunks.values());
 		toSort.sort((o1, o2) -> {
 			Vector3 mid1 = new Vector3(o1.offset.x + (float) CHUNK_SIZE / 2, o1.offset.y + (float) CHUNK_HEIGHT / 2, o1.offset.z + (float) CHUNK_SIZE / 2);
 			Vector3 mid2 = new Vector3(o2.offset.x + (float) CHUNK_SIZE / 2, o2.offset.y + (float) CHUNK_HEIGHT / 2, o2.offset.z + (float) CHUNK_SIZE / 2);
 			return Float.compare(mid2.dst(this.game.player.getPosition()), mid1.dst(this.game.player.getPosition()));
 		});
-		for (Chunk chunk : toSort) {
+		for (RawChunk chunk : toSort) {
 			synchronized (chunk.lock) {
 				if (!chunk.ready) {
 					continue;
@@ -371,7 +390,7 @@ public class World implements RenderableProvider {
 				if (chunk.dirty) {
 					int numVertices = chunk.calculateVertices(this.vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					opaqueMesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
+					opaqueMesh.setVertices(this.vertices, 0, numVertices * RawChunk.VERTEX_SIZE);
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {
@@ -459,7 +478,7 @@ public class World implements RenderableProvider {
 	}
 
 	public void dispose() {
-		for (Chunk chunk : chunks.values()) {
+		for (RawChunk chunk : chunks.values()) {
 			chunk.dispose();
 		}
 		vertices = null;
@@ -480,7 +499,7 @@ public class World implements RenderableProvider {
 	public void fillCrashInfo(CrashLog crashLog) {
 		CrashCategory cat = new CrashCategory("World Details");
 		cat.add("Total chunks", this.totalChunks); // Too many chunks?
-		cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+		cat.add("Rendered chunks", this.renderedChunks); // ChunkRW render overflow?
 		cat.add("Seed", this.seed); // For weird world generation glitches
 
 		crashLog.addCategory(cat);

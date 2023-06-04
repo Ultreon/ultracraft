@@ -19,4 +19,8 @@ public class Heightmap {
     protected void set(int x, int z, int height) {
         this.surfaceTable.put(x, z, height);
     }
+
+    public void dispose() {
+        this.surfaceTable.clear();
+    }
 }
