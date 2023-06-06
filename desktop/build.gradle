@@ -31,13 +31,13 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
-    id 'maven-publish'
-    id "org.panteleyev.jpackageplugin"
+//    id 'maven-publish'
+//    id "org.panteleyev.jpackageplugin"
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
@@ -47,10 +47,12 @@ apply plugin: 'maven-publish'
 version project_version
 group project_group
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
+archivesBaseName = archives_base_name
+
+//java {
+//    withSourcesJar()
+//    withJavadocJar()
+//}
 
 dependencies {
     implementation project(":core")
@@ -70,8 +72,8 @@ dependencies {
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 
-    implementation 'it.unimi.dsi:fastutil:8.5.11'
-    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'it.unimi.dsi:fastutil:8.5.12'
+    implementation 'com.google.guava:guava:32.0.0-jre'
     implementation 'com.raylabz:opensimplex:1.0.3'
     implementation 'de.articdive:jnoise-modules:4.0.0'
     implementation 'de.articdive:jnoise-generators:4.0.0'

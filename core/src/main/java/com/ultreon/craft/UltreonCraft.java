@@ -2,9 +2,9 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+//import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+//import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+//import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -51,7 +51,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
-import com.ultreon.craft.util.ImGuiEx;
+//import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -64,18 +64,18 @@ import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v0.LanguageManager;
-import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.type.ImBoolean;
-import imgui.type.ImFloat;
+//import imgui.ImGui;
+//import imgui.ImGuiIO;
+//import imgui.flag.ImGuiCond;
+//import imgui.flag.ImGuiInputTextFlags;
+//import imgui.flag.ImGuiWindowFlags;
+//import imgui.gl3.ImGuiImplGl3;
+//import imgui.glfw.ImGuiImplGlfw;
+//import imgui.type.ImBoolean;
+//import imgui.type.ImFloat;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
+//import org.lwjgl.glfw.GLFW;
+//import org.lwjgl.glfw.GLFWErrorCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
@@ -91,14 +91,14 @@ import static com.badlogic.gdx.math.MathUtils.ceil;
 
 public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
-    private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
-    private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
-    private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+//    private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
+//    private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
+//    private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
     private static final Logger LOGGER = LoggerFactory.getLogger("UltreonCraft");
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
     private boolean booted = false;
-    private final ImGuiImplGlfw imGuiGlfw;
-    private final ImGuiImplGl3 imGuiGl3;
+//    private final ImGuiImplGlfw imGuiGlfw;
+//    private final ImGuiImplGl3 imGuiGl3;
     public static final int TPS = 20;
     public BitmapFont font;
     public BitmapFont largeFont;
@@ -115,11 +115,11 @@ public class UltreonCraft extends ApplicationAdapter {
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput();
     private final boolean isDevMode;
-    private final ImBoolean showImGui = new ImBoolean(false);
+//    private final ImBoolean showImGui = new ImBoolean(false);
     private long windowHandle;
-    private final ImFloat imGuiPosX = new ImFloat();
-    private final ImFloat imGuiPosY = new ImFloat();
-    private final ImFloat imGuiPosZ = new ImFloat();
+//    private final ImFloat imGuiPosX = new ImFloat();
+//    private final ImFloat imGuiPosY = new ImFloat();
+//    private final ImFloat imGuiPosZ = new ImFloat();
     public Screen currentScreen;
     public final GameSettings settings = new GameSettings();
     private ShapeDrawer shapes;
@@ -149,9 +149,9 @@ public class UltreonCraft extends ApplicationAdapter {
     private DirectionalShadowLight shadowLight;
     private ModelBatch shadowBatch;
     private List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
-    public static Lwjgl3Application app;
-    public static Lwjgl3Graphics graphics;
-    public static Lwjgl3Window window;
+//    public static Lwjgl3Application app;
+//    public static Lwjgl3Graphics graphics;
+//    public static Lwjgl3Window window;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
@@ -159,8 +159,8 @@ public class UltreonCraft extends ApplicationAdapter {
         LOGGER.info("Booting game!");
 
         Identifier.setDefaultNamespace(NAMESPACE);
-        imGuiGlfw = new ImGuiImplGlfw();
-        imGuiGl3 = new ImGuiImplGl3();
+//        imGuiGlfw = new ImGuiImplGlfw();
+//        imGuiGl3 = new ImGuiImplGl3();
 
         List<String> argList = List.of(args);
         isDevMode = argList.contains("--dev");
@@ -197,9 +197,9 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
-            app = (Lwjgl3Application) Gdx.app;
-            graphics = (Lwjgl3Graphics) Gdx.graphics;
-            window = graphics.getWindow();
+//            app = (Lwjgl3Application) Gdx.app;
+//            graphics = (Lwjgl3Graphics) Gdx.graphics;
+//            window = graphics.getWindow();
 
             LOGGER.info("Initializing game");
             this.textureManager = new TextureManager();
@@ -307,19 +307,19 @@ public class UltreonCraft extends ApplicationAdapter {
             showScreen(new TitleScreen());
 
             LOGGER.info("Setting up ImGui");
-            GLFWErrorCallback.createPrint(System.err).set();
-            if (!GLFW.glfwInit()) {
-                throw new IllegalStateException("Unable to initialize GLFW");
-            }
-            ImGui.createContext();
-            final ImGuiIO io = ImGui.getIO();
-            io.setIniFilename(null);
-            io.getFonts().addFontDefault();
-
-            windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
-
-            imGuiGlfw.init(windowHandle, true);
-            imGuiGl3.init("#version 150");
+//            GLFWErrorCallback.createPrint(System.err).set();
+//            if (!GLFW.glfwInit()) {
+//                throw new IllegalStateException("Unable to initialize GLFW");
+//            }
+//            ImGui.createContext();
+//            final ImGuiIO io = ImGui.getIO();
+//            io.setIniFilename(null);
+//            io.getFonts().addFontDefault();
+//
+//            windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
+//
+//            imGuiGlfw.init(windowHandle, true);
+//            imGuiGl3.init("#version 150");
 
         } catch (Exception e) {
             crash(e);
@@ -440,7 +440,7 @@ public class UltreonCraft extends ApplicationAdapter {
             this.input.update();
 
             if (Gdx.graphics.getFrameId() == 2) {
-                window.setVisible(true);
+//                window.setVisible(true);
             }
 
             ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
@@ -461,7 +461,7 @@ public class UltreonCraft extends ApplicationAdapter {
             renderGame(renderer, screen, world, deltaTime);
             this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
 
-            renderImGui();
+//            renderImGui();
 
             this.spriteBatch.end();
         } catch (Exception e) {
@@ -469,52 +469,52 @@ public class UltreonCraft extends ApplicationAdapter {
         }
     }
 
-    private void renderImGui() {
-        if (this.showImGui.get()) {
-            // render 3D scene
-            this.imGuiGlfw.newFrame();
-
-            ImGui.newFrame();
-            ImGui.setNextWindowPos(0, 0);
-            ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
-            ImGui.setNextWindowCollapsed(true);
-
-            if (Gdx.input.isCursorCatched()) {
-                ImGui.getIO().setMouseDown(new boolean[5]);
-                ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
-            }
-
-            if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-                    ImGuiWindowFlags.NoCollapse |
-                    ImGuiWindowFlags.AlwaysAutoResize |
-                    ImGuiWindowFlags.NoTitleBar |
-                    ImGuiWindowFlags.MenuBar |
-                    ImGuiInputTextFlags.AllowTabInput)) {
-                if (ImGui.beginMenuBar()) {
-                    if (ImGui.beginMenu("View")) {
-                        ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
-                        ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
-                        ImGui.endMenu();
-                    }
-                    if (ImGui.beginMenu("Debug")) {
-                        ImGui.menuItem("Utils", null, SHOW_UTILS);
-                        ImGui.endMenu();
-                    }
-
-                    ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
-                    ImGui.endMenuBar();
-                }
-                ImGui.end();
-            }
-
-            if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
-            if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
-            if (SHOW_UTILS.get()) showUtils();
-
-            ImGui.render();
-            this.imGuiGl3.renderDrawData(ImGui.getDrawData());
-        }
-    }
+//    private void renderImGui() {
+//        if (this.showImGui.get()) {
+//              // render 3D scene
+//            this.imGuiGlfw.newFrame();
+//
+//            ImGui.newFrame();
+//            ImGui.setNextWindowPos(0, 0);
+//            ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
+//            ImGui.setNextWindowCollapsed(true);
+//
+//            if (Gdx.input.isCursorCatched()) {
+//                ImGui.getIO().setMouseDown(new boolean[5]);
+//                ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+//            }
+//
+//            if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
+//                    ImGuiWindowFlags.NoCollapse |
+//                    ImGuiWindowFlags.AlwaysAutoResize |
+//                    ImGuiWindowFlags.NoTitleBar |
+//                    ImGuiWindowFlags.MenuBar |
+//                    ImGuiInputTextFlags.AllowTabInput)) {
+//                if (ImGui.beginMenuBar()) {
+//                    if (ImGui.beginMenu("View")) {
+//                        ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
+//                        ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
+//                        ImGui.endMenu();
+//                    }
+//                    if (ImGui.beginMenu("Debug")) {
+//                        ImGui.menuItem("Utils", null, SHOW_UTILS);
+//                        ImGui.endMenu();
+//                    }
+//
+//                    ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
+//                    ImGui.endMenuBar();
+//                }
+//                ImGui.end();
+//            }
+//
+//            if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
+//            if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
+//            if (SHOW_UTILS.get()) showUtils();
+//
+//            ImGui.render();
+//            this.imGuiGl3.renderDrawData(ImGui.getDrawData());
+//        }
+//    }
 
     private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
         if (world != null) {
@@ -600,104 +600,104 @@ public class UltreonCraft extends ApplicationAdapter {
         this.input.update();
     }
 
-    private void showPlayerUtilsWindow() {
+//    private void showPlayerUtilsWindow() {
+////		Screen currentScreen = getCurrentScreen();
+//        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+//        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+//        if (this.player != null && ImGui.begin("Player Utils", getDefaultFlags())) {
+//            ImGuiEx.text("Id:", () -> this.player.getId());
+////			ImGuiEx.text("'Direction':", () -> this.player.getFacing());
+//            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", this.player.getWalkingSpeed(), v -> this.player.setWalkingSpeed(v));
+//            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
+//            ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
+//            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
+//            ImGuiEx.editFloat("Health:", "PlayerHealth", this.player.getHealth(), v -> this.player.setHealth(v));
+//            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", this.player.getMaxHeath(), v -> this.player.setMaxHeath(v));
+//            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
+//            ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.isFlying(), v -> this.player.setFlying(v));
+//            ImGuiEx.editBool("Spectating:", "PlayerSpectating", this.player.isSpectating(), v -> this.player.setSpectating(v));
+//            ImGuiEx.bool("On Ground:", () -> this.player.onGround);
+//            ImGuiEx.bool("Colliding:", () -> this.player.isColliding);
+//            ImGuiEx.bool("Colliding X:", () -> this.player.isCollidingX);
+//            ImGuiEx.bool("Colliding Y:", () -> this.player.isCollidingY);
+//            ImGuiEx.bool("Colliding Z:", () -> this.player.isCollidingZ);
+//
+//            if (ImGui.collapsingHeader("Position")) {
+//                ImGui.treePush();
+//                ImGuiEx.editFloat("X:", "PlayerX", this.player.getX(), v -> this.player.setX(v));
+//                ImGuiEx.editFloat("Y:", "PlayerY", this.player.getY(), v -> this.player.setY(v));
+//                ImGuiEx.editFloat("Z:", "PlayerZ", this.player.getZ(), v -> this.player.setZ(v));
+//                ImGui.treePop();
+//            }
+//            if (ImGui.collapsingHeader("Velocity")) {
+//                ImGui.treePush();
+//                ImGuiEx.editFloat("X:", "PlayerVelocityX", this.player.velocityX, v -> this.player.velocityX = v);
+//                ImGuiEx.editFloat("Y:", "PlayerVelocityY", this.player.velocityY, v -> this.player.velocityY = v);
+//                ImGuiEx.editFloat("Z:", "PlayerVelocityZ", this.player.velocityZ, v -> this.player.velocityZ = v);
+//                ImGui.treePop();
+//            }
+//            if (ImGui.collapsingHeader("Rotation")) {
+//                ImGui.treePush();
+//                ImGuiEx.editFloat("X:", "PlayerXRot", this.player.getXRot(), v -> this.player.setXRot(v));
+//                ImGuiEx.editFloat("Y:", "PlayerYRot", this.player.getYRot(), v -> this.player.setYRot(v));
+//                ImGui.treePop();
+//            }
+//            if (ImGui.collapsingHeader("Player Input")) {
+//                ImGui.treePush();
+//                ImGuiEx.bool("Forward", () -> this.playerInput.forward);
+//                ImGuiEx.bool("Backward", () -> this.playerInput.backward);
+//                ImGuiEx.bool("Left", () -> this.playerInput.strafeLeft);
+//                ImGuiEx.bool("Right", () -> this.playerInput.strafeRight);
+//                ImGuiEx.bool("Up", () -> this.playerInput.up);
+//                ImGuiEx.bool("Down", () -> this.playerInput.down);
+//                ImGui.treePop();
+//            }
+//        }
+//        ImGui.end();
+//    }
+//
+//    private void showGuiUtilsWindow() {
 //		Screen currentScreen = getCurrentScreen();
-        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (this.player != null && ImGui.begin("Player Utils", getDefaultFlags())) {
-            ImGuiEx.text("Id:", () -> this.player.getId());
-//			ImGuiEx.text("'Direction':", () -> this.player.getFacing());
-            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", this.player.getWalkingSpeed(), v -> this.player.setWalkingSpeed(v));
-            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
-            ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
-            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
-            ImGuiEx.editFloat("Health:", "PlayerHealth", this.player.getHealth(), v -> this.player.setHealth(v));
-            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", this.player.getMaxHeath(), v -> this.player.setMaxHeath(v));
-            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
-            ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.isFlying(), v -> this.player.setFlying(v));
-            ImGuiEx.editBool("Spectating:", "PlayerSpectating", this.player.isSpectating(), v -> this.player.setSpectating(v));
-            ImGuiEx.bool("On Ground:", () -> this.player.onGround);
-            ImGuiEx.bool("Colliding:", () -> this.player.isColliding);
-            ImGuiEx.bool("Colliding X:", () -> this.player.isCollidingX);
-            ImGuiEx.bool("Colliding Y:", () -> this.player.isCollidingY);
-            ImGuiEx.bool("Colliding Z:", () -> this.player.isCollidingZ);
-
-            if (ImGui.collapsingHeader("Position")) {
-                ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerX", this.player.getX(), v -> this.player.setX(v));
-                ImGuiEx.editFloat("Y:", "PlayerY", this.player.getY(), v -> this.player.setY(v));
-                ImGuiEx.editFloat("Z:", "PlayerZ", this.player.getZ(), v -> this.player.setZ(v));
-                ImGui.treePop();
-            }
-            if (ImGui.collapsingHeader("Velocity")) {
-                ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerVelocityX", this.player.velocityX, v -> this.player.velocityX = v);
-                ImGuiEx.editFloat("Y:", "PlayerVelocityY", this.player.velocityY, v -> this.player.velocityY = v);
-                ImGuiEx.editFloat("Z:", "PlayerVelocityZ", this.player.velocityZ, v -> this.player.velocityZ = v);
-                ImGui.treePop();
-            }
-            if (ImGui.collapsingHeader("Rotation")) {
-                ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerXRot", this.player.getXRot(), v -> this.player.setXRot(v));
-                ImGuiEx.editFloat("Y:", "PlayerYRot", this.player.getYRot(), v -> this.player.setYRot(v));
-                ImGui.treePop();
-            }
-            if (ImGui.collapsingHeader("Player Input")) {
-                ImGui.treePush();
-                ImGuiEx.bool("Forward", () -> this.playerInput.forward);
-                ImGuiEx.bool("Backward", () -> this.playerInput.backward);
-                ImGuiEx.bool("Left", () -> this.playerInput.strafeLeft);
-                ImGuiEx.bool("Right", () -> this.playerInput.strafeRight);
-                ImGuiEx.bool("Up", () -> this.playerInput.up);
-                ImGuiEx.bool("Down", () -> this.playerInput.down);
-                ImGui.treePop();
-            }
-        }
-        ImGui.end();
-    }
-
-    private void showGuiUtilsWindow() {
-//		Screen currentScreen = getCurrentScreen();
-        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("Player Utils", getDefaultFlags())) {
-            Screen currentScreen = this.currentScreen;
-            ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
-            if (currentScreen != null) {
-                GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()));
-                if (exactWidgetAt != null) {
-                    this.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
-                    this.shapes.rectangle(
-                            exactWidgetAt.getX() * getGuiScale(), exactWidgetAt.getY() * getGuiScale(),
-                            exactWidgetAt.getWidth() * getGuiScale(), exactWidgetAt.getHeight() * getGuiScale()
-                    );
-                }
-                ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
-            }
-        }
-        ImGui.end();
-    }
-
-    private void showUtils() {
-//		Screen currentScreen = getCurrentScreen();
-        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("Utils", getDefaultFlags())) {
-            ImGui.button("Respawn");
-            if (ImGui.isItemClicked()) {
-                this.respawn();
-            }
-            ImGuiEx.slider("FOV", "GameFOV", (int) camera.fieldOfView, 10, 150, i -> camera.fieldOfView = i);
-        }
-        ImGui.end();
-    }
-
-    private int getDefaultFlags() {
-        boolean cursorCaught = Gdx.input.isCursorCatched();
-        var flags = ImGuiWindowFlags.None;
-        if (cursorCaught) flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs;
-        return flags;
-    }
+//        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+//        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+//        if (ImGui.begin("Player Utils", getDefaultFlags())) {
+//            Screen currentScreen = this.currentScreen;
+//            ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
+//            if (currentScreen != null) {
+//                GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()));
+//                if (exactWidgetAt != null) {
+//                    this.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
+//                    this.shapes.rectangle(
+//                            exactWidgetAt.getX() * getGuiScale(), exactWidgetAt.getY() * getGuiScale(),
+//                            exactWidgetAt.getWidth() * getGuiScale(), exactWidgetAt.getHeight() * getGuiScale()
+//                    );
+//                }
+//                ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
+//            }
+//        }
+//        ImGui.end();
+//    }
+//
+//    private void showUtils() {
+////		Screen currentScreen = getCurrentScreen();
+//        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+//        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+//        if (ImGui.begin("Utils", getDefaultFlags())) {
+//            ImGui.button("Respawn");
+//            if (ImGui.isItemClicked()) {
+//                this.respawn();
+//            }
+//            ImGuiEx.slider("FOV", "GameFOV", (int) camera.fieldOfView, 10, 150, i -> camera.fieldOfView = i);
+//        }
+//        ImGui.end();
+//    }
+//
+//    private int getDefaultFlags() {
+//        boolean cursorCaught = Gdx.input.isCursorCatched();
+//        var flags = ImGuiWindowFlags.None;
+//        if (cursorCaught) flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs;
+//        return flags;
+//    }
 
     public void respawn() {
         assert this.world != null;
@@ -740,9 +740,9 @@ public class UltreonCraft extends ApplicationAdapter {
             this.world.dispose();
         }
 
-        this.imGuiGl3.dispose();
-        this.imGuiGlfw.dispose();
-        ImGui.destroyContext();
+//        this.imGuiGl3.dispose();
+//        this.imGuiGlfw.dispose();
+//        ImGui.destroyContext();
 
         this.blocksTextureAtlas.dispose();
 
@@ -760,11 +760,12 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public boolean isShowingImGui() {
-        return showImGui.get();
+//        return showImGui.get();
+        return false;
     }
 
     public void setShowingImGui(boolean value) {
-        showImGui.set(value);
+//        showImGui.set(value);
     }
 
     public BitmapFont getBitmapFont() {
