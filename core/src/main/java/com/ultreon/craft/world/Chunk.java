@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -11,8 +13,9 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
 
-public class Chunk {
+public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
 	protected final Object lock = new Object();
@@ -53,7 +56,7 @@ public class Chunk {
 		this.backOffset = size;
 		this.sizeTimesHeight = size * size;
 
-		for (int i = 0; i < sections.length; i++) {
+		for (int i = 0; i < this.sections.length; i++) {
 			this.sections[i] = new Section();
 		}
 	}
@@ -65,7 +68,7 @@ public class Chunk {
 	}
 
 	void load(MapType chunkData) {
-		ListType<MapType> sectionsData = chunkData.getList("Sections");
+		ListType<MapType> sectionsData = chunkData.getList("Sections", new ListType<>());
 		int i = 0;
 		for (MapType sectionData : sectionsData) {
 			this.sections[i].dispose();
@@ -436,12 +439,17 @@ public class Chunk {
 		return vertexOffset;
 	}
 
+	@Override
 	public void dispose() {
 		synchronized (this.lock) {
 			this.ready = false;
 
-			UltreonCraft.get().runLater(this.mesh::dispose);
-			for (Section section : this.sections) {
+			if (this.mesh != null) {
+				UltreonCraft.get().runLater(new Task(new Identifier("mesh_disposal"), this.mesh::dispose));
+			}
+			Section[] sections = this.sections;
+			for (int i = 0, sections1Length = sections.length; i < sections1Length; i++) {
+				Section section = sections[i];
 				section.dispose();
 			}
 			this.material = null;
@@ -452,6 +460,6 @@ public class Chunk {
 
 	@Override
 	public String toString() {
-		return "Chunk[x=" + pos.x + ", z=" + pos.z + "]";
+		return "Chunk[x=" + this.pos.x() + ", z=" + this.pos.z() + "]";
 	}
 }

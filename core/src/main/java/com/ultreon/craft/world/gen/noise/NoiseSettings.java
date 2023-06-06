@@ -8,12 +8,10 @@ public final class NoiseSettings {
     private final float noiseZoom;
     private final int octaves;
     private final Vector2 offset;
-    long seed;
-    private long oldSeed;
+    private long seed;
     private final float persistence;
     private final float redistributionModifier;
     private final float exponent;
-    private SimplexNoise noise;
 
     public NoiseSettings(float noiseZoom, int octaves, Vector2 offset, long seed, float persistence,
                          float redistributionModifier, float exponent) {
@@ -21,49 +19,44 @@ public final class NoiseSettings {
         this.octaves = octaves;
         this.offset = offset;
         this.seed = seed;
-        this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);
         this.persistence = persistence;
         this.redistributionModifier = redistributionModifier;
         this.exponent = exponent;
     }
 
-    public void setSeed(long seed) {
+    public NoiseInstance create(long seed) {
         this.seed = seed;
 
-        if (this.noise != null) this.noise.dispose();
-        this.noise = new SimplexNoise((int)Math.pow(2, octaves), persistence, seed);
-    }
-
-    public SimplexNoise getNoise() {
-        return this.noise;
+        return new NoiseInstance(new SimplexNoise((int)Math.pow(2, this.octaves), this.persistence, seed), seed,
+                this.noiseZoom, this.octaves, this.offset, this.redistributionModifier, this.exponent, this.persistence);
     }
 
     public float noiseZoom() {
-        return noiseZoom;
+        return this.noiseZoom;
     }
 
     public int octaves() {
-        return octaves;
+        return this.octaves;
     }
 
     public Vector2 offset() {
-        return offset;
+        return this.offset;
     }
 
     public long seed() {
-        return seed;
+        return this.seed;
     }
 
     public float persistence() {
-        return persistence;
+        return this.persistence;
     }
 
     public float redistributionModifier() {
-        return redistributionModifier;
+        return this.redistributionModifier;
     }
 
     public float exponent() {
-        return exponent;
+        return this.exponent;
     }
 
     @Override
@@ -82,19 +75,19 @@ public final class NoiseSettings {
 
     @Override
     public int hashCode() {
-        return Objects.hash(noiseZoom, octaves, offset, seed, persistence, redistributionModifier, exponent);
+        return Objects.hash(this.noiseZoom, this.octaves, this.offset, this.seed, this.persistence, this.redistributionModifier, this.exponent);
     }
 
     @Override
     public String toString() {
         return "NoiseSettings[" +
-                "noiseZoom=" + noiseZoom + ", " +
-                "octaves=" + octaves + ", " +
-                "offset=" + offset + ", " +
-                "worldOffset=" + seed + ", " +
-                "persistence=" + persistence + ", " +
-                "redistributionModifier=" + redistributionModifier + ", " +
-                "exponent=" + exponent + ']';
+                "noiseZoom=" + this.noiseZoom + ", " +
+                "octaves=" + this.octaves + ", " +
+                "offset=" + this.offset + ", " +
+                "worldOffset=" + this.seed + ", " +
+                "persistence=" + this.persistence + ", " +
+                "redistributionModifier=" + this.redistributionModifier + ", " +
+                "exponent=" + this.exponent + ']';
     }
 
 }

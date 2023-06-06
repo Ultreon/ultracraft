@@ -1,5 +1,6 @@
 package com.ultreon.craft.world.gen.noise;
 
+import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.debug.Debugger;
 import de.articdive.jnoise.generators.noisegen.perlin.PerlinNoiseGenerator;
 
@@ -18,24 +19,26 @@ public class MyNoise {
         return (int) remapValue01(value, outputMin, outputMax);
     }
 
-    public static float redistribution(float noise, NoiseSettings settings) {
+    public static float redistribution(float noise, NoiseInstance settings) {
         return (float) Math.pow(noise * settings.redistributionModifier(), settings.exponent());
     }
 
-    public static float octavePerlin(float x, float z, NoiseSettings settings) {
-        x *= settings.noiseZoom();
-        z *= settings.noiseZoom();
-        x += settings.noiseZoom();
-        z += settings.noiseZoom();
+    public static float octavePerlin(float x, float z, NoiseInstance settings) {
+        float zoom = settings.noiseZoom();
+        x *= zoom;
+        z *= zoom;
+        x += zoom;
+        z += zoom;
+
+        Vector2 offset = settings.offset();
 
         float total = 0.0F;
         float frequency = 1.0F;
         float amplitude = 1.0F;
         float amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
 
-        long seed = settings.seed;
         for (int i = 0; i < settings.octaves(); i++) {
-            total += settings.getNoise().eval((settings.offset().x + seed + x) * frequency, (settings.offset().y + seed + z) * frequency) * amplitude;
+            total += settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude;
 
             amplitudeSum += amplitude;
 

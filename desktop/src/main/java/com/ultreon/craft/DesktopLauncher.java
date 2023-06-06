@@ -1,9 +1,11 @@
 package com.ultreon.craft;
 
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
+import com.badlogic.gdx.graphics.glutils.HdpiMode;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
@@ -11,7 +13,9 @@ public class DesktopLauncher {
 
 	public static void main(String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setForegroundFPS(240);
+		config.setForegroundFPS(0);
+		config.setIdleFPS(10);
+		config.setInitialVisible(false);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);

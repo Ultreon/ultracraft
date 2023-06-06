@@ -1,6 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.GridPoint3;
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
@@ -12,7 +13,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Section {
+public class Section implements Disposable {
     private final int size;
     private Block[] blocks;
     private boolean dirty;
@@ -88,7 +89,7 @@ public class Section {
     }
 
     public Block getFast(int x, int y, int z) {
-        return this.blocks[x + z * this.size + y * (this.size * this.size)];
+        return this.blocks[this.toIndex(x, y, z)];
     }
 
     public void set(GridPoint3 pos, Block block) {
@@ -107,8 +108,12 @@ public class Section {
     }
 
     public void setFast(int x, int y, int z, Block block) {
-        this.blocks[x + z * this.size + y * (this.size * this.size)] = block;
+        this.blocks[this.toIndex(x, y, z)] = block;
         this.dirty = true;
+    }
+
+    private int toIndex(int x, int y, int z) {
+        return x + z * this.size + y * (this.size * this.size);
     }
 
     public boolean isDirty() {
@@ -119,6 +124,7 @@ public class Section {
         this.dirty = dirty;
     }
 
+    @Override
     public void dispose() {
         this.blocks = null;
     }

@@ -52,15 +52,30 @@ public final class SavedWorld {
         return this.directory;
     }
 
+    @Deprecated
     public boolean chunkExists(int x, int z) {
         return this.exists("chunks/c" + x + "." + z + ".ubo");
     }
 
+    @Deprecated
     public MapType readChunk(int x, int z) throws IOException {
         return this.read("chunks/c" + x + "." + z + ".ubo");
     }
 
+    @Deprecated
     public void writeChunk(int x, int z, MapType data) throws IOException {
         this.write(data, "chunks/c" + x + "." + z + ".ubo");
+    }
+
+    public boolean regionExists(int x, int z) {
+        return this.exists("regions/r" + x + "." + z + ".ubo");
+    }
+
+    public MapType readRegion(int x, int z) throws IOException {
+        return this.read("regions/r" + x + "." + z + ".ubo");
+    }
+
+    public void writeRegion(int x, int z, MapType data) throws IOException {
+        this.write(data, "regions/r" + x + "." + z + ".ubo");
     }
 }

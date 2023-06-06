@@ -1,57 +1,49 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.debug.Debugger;
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.MyNoise;
-import com.ultreon.craft.world.gen.noise.NoiseSettings;
+import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.event.DocumentEvent;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class BiomeGenerator {
-    private final NoiseSettings biomeNoise;
+public class BiomeGenerator implements Disposable {
+    private final World world;
+    private final NoiseInstance biomeNoise;
     private final DomainWarping domainWarping;
     private final List<TerrainLayer> layers;
     private final List<TerrainLayer> extraLayers;
     public static final boolean USE_DOMAIN_WARPING = true;
     public TreeGenerator treeGenerator;
 
-    public BiomeGenerator(NoiseSettings biomeNoise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
-        this.biomeNoise = biomeNoise;
+    public BiomeGenerator(World world, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
+        this.world = world;
+        this.biomeNoise = noise;
         this.domainWarping = domainWarping;
         this.layers = layers;
         System.out.println("layers = " + layers);
         this.extraLayers = extraLayers;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public Chunk processColumn(Chunk chunk, int x, int z, long seed, @Nullable Integer height) {
-        biomeNoise.setSeed(seed);
-        domainWarping.noiseDomainX.setSeed(seed);
-        domainWarping.noiseDomainY.setSeed(seed);
-
+    public Chunk processColumn(Chunk chunk, int x, int z, @Nullable Integer height) {
         final int chunkAmplitude = 1;
-        int groundPos = getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
 
-        for (int y = (int) chunk.offset.y; y < (int) chunk.offset.y + chunk.height; y++) {
-            for (var layer : layers) {
-                if (layer.handle(chunk, x, y, z, groundPos, seed)) {
+        int groundPos = this.getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
+
+        for (int y = chunk.offset.y; y < chunk.offset.y + chunk.height; y++) {
+            for (var layer : this.layers) {
+                if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
                     break;
                 }
             }
         }
 
-        for (var layer : extraLayers) {
-            layer.handle(chunk, x, (int) chunk.offset.y, z, groundPos, seed);
+        for (var layer : this.extraLayers) {
+            layer.handle(this.world, chunk, x, chunk.offset.y, z, groundPos);
         }
 
         return chunk;
@@ -60,14 +52,13 @@ public class BiomeGenerator {
     public int getSurfaceHeightNoise(float x, float z, int height) {
         float terrainHeight;
         if (!USE_DOMAIN_WARPING) {
-            terrainHeight = MyNoise.octavePerlin(x, z, biomeNoise);
+            terrainHeight = MyNoise.octavePerlin(x, z, this.biomeNoise);
         } else {
-            terrainHeight = domainWarping.generateDomainNoise((int) x, (int) z, biomeNoise);
+            terrainHeight = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
         }
 
-        terrainHeight = MyNoise.redistribution(terrainHeight, biomeNoise);
+        terrainHeight = MyNoise.redistribution(terrainHeight, this.biomeNoise);
         return MyNoise.remapValue01ToInt(terrainHeight, 0, height);
-//        return (int) (terrainHeight * height);
     }
 
     public TreeData getTreeData(Chunk chunk, long seed) {
@@ -77,34 +68,12 @@ public class BiomeGenerator {
         return treeGenerator.generateTreeData(chunk, seed);
     }
 
-    public static class Builder {
-        private NoiseSettings biomeNoise;
-        private DomainWarping domainWarping;
-        private final List<TerrainLayer> layers = new ArrayList<>();
-        private final List<TerrainLayer> extraLayers = new ArrayList<>();
+    @Override
+    public void dispose() {
+        this.biomeNoise.dispose();
+    }
 
-        public Builder noise(NoiseSettings biomeNoise) {
-            this.biomeNoise = biomeNoise;
-            return this;
-        }
-
-        public Builder domainWarping(DomainWarping domainWarping) {
-            this.domainWarping = domainWarping;
-            return this;
-        }
-
-        public Builder layer(TerrainLayer layer) {
-            this.layers.add(layer);
-            return this;
-        }
-
-        public Builder extraLayer(TerrainLayer layer) {
-            this.extraLayers.add(layer);
-            return this;
-        }
-
-        public BiomeGenerator build() {
-            return new BiomeGenerator(biomeNoise, domainWarping, layers, extraLayers);
-        }
+    public World getWorld() {
+        return this.world;
     }
 }

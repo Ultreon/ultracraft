@@ -30,13 +30,9 @@ public class PauseScreen extends Screen {
     public void show() {
         super.show();
 
-        try {
-            World world = this.game.world;
-            if (world != null) {
-                this.game.addFuture(world.saveAsync());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        World world = this.game.world;
+        if (world != null) {
+            this.game.addFuture(world.saveAsync(false));
         }
 
         this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft/screen/pause/back_to_game"), this::resumeGame));

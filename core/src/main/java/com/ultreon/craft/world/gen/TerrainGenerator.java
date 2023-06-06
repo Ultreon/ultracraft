@@ -31,7 +31,7 @@ public class TerrainGenerator {
         for (int x = 0; x < chunk.size; x++) {
             for (int z = 0; z < chunk.size; z++) {
                 biomeSelection = selectBiomeGenerator(new GridPoint3(chunk.offset.x + x, 0, chunk.offset.z + z), chunk);
-                chunk = biomeSelection.biomeGenerator.processColumn(chunk, x, z, seed, biomeSelection.terrainSurfaceNoise);
+                chunk = biomeSelection.biomeGenerator.processColumn(chunk, x, z, biomeSelection.terrainSurfaceNoise);
             }
         }
         return chunk;
