@@ -154,6 +154,8 @@ public class UltreonCraft extends ApplicationAdapter {
 //    public static Lwjgl3Window window;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private Integer deferredWidth;
+    private Integer deferredHeight;
 
     public UltreonCraft(String[] args) {
         LOGGER.info("Booting game!");
@@ -201,6 +203,44 @@ public class UltreonCraft extends ApplicationAdapter {
 //            graphics = (Lwjgl3Graphics) Gdx.graphics;
 //            window = graphics.getWindow();
 
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+            LOGGER.error("EEEEEEEEEEEEEEEEEEEEEEEEE");
+
             LOGGER.info("Initializing game");
             this.textureManager = new TextureManager();
             this.spriteBatch = new SpriteBatch();
@@ -210,12 +250,12 @@ public class UltreonCraft extends ApplicationAdapter {
             createDir("logs/");
 
             this.resourceManager = new ResourceManager("assets");
-            try {
+//            try {
                 LOGGER.info("Importing resources");
-                this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+//                this.resourceManager.importPackage(getClass().getResource("/"));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
 
             LOGGER.info("Generating bitmap fonts");
             FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
@@ -302,6 +342,12 @@ public class UltreonCraft extends ApplicationAdapter {
 
             LOGGER.info("Setting up HUD");
             this.hud = new Hud(this);
+
+            if (this.deferredWidth != null && this.deferredHeight != null) {
+                this.camera.viewportWidth = this.deferredWidth;
+                this.camera.viewportHeight = this.deferredHeight;
+                this.camera.update();
+            }
 
             LOGGER.info("Opening title screen");
             showScreen(new TitleScreen());
@@ -538,6 +584,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public static void crash(Exception e) {
+        e.printStackTrace();
         try {
             CrashLog crashLog = new CrashLog("An error occurred", e);
             crash(crashLog);
@@ -718,9 +765,13 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void resize(int width, int height) {
         this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-        this.camera.viewportWidth = width;
-        this.camera.viewportHeight = height;
-        this.camera.update();
+        this.deferredWidth = width;
+        this.deferredHeight = height;
+        if (this.camera != null) {
+            this.camera.viewportWidth = width;
+            this.camera.viewportHeight = height;
+            this.camera.update();
+        }
 
         Screen cur = this.currentScreen;
         if (cur != null) {

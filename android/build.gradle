@@ -45,6 +45,7 @@ android {
         resources {
             excludes += ['META-INF/robovm/ios/robovm.xml']
             excludes += ['META-INF/INDEX.LIST']
+            excludes += ['META-INF/DEPENDENCIES']
             excludes += ['LICENSE.md']
         }
     }
@@ -54,6 +55,10 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     buildTypes {
         release {

@@ -21,10 +21,15 @@ buildscript {
             url = "https://maven.atlassian.com/3rdparty/"
         }
 
+        maven {
+            url 'https://storage.googleapis.com/r8-releases/raw'
+        }
+
         google()
     }
 
     dependencies {
+        classpath 'com.android.tools:r8:8.0.40'          // Must be before the Gradle Plugin for Android.
         classpath 'com.android.tools.build:gradle:8.0.2'
     }
 }
