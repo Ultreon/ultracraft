@@ -51,6 +51,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.util.GG;
 import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
@@ -192,6 +193,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
     public static Identifier id(String path) {
         return new Identifier(path);
+    }
+
+    public static GG ggBro() {
+        return new GG();
     }
 
     @Override
