@@ -331,13 +331,6 @@ public class UltreonCraft extends ApplicationAdapter {
 	private void stitchTextures() {
 		this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
-		final int breakStages = 6;
-
-		for (int i = 0; i < breakStages; i++) {
-			TextureRegion region = blocksTextureAtlas.get(new Identifier("misc/breaking" + (i + 1) + ".png"));
-			Chunk.BREAK_TEX.add(region);
-		}
-
 		TextureStitcher itemTextures = new TextureStitcher();
 		for (Map.Entry<Identifier, Item> e : Registries.ITEMS.entries()) {
 			if (e.getValue() == Items.AIR) continue;

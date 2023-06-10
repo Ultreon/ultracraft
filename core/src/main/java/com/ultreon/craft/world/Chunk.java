@@ -24,7 +24,7 @@ import static com.ultreon.craft.world.World.CHUNK_SIZE;
 public class Chunk {
 	public static final int VERTEX_SIZE = 6;
 	public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
-	private final Map<Vec3i, Float> breaking = new HashMap<>();
+	final Map<Vec3i, Float> breaking = new HashMap<>();
 	public final ChunkPos pos;
 	protected final Object lock = new Object();
 	protected boolean modifiedByPlayer;
@@ -116,58 +116,36 @@ public class Chunk {
 					if (model == null) continue;
 					float magik = -1F;
 
-					float progress = getBreakProgress(x, y, z);
-//					TextureRegion breakTex = getBreakTex(progress);
-					TextureRegion breakTex = TextureManager.DEFAULT_TEXTURE_REG;
-
-					if (progress >= 0.0F) {
-						vertexOffset = createTop(offset, x, y + magik, z, breakTex, vertices, vertexOffset);
-					}
 					if (y < height - 1) {
 						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
 					}
 
-					if (progress >= 0.0F) {
-						vertexOffset = createBottom(offset, x, y - magik, 0, breakTex, vertices, vertexOffset);
-					}
 					if (y > 0) {
 						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
 					}
 
-					if (progress >= 0.0F) {
-						vertexOffset = createLeft(offset, x - magik, y, z, breakTex, vertices, vertexOffset);
-					}
 					if (x > 0) {
 						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
 					}
 
-					if (progress >= 0.0F) {
-						vertexOffset = createRight(offset, x + magik, y, z, breakTex, vertices, vertexOffset);
-					}
 					if (x < size - 1) {
 						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
 					}
 
-					if (progress >= 0.0F) {
-						vertexOffset = createFront(offset, x, y, z - magik, breakTex, vertices, vertexOffset);
-					}
 					if (z > 0) {
 						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					} else {
 						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
 					}
 
-					if (progress >= 0.0F) {
-						vertexOffset = createBottom(offset, x, y, z + magik, breakTex, vertices, vertexOffset);
-					}
 					if (z < size - 1) {
 						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
 					} else {
@@ -193,11 +171,14 @@ public class Chunk {
 		return new GridPoint3(wx, y, wz);
 	}
 
-	private static TextureRegion getBreakTex(float progress) {
+	TextureRegion getBreakTex(float progress) {
 		if (progress < 0) {
 			return null;
 		}
-		return UltreonCraft.get().blocksTextureAtlas.get(new Identifier("misc/breaking" + (int) (6 * progress) + ".png"));
+		Identifier identifier = new Identifier("textures/misc/breaking" + (int) (6 * progress + 1) + ".png");
+		TextureRegion textureRegion = UltreonCraft.get().blocksTextureAtlas.get(identifier);
+		System.out.println("identifier = " + identifier + ", textureRegion = " + textureRegion);
+		return textureRegion;
 	}
 
 	float getBreakProgress(float x, float y, float z) {

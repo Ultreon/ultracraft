@@ -1,5 +1,6 @@
 package com.ultreon.craft;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
@@ -42,6 +43,14 @@ public class BlockModelRegistry {
 
     public static TextureAtlas stitch(TextureManager textureManager) {
         TextureStitcher textureStitcher = new TextureStitcher();
+
+        final int breakStages = 6;
+
+        for (int i = 0; i < breakStages; i++) {
+            Identifier texId = new Identifier("textures/misc/breaking" + (i + 1) + ".png");
+            Texture tex = textureManager.getTexture(texId);
+            textureStitcher.add(texId, tex);
+        }
 
         for (Identifier texture : TEXTURES) {
             textureStitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")));

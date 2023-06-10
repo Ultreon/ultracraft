@@ -5,8 +5,13 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.model.MeshPart;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -365,7 +370,7 @@ public class World implements RenderableProvider {
 
 				Mesh mesh = chunk.mesh;
 
-				if (chunk.dirty || needsUpdateByNeighbour(chunk)) {
+				if (chunk.dirty || this.needsUpdateByNeighbour(chunk)) {
 					if (chunk.mesh != null) chunk.mesh.dispose();
 
 					chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
@@ -390,7 +395,26 @@ public class World implements RenderableProvider {
 				piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
 
 				renderables.add(piece);
-				renderedChunks = renderedChunks + 1;
+
+				MeshBuilder builder = new MeshBuilder();
+				builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+				chunk.breaking.forEach((pos, progress) -> {
+					if (progress <= 0.0F) return;
+					builder.setUVRange(chunk.getBreakTex(progress));
+					BoxShapeBuilder.build(builder, chunk.offset.x + pos.x - 0.1F, chunk.offset.y + pos.y - 0.1F, chunk.offset.z + pos.z - 0.1F, 1.2F, 1.2F, 1.2F);
+				});
+
+				Renderable breakingPiece = pool.obtain();
+
+				breakingPiece.material = chunk.material.;
+				breakingPiece.meshPart.mesh = builder.end();
+				breakingPiece.meshPart.offset = 0;
+				breakingPiece.meshPart.size = builder.getNumVertices();
+				breakingPiece.meshPart.primitiveType = GL20.GL_TRIANGLES;
+
+				renderables.add(breakingPiece);
+
+				this.renderedChunks = this.renderedChunks + 1;
 			}
 		}
 
