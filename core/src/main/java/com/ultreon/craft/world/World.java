@@ -263,9 +263,13 @@ public class World implements RenderableProvider, Disposable {
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
-		for (Chunk chunk1 : this.getChunks()) {
-			if (!needed.contains(chunk1.pos) && !this.isAlwaysLoaded(chunk1.pos)) {
-				toRemove.add(chunk1.pos);
+		for (ChunkPos pos : needed) {
+			if (this.getChunk(pos) == null) {
+				if (!needed.contains(pos)) {
+//					if (!this.isAlwaysLoaded(pos)) {
+                        toRemove.add(pos);
+//					}
+				}
 			}
 		}
 
@@ -322,7 +326,8 @@ public class World implements RenderableProvider, Disposable {
 	@CanIgnoreReturnValue
 	private CompletableFuture<Boolean> unloadChunkAsync(@NotNull Chunk chunk) {
 		synchronized (chunk.lock) {
-			return CompletableFuture.supplyAsync(() -> {
+            LOGGER.debug("UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
+            return CompletableFuture.supplyAsync(() -> {
 				WorldRegion region = this.getRegionFor(chunk.pos);
 				if (region == null) {
 					return false;

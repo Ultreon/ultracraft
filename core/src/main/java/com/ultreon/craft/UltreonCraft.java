@@ -54,6 +54,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.util.GG;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -98,8 +99,7 @@ public class UltreonCraft extends ApplicationAdapter {
     @Nullable public World world;
     private static UltreonCraft instance;
     @Nullable public Player player;
-    public int renderDistance = calculateRenderDistance();
-
+    public int renderDistance = 8;
     private SpriteBatch spriteBatch;
     private ModelBatch batch;
     GameCamera camera;
@@ -137,9 +137,6 @@ public class UltreonCraft extends ApplicationAdapter {
     private DirectionalShadowLight shadowLight;
     private ModelBatch shadowBatch;
     private List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
-//    public static Lwjgl3Application app;
-//    public static Lwjgl3Graphics graphics;
-//    public static Lwjgl3Window window;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private Integer deferredWidth;
@@ -183,15 +180,15 @@ public class UltreonCraft extends ApplicationAdapter {
         return new Identifier(path);
     }
 
+    public static GG ggBro() {
+        return new GG();
+    }
+
     @Override
     public void create() {
         try {
-//            app = (Lwjgl3Application) Gdx.app;
-//            graphics = (Lwjgl3Graphics) Gdx.graphics;
-//            window = graphics.getWindow();
-
             this.settings = new GameSettings();
-            
+
             Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
             LOGGER.info("Initializing game");
@@ -624,10 +621,6 @@ public class UltreonCraft extends ApplicationAdapter {
         if (this.world != null) {
             this.world.dispose();
         }
-
-//        this.imGuiGl3.dispose();
-//        this.imGuiGlfw.dispose();
-//        ImGui.destroyContext();
 
         this.blocksTextureAtlas.dispose();
 
