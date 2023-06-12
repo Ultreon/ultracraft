@@ -24,6 +24,8 @@ import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -83,6 +85,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
+    public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
     private static SavedWorld savedWorld;
@@ -429,12 +432,12 @@ public class UltreonCraft extends ApplicationAdapter {
             this.input.update();
 
             if (Gdx.graphics.getFrameId() == 2) {
-//                window.setVisible(true);
+                GamePlatform.instance.firstRender();
+                Gdx.graphics.setTitle("UltraCraft v" + Metadata.INSTANCE.version);
             }
 
             ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
             World world = this.world;
-            Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
 
             if (this.renderWorld && world != null) {
                 this.batch.begin(this.camera);

@@ -2,6 +2,7 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
@@ -218,5 +219,12 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public void setShowingImGui(boolean value) {
         this.showImGui.set(value);
+    }
+
+    @Override
+    public void firstRender() {
+        Lwjgl3Graphics graphics = (Lwjgl3Graphics) Gdx.graphics;
+        Lwjgl3Window window = graphics.getWindow();
+        window.setVisible(true);
     }
 }

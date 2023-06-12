@@ -117,3 +117,5 @@ Thumbs.db
 !.idea/discord.xml
 
 /run/
+
+*.log

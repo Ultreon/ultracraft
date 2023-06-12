@@ -65,4 +65,8 @@ public abstract class GamePlatform {
             case MOBILE -> false;
         };
     }
+
+    public void firstRender() {
+
+    }
 }

@@ -20,8 +20,8 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
-        classpath "com.google.code.gson:gson:2.8.9"
+        classpath group: 'commons-io', name: 'commons-io', version: '2.11.0'
+        classpath "com.google.code.gson:gson:2.10.1"
     }
 }
 
@@ -49,10 +49,10 @@ group project_group
 
 archivesBaseName = archives_base_name
 
-//java {
-//    withSourcesJar()
-//    withJavadocJar()
-//}
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
 dependencies {
     implementation project(":core")
@@ -72,8 +72,21 @@ dependencies {
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 
-    implementation 'it.unimi.dsi:fastutil:8.5.12'
+    // Apache Log4J
+    implementation "org.apache.logging.log4j:log4j:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+
+    // SLF4J
+    api "org.slf4j:slf4j-api:$slf4j_version"
+
+    // Google
+    implementation "com.google.code.gson:gson:2.10.1"
     implementation 'com.google.guava:guava:32.0.0-jre'
+
+    // Misc
+    implementation 'it.unimi.dsi:fastutil:8.5.12'
     implementation 'com.raylabz:opensimplex:1.0.3'
     implementation 'de.articdive:jnoise-modules:4.0.0'
     implementation 'de.articdive:jnoise-generators:4.0.0'
@@ -133,4 +146,9 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
