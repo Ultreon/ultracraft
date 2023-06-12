@@ -5,10 +5,11 @@ import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
-import it.unimi.dsi.fastutil.longs.Long2ReferenceFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import it.unimi.dsi.fastutil.longs.Long2ReferenceFunction;
 
 public abstract class Biome {
     private final NoiseSettings settings;

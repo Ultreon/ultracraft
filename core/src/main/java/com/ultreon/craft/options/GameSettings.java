@@ -1,9 +1,10 @@
 package com.ultreon.craft.options;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.libs.translations.v0.LanguageManager;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
@@ -69,7 +70,8 @@ public class GameSettings {
         props.setProperty("language", language.getLanguage());
         props.setProperty("renderDistance", Integer.toString(renderDistance));
         try {
-            props.storeToXML(new FileOutputStream(FILENAME), "This is the settings for the Ultreon Craft game.");
+            FileHandle external = Gdx.files.external("settings.xml");
+            props.storeToXML(external.write(false), "This is the settings for the Ultreon Craft game.");
         } catch (IOException e) {
             e.printStackTrace();
         }

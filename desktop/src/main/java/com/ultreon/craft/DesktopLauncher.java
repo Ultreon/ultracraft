@@ -12,10 +12,12 @@ public class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
 
 	public static void main(String[] arg) {
+		GamePlatform.instance = new DesktopPlatform();
+
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(0);
 		config.setIdleFPS(10);
-		config.setInitialVisible(false);
+//		config.setInitialVisible(false);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);

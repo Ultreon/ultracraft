@@ -1,10 +1,8 @@
 package com.ultreon.craft.render.gui.screens;
 
-import com.ultreon.craft.options.GameSettings;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.gui.widget.Button;
 import com.ultreon.libs.translations.v0.Language;
-import com.ultreon.libs.translations.v0.LanguageManager;
 
 import java.util.Locale;
 

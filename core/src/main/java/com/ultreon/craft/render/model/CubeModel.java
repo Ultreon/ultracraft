@@ -3,13 +3,11 @@ package com.ultreon.craft.render.model;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.libs.commons.v0.Identifier;
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 public final class CubeModel {
     private final Identifier top;

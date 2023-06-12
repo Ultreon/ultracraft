@@ -7,12 +7,14 @@
 
     <application
         android:allowBackup="true"
+        android:allowClearUserData="true"
         android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
         android:isGame="true"
         android:appCategory="game"
         android:label="@string/app_name"
-        tools:ignore="UnusedAttribute">
+        tools:ignore="UnusedAttribute"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name="com.ultreon.craft.AndroidLauncher"
             android:label="@string/app_name" 

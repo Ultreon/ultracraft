@@ -1,6 +1,5 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.world.gen.BiomeGenerator;
 import org.jetbrains.annotations.Nullable;
 
 public class BiomeGeneratorSelection {

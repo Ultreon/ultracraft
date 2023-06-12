@@ -1,6 +1,7 @@
 package com.ultreon.craft.render.gui;
 
 import com.ultreon.craft.render.Renderer;
+
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
 

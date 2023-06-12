@@ -1,10 +1,11 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.ultreon.craft.Task;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.widget.Button;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v0.Language;
 
 public class DeathScreen extends Screen {
@@ -36,8 +37,11 @@ public class DeathScreen extends Screen {
     }
 
     private void respawn(Button button) {
-        this.game.respawn();
-        this.game.showScreen(null);
+        this.game.respawnAsync().thenAccept(unused -> {
+            this.game.runLater(new Task(new Identifier("post_respawn"), () -> {
+                this.game.showScreen(null);
+            }));
+        });
     }
 
     @Override
@@ -64,7 +68,7 @@ public class DeathScreen extends Screen {
     }
 
     @Override
-    public boolean canCloseOnEsc() {
+    public boolean canClose() {
         return false;
     }
 }

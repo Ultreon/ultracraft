@@ -1,10 +1,7 @@
 package com.ultreon.craft.uri;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 
 import java.io.FileNotFoundException;

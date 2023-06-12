@@ -24,6 +24,7 @@
       },
       "title": {
         "start_world": "Start New World",
+        "reset_world": "Reset World",
         "options": "Options...",
         "quit": "Quit"
       }

@@ -15,18 +15,18 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.google.common.base.Preconditions;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import com.ultreon.libs.text.v0.TextObject;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 import java.util.function.Consumer;
+
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * Renderer class.

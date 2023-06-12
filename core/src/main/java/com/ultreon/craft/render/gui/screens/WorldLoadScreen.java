@@ -1,5 +1,6 @@
 package com.ultreon.craft.render.gui.screens;
 
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
@@ -13,6 +14,8 @@ import java.io.IOException;
 
 public class WorldLoadScreen extends Screen {
     private final SavedWorld savedWorld;
+    private final GlyphLayout layout = new GlyphLayout();
+    private long nextLog;
 
     public WorldLoadScreen(SavedWorld savedWorld) {
         super("Loading World");
@@ -47,12 +50,11 @@ public class WorldLoadScreen extends Screen {
 
         for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
             for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
-                this.game.world.loadChunk(spawnChunkX, spawnChunkZ).join();
+                this.game.world.loadChunk(spawnChunkX, spawnChunkZ);
             }
         }
 
         this.game.respawn();
-
         this.game.renderWorld = true;
         this.game.runLater(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
     }
@@ -63,10 +65,25 @@ public class WorldLoadScreen extends Screen {
 
         renderer.setColor(Color.rgb(0xffffff));
         renderer.text(this.title, this.width / 2 - (int) this.titleLayout.width / 2, this.height - this.height / 3);
+
+        World world = this.game.world;
+        if (world != null) {
+            int chunksToLoad = world.getChunksToLoad();
+            if (chunksToLoad != 0) {
+                String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
+                this.layout.setText(this.font, s);
+                renderer.text(s, this.width / 2 - (int)this.layout.width / 2, this.height - (int) this.height / 3 - 20);
+
+                if (this.nextLog <= System.currentTimeMillis()) {
+                    this.nextLog = System.currentTimeMillis() + 1000;
+                    World.LOGGER.info("Loading world: " + s);
+                }
+            }
+        }
     }
 
     @Override
-    public boolean canCloseOnEsc() {
+    public boolean canClose() {
         return false;
     }
 }

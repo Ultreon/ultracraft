@@ -8,10 +8,12 @@ import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.Callback;
 import com.ultreon.craft.render.gui.GuiComponent;
-import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 
 public class Button extends GuiComponent {
     private Callback<Button> callback = caller -> {};

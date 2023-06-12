@@ -1,6 +1,7 @@
 package com.ultreon.craft.render;
 
 import com.ultreon.craft.util.InvalidValueException;
+
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.regex.Pattern;

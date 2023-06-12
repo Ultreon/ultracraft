@@ -1,5 +1,6 @@
 package com.ultreon.craft.entity;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -12,9 +13,9 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -353,5 +354,10 @@ public class Entity {
 
     public void setGravity(float gravity) {
         this.gravity = gravity;
+    }
+
+    public void rotate(GridPoint2 rotation) {
+        this.xRot = this.xRot + rotation.x;
+        this.yRot = Mth.clamp(this.yRot + rotation.y, -90, 90);
     }
 }

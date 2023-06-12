@@ -3,6 +3,7 @@ package com.ultreon.craft.entity;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+
 import org.jetbrains.annotations.Contract;
 
 public abstract class EntityType<T extends Entity> {

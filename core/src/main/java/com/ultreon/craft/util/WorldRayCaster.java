@@ -9,7 +9,6 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 
 public class WorldRayCaster {

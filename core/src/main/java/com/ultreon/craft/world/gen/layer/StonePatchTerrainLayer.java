@@ -1,7 +1,5 @@
 package com.ultreon.craft.world.gen.layer;
 
-import com.badlogic.gdx.math.GridPoint3;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.DomainWarping;

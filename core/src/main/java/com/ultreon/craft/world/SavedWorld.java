@@ -1,17 +1,17 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.data.DataIo;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.MapType;
 
-import java.io.File;
 import java.io.IOException;
 
 @SuppressWarnings("ClassCanBeRecord")
 public final class SavedWorld {
-    private final File directory;
+    private final FileHandle directory;
 
-    public SavedWorld(File directory) {
+    public SavedWorld(FileHandle directory) {
         this.directory = directory;
     }
 
@@ -20,35 +20,34 @@ public final class SavedWorld {
         if (path.contains("..")) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
-        return DataIo.readCompressed(new File(this.directory, path), type);
+        return DataIo.readCompressed(this.directory.child(path).read(), type);
     }
 
     public void write(IType<?> data, String path) throws IOException {
         if (path.contains("..")) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
-        DataIo.writeCompressed(data, new File(this.directory, path));
+        DataIo.writeCompressed(data, this.directory.child(path).write(false));
     }
 
     public boolean exists(String path) {
         if (path.contains("..")) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
-        return new File(this.directory, path).exists();
+        return this.directory.child(path).exists();
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void createDir(String path) throws IOException {
+    public void createDir(String path) {
         if (path.contains("..")) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
-        File file = new File(this.directory, path);
-        if (!file.exists() && !file.mkdirs()) {
-            throw new IOException("Failed to create directory: " + file.getPath());
+        FileHandle file = this.directory.child(path);
+        if (!file.exists()) {
+            file.mkdirs();
         }
     }
 
-    public File getDirectory() {
+    public FileHandle getDirectory() {
         return this.directory;
     }
 
@@ -77,5 +76,9 @@ public final class SavedWorld {
 
     public void writeRegion(int x, int z, MapType data) throws IOException {
         this.write(data, "regions/r" + x + "." + z + ".ubo");
+    }
+
+    public void delete() {
+        this.directory.deleteDirectory();
     }
 }

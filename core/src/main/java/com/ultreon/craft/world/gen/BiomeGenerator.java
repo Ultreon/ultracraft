@@ -7,6 +7,7 @@ import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.MyNoise;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

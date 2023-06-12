@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+
 import de.articdive.jnoise.core.util.vectors.Vector1D;
 import de.articdive.jnoise.core.util.vectors.Vector2D;
 import de.articdive.jnoise.core.util.vectors.Vector3D;

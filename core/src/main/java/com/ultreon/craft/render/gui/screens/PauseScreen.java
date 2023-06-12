@@ -6,8 +6,6 @@ import com.ultreon.craft.render.gui.widget.Button;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.translations.v0.Language;
 
-import java.io.IOException;
-
 public class PauseScreen extends Screen {
     private Button backToGameButton;
     private Button optionsButton;

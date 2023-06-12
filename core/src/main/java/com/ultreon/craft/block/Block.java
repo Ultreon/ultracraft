@@ -3,9 +3,9 @@ package com.ultreon.craft.block;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
-import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Block {
     private static int globalId;

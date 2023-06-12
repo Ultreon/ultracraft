@@ -7,11 +7,12 @@ import com.ultreon.craft.world.BiomeData;
 import com.ultreon.craft.world.BiomeSelectionHelper;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TerrainGenerator {
     private final DomainWarping biomeDomainWarping;

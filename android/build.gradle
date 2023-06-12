@@ -2,6 +2,10 @@ apply plugin: "com.android.application"
 
 configurations { natives }
 
+repositories {
+    maven { url "https://maven.andob.info/repository/open_source" }
+}
+
 dependencies {
     implementation project(":core")
     api "com.badlogicgames.gdx:gdx-backend-android:$gdx_version"
@@ -23,7 +27,7 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86"
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86_64"
-
+    api "ro.andob.androidawt:androidawt:1.0.4"
 }
 
 android {
@@ -36,7 +40,7 @@ android {
             aidl.srcDirs = ['src']
             renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
-            assets.srcDirs = ['../assets']
+            assets.srcDirs = ['../core/src/main/resources']
             jniLibs.srcDirs = ['libs']
         }
 

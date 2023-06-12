@@ -9,6 +9,7 @@ import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
+
 import org.checkerframework.common.value.qual.IntRange;
 
 /**
@@ -144,7 +145,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * @return to cancel out other usage create this method.
      */
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE && game.currentScreen != null && game.currentScreen.canCloseOnEsc()) {
+        if (keyCode == Input.Keys.ESCAPE && game.currentScreen != null && game.currentScreen.canClose()) {
             game.showScreen(null);
             return true;
         }
