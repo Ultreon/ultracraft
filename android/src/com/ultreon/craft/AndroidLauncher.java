@@ -21,6 +21,7 @@ public class AndroidLauncher extends AndroidApplication {
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useImmersiveMode = true;
+		config.useGL30 = true;
 		this.initialize(new UltreonCraft(new String[]{}), config);
 	}
 }

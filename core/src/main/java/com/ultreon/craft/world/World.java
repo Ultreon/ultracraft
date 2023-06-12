@@ -66,6 +66,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 
@@ -752,9 +754,11 @@ public class World implements RenderableProvider, Disposable {
 
 				Mesh opaqueMesh = chunk.mesh;
 				if (chunk.dirty) {
-					int numVertices = chunk.calculateVertices(this.vertices);
+					FloatList vertices = new FloatArrayList();
+					int numVertices = chunk.calculateVertices(vertices);
 					chunk.numVertices = numVertices / 4 * 6;
-					opaqueMesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
+					opaqueMesh.setVertices(vertices.toFloatArray());
+					vertices.clear();
 					chunk.dirty = false;
 				}
 				if (chunk.numVertices == 0) {

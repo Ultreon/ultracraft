@@ -3,6 +3,7 @@ package com.ultreon.craft;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import com.badlogic.gdx.graphics.glutils.HdpiMode;
@@ -17,6 +18,7 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(0);
 		config.setIdleFPS(10);
+		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
 //		config.setInitialVisible(false);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());

@@ -15,6 +15,8 @@ import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 
+import it.unimi.dsi.fastutil.floats.FloatList;
+
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
@@ -150,9 +152,8 @@ public class Chunk implements Disposable {
 
 	/** Creates a mesh out of the chunk, returning the number of indices produced
 	 * @return the number of vertices produced */
-	public int calculateVertices(float[] vertices) {
+	public int calculateVertices(FloatList vertices) {
 		int i = 0;
-		int vertexOffset = 0;
 		for (int y = 0; y < height; y++) {
 			for (int z = 0; z < size; z++) {
 				for (int x = 0; x < size; x++, i++) {
@@ -165,39 +166,39 @@ public class Chunk implements Disposable {
 					if (model == null) continue;
 
 					if (y < height - 1) {
-						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						if (getB(x, y + 1, z) == null || getB(x, y + 1, z) == Blocks.AIR || getB(x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
 					} else {
-						vertexOffset = createTop(offset, x, y, z, model.top(), vertices, vertexOffset);
+						createTop(offset, x, y, z, model.top(), vertices);
 					}
 					if (y > 0) {
-						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						if (getB(x, y - 1, z) == null || getB(x, y - 1, z) == Blocks.AIR || getB(x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
 					} else {
-						vertexOffset = createBottom(offset, x, y, z, model.bottom(), vertices, vertexOffset);
+						createBottom(offset, x, y, z, model.bottom(), vertices);
 					}
 					if (x > 0) {
-						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						if (getB(x - 1, y, z) == null || getB(x - 1, y, z) == Blocks.AIR || getB(x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
 					} else {
-						vertexOffset = createLeft(offset, x, y, z, model.left(), vertices, vertexOffset);
+						createLeft(offset, x, y, z, model.left(), vertices);
 					}
 					if (x < size - 1) {
-						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						if (getB(x + 1, y, z) == null || getB(x + 1, y, z) == Blocks.AIR || getB(x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
 					} else {
-						vertexOffset = createRight(offset, x, y, z, model.right(), vertices, vertexOffset);
+						createRight(offset, x, y, z, model.right(), vertices);
 					}
 					if (z > 0) {
-						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						if (getB(x, y, z - 1) == null || getB(x, y, z - 1) == Blocks.AIR || getB(x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
 					} else {
-						vertexOffset = createFront(offset, x, y, z, model.front(), vertices, vertexOffset);
+						createFront(offset, x, y, z, model.front(), vertices);
 					}
 					if (z < size - 1) {
-						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						if (getB(x, y, z + 1) == null || getB(x, y, z + 1) == Blocks.AIR || getB(x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
 					} else {
-						vertexOffset = createBack(offset, x, y, z, model.back(), vertices, vertexOffset);
+						createBack(offset, x, y, z, model.back(), vertices);
 					}
 				}
 			}
 		}
-		return vertexOffset / VERTEX_SIZE + 1;
+		return vertices.size() / VERTEX_SIZE + 1;
 	}
 
 	private Block getB(int x, int y, int z) {
@@ -205,238 +206,232 @@ public class Chunk implements Disposable {
 		return get(new GridPoint3(x, y, z));
 	}
 
-	public static int createTop(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+	public static void createTop(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
-		return vertexOffset;
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 	}
 
-	public static int createBottom(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+	public static void createBottom(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
-		return vertexOffset;
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 	}
 
-	public static int createLeft(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+	public static void createLeft(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
-		return vertexOffset;
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(-1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 	}
 
-	public static int createRight(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+	public static void createRight(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
-		return vertexOffset;
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 	}
 
-	public static int createFront(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+	public static void createFront(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 1;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
-		return vertexOffset;
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(1);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 	}
 
-	public static int createBack(GridPoint3 offset, int x, int y, int z, TextureRegion region, float[] vertices, int vertexOffset) {
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV2();
+	public static void createBack(GridPoint3 offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(region.getU2());
+		vertices.add(region.getV2());
 
-		vertices[vertexOffset++] = offset.x + x;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = region.getU2();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(region.getU2());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y + 1;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV();
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y + 1);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(region.getU());
+		vertices.add(region.getV());
 
-		vertices[vertexOffset++] = offset.x + x + 1;
-		vertices[vertexOffset++] = offset.y + y;
-		vertices[vertexOffset++] = offset.z + z + 1;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = 0;
-		vertices[vertexOffset++] = -1;
-		vertices[vertexOffset++] = region.getU();
-		vertices[vertexOffset++] = region.getV2();
-		return vertexOffset;
+		vertices.add(offset.x + x + 1);
+		vertices.add(offset.y + y);
+		vertices.add(offset.z + z + 1);
+		vertices.add(0);
+		vertices.add(0);
+		vertices.add(-1);
+		vertices.add(region.getU());
+		vertices.add(region.getV2());
 	}
 
 	@Override
@@ -448,8 +443,7 @@ public class Chunk implements Disposable {
 				UltreonCraft.get().runLater(new Task(new Identifier("mesh_disposal"), this.mesh::dispose));
 			}
 			Section[] sections = this.sections;
-			for (int i = 0, sections1Length = sections.length; i < sections1Length; i++) {
-				Section section = sections[i];
+			for (Section section : sections) {
 				section.dispose();
 			}
 			this.material = null;
