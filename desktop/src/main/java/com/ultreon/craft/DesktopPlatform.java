@@ -227,4 +227,11 @@ public class DesktopPlatform extends GamePlatform {
         Lwjgl3Window window = graphics.getWindow();
         window.setVisible(true);
     }
+
+    @Override
+    public void dispose() {
+        this.imGuiGl3.dispose();
+        this.imGuiGlfw.dispose();
+        ImGui.destroyContext();
+    }
 }

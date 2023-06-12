@@ -624,6 +624,8 @@ public class UltreonCraft extends ApplicationAdapter {
 
         this.blocksTextureAtlas.dispose();
 
+        GamePlatform.instance.dispose();
+
         this.batch.dispose();
         this.spriteBatch.dispose();
         this.font.dispose();

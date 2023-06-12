@@ -69,4 +69,8 @@ public abstract class GamePlatform {
     public void firstRender() {
 
     }
+
+    public void dispose() {
+
+    }
 }
