@@ -87,8 +87,10 @@ public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
+    public static final FileHandle CONFIG_DIR = Gdx.files.external("config/");
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
+
     private static SavedWorld savedWorld;
     private boolean booted = false;
     public static final int TPS = 20;
@@ -187,6 +189,11 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
+            if (!CONFIG_DIR.isDirectory()) {
+                CONFIG_DIR.delete();
+                CONFIG_DIR.mkdirs();
+            }
+
             this.settings = new GameSettings();
 
             Gdx.input.setCatchKey(Input.Keys.BACK, true);
