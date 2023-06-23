@@ -94,9 +94,6 @@ dependencies {
     // Misc. Libraries
     api 'it.unimi.dsi:fastutil:8.5.12'
     api 'com.raylabz:opensimplex:1.0.3'
-    api 'de.articdive:jnoise-modules:4.0.0'
-    api 'de.articdive:jnoise-generators:4.0.0'
-    api 'de.articdive:jnoise-modifiers:4.0.0'
     api 'org.jetbrains:annotations:24.0.1'
 
     api "space.earlygrey:shapedrawer:$shapedrawer_version"

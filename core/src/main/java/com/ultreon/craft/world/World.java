@@ -62,6 +62,8 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -118,6 +120,7 @@ public class World implements RenderableProvider, Disposable {
 	private ScheduledFuture<?> saveSchedule;
 	private int chunksToLoad;
 	private int chunksLoaded;
+	private final Executor saveExecutor = Executors.newSingleThreadExecutor();
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -163,7 +166,11 @@ public class World implements RenderableProvider, Disposable {
 		this.saveSchedule = this.game.schedule(new Task(new Identifier("auto_save")) {
 			@Override
 			public void run() {
-				World.this.game.addFuture(World.this.saveAsync(true));
+				try {
+					World.this.save(true);
+				} catch (Exception e) {
+					LOGGER.error("Failed to save world", e);
+				}
 				World.this.saveSchedule = World.this.game.schedule(this, AUTO_SAVE_DELAY, TimeUnit.SECONDS);
 			}
 		}, INITIAL_AUTO_SAVE_DELAY, TimeUnit.SECONDS);
@@ -217,7 +224,7 @@ public class World implements RenderableProvider, Disposable {
 				LOGGER.error("Failed to save world", e);
 				return false;
 			}
-		});
+		}, this.saveExecutor);
 	}
 
 	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
@@ -263,14 +270,19 @@ public class World implements RenderableProvider, Disposable {
 		return game.settings.getRenderDistance();
 	}
 
+	@SuppressWarnings("SimplifyStreamApiCallChains")
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
-		for (ChunkPos pos : needed) {
-			if (this.getChunk(pos) == null) {
-				if (!needed.contains(pos)) {
-//					if (!this.isAlwaysLoaded(pos)) {
-                        toRemove.add(pos);
-//					}
+		for (var pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
+			Chunk chunk = this.getChunk(pos);
+			System.out.println("pos = " + pos);
+			System.out.println("needed = " + needed);
+			System.out.println("needed.stream().filter(chunkPos -> chunkPos == pos) = " + needed.stream().filter(pos::equals).collect(Collectors.toList()));
+			return chunk != null && !needed.contains(pos) && !chunk.modifiedByPlayer;
+		}).collect(Collectors.toList())) {
+			if (this.getChunk(pos) != null) {
+				if (!this.isAlwaysLoaded(pos)) {
+					toRemove.add(pos);
 				}
 			}
 		}
@@ -310,6 +322,7 @@ public class World implements RenderableProvider, Disposable {
 		List<ChunkPos> toCreate = worldGenInfo.toCreate;
 		this.chunksToLoad = toCreate.size();
 		this.chunksLoaded = 0;
+		System.out.println("worldGenInfo.toRemove = " + worldGenInfo.toRemove);
 		for (ChunkPos chunkPos : worldGenInfo.toRemove) {
 			this.unloadChunk(chunkPos);
 		}
@@ -344,6 +357,7 @@ public class World implements RenderableProvider, Disposable {
 
 	private boolean unloadChunk(@NotNull ChunkPos chunkPos) {
 		Chunk chunk = this.getChunk(chunkPos);
+		if (chunk == null) return true;
 		return this.unloadChunk(chunk);
 	}
 
@@ -792,8 +806,8 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public <T extends Entity> T spawn(T entity) {
-		setEntityId(entity);
-		entities.put(entity.getId(), entity);
+		this.setEntityId(entity);
+		this.entities.put(entity.getId(), entity);
 		return entity;
 	}
 

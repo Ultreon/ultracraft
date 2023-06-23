@@ -66,7 +66,7 @@ public class MobileInput extends GameInput {
         GridPoint2 cur = new GridPoint2(screenX, screenY);
         this.rotateOrigin = cur;
         if (origin != null) {
-            GridPoint2 rotate = new GridPoint2(cur.x - origin.x, cur.y - origin.y);
+            GridPoint2 rotate = new GridPoint2(origin.x - cur.x, origin.y - cur.y);
             player.rotate(rotate);
         }
     }

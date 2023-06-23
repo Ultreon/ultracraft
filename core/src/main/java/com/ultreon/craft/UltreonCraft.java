@@ -588,8 +588,11 @@ public class UltreonCraft extends ApplicationAdapter {
 
         this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
         this.player = Entities.PLAYER.create(this.world);
+        LOGGER.debug("Player created, setting health now.");
         this.player.setHealth(this.player.getMaxHeath());
+        LOGGER.debug("Health set, setting position now.");
         this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+        LOGGER.debug("Position set, spawning in world now..");
         this.world.spawn(this.player);
     }
 
@@ -761,17 +764,27 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     private float calculateGuiScale() {
-        return switch (GamePlatform.instance.getPlatformType()) {
-            case MOBILE -> 4.0F;
-            case DESKTOP, WEB -> 2.0F;
-        };
+        switch (GamePlatform.instance.getPlatformType()) {
+            case MOBILE:
+                return 4.0F;
+            case DESKTOP:
+            case WEB:
+                return 2.0F;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     private int calculateRenderDistance() {
-        return switch (GamePlatform.instance.getPlatformType()) {
-            case DESKTOP -> 8;
-            case MOBILE, WEB -> 4;
-        };
+        switch (GamePlatform.instance.getPlatformType()) {
+            case DESKTOP:
+                return 8;
+            case MOBILE:
+            case WEB:
+                return 4;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean isPlaying() {

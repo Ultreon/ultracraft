@@ -62,14 +62,15 @@ public class PlayerInput {
         } else {
             Vector2 joyStick = this.game.hud.getJoyStick();
             if (joyStick != null) {
-                this.moveX = joyStick.x * speed;
-                this.moveZ = joyStick.y * speed;
+                this.moveX = joyStick.x * speed * 15;
+                this.moveZ = joyStick.y * speed * 15;
             } else {
                 this.moveX = 0;
                 this.moveZ = 0;
             }
 
-            this.vel.set(speed * this.moveX, 0, speed * this.moveZ);
+            this.tmp.set(-speed * this.moveX, 0, speed * this.moveZ).rotate(player.getXRot(), 0, 1, 0);
+            this.vel.set(this.tmp);
         }
     }
 

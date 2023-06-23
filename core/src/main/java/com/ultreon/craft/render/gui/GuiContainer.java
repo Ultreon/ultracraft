@@ -37,7 +37,8 @@ public abstract class GuiContainer extends GuiComponent {
     @Nullable
     public GuiComponent getExactWidgetAt(int x, int y) {
         GuiComponent widgetAt = getWidgetAt(x, y);
-        if (widgetAt instanceof GuiContainer container) {
+        if (widgetAt instanceof GuiContainer) {
+            GuiContainer container = (GuiContainer) widgetAt;
             return container.getExactWidgetAt(x, y);
         }
         return widgetAt;

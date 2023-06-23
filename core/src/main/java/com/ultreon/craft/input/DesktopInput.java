@@ -50,7 +50,7 @@ public class DesktopInput extends GameInput {
 
         if (keycode == this.screenshotKey) {
             Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            PixmapIO.writePNG(Gdx.files.local("screenshots/screenshot_%s.png".formatted(DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+            PixmapIO.writePNG(Gdx.files.local(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
         }
 

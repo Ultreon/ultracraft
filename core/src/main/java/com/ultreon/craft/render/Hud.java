@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
@@ -41,8 +42,9 @@ public class Hud implements GameRenderable {
 
         this.renderHotbar(renderer, player);
 
-        if (this.game.input instanceof MobileInput mobileInput) {
-            this.renderMobileHud(renderer, player, mobileInput);
+        GameInput input = this.game.input;
+        if (input instanceof MobileInput) {
+            this.renderMobileHud(renderer, player, (MobileInput) input);
         }
     }
 

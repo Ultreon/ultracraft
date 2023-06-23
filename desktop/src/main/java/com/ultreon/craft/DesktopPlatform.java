@@ -37,11 +37,16 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public OperatingSystem getOperatingSystem() {
-        return switch (Platform.get()) {
-            case LINUX -> OperatingSystem.LINUX;
-            case MACOSX -> OperatingSystem.MAC_OS;
-            case WINDOWS -> OperatingSystem.WINDOWS;
-        };
+        switch (Platform.get()) {
+            case LINUX:
+                return OperatingSystem.LINUX;
+            case MACOSX:
+                return OperatingSystem.MAC_OS;
+            case WINDOWS:
+                return OperatingSystem.WINDOWS;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     @Override

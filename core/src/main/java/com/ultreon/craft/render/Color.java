@@ -188,7 +188,7 @@ public class Color {
 
     @Override
     public String toString() {
-        return "#%02x%02x%02x%02x".formatted(getRed(), getGreen(), getBlue(), getAlpha());
+        return String.format("#%02x%02x%02x%02x", getRed(), getGreen(), getBlue(), getAlpha());
     }
 
     public com.badlogic.gdx.graphics.Color toGdx() {

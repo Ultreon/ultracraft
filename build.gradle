@@ -29,8 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools:r8:8.0.40'          // Must be before the Gradle Plugin for Android.
-        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath 'com.android.tools.build:gradle:7.2.2'
     }
 }
 

@@ -94,8 +94,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void debug(String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.d(this.name, String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.d(this.name, String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.d(this.name, String.format(format, arg1, arg2));
         }
@@ -128,8 +128,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void debug(Marker marker, String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.d(this.name + "/" + marker.getName(), String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.d(this.name + "/" + marker.getName(), String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.d(this.name + "/" + marker.getName(), String.format(format, arg1, arg2));
         }
@@ -162,8 +162,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void info(String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.i(this.name, String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.i(this.name, String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.i(this.name, String.format(format, arg1, arg2));
         }
@@ -196,8 +196,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void info(Marker marker, String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.i(this.name + "/" + marker.getName(), String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.i(this.name + "/" + marker.getName(), String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.i(this.name + "/" + marker.getName(), String.format(format, arg1, arg2));
         }
@@ -230,8 +230,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void warn(String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.w(this.name, String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.w(this.name, String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.w(this.name, String.format(format, arg1, arg2));
         }
@@ -264,8 +264,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void warn(Marker marker, String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.w(this.name + "/" + marker.getName(), String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.w(this.name + "/" + marker.getName(), String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.w(this.name + "/" + marker.getName(), String.format(format, arg1, arg2));
         }
@@ -298,8 +298,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void error(String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.e(this.name, String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.e(this.name, String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.e(this.name, String.format(format, arg1, arg2));
         }
@@ -332,8 +332,8 @@ public class AndroidLogger implements Logger {
 
     @Override
     public void error(Marker marker, String format, Object arg1, Object arg2) {
-        if (arg2 instanceof Throwable t) {
-            Log.e(this.name + "/" + marker.getName(), String.format(format, arg1), t);
+        if (arg2 instanceof Throwable) {
+            Log.e(this.name + "/" + marker.getName(), String.format(format, arg1), (Throwable) arg2);
         } else {
             Log.e(this.name + "/" + marker.getName(), String.format(format, arg1, arg2));
         }

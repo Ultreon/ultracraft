@@ -55,7 +55,9 @@ public class WorldLoadScreen extends Screen {
         }
 
         this.game.respawn();
+        UltreonCraft.LOGGER.debug("Player spawned, enabling world rendering now.");
         this.game.renderWorld = true;
+        UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
         this.game.runLater(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
     }
 

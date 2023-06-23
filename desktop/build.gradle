@@ -88,9 +88,6 @@ dependencies {
     // Misc
     implementation 'it.unimi.dsi:fastutil:8.5.12'
     implementation 'com.raylabz:opensimplex:1.0.3'
-    implementation 'de.articdive:jnoise-modules:4.0.0'
-    implementation 'de.articdive:jnoise-generators:4.0.0'
-    implementation 'de.articdive:jnoise-modifiers:4.0.0'
 
     implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
 
@@ -149,6 +146,6 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
