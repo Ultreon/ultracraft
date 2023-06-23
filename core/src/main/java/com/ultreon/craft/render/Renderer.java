@@ -326,39 +326,80 @@ public class Renderer {
     //     Text     //
     //////////////////
     public void text(String str, int x, int y) {
-        font.draw(batch, str, x, y);
+        this.text(str, x, y, 0xffffff);
+    }
+
+    //////////////////
+    //     Text     //
+    //////////////////
+    public void text(String str, int x, int y, int color) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str, x, y);
     }
 
     public void text(String str, float x, float y) {
-        font.draw(batch, str, x, y);
+        this.text(str, x, y, 0xffffff);
     }
 
-    public void text(String str, float x, float y, float maxWidth,  String truncate) {
-        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, false, truncate);
+    public void text(String str, float x, float y, int color) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str, x, y);
     }
 
-    public void text(String str, float x, float y, float maxWidth, boolean wrap, String truncate) {
-        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, wrap);
+    public void text(String str, float x, float y,  float maxWidth,  String truncate) {
+        this.text(str, x, y, 0xffffff, maxWidth, truncate);
+    }
+
+    public void text(String str, float x, float y, int color, float maxWidth, String truncate) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str, x, y, 0, str.length(), maxWidth, 0, false, truncate);
+    }
+
+    public void text(String str, float x, float y,  float maxWidth, boolean wrap, String truncate) {
+        this.text(str, x, y, 0xffffff, maxWidth, wrap, truncate);
+    }
+
+    public void text(String str, float x, float y, int color, float maxWidth, boolean wrap, String truncate) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str, x, y, 0, str.length(), maxWidth, 0, wrap);
     }
 
     public void text(TextObject str, int x, int y) {
-        font.draw(batch, str.getText(), x, y);
+        this.text(str, x, y, 0xffffff);
+    }
+
+    public void text(TextObject str, int x, int y, int color) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str.getText(), x, y);
     }
 
     public void text(TextObject str, float x, float y) {
-        font.draw(batch, str.getText(), x, y);
+        this.text(str, x, y, 0xffffff);
+    }
+
+    public void text(TextObject str, float x, float y, int color) {
+        this.font.setColor(Color.rgb(color).toGdx());
+        this.font.draw(this.batch, str.getText(), x, y);
     }
 
     public void multiLineText(String str, int x, int y) {
-        y -= font.getLineHeight();
+        this.multiLineText(str, x, y, 0xffffff);
+    }
+
+    public void multiLineText(String str, int x, int y, int color) {
+        y -= this.font.getLineHeight();
 
         for (String line : str.split("\n"))
-            text(line, x, y += font.getLineHeight());
+            this.text(line, x, y += font.getLineHeight(), color);
     }
 
     public void tabString(String str, int x, int y) {
+        this.tabString(str, x, y, 0xffffff);
+    }
+
+    public void tabString(String str, int x, int y, int color) {
         for (String line : str.split("\t"))
-            text(line, x += font.getLineHeight(), y);
+            this.text(line, x += font.getLineHeight(), y, color);
     }
 
     public void clear() {
