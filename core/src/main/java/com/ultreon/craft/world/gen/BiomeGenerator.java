@@ -33,9 +33,9 @@ public class BiomeGenerator implements Disposable {
     public Chunk processColumn(Chunk chunk, int x, int z, @Nullable Integer height) {
         final int chunkAmplitude = 1;
 
-        int groundPos = this.getSurfaceHeightNoise(chunk.offset.x + x, chunk.offset.z + z, chunk.height) * chunkAmplitude;
+        int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z, chunk.height) * chunkAmplitude;
 
-        for (int y = chunk.offset.y; y < chunk.offset.y + chunk.height; y++) {
+        for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
             for (var layer : this.layers) {
                 if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
                     break;
@@ -44,7 +44,7 @@ public class BiomeGenerator implements Disposable {
         }
 
         for (var layer : this.extraLayers) {
-            layer.handle(this.world, chunk, x, chunk.offset.y, z, groundPos);
+            layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
         }
 
         return chunk;

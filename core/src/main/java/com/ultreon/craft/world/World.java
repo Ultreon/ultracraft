@@ -127,7 +127,7 @@ public class World implements RenderableProvider, Disposable {
 
 		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
 
-		int len = World.CHUNK_SIZE * World.CHUNK_HEIGHT * World.CHUNK_SIZE * 6 * 6 / 3;
+		int len = World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE * 6 * 6 / 3;
 
 		this.indices = new short[len];
 		short j = 0;
@@ -270,7 +270,6 @@ public class World implements RenderableProvider, Disposable {
 		return game.settings.getRenderDistance();
 	}
 
-	@SuppressWarnings("SimplifyStreamApiCallChains")
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
 		for (var pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
@@ -278,12 +277,10 @@ public class World implements RenderableProvider, Disposable {
 			System.out.println("pos = " + pos);
 			System.out.println("needed = " + needed);
 			System.out.println("needed.stream().filter(chunkPos -> chunkPos == pos) = " + needed.stream().filter(pos::equals).collect(Collectors.toList()));
-			return chunk != null && !needed.contains(pos) && !chunk.modifiedByPlayer;
+			return chunk != null && !needed.contains(pos);
 		}).collect(Collectors.toList())) {
 			if (this.getChunk(pos) != null) {
-				if (!this.isAlwaysLoaded(pos)) {
-					toRemove.add(pos);
-				}
+				toRemove.add(pos);
 			}
 		}
 
@@ -460,7 +457,6 @@ public class World implements RenderableProvider, Disposable {
 				if (loadedChunk == null) {
 					chunk = this.generateChunk(x, z);
 				} else {
-					loadedChunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 					chunk = loadedChunk;
 				}
 				if (chunk == null) {
@@ -514,7 +510,6 @@ public class World implements RenderableProvider, Disposable {
 			if (loadedChunk == null) {
 				chunk = this.generateChunk(x, z);
 			} else {
-				loadedChunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 				chunk = loadedChunk;
 			}
 			if (chunk == null) {
@@ -548,7 +543,6 @@ public class World implements RenderableProvider, Disposable {
 	protected Chunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
 		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
-		chunk.offset.set(x * CHUNK_SIZE, WORLD_DEPTH, z * CHUNK_SIZE);
 
 		WorldRegion region = this.getRegionFor(pos);
 
@@ -578,17 +572,19 @@ public class World implements RenderableProvider, Disposable {
 
 	private void renderChunk(int x, int z, Chunk chunk) {
 		chunk.dirty = false;
-		chunk.numVertices = 0;
-		chunk.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
-		chunk.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-		chunk.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+		for (Section section : chunk.getSections()) {
+			section.numVertices = 0;
+			section.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
+			section.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+			section.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+
+			this.game.runLater(new Task(new Identifier("post_section_render"), () -> {
+				section.ready = true;
+				section.dirty = true;
+			}));
+		}
 
 		this.game.runLater(new Task(new Identifier("post_chunk_render"), () -> {
-			synchronized (chunk.lock) {
-				chunk.mesh = new Mesh(false, false, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 4,
-						CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 36 / 3, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-				chunk.mesh.setIndices(this.indices);
-			}
 			chunk.ready = true;
 			chunk.dirty = true;
 		}));
@@ -650,8 +646,12 @@ public class World implements RenderableProvider, Disposable {
 			return Blocks.AIR;
 		}
 
-		GridPoint3 cp = toLocalBlockPos(x, y, z);
-		return chunkAt.get(cp.x, cp.y, cp.z);
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return Blocks.AIR;
+
+			GridPoint3 cp = this.toLocalBlockPos(x, y, z);
+			return chunkAt.get(cp.x, cp.y, cp.z);
+		}
 	}
 
 	private GridPoint3 toLocalBlockPos(GridPoint3 worldCoords) {
@@ -756,38 +756,44 @@ public class World implements RenderableProvider, Disposable {
 		Player player = this.game.player;
 		if (player == null) return;
 		toSort.sort((o1, o2) -> {
-			Vector3 mid1 = new Vector3(o1.offset.x + (float) CHUNK_SIZE / 2, o1.offset.y + (float) CHUNK_HEIGHT / 2, o1.offset.z + (float) CHUNK_SIZE / 2);
-			Vector3 mid2 = new Vector3(o2.offset.x + (float) CHUNK_SIZE / 2, o2.offset.y + (float) CHUNK_HEIGHT / 2, o2.offset.z + (float) CHUNK_SIZE / 2);
+			Vector3 mid1 = new Vector3(o1.getOffset().x + (float) CHUNK_SIZE / 2, o1.getOffset().y + (float) CHUNK_HEIGHT / 2, o1.getOffset().z + (float) CHUNK_SIZE / 2);
+			Vector3 mid2 = new Vector3(o2.getOffset().x + (float) CHUNK_SIZE / 2, o2.getOffset().y + (float) CHUNK_HEIGHT / 2, o2.getOffset().z + (float) CHUNK_SIZE / 2);
 			return Float.compare(mid2.dst(player.getPosition()), mid1.dst(player.getPosition()));
 		});
-		for (Chunk chunk : toSort) {
-			synchronized (chunk.lock) {
-				if (!chunk.ready) {
-					continue;
-				}
+		for (Chunk chunk1 : toSort) {
+			if (!chunk1.ready) continue;
 
-				Mesh opaqueMesh = chunk.mesh;
-				if (chunk.dirty) {
-					FloatList vertices = new FloatArrayList();
-					int numVertices = chunk.calculateVertices(vertices);
-					chunk.numVertices = numVertices / 4 * 6;
-					opaqueMesh.setVertices(vertices.toFloatArray());
-					vertices.clear();
-					chunk.dirty = false;
-				}
-				if (chunk.numVertices == 0) {
-					continue;
-				}
-				Renderable piece = pool.obtain();
+			for (Section section : chunk1.getSections()) {
+				synchronized (section.lock) {
+					if (!section.ready) continue;
 
-				piece.material = chunk.material;
-				piece.meshPart.mesh = opaqueMesh;
-				piece.meshPart.offset = 0;
-				piece.meshPart.size = chunk.numVertices;
-				piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
+					Mesh mesh = section.mesh;
+					if (section.dirty || section.mesh == null) {
+						if (section.mesh != null) section.mesh.dispose();
+						FloatList vertices = new FloatArrayList();
+						int numVertices = section.buildVertices(vertices);
+						mesh = section.mesh = new Mesh(false, false, numVertices,
+								this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
+						section.mesh.setIndices(this.indices);
+						section.numVertices = numVertices / 4 * 6;
+						section.mesh.setVertices(vertices.toFloatArray());
+						vertices.clear();
+						section.dirty = false;
+					}
 
-				renderables.add(piece);
-				this.renderedChunks = this.renderedChunks + 1;
+					if (section.numVertices == 0) continue;
+
+					Renderable piece = pool.obtain();
+
+					piece.material = section.material;
+					piece.meshPart.mesh = mesh;
+					piece.meshPart.offset = 0;
+					piece.meshPart.size = section.numVertices;
+					piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
+
+					renderables.add(piece);
+					this.renderedChunks = this.renderedChunks + 1;
+				}
 			}
 		}
 	}
@@ -802,7 +808,7 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public int getPlayTime() {
-		return playTime;
+		return this.playTime;
 	}
 
 	public <T extends Entity> T spawn(T entity) {

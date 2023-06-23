@@ -65,7 +65,7 @@ public class WorldRayCaster {
 				chunk = map.getChunkAt(abs.x, abs.y, abs.z);
 				if(chunk == null) return result;
 			}
-			loc.set(abs).sub((int) chunk.offset.x, (int) chunk.offset.y, (int) chunk.offset.z);
+			loc.set(abs).sub((int) chunk.getOffset().x, (int) chunk.getOffset().y, (int) chunk.getOffset().z);
 			if(loc.x < 0 || loc.y < 0 || loc.z < 0 ||
 					loc.x >= chunk.size || loc.y >= chunk.height || loc.z >= chunk.size){
 				chunk = null;

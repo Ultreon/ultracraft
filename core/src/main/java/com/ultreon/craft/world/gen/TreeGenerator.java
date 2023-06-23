@@ -14,17 +14,17 @@ public class TreeGenerator {
         NoiseInstance noise = this.treeNoiseSettings.create(seed);
         TreeData treeData = new TreeData();
         float[][] noiseData = this.generateTreeNoise(chunkData, noise);
-        treeData.treePositions = DataProcessing.findLocalMaxima(noiseData, chunkData.offset.x, chunkData.offset.z);
+        treeData.treePositions = DataProcessing.findLocalMaxima(noiseData, chunkData.getOffset().x, chunkData.getOffset().z);
 
         return treeData;
     }
 
     private float[][] generateTreeNoise(Chunk chunkData, NoiseInstance noise) {
         float[][] noiseMax = new float[chunkData.size][chunkData.size];
-        int xMax = chunkData.offset.x + chunkData.size;
-        int xMin = chunkData.offset.x;
-        int zMax = chunkData.offset.z + chunkData.size;
-        int zMin = chunkData.offset.z;
+        int xMax = chunkData.getOffset().x + chunkData.size;
+        int xMin = chunkData.getOffset().x;
+        int zMax = chunkData.getOffset().z + chunkData.size;
+        int zMin = chunkData.getOffset().z;
         int xIndex = 0, zIndex = 0;
 
         for (int x = xMin; x < xMax; x++) {

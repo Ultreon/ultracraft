@@ -6,6 +6,7 @@ import com.ultreon.libs.translations.v0.LanguageManager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -35,7 +36,7 @@ public class GameSettings {
     private Properties load() {
         Properties properties = new Properties();
         try {
-            properties.loadFromXML(new FileInputStream(FILENAME));
+            properties.load(new FileInputStream(FILENAME));
         } catch (IOException e) {
             return new Properties();
         }
@@ -67,11 +68,11 @@ public class GameSettings {
     @SuppressWarnings("BlockingMethodInNonBlockingContext")
     private void save() {
         var props = new Properties();
-        props.setProperty("language", language.getLanguage());
-        props.setProperty("renderDistance", Integer.toString(renderDistance));
-        try {
-            FileHandle external = Gdx.files.external("settings.xml");
-            props.storeToXML(external.write(false), "This is the settings for the Ultreon Craft game.");
+        props.setProperty("language", this.language.getLanguage());
+        props.setProperty("renderDistance", Integer.toString(this.renderDistance));
+        FileHandle external = Gdx.files.external("settings.xml");
+        try (OutputStream write = external.write(false)) {
+            props.store(write, "This is the settings for the Ultreon Craft game.");
         } catch (IOException e) {
             e.printStackTrace();
         }
