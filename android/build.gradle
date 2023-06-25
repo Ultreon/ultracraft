@@ -27,7 +27,7 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86"
     natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86_64"
-    api "ro.andob.androidawt:androidawt:1.0.4"
+    api files("deps/androidawt-1.0.4.aar")
 }
 
 android {
