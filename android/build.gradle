@@ -56,7 +56,7 @@ android {
     defaultConfig {
         applicationId "com.ultreon.craft"
         minSdk 30
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
     }
