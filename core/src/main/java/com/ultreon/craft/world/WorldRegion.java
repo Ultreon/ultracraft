@@ -4,10 +4,12 @@ import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.data.types.MapType;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +81,7 @@ public class WorldRegion implements Disposable {
                 savedWorld.writeRegion(this.pos.x(), this.pos.z(), this.data);
             }
         } catch (Exception e) {
-            World.LOGGER.error("Failed to save region file r%d.%d.ubo:".formatted(this.pos.x(), this.pos.z()), e);
+            World.LOGGER.error(String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
         }
     }
 

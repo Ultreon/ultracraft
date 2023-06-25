@@ -1,20 +1,26 @@
 package com.ultreon.craft.render.gui.screens;
 
+import static com.badlogic.gdx.math.MathUtils.ceil;
+
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiContainer;
 
-import static com.badlogic.gdx.math.MathUtils.ceil;
+import javax.annotation.Nullable;
 
 public class Screen extends GuiContainer {
+    @Nullable private Screen back;
     protected final String title;
-    protected final GlyphLayout titleLayout;
 
     public Screen(String title) {
+        this(UltreonCraft.get().currentScreen, title);
+    }
+
+    public Screen(@Nullable Screen back, String title) {
         super(0, 0, ceil(UltreonCraft.get().getWidth() / UltreonCraft.get().getGuiScale()), ceil(UltreonCraft.get().getHeight() / UltreonCraft.get().getGuiScale()));
+        this.back = back;
         this.title = title;
-        this.titleLayout = new GlyphLayout(font, title);
     }
 
     public void tick() {
@@ -53,7 +59,13 @@ public class Screen extends GuiContainer {
         return title;
     }
 
-    public boolean canCloseOnEsc() {
+    public boolean canClose() {
+        return true;
+    }
+
+    public boolean back() {
+        if (!this.canClose()) return false;
+        this.game.showScreen(this.back);
         return true;
     }
 }

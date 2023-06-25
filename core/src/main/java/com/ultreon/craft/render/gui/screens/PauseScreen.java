@@ -4,9 +4,7 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.gui.widget.Button;
 import com.ultreon.craft.world.World;
-import com.ultreon.libs.translations.v0.Language;
-
-import java.io.IOException;
+import com.ultreon.libs.translations.v1.Language;
 
 public class PauseScreen extends Screen {
     private Button backToGameButton;
@@ -35,13 +33,13 @@ public class PauseScreen extends Screen {
             this.game.addFuture(world.saveAsync(false));
         }
 
-        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft/screen/pause/back_to_game"), this::resumeGame));
-        this.optionsButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 95, Language.translate("craft/screen/title/options"), caller -> {
+        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
+        this.optionsButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
-        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height - this.height / 3 - 25, 95, Language.translate("craft/screen/pause/exit_world"), this::exitWorld));
-        this.exitWorldButton.setColor(Color.red);
-        this.exitWorldButton.setTextColor(Color.white);
+        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height - this.height / 3 - 25, 95, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.exitWorldButton.setColor(Color.RED);
+        this.exitWorldButton.setTextColor(Color.WHITE);
     }
 
     public Button getBackToGameButton() {

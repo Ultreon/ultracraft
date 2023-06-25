@@ -2,7 +2,7 @@ package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.util.Mth;
+import com.ultreon.craft.util.MathHelper;
 
 public class DomainWarping {
     public final NoiseInstance domainX;
@@ -26,6 +26,6 @@ public class DomainWarping {
     }
 
     public GridPoint2 generateDomainOffsetInt(int x, int z) {
-        return Mth.round(this.generateDomainOffset(x, z));
+        return MathHelper.round(this.generateDomainOffset(x, z));
     }
 }

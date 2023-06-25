@@ -9,7 +9,7 @@ jobs:
     # Specify the execution environment. You can specify an image from Dockerhub, or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
-      - image: gradle:jdk17
+      - image: alvrme/alpine-android:android-33-jdk11-v2023.06.10
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -19,12 +19,15 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew build"
+            command: "./gradlew :desktop:build :android:packageRelease"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
-          name: "Store Artifacts"
-          path: build/libs
+          name: "Store Android Artifacts"
+          path: android/build/outputs/apk/release/
+      - store_artifacts:
+          name: "Store Android Artifacts"
+          path: desktop/build/libs/
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows

@@ -1,10 +1,6 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.debug.Debugger;
-import de.articdive.jnoise.generators.noisegen.perlin.PerlinNoiseGenerator;
-
-import java.util.Random;
 
 public class MyNoise {
     public static float remapValue(float value, float initialMin, float initialMax, float outputMin, float outputMax) {

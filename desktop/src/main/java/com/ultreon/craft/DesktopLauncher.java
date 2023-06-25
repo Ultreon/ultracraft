@@ -1,21 +1,31 @@
 package com.ultreon.craft;
 
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
-import com.badlogic.gdx.graphics.glutils.HdpiMode;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinError;
+import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.ptr.IntByReference;
+
+import java.util.Objects;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
 
 	public static void main(String[] arg) {
+		GamePlatform.instance = new DesktopPlatform();
+
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(0);
 		config.setIdleFPS(10);
+		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
 		config.setInitialVisible(false);
+//		config.setDecorated(false);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);

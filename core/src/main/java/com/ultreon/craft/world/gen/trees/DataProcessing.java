@@ -1,10 +1,11 @@
 package com.ultreon.craft.world.gen.trees;
 
 import com.badlogic.gdx.math.Vector2;
-import it.unimi.dsi.fastutil.floats.Float2BooleanFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import it.unimi.dsi.fastutil.floats.Float2BooleanFunction;
 
 public class DataProcessing {
     public static List<Vector2> directions = List.of(new Vector2(0, 1), //N

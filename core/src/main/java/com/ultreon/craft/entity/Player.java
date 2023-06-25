@@ -69,46 +69,25 @@ public class Player extends LivingEntity {
 
         if (!this.topView) {
             Vector3 tmp = new Vector3();
-            Vector3 vel = getVelocity();
+            this.input.tick(speed);
+            Vector3 vel = this.input.getVel();
 
-            input.tick();
-
-            if (input.forward) {
-                tmp.set(getLookVector());
-                tmp.y = 0;
-                tmp.nor().scl(speed);
-                vel.add(tmp);
-            }
-            if (input.backward) {
-                tmp.set(getLookVector());
-                tmp.y = 0;
-                tmp.nor().scl(-speed);
-                vel.add(tmp);
-            }
-            if (input.strafeLeft) {
-                tmp.set(getLookVector()).crs(0, 1, 0).nor().scl(-speed);
-                vel.add(tmp);
-            }
-            if (input.strafeRight) {
-                tmp.set(getLookVector()).crs(0, 1, 0).nor().scl(speed);
-                vel.add(tmp);
-            }
-            if (isInWater() && input.up) {
+            if (this.isInWater() && this.input.up) {
                 tmp.set(0, 1, 0).nor().scl(speed);
                 vel.add(tmp);
             }
-            if (flying) {
-                if (input.up) {
+            if (this.flying) {
+                if (this.input.up) {
                     tmp.set(0, 1, 0).nor().scl(speed);
                     vel.add(tmp);
                 }
-                if (input.down) {
+                if (this.input.down) {
                     tmp.set(0, 1, 0).nor().scl(-speed);
                     vel.add(tmp);
                 }
             }
 
-            this.setVelocity(vel);
+            this.setVelocity(this.getVelocity().add(vel));
         } else {
             this.x = this.z = 0;
             this.y = 120;

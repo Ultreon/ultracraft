@@ -2,7 +2,29 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.Vector3;
 
-public record ChunkPos(int x, int z) {
+import java.util.Objects;
+
+public final class ChunkPos {
+    private final int x;
+    private final int z;
+
+    public ChunkPos(int x, int z) {
+        this.x = x;
+        this.z = z;
+    }
+
+    public int x() {
+        return x;
+    }
+
+    public int z() {
+        return z;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, z);
+    }
 
     @Override
     public boolean equals(Object o) {
