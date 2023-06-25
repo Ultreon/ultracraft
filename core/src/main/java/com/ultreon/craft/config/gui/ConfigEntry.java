@@ -1,19 +1,19 @@
 package com.ultreon.craft.config.gui;
 
 import com.google.common.base.Preconditions;
-import com.ultreon.craft.config.Config;
+import com.ultreon.craft.config.Configuration;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiComponent;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ConfigEntry<T> {
     private final String key;
     private T value;
     private String comment;
-    private final Config config;
+    private final Configuration config;
 
-    public ConfigEntry(String key, T value, Config config) {
+    public ConfigEntry(String key, T value, Configuration config) {
         this.key = key;
         this.value = value;
         this.config = config;
@@ -58,15 +58,4 @@ public abstract class ConfigEntry<T> {
     public String getDescription() {
         return Language.translate("config." + this.config.getId() + "." + this.getKey());
     }
-
-    public GuiComponent createButton(Config options, int x, int y, int width) {
-        return new GuiComponent(x, y, width, 20) {
-            @Override
-            public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-                renderer.text(ConfigEntry.this.getDescription() + ": N/A", this.getX() + this.width / 2, this.getY() + (this.height / 2 - 5), 0xffffff);
-            }
-        };
-    }
-
-    public abstract void setFromWidget(GuiComponent widget);
 }

@@ -1,0 +1,16 @@
+{
+  "craft.block.sand.name": "Sand",
+  "craft.block.grass_block.name": "Grass",
+  "craft.block.dirt.name": "Dirt",
+  "craft.block.stone.name": "Stone",
+  "craft.block.water.name": "Water",
+  "craft.screen.world_load.loading_world": "Loading World",
+  "craft.screen.language.back": "Back",
+  "craft.screen.death.respawn": "Respawn",
+  "craft.screen.death.title": "You Died",
+  "craft.screen.pause.back_to_game": "Back to the game",
+  "craft.screen.pause.exit_world": "Exit World",
+  "craft.screen.title.start_world": "Start New World",
+  "craft.screen.title.options": "Options...",
+  "craft.screen.title.quit": "Quit"
+}

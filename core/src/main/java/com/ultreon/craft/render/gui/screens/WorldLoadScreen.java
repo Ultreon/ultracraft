@@ -66,15 +66,14 @@ public class WorldLoadScreen extends Screen {
         fill(renderer, 0, 0, this.width, this.height, 0xff202020);
 
         renderer.setColor(Color.rgb(0xffffff));
-        renderer.text(this.title, this.width / 2 - (int) this.titleLayout.width / 2, this.height - this.height / 3);
+        renderer.drawCenteredText(this.title, this.width / 2, this.height - this.height / 3);
 
         World world = this.game.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                this.layout.setText(this.font, s);
-                renderer.text(s, this.width / 2 - (int)this.layout.width / 2, this.height - (int) this.height / 3 - 20);
+                renderer.drawCenteredText(s, this.width / 2, this.height - this.height / 3 - 20);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;

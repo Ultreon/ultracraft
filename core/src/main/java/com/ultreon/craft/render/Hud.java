@@ -15,7 +15,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.translations.v1.Language;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -78,32 +78,25 @@ public class Hud implements GameRenderable {
             BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
             TextureRegion front = bakedBlockModel.front();
             TextureRegion top = bakedBlockModel.top();
-            renderer.setTextureColor(Color.white.darker());
+            renderer.setTextureColor(Color.WHITE.darker());
             renderer.texture(front, ix, 5, 16, 6);
-            renderer.setTextureColor(Color.white);
+            renderer.setTextureColor(Color.WHITE);
             renderer.texture(top, ix, 11, 16, 16);
         }
 
         float healthRatio = player.getHealth() / player.getMaxHeath();
-        if (healthRatio > 0.5f) renderer.setColor(Color.rgb(0x00b000));
-        else if (healthRatio > 0.25f) renderer.setColor(Color.rgb(0xffb000));
-        else renderer.setColor(Color.rgb(0xd00000));
+        Color color = healthRatio > 0.5f ? Color.rgb(0x00b000) : healthRatio > 0.25f ? Color.rgb(0xffb000) : Color.rgb(0xd00000);
 
-        renderer.text((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37);
+        renderer.drawText((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37, color, false);
         if (key != null && !selectedBlock.isAir()) {
             ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
             String name = Language.translate(key.location() + "/block/" + key.path() + "/name");
             renderer.setColor(Color.rgb(0xffffff));
-            this.layout.setText(this.game.font, name);
-            renderer.setColor(Color.rgb(0xffffff).darker().darker());
-            renderer.text(name, (int) ((float) this.game.getScaledWidth() / 2) - this.layout.width / 2, 48);
-            renderer.setColor(Color.rgb(0xffffff));
-            renderer.text(name, (int) ((float) this.game.getScaledWidth() / 2) - this.layout.width / 2, 49);
+            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 49);
             ScissorStack.popScissors();
         }
     }
 
-    @SuppressWarnings("UnnecessaryReturnStatement")
     public boolean touchDown(int screenX, int screenY, int pointer) {
         screenY = this.game.getHeight() - screenY;
         screenX /= this.game.getGuiScale();

@@ -2,7 +2,7 @@ package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
-import com.ultreon.craft.util.Mth;
+import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BiomeData;
 import com.ultreon.craft.world.BiomeSelectionHelper;
 import com.ultreon.craft.world.Chunk;
@@ -44,7 +44,7 @@ public class TerrainGenerator {
 
     private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk, boolean useDomainWarping) {
         if (useDomainWarping) {
-            GridPoint2 domainOffset = Mth.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
+            GridPoint2 domainOffset = MathHelper.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
             worldPosition.add(domainOffset.x, 0, domainOffset.y);
         }
 

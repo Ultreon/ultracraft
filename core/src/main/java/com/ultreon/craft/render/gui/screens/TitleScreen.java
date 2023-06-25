@@ -1,17 +1,15 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.widget.Button;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.translations.v1.Language;
 
 import java.util.concurrent.TimeUnit;
 
@@ -48,20 +46,20 @@ public class TitleScreen extends Screen {
 
         int y = height - height / 2 + 5;
 
-        startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft/screen/title/start_world"), caller -> {
+        startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
             UltreonCraft.get().startWorld();
         }));
 
         if (!GamePlatform.instance.canAccessData()) {
-            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft/screen/title/reset_world"), caller -> {
+            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> {
                 UltreonCraft.getSavedWorld().delete();
             }));
         }
 
-        optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft/screen/title/options"), caller -> {
+        optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
-        this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft/screen/title/quit"), caller -> {
+        this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
             if (GamePlatform.instance.supportsQuit()) {
                 Gdx.app.exit();
             }
@@ -77,17 +75,7 @@ public class TitleScreen extends Screen {
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        Batch batch = renderer.getBatch();
-        layout.setText(xlFont, "Ultreon Craft");
-        xlFont.setColor(Color.white.darker().darker().toGdx());
-        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40 - 3)));
-        xlFont.setColor(Color.white.toGdx());
-        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40)));
-    }
-
-    @Override
-    protected void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        super.renderChildren(renderer, mouseX, mouseY, deltaTime);
+        renderer.drawCenteredTextScaled("Ultreon Craft", 3, (int)((float) this.width / 2), (int)((float) (this.height - 40)));
     }
 
     @Override

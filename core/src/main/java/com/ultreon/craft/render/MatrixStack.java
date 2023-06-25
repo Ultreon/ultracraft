@@ -15,22 +15,21 @@ public class MatrixStack {
     public Consumer<Matrix4> onEdit = matrix -> {};
 
     public MatrixStack() {
-        stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(new Matrix4()));
+        this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(new Matrix4()));
     }
 
     public MatrixStack(Matrix4 origin) {
-        stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(origin));
+        this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(origin));
     }
 
     public void push() {
-        var matrix = stack.getLast();
-        stack.addLast(new Matrix4(matrix));
-        onEdit.accept(stack.getLast());
+        this.stack.addLast(this.stack.getLast().cpy());
+        this.onEdit.accept(this.stack.getLast());
     }
 
     public void pop() {
-        stack.removeLast();
-        onEdit.accept(stack.getLast());
+        this.stack.removeLast();
+        this.onEdit.accept(this.stack.getLast());
     }
 
     public void translate(double x, double y) {
@@ -38,25 +37,31 @@ public class MatrixStack {
     }
 
     public void translate(float x, float y) {
-        Matrix4 matrix = stack.getLast();
+        Matrix4 matrix = this.stack.getLast();
         matrix.translate(x, y, 0);
-        onEdit.accept(matrix);
+        this.onEdit.accept(matrix);
+    }
+
+    public void translate(float x, float y, float z) {
+        Matrix4 matrix = this.stack.getLast();
+        matrix.translate(x, y, z);
+        this.onEdit.accept(matrix);
     }
 
     public void scale(float x, float y) {
-        Matrix4 matrix = stack.getLast();
+        Matrix4 matrix = this.stack.getLast();
         matrix.scale(x, y, 0);
-        onEdit.accept(matrix);
+        this.onEdit.accept(matrix);
     }
     
     public void rotate(Quaternion quaternion) {
-        var matrix = stack.getLast();
+        var matrix = this.stack.getLast();
         matrix.rotate(quaternion);
-        onEdit.accept(matrix);
+        this.onEdit.accept(matrix);
     }
 
     public Matrix4 last() {
-        return stack.getLast();
+        return this.stack.getLast();
     }
 
     public boolean isClear() {
@@ -65,6 +70,6 @@ public class MatrixStack {
 
     @Override
     public String toString() {
-        return stack.toString();
+        return this.stack.toString();
     }
 }

@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 public class Screen extends GuiContainer {
     @Nullable private Screen back;
     protected final String title;
-    protected final GlyphLayout titleLayout;
 
     public Screen(String title) {
         this(UltreonCraft.get().currentScreen, title);
@@ -22,7 +21,6 @@ public class Screen extends GuiContainer {
         super(0, 0, ceil(UltreonCraft.get().getWidth() / UltreonCraft.get().getGuiScale()), ceil(UltreonCraft.get().getHeight() / UltreonCraft.get().getGuiScale()));
         this.back = back;
         this.title = title;
-        this.titleLayout = new GlyphLayout(font, title);
     }
 
     public void tick() {

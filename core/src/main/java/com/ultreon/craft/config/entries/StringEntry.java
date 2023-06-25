@@ -1,11 +1,10 @@
 package com.ultreon.craft.config.entries;
 
-import com.ultreon.craft.config.Config;
+import com.ultreon.craft.config.Configuration;
 import com.ultreon.craft.config.gui.ConfigEntry;
-import com.ultreon.craft.render.gui.GuiComponent;
 
 public class StringEntry extends ConfigEntry<String> {
-    public StringEntry(String key, String value, Config config) {
+    public StringEntry(String key, String value, Configuration config) {
         super(key, value, config);
     }
 
@@ -14,8 +13,4 @@ public class StringEntry extends ConfigEntry<String> {
         return text;
     }
 
-    @Override
-    public void setFromWidget(GuiComponent widget) {
-
-    }
 }

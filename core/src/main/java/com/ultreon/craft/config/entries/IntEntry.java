@@ -1,14 +1,13 @@
 package com.ultreon.craft.config.entries;
 
-import com.ultreon.craft.config.Config;
+import com.ultreon.craft.config.Configuration;
 import com.ultreon.craft.config.gui.ConfigEntry;
-import com.ultreon.craft.render.gui.GuiComponent;
 
 public class IntEntry extends ConfigEntry<Integer> {
     private final int min;
     private final int max;
 
-    public IntEntry(String key, int value, int min, int max, Config config) {
+    public IntEntry(String key, int value, int min, int max, Configuration config) {
         super(key, value, config);
         this.min = min;
         this.max = max;
@@ -27,8 +26,4 @@ public class IntEntry extends ConfigEntry<Integer> {
         return this.max;
     }
 
-    @Override
-    public void setFromWidget(GuiComponent widget) {
-
-    }
 }

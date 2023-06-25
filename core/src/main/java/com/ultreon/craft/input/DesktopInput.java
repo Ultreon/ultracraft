@@ -49,7 +49,7 @@ public class DesktopInput extends GameInput {
         }
 
         if (keycode == this.screenshotKey) {
-            Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            Pixmap pixmap = Pixmap.createFromFrameBuffer(this.game.getDrawOffset().x, this.game.getDrawOffset().y, this.game.getWidth(), this.game.getHeight());
             PixmapIO.writePNG(Gdx.files.local(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
         }
@@ -124,6 +124,9 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
+        screenX -= this.game.getDrawOffset().x;
+        screenY -= this.game.getDrawOffset().y;
+
         this.wasCaptured = this.isCaptured;
         this.isCaptured = Gdx.input.isCursorCatched();
 
@@ -139,6 +142,9 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        screenX -= this.game.getDrawOffset().x;
+        screenY -= this.game.getDrawOffset().y;
+
         this.wasCaptured = this.isCaptured;
         this.isCaptured = Gdx.input.isCursorCatched();
 
@@ -154,6 +160,9 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        screenX -= this.game.getDrawOffset().x;
+        screenY -= this.game.getDrawOffset().y;
+
         World world = this.game.world;
         if (Gdx.input.isCursorCatched()) {
             if (world != null && this.game.currentScreen == null) {
@@ -191,6 +200,9 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        screenX -= this.game.getDrawOffset().x;
+        screenY -= this.game.getDrawOffset().y;
+
         if (!Gdx.input.isCursorCatched()) {
             Screen currentScreen = this.game.currentScreen;
             screenY = this.game.getHeight() - screenY;

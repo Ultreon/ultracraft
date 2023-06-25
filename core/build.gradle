@@ -63,7 +63,7 @@ dependencies {
     api "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
     api "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
     api "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-translations-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-translations-v1:$corelibs_version"
     api "com.github.Ultreon:ultreon-data:$ultreon_data_version"
 
     // LibGDX
@@ -74,6 +74,7 @@ dependencies {
     api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
     api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
     api "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
+    api "com.badlogicgames.gdx:gdx-tools:$gdx_version"
     api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
 
     // LibGDX Natives

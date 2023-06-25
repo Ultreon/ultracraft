@@ -1,10 +1,9 @@
 package com.ultreon.craft.render.gui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Rectangle;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
@@ -29,10 +28,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     private boolean valid;
     protected Color backgroundColor;
     protected final UltreonCraft game = UltreonCraft.get();
-    public final BitmapFont font = Fonts.DEFAULT;
-    public final BitmapFont largeFont = Fonts.LARGE_DEFAULT;
-    public final BitmapFont xlFont = Fonts.XL_DEFAULT;
-    public final BitmapFont monospaced = Fonts.MONOSPACED;
+    public final Font font = Fonts.DEFAULT;
     private boolean hovered = false;
     private int lastMouseX;
     private int lastMouseY;
@@ -329,11 +325,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
         return valid;
     }
 
-    public boolean isHovered() {
-        return isMouseOver(Gdx.input.getX() / game.getGuiScale(), (game.getHeight() - Gdx.input.getY()) / game.getGuiScale());
-    }
-
-    private boolean isMouseOver(float x, float y) {
+    protected boolean isWithinBounds(float x, float y) {
         return x >= this.x && y >= this.y && x <= this.x + this.width && y <= this.y + this.height;
     }
 

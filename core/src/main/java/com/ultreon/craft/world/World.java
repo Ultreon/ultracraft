@@ -267,7 +267,7 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	private int getRenderDistance() {
-		return game.settings.getRenderDistance();
+		return game.settings.renderDistance.get();
 	}
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {

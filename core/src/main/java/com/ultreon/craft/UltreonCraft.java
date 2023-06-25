@@ -1,7 +1,5 @@
 package com.ultreon.craft;
 
-import static com.badlogic.gdx.math.MathUtils.ceil;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -21,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -29,21 +28,19 @@ import com.google.gson.GsonBuilder;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.config.GameSettings;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ScreenEvents;
 import com.ultreon.craft.events.WindowCloseEvent;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.init.Sounds;
-import com.ultreon.craft.input.DesktopInput;
-import com.ultreon.craft.input.GameCamera;
-import com.ultreon.craft.input.GameInput;
-import com.ultreon.craft.input.MobileInput;
-import com.ultreon.craft.input.PlayerInput;
-import com.ultreon.craft.options.GameSettings;
+import com.ultreon.craft.input.*;
+import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.Color;
+import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
@@ -54,6 +51,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.util.GG;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
@@ -65,38 +63,38 @@ import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
-import com.ultreon.libs.translations.v0.LanguageManager;
-
+import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import space.earlygrey.shapedrawer.ShapeDrawer;
+import static com.badlogic.gdx.math.MathUtils.ceil;
 
 public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
-    public static final FileHandle CONFIG_DIR = Gdx.files.external("config/");
+    private String allUnicode;
+    public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
 
     private static SavedWorld savedWorld;
+    public boolean forceUnicode = false;
     private boolean booted = false;
     public static final int TPS = 20;
-    public BitmapFont font;
-    public BitmapFont largeFont;
-    public BitmapFont xlFont;
+    public Font font;
+    public BitmapFont unifont;
     public GameInput input;
     @Nullable public World world;
     private static UltreonCraft instance;
@@ -143,6 +141,8 @@ public class UltreonCraft extends ApplicationAdapter {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private Integer deferredWidth;
     private Integer deferredHeight;
+    private Texture windowTex;
+    private DebugRenderer debugRenderer;
 
     public UltreonCraft(String[] args) {
         LOGGER.info("Booting game!");
@@ -159,12 +159,12 @@ public class UltreonCraft extends ApplicationAdapter {
 
         instance = this;
 
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            CrashLog crashLog = new CrashLog("Exception in thread", e);
-            CrashCategory cat = new CrashCategory("Thread");
-            crashLog.addCategory(cat);
-            delayCrash(crashLog);
-        });
+//        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+//            CrashLog crashLog = new CrashLog("Exception in thread", e);
+//            CrashCategory cat = new CrashCategory("Thread");
+//            crashLog.addCategory(cat);
+//            delayCrash(crashLog);
+//        });
     }
 
     public void delayCrash(CrashLog crashLog) {
@@ -189,12 +189,15 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
-            if (!CONFIG_DIR.isDirectory()) {
-                CONFIG_DIR.delete();
-                CONFIG_DIR.mkdirs();
+            this.configDir = Gdx.files.external("config/");
+            if (!this.configDir.isDirectory()) {
+                this.configDir.delete();
+                this.configDir.mkdirs();
             }
 
             this.settings = new GameSettings();
+            this.settings.reload();
+            this.settings.reloadLanguage();
 
             Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
@@ -210,27 +213,26 @@ public class UltreonCraft extends ApplicationAdapter {
             LOGGER.info("Importing resources");
             this.resourceManager.importDeferredPackage(this.getClass());
 
+            Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
+            if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
+            this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
+
             LOGGER.info("Generating bitmap fonts");
-            FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
+            this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
+
+            FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
             FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
             fontParameter.size = 8;
+            fontParameter.characters = this.allUnicode;
             fontParameter.minFilter = Texture.TextureFilter.Nearest;
             fontParameter.magFilter = Texture.TextureFilter.Nearest;
             fontParameter.mono = true;
-            this.font = generator.generateFont(fontParameter);
-            FreeTypeFontParameter largeFontParameter = new FreeTypeFontParameter();
-            largeFontParameter.size = 16;
-            largeFontParameter.minFilter = Texture.TextureFilter.Nearest;
-            largeFontParameter.magFilter = Texture.TextureFilter.Nearest;
-            largeFontParameter.mono = true;
-            this.largeFont = generator.generateFont(largeFontParameter);
-            FreeTypeFontParameter xlFontParameter = new FreeTypeFontParameter();
-            xlFontParameter.size = 24;
-            xlFontParameter.minFilter = Texture.TextureFilter.Nearest;
-            xlFontParameter.magFilter = Texture.TextureFilter.Nearest;
-            xlFontParameter.mono = true;
-            this.xlFont = generator.generateFont(xlFontParameter);
 
+            this.font = new Font(generator.generateFont(fontParameter));
+
+            //**********************//
+            // Setting up rendering //
+            //**********************//
             LOGGER.info("Initializing rendering stuffs");
             DefaultShader.Config config = new DefaultShader.Config();
             config.defaultCullFace = GL20.GL_FRONT;
@@ -249,7 +251,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
             this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
 
-            LOGGER.info("Setting up environment");
+            LOGGER.info("Setting up world environment");
             this.env = new Environment();
             this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
             this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
@@ -257,10 +259,199 @@ public class UltreonCraft extends ApplicationAdapter {
             this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
             this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
+            LOGGER.info("Setting up HUD");
+            this.hud = new Hud(this);
+
+            LOGGER.info("Setting up Debug Renderer");
+            this.debugRenderer = new DebugRenderer(this);
+
+            //**************************//
+            // Registering game content //
+            //**************************//
             LOGGER.info("Loading languages");
-            LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
-            LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
-            LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
+            this.registerLanguage(id("af_za"));
+            this.registerLanguage(id("ar_ae"));
+            this.registerLanguage(id("ar_ar"));
+            this.registerLanguage(id("ar_bh"));
+            this.registerLanguage(id("ar_dj"));
+            this.registerLanguage(id("ar_dz"));
+            this.registerLanguage(id("ar_eg"));
+            this.registerLanguage(id("ar_eh"));
+            this.registerLanguage(id("ar_er"));
+            this.registerLanguage(id("ar_il"));
+            this.registerLanguage(id("ar_iq"));
+            this.registerLanguage(id("ar_iq"));
+            this.registerLanguage(id("ar_jo"));
+            this.registerLanguage(id("ar_km"));
+            this.registerLanguage(id("ar_kw"));
+            this.registerLanguage(id("ar_lb"));
+            this.registerLanguage(id("ar_ly"));
+            this.registerLanguage(id("ar_ma"));
+            this.registerLanguage(id("ar_mr"));
+            this.registerLanguage(id("ar_om"));
+            this.registerLanguage(id("ar_ps"));
+            this.registerLanguage(id("ar_qa"));
+            this.registerLanguage(id("ar_sa"));
+            this.registerLanguage(id("ar_sd"));
+            this.registerLanguage(id("ar_so"));
+            this.registerLanguage(id("ar_sy"));
+            this.registerLanguage(id("ar_td"));
+            this.registerLanguage(id("ar_tn"));
+            this.registerLanguage(id("ar_ye"));
+            this.registerLanguage(id("ar_az"));
+            this.registerLanguage(id("be_by"));
+            this.registerLanguage(id("bg_bg"));
+            this.registerLanguage(id("bn_in"));
+            this.registerLanguage(id("bs_ba"));
+            this.registerLanguage(id("ca_ad"));
+            this.registerLanguage(id("ca_es"));
+            this.registerLanguage(id("cs_cz"));
+            this.registerLanguage(id("cs_sk"));
+            this.registerLanguage(id("cy_gb"));
+            this.registerLanguage(id("da_dk"));
+            this.registerLanguage(id("da_fo"));
+            this.registerLanguage(id("da_gl"));
+            this.registerLanguage(id("de_at"));
+            this.registerLanguage(id("de_be"));
+            this.registerLanguage(id("de_ch"));
+            this.registerLanguage(id("de_de"));
+            this.registerLanguage(id("de_li"));
+            this.registerLanguage(id("de_lu"));
+            this.registerLanguage(id("de_na"));
+            this.registerLanguage(id("el_cy"));
+            this.registerLanguage(id("el_gr"));
+            this.registerLanguage(id("en_au"));
+            this.registerLanguage(id("en_gb"));
+            this.registerLanguage(id("en_pi"));
+            this.registerLanguage(id("en_ud"));
+            this.registerLanguage(id("en_us"));
+            this.registerLanguage(id("eo_eo"));
+            this.registerLanguage(id("es_ar"));
+            this.registerLanguage(id("es_bo"));
+            this.registerLanguage(id("es_cl"));
+            this.registerLanguage(id("es_co"));
+            this.registerLanguage(id("es_cr"));
+            this.registerLanguage(id("es_cu"));
+            this.registerLanguage(id("es_do"));
+            this.registerLanguage(id("es_ec"));
+            this.registerLanguage(id("es_es"));
+            this.registerLanguage(id("es_gi"));
+            this.registerLanguage(id("es_gq"));
+            this.registerLanguage(id("es_gt"));
+            this.registerLanguage(id("es_hn"));
+            this.registerLanguage(id("es_la"));
+            this.registerLanguage(id("es_mx"));
+            this.registerLanguage(id("es_ni"));
+            this.registerLanguage(id("es_pa"));
+            this.registerLanguage(id("es_pe"));
+            this.registerLanguage(id("es_pr"));
+            this.registerLanguage(id("es_py"));
+            this.registerLanguage(id("es_sv"));
+            this.registerLanguage(id("es_us"));
+            this.registerLanguage(id("es_uy"));
+            this.registerLanguage(id("es_ve"));
+            this.registerLanguage(id("et_ee"));
+            this.registerLanguage(id("eu_es"));
+            this.registerLanguage(id("fa_ir"));
+            this.registerLanguage(id("fb_lt"));
+            this.registerLanguage(id("fi_fi"));
+            this.registerLanguage(id("fo_fo"));
+            this.registerLanguage(id("fr_be"));
+            this.registerLanguage(id("fr_bf"));
+            this.registerLanguage(id("fr_bi"));
+            this.registerLanguage(id("fr_bj"));
+            this.registerLanguage(id("fr_ca"));
+            this.registerLanguage(id("fr_cg"));
+            this.registerLanguage(id("fr_ch"));
+            this.registerLanguage(id("fr_fr"));
+            this.registerLanguage(id("fr_fr"));
+            this.registerLanguage(id("fr_ht"));
+            this.registerLanguage(id("fr_td"));
+            this.registerLanguage(id("fy_nl"));
+            this.registerLanguage(id("ga_ie"));
+            this.registerLanguage(id("gl_es"));
+            this.registerLanguage(id("ge_il"));
+            this.registerLanguage(id("hi_fj"));
+            this.registerLanguage(id("hi_in"));
+            this.registerLanguage(id("hi_pk"));
+            this.registerLanguage(id("hr_ba"));
+            this.registerLanguage(id("hr_hr"));
+            this.registerLanguage(id("hu_hu"));
+            this.registerLanguage(id("hy_am"));
+            this.registerLanguage(id("id_id"));
+            this.registerLanguage(id("is_is"));
+            this.registerLanguage(id("it_ch"));
+            this.registerLanguage(id("it_it"));
+            this.registerLanguage(id("it_sm"));
+            this.registerLanguage(id("ja_jp"));
+            this.registerLanguage(id("ja_pw"));
+            this.registerLanguage(id("ka_ge"));
+            this.registerLanguage(id("km_kh"));
+            this.registerLanguage(id("km_kh"));
+            this.registerLanguage(id("ko_kp"));
+            this.registerLanguage(id("ko_kr"));
+            this.registerLanguage(id("ku_tr"));
+            this.registerLanguage(id("la_va"));
+            this.registerLanguage(id("la_va"));
+            this.registerLanguage(id("it_lt"));
+            this.registerLanguage(id("lv_lv"));
+            this.registerLanguage(id("mk_mk"));
+            this.registerLanguage(id("ml_in"));
+            this.registerLanguage(id("ms_my"));
+            this.registerLanguage(id("ms_sg"));
+            this.registerLanguage(id("mt_mt"));
+            this.registerLanguage(id("ne_np"));
+            this.registerLanguage(id("nl_an"));
+            this.registerLanguage(id("nl_aw"));
+            this.registerLanguage(id("nl_be"));
+            this.registerLanguage(id("nl_nl"));
+            this.registerLanguage(id("nl_sr"));
+            this.registerLanguage(id("nl_sx"));
+            this.registerLanguage(id("nn_no"));
+            this.registerLanguage(id("no_no"));
+            this.registerLanguage(id("pa_in"));
+            this.registerLanguage(id("pl_pl"));
+            this.registerLanguage(id("pt_ao"));
+            this.registerLanguage(id("pt_br"));
+            this.registerLanguage(id("pt_cv"));
+            this.registerLanguage(id("pt_gq"));
+            this.registerLanguage(id("pt_gw"));
+            this.registerLanguage(id("pt_mo"));
+            this.registerLanguage(id("pt_mz"));
+            this.registerLanguage(id("pt_pt"));
+            this.registerLanguage(id("pt_st"));
+            this.registerLanguage(id("pt_tl"));
+            this.registerLanguage(id("ro_md"));
+            this.registerLanguage(id("ro_ro"));
+            this.registerLanguage(id("ru_by"));
+            this.registerLanguage(id("ru_kg"));
+            this.registerLanguage(id("ru_kz"));
+            this.registerLanguage(id("ru_ru"));
+            this.registerLanguage(id("ru_tj"));
+            this.registerLanguage(id("sk_cz"));
+            this.registerLanguage(id("sk_sk"));
+            this.registerLanguage(id("sl_sl"));
+            this.registerLanguage(id("sq_al"));
+            this.registerLanguage(id("sq_ks"));
+            this.registerLanguage(id("sr_ba"));
+            this.registerLanguage(id("sr_me"));
+            this.registerLanguage(id("sr_rs"));
+            this.registerLanguage(id("sv_fi"));
+            this.registerLanguage(id("sv_se"));
+            this.registerLanguage(id("sw_ke"));
+            this.registerLanguage(id("ta_in"));
+            this.registerLanguage(id("te_in"));
+            this.registerLanguage(id("th_th"));
+            this.registerLanguage(id("tl_ph"));
+            this.registerLanguage(id("tr_cy"));
+            this.registerLanguage(id("tr_tr"));
+            this.registerLanguage(id("uk_ua"));
+            this.registerLanguage(id("ul_vn"));
+            this.registerLanguage(id("zh_cn"));
+            this.registerLanguage(id("zh_hk"));
+            this.registerLanguage(id("zh_mo"));
+            this.registerLanguage(id("zh_sg"));
+            this.registerLanguage(id("zh_gw"));
 
             LOGGER.info("Registering stuff");
             Registries.nopInit();
@@ -277,8 +468,12 @@ public class UltreonCraft extends ApplicationAdapter {
             Registry.freeze();
 
             LOGGER.info("Registering models");
-            registerModels();
+            this.registerModels();
 
+            //********************************************//
+            // Post-initialize game content               //
+            // Such as model baking and texture stitching //
+            //********************************************//
             LOGGER.info("Stitching textures");
             this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
@@ -293,28 +488,37 @@ public class UltreonCraft extends ApplicationAdapter {
             LOGGER.info("Baking models");
             this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
-            LOGGER.info("Setting up HUD");
-            this.hud = new Hud(this);
-
             if (this.deferredWidth != null && this.deferredHeight != null) {
                 this.camera.viewportWidth = this.deferredWidth;
                 this.camera.viewportHeight = this.deferredHeight;
                 this.camera.update();
             }
 
+            this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
+
+            //*************//
+            // Final stuff //
+            //*************//
             LOGGER.info("Opening title screen");
-            showScreen(new TitleScreen());
+            this.showScreen(new TitleScreen());
 
             savedWorld = new SavedWorld(Gdx.files.external("world"));
 
             GamePlatform.instance.setupImGui();
-        } catch (Exception e) {
-            crash(e);
+        } catch (Throwable t) {
+            crash(t);
             return;
         }
 
         booted = true;
         LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
+    }
+
+    private void registerLanguage(Identifier id) {
+        String[] s = id.path().split("_", 2);
+        Locale locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
+        LanguageManager.INSTANCE.register(locale, id);
+        LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
     }
 
     private GameInput createInput() {
@@ -453,49 +657,49 @@ public class UltreonCraft extends ApplicationAdapter {
 
             Screen screen = this.currentScreen;
             Renderer renderer = new Renderer(this.shapes);
-            this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
-            renderGame(renderer, screen, world, deltaTime);
-            this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
+            renderer.pushMatrix();
+            renderer.translate(this.getDrawOffset().x, this.getDrawOffset().y);
+            renderer.scale(this.guiScale, this.guiScale);
+            this.renderGame(renderer, screen, world, deltaTime);
+            renderer.popMatrix();
+
+            if (GamePlatform.instance.getPlatformType() == PlatformType.DESKTOP && this.isCustomBorderShown()) {
+                renderer.pushMatrix();
+                renderer.scale(2, 2);
+                this.renderWindow(renderer, Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+                renderer.popMatrix();
+            }
 
             GamePlatform.instance.renderImGui(this);
 
             this.spriteBatch.end();
-        } catch (Exception e) {
-            crash(e);
+        } catch (Throwable t) {
+            crash(t);
         }
+    }
+
+    private void renderWindow(Renderer renderer, int width, int height) {
+        renderer.draw9PatchTexture(this.windowTex, 0, 0, width, height, 0, 0, 18, 22, 256, 256);
     }
 
     private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
         if (world != null) {
             if (this.showDebugHud) {
-                this.font.setColor(Color.rgb(0xffffff).toGdx());
-                this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
-                        + world.getTotalChunks(), 20, this.getScaledHeight() - 20);
-                if (this.player != null) {
-                    this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, this.getScaledHeight() - 30);
-                    this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, this.getScaledHeight() - 40);
-                    this.font.draw(this.spriteBatch, "region opened: " + (world.getRegionAt(this.player.blockPosition()) != null), 20, this.getScaledHeight() - 50);
-                    this.font.draw(this.spriteBatch, "block at: " + (Registries.BLOCK.getKey(world.get(this.player.blockPosition()))), 20, this.getScaledHeight() - 60);
-                    if (GamePlatform.instance.isMobile()) {
-                        Hud hud = this.hud;
-                        if (hud != null) {
-                            this.font.draw(this.spriteBatch, "joysttick: " + hud.getJoyStick(), 20, this.getScaledHeight() - 70);
-                        }
-                    }
-                }
+                this.debugRenderer.render(renderer);
             }
 
             this.hud.render(renderer, deltaTime);
         }
+
         if (screen != null) {
-            screen.render(renderer, (int) (Gdx.input.getX() / this.getGuiScale()), (int) (Gdx.input.getY() / this.getGuiScale()), deltaTime);
+            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((this.getHeight() - Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
         }
     }
 
-    public static void crash(Exception e) {
-        e.printStackTrace();
+    public static void crash(Throwable throwable) {
+        throwable.printStackTrace();
         try {
-            CrashLog crashLog = new CrashLog("An error occurred", e);
+            CrashLog crashLog = new CrashLog("An error occurred", throwable);
             crash(crashLog);
         } catch (Throwable t) {
             LOGGER.error(FATAL_ERROR_MSG, t);
@@ -622,23 +826,31 @@ public class UltreonCraft extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        while (!this.futures.isEmpty()) {
-            this.futures.removeIf(CompletableFuture::isDone);
+        try {
+            while (!this.futures.isEmpty()) {
+                this.futures.removeIf(CompletableFuture::isDone);
+            }
+
+            this.scheduler.shutdownNow();
+
+            if (this.world != null) {
+                this.world.dispose();
+            }
+
+            this.blocksTextureAtlas.dispose();
+
+            GamePlatform.instance.dispose();
+
+            this.batch.dispose();
+            this.spriteBatch.dispose();
+            this.unifont.dispose();
+
+            for (Font font : Registries.FONTS.values()) {
+                font.dispose();
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
-
-        this.scheduler.shutdownNow();
-
-        if (this.world != null) {
-            this.world.dispose();
-        }
-
-        this.blocksTextureAtlas.dispose();
-
-        GamePlatform.instance.dispose();
-
-        this.batch.dispose();
-        this.spriteBatch.dispose();
-        this.font.dispose();
     }
 
     public boolean isDevMode() {
@@ -653,16 +865,12 @@ public class UltreonCraft extends ApplicationAdapter {
         GamePlatform.instance.setShowingImGui(value);
     }
 
-    public BitmapFont getBitmapFont() {
-        return font;
-    }
-
     public int getWidth() {
-        return Gdx.graphics.getWidth();
+        return Gdx.graphics.getWidth() - this.getDrawOffset().x * 2;
     }
 
     public int getHeight() {
-        return Gdx.graphics.getHeight();
+        return Gdx.graphics.getHeight() - this.getDrawOffset().y * 2;
     }
 
     public TextureManager getTextureManager() {
@@ -796,5 +1004,18 @@ public class UltreonCraft extends ApplicationAdapter {
 
     public boolean isPlaying() {
         return this.world != null && this.currentScreen == null;
+    }
+
+    public static FileHandle getConfigDir() {
+        return instance.configDir;
+    }
+
+    public GridPoint2 getDrawOffset() {
+        return this.isCustomBorderShown() ? new GridPoint2(18 * 2, 22 * 2) : new GridPoint2();
+    }
+
+    public boolean isCustomBorderShown() {
+//        return !Gdx.graphics.isFullscreen();
+        return false;
     }
 }
