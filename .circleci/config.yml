@@ -16,7 +16,7 @@ jobs:
       - checkout
       - run:
             name: "Install openjdk 11"
-            command: "apt install openjdk-11"
+            command: "sudo apt install openjdk-11 -y"
       - run:
             name: "Make gradlew executable"
             command: "chmod +x gradlew"
