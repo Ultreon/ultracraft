@@ -194,12 +194,15 @@ public class World implements RenderableProvider, Disposable {
 		MapType playerData = player == null ? new MapType() : player.save(new MapType());
 		this.savedWorld.write(playerData, "data/player.ubo");
 
-		for (WorldRegion region : this.regions.values()) {
+		for (var entry : this.regions.entrySet()) {
 			try {
+				var region = entry.getValue();
+				var pos = entry.getKey();
 				region.save();
 				if (region.isEmpty()) {
 					region.dispose(true);
 				}
+				this.regions.remove(pos);
 			} catch (IOException e) {
 				LOGGER.error("Failed to save region:", e);
 				return;
