@@ -1,13 +1,13 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.google.common.base.Preconditions;
 import com.ultreon.data.DataIo;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.MapType;
 
 import java.io.IOException;
 
-@SuppressWarnings("ClassCanBeRecord")
 public final class SavedWorld {
     private final FileHandle directory;
 
@@ -24,6 +24,7 @@ public final class SavedWorld {
     }
 
     public void write(IType<?> data, String path) throws IOException {
+        Preconditions.checkNotNull(data, "Data is null");
         if (path.contains("..")) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
@@ -63,6 +64,7 @@ public final class SavedWorld {
 
     @Deprecated
     public void writeChunk(int x, int z, MapType data) throws IOException {
+        Preconditions.checkNotNull(data, "Chunk data is null");
         this.write(data, "chunks/c" + x + "." + z + ".ubo");
     }
 
@@ -75,6 +77,7 @@ public final class SavedWorld {
     }
 
     public void writeRegion(int x, int z, MapType data) throws IOException {
+        Preconditions.checkNotNull(data, "Region data is null");
         this.write(data, "regions/r" + x + "." + z + ".ubo");
     }
 
