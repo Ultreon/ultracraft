@@ -68,7 +68,7 @@ public class PlayerInput {
         if (this.game.input.isControllerConnected() && this.moveX == 0 && this.moveY == 0) {
             Vector2 joystick = GameInput.getJoystick(JoystickType.LEFT);
             if (joystick != null) {
-                this.moveX = joystick.x;
+                this.moveX = -joystick.x;
                 this.moveY = joystick.y;
             }
         }
