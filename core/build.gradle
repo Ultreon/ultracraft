@@ -73,7 +73,6 @@ dependencies {
     api "com.badlogicgames.gdx:gdx-ai:$ai_version"
     api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
     api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
-    api "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
     api "com.badlogicgames.gdx:gdx-tools:$gdx_version"
     api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
 
@@ -90,13 +89,6 @@ dependencies {
     api 'org.jetbrains:annotations:24.0.1'
 
     api "space.earlygrey:shapedrawer:$shapedrawer_version"
-
-    // ImGui
-//    api "io.github.spair:imgui-java-binding:$imgui_version"
-//    api "io.github.spair:imgui-java-lwjgl3:$imgui_version"
-//    api "io.github.spair:imgui-java-natives-linux:$imgui_version"
-//    api "io.github.spair:imgui-java-natives-macos:$imgui_version"
-//    api "io.github.spair:imgui-java-natives-windows:$imgui_version"
 }
 
 processResources {
