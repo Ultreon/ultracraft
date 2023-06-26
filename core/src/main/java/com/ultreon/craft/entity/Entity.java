@@ -137,13 +137,13 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.8F;
+        this.velocityX *= 0.7F;
         this.velocityY *= 0.98F;
-        this.velocityZ *= 0.8F;
+        this.velocityZ *= 0.7F;
 
         if (this.onGround) {
-            this.velocityX *= 0.9f;
-            this.velocityZ *= 0.9f;
+            this.velocityX *= 0.8f;
+            this.velocityZ *= 0.8f;
         }
     }
 
