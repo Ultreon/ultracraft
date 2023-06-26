@@ -159,12 +159,9 @@ public class UltreonCraft extends ApplicationAdapter {
 
         instance = this;
 
-//        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-//            CrashLog crashLog = new CrashLog("Exception in thread", e);
-//            CrashCategory cat = new CrashCategory("Thread");
-//            crashLog.addCategory(cat);
-//            delayCrash(crashLog);
-//        });
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
+        });
     }
 
     public void delayCrash(CrashLog crashLog) {
