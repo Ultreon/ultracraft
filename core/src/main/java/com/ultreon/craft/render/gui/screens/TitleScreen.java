@@ -2,6 +2,7 @@ package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.ultreon.craft.GameFlags;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
@@ -50,10 +51,11 @@ public class TitleScreen extends Screen {
             UltreonCraft.get().startWorld();
         }));
 
-        if (!GamePlatform.instance.canAccessData()) {
-            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> {
-                UltreonCraft.getSavedWorld().delete();
-            }));
+        if ((GamePlatform.instance.isMobile() && GameFlags.ENABLE_RESET_WORLD_IN_MOBILE) ||
+                (GamePlatform.instance.isDesktop() && GameFlags.ENABLE_RESET_WORLD_IN_DESKTOP) ||
+                (GamePlatform.instance.isWeb() && GameFlags.ENABLE_RESET_WORLD_IN_WEB) ||
+                GameFlags.ALWAYS_ENABLE_RESET_WORLD) {
+            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> UltreonCraft.getSavedWorld().delete()));
         }
 
         optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {

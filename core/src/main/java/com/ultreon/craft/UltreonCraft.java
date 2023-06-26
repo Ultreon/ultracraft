@@ -71,7 +71,6 @@ import org.slf4j.Logger;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -454,7 +453,7 @@ public class UltreonCraft extends ApplicationAdapter {
             this.registerLanguage(id("zh_gw"));
 
             LOGGER.info("Registering stuff");
-            Registries.nopInit();
+            Registries.init();
 
             Blocks.nopInit();
             NoiseSettingsInit.nopInit();

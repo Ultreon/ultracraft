@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.Constants;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
@@ -90,8 +91,6 @@ public class World implements RenderableProvider, Disposable {
 			.layer(new UndergroundTerrainLayer())
 //			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
 			.build();
-	private static final long AUTO_SAVE_DELAY = 10;
-	private static final long INITIAL_AUTO_SAVE_DELAY = 120;
 
 	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
@@ -171,9 +170,9 @@ public class World implements RenderableProvider, Disposable {
 				} catch (Exception e) {
 					LOGGER.error("Failed to save world", e);
 				}
-				World.this.saveSchedule = World.this.game.schedule(this, AUTO_SAVE_DELAY, TimeUnit.SECONDS);
+				World.this.saveSchedule = World.this.game.schedule(this, Constants.AUTO_SAVE_DELAY, Constants.AUTO_SAVE_DELAY_UNIT);
 			}
-		}, INITIAL_AUTO_SAVE_DELAY, TimeUnit.SECONDS);
+		}, Constants.INITIAL_AUTO_SAVE_DELAY, Constants.AUTO_SAVE_DELAY_UNIT);
 	}
 
 	@ApiStatus.Internal

@@ -88,4 +88,12 @@ public abstract class GamePlatform {
     public void dispose() {
 
     }
+
+    public boolean isDesktop() {
+        return this.getPlatformType() == PlatformType.DESKTOP;
+    }
+
+    public boolean isWeb() {
+        return this.getPlatformType() == PlatformType.WEB;
+    }
 }
