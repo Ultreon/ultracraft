@@ -2,6 +2,8 @@ package com.ultreon.craft.entity;
 
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
+import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
@@ -39,8 +41,8 @@ public class LivingEntity extends Entity {
             damageImmunity--;
         }
 
-        if (this.y < World.WORLD_DEPTH - 64) {
-            attack(5);
+        if (this.isInVoid()) {
+            this.attack(5, DamageSource.VOID);
         }
 
         if (this.health <= 0) {
@@ -48,7 +50,7 @@ public class LivingEntity extends Entity {
 
             if (!this.isDead) {
                 this.isDead = true;
-                onDeath();
+                this.onDeath();
             }
         }
     }
@@ -58,14 +60,16 @@ public class LivingEntity extends Entity {
         if (!this.noGravity && this.fallDistance > 4.5F) {
             float damage = this.fallDistance - 4.5F;
             if (damage > 0) {
-                this.attack(damage);
+                this.attack(damage, DamageSource.FALLING);
             }
         }
     }
 
-    private void attack(float damage) {
+    public final void attack(float damage, DamageSource source) {
         if (isDead) return;
         if (damageImmunity > 0) return;
+
+        if (this.onAttack(damage, source)) return;
 
         SoundEvent hurtSound = getHurtSound();
         if (hurtSound != null) {
@@ -76,6 +80,10 @@ public class LivingEntity extends Entity {
 
         health = Math.max(health - damage, 0);
         damageImmunity = 10;
+    }
+
+    public boolean onAttack(float damage, DamageSource source) {
+        return false;
     }
 
     public SoundEvent getHurtSound() {
@@ -106,5 +114,9 @@ public class LivingEntity extends Entity {
         data.putBoolean("isDead", this.isDead);
 
         return data;
+    }
+
+    public boolean isDead() {
+        return this.isDead;
     }
 }

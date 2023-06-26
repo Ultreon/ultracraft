@@ -1,5 +1,6 @@
 package com.ultreon.craft.registry;
 
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
@@ -15,6 +16,7 @@ public final class Registries {
     public static final Registry<EntityType<?>> ENTITIES = Registry.create(UltreonCraft.id("entity_type"));
     public static final Registry<Font> FONTS = Registry.create(UltreonCraft.id("font"));
     public static final Registry<SoundEvent> SOUNDS = Registry.create(UltreonCraft.id("sound"));
+    public static final Registry<ShaderProgram> SHADERS = Registry.create(UltreonCraft.id("shader"));
 
     public static void init() {
         REGISTRIES.register(REGISTRIES.id(), REGISTRIES);

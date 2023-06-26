@@ -25,8 +25,8 @@ public class Entity {
     protected float x;
     protected float y;
     protected float z;
-    protected float xRot;
-    protected float yRot;
+    public float xRot;
+    public float yRot;
     private int id = -1;
     public boolean onGround;
     public float velocityX;
@@ -221,6 +221,10 @@ public class Entity {
 
     }
 
+    public boolean isInVoid() {
+        return this.y < World.WORLD_DEPTH - 64;
+    }
+
     public BoundingBox getBoundingBox() {
         return getBoundingBox(getSize());
     }
@@ -325,7 +329,7 @@ public class Entity {
         return new Vector3(this.velocityX, this.velocityY, this.velocityZ);
     }
 
-    protected void setVelocity(Vector3 velocity) {
+    public void setVelocity(Vector3 velocity) {
         this.velocityX = velocity.x;
         this.velocityY = velocity.y;
         this.velocityZ = velocity.z;

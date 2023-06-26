@@ -1,5 +1,7 @@
 package com.ultreon.craft;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.platform.GdxPlatform;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.platform.PlatformType;
@@ -95,5 +97,9 @@ public abstract class GamePlatform {
 
     public boolean isWeb() {
         return this.getPlatformType() == PlatformType.WEB;
+    }
+
+    public FileHandle dataFile(String path) {
+        return Gdx.files.external(path);
     }
 }

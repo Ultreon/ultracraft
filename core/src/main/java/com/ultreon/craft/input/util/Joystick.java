@@ -1,4 +1,4 @@
-package com.ultreon.craft.input;
+package com.ultreon.craft.input.util;
 
 import com.badlogic.gdx.math.Vector2;
 

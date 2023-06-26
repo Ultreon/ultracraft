@@ -5,20 +5,15 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinError;
-import com.sun.jna.platform.win32.WinNT;
-import com.sun.jna.ptr.IntByReference;
-
-import java.util.Objects;
+import com.ultreon.craft.util.ArgParser;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
 
-	public static void main(String[] arg) {
-		GamePlatform.instance = new DesktopPlatform();
+	public static void main(String[] argv) {
+		ArgParser argParser = new ArgParser(argv);
+		GamePlatform.instance = new DesktopPlatform(argParser);
 
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(0);
@@ -70,7 +65,7 @@ public class DesktopLauncher {
 
 			}
 		});
-		new Lwjgl3Application(new UltreonCraft(arg), config);
+		new Lwjgl3Application(new UltreonCraft(argv), config);
 	}
 
 	private static String[] getIcons() {

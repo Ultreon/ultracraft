@@ -1,4 +1,4 @@
-package com.ultreon.craft;
+package com.ultreon.craft.platform.win32;
 
 import com.sun.jna.Native;
 import com.sun.jna.Structure;

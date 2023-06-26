@@ -1,5 +1,6 @@
 package com.ultreon.craft.render;
 
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.init.Shaders;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
@@ -16,7 +18,6 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.translations.v1.Language;
-import org.lwjgl.opengl.GL20;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -53,15 +54,13 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-        GL20.glEnable(GL20.GL_COLOR_LOGIC_OP);
-        GL20.glLogicOp(GL20.GL_SET);
+        renderer.setShader(Shaders.XOR);
 
         int x = this.game.getScaledWidth() / 2;
         int y = this.game.getScaledHeight() / 2;
         renderer.texture(this.crosshair, x - 7, y - 7, 14, 14);
 
-        GL20.glLogicOp(GL20.GL_XOR);
-        GL20.glDisable(GL20.GL_COLOR_LOGIC_OP);
+        renderer.unsetShader();
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {

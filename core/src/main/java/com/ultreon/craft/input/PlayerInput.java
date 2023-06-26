@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.util.JoystickType;
 
 public class PlayerInput {
     public boolean forward;
@@ -35,9 +36,9 @@ public class PlayerInput {
         this.moveZ = 0;
 
         if (this.game.input.isControllerConnected()) {
-            Vector2 joystick = this.game.input.getJoystick(JoystickType.LEFT);
+            Vector2 joystick = GameInput.getJoystick(JoystickType.LEFT);
             if (joystick != null) {
-                this.moveX = joystick.x * speed * 15;
+                this.moveX = -joystick.x * speed * 15;
                 this.moveZ = joystick.y * speed * 15;
             } else {
                 this.moveX = 0;

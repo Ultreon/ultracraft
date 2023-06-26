@@ -99,10 +99,6 @@ public class DesktopInput extends GameInput {
         return true;
     }
 
-    public void update() {
-        this.update(Gdx.graphics.getDeltaTime());
-    }
-
     private void updatePlayerMovement(int screenX, int screenY) {
         if (this.game.player == null) return;
 
@@ -231,9 +227,5 @@ public class DesktopInput extends GameInput {
         var yPos = this.game.getHeight() - this.yPos;
         if (currentScreen != null) currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
         return false;
-    }
-
-    public void update(float deltaTime) {
-
     }
 }

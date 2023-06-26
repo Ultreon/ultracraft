@@ -38,6 +38,7 @@ import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.*;
+import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.DebugRenderer;
@@ -188,7 +189,9 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
-            this.configDir = Gdx.files.external("config/");
+            LOGGER.info("Data directory is at: " + new DataFileHandle(".").file().getAbsolutePath());
+
+            this.configDir = new DataFileHandle("config/");
             if (!this.configDir.isDirectory()) {
                 this.configDir.delete();
                 this.configDir.mkdirs();
@@ -501,7 +504,7 @@ public class UltreonCraft extends ApplicationAdapter {
             LOGGER.info("Opening title screen");
             this.showScreen(new TitleScreen());
 
-            savedWorld = new SavedWorld(Gdx.files.external("world"));
+            savedWorld = new SavedWorld(new DataFileHandle("world"));
 
             GamePlatform.instance.setupImGui();
         } catch (Throwable t) {

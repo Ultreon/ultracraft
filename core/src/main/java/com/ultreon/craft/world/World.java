@@ -30,6 +30,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
@@ -64,6 +65,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -119,7 +121,7 @@ public class World implements RenderableProvider, Disposable {
 	private ScheduledFuture<?> saveSchedule;
 	private int chunksToLoad;
 	private int chunksLoaded;
-	private final Executor saveExecutor = Executors.newSingleThreadExecutor();
+	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -273,9 +275,9 @@ public class World implements RenderableProvider, Disposable {
 		List<ChunkPos> toRemove = new ArrayList<>();
 		for (var pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
 			Chunk chunk = this.getChunk(pos);
-			System.out.println("pos = " + pos);
-			System.out.println("needed = " + needed);
-			System.out.println("needed.stream().filter(chunkPos -> chunkPos == pos) = " + needed.stream().filter(pos::equals).collect(Collectors.toList()));
+//			System.out.println("pos = " + pos);
+//			System.out.println("needed = " + needed);
+//			System.out.println("needed.stream().filter(chunkPos -> chunkPos == pos) = " + needed.stream().filter(pos::equals).collect(Collectors.toList()));
 			return chunk != null && !needed.contains(pos);
 		}).collect(Collectors.toList())) {
 			if (this.getChunk(pos) != null) {
@@ -318,7 +320,7 @@ public class World implements RenderableProvider, Disposable {
 		List<ChunkPos> toCreate = worldGenInfo.toCreate;
 		this.chunksToLoad = toCreate.size();
 		this.chunksLoaded = 0;
-		System.out.println("worldGenInfo.toRemove = " + worldGenInfo.toRemove);
+//		System.out.println("worldGenInfo.toRemove = " + worldGenInfo.toRemove);
 		for (ChunkPos chunkPos : worldGenInfo.toRemove) {
 			this.unloadChunk(chunkPos);
 		}
@@ -881,7 +883,16 @@ public class World implements RenderableProvider, Disposable {
 
 	@Override
 	public void dispose() {
+		GameInput.cancelVibration();
+
 		this.saveSchedule.cancel(true);
+		this.saveExecutor.shutdownNow();
+
+		try {
+			this.save(true);
+		} catch (IOException e) {
+			LOGGER.warn("Saving failed:", e);
+		}
 
 		for (WorldRegion chunk : this.regions.values()) {
 			chunk.dispose(true);

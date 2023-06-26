@@ -1,31 +1,44 @@
 package com.ultreon.craft.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.controllers.Controller;
-import com.badlogic.gdx.controllers.ControllerAdapter;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
-import com.badlogic.gdx.controllers.ControllerPowerLevel;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
+import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.util.ControllerButton;
+import com.ultreon.craft.input.util.Joystick;
+import com.ultreon.craft.input.util.JoystickType;
+import com.ultreon.craft.input.util.Trigger;
+import com.ultreon.craft.input.util.TriggerType;
 import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Mth;
 
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 public abstract class GameInput implements InputProcessor, ControllerListener {
@@ -34,15 +47,25 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     protected final UltreonCraft game;
     protected final Camera camera;
     private final Set<Controller> controllers = new HashSet<>();
-    private final Map<JoystickType, Joystick> joysticks = new EnumMap<>(JoystickType.class);
+    private static final Map<JoystickType, Joystick> JOYSTICKS = new EnumMap<>(JoystickType.class);
+    private static final Map<TriggerType, Trigger> TRIGGERS = new EnumMap<>(TriggerType.class);
+    private static final Int2BooleanMap CONTROLLER_BUTTONS = new Int2BooleanArrayMap();
+
+    static {
+        for (JoystickType type : JoystickType.values()) {
+            JOYSTICKS.put(type, new Joystick());
+        }
+        for (TriggerType type : TriggerType.values()) {
+            TRIGGERS.put(type, new Trigger());
+        }
+    }
+
+    private long nextBreak;
+    private long nextPlace;
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
         this.camera = camera;
-
-        for (JoystickType type : JoystickType.values()) {
-            this.joysticks.put(type, new Joystick());
-        }
 
         Controllers.addListener(this);
         this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).collect(Collectors.toList()));
@@ -68,42 +91,38 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         }
 
         ControllerMapping mapping = controller.getMapping();
-        if (axisCode == mapping.axisLeftX) this.joysticks.get(JoystickType.LEFT).x = value;
-        if (axisCode == mapping.axisLeftY) this.joysticks.get(JoystickType.LEFT).y = -value;
+        if (axisCode == mapping.axisLeftX) JOYSTICKS.get(JoystickType.LEFT).x = -value;
+        if (axisCode == mapping.axisLeftY) JOYSTICKS.get(JoystickType.LEFT).y = -value;
 
-        if (axisCode == mapping.axisRightX) this.joysticks.get(JoystickType.RIGHT).x = value;
-        if (axisCode == mapping.axisRightY) this.joysticks.get(JoystickType.RIGHT).y = -value;
+        if (axisCode == mapping.axisRightX) JOYSTICKS.get(JoystickType.RIGHT).x = -value;
+        if (axisCode == mapping.axisRightY) JOYSTICKS.get(JoystickType.RIGHT).y = -value;
+
+        if (axisCode == 4) TRIGGERS.get(TriggerType.LEFT).value = value;
+        if (axisCode == 5) TRIGGERS.get(TriggerType.RIGHT).value = value;
 
         return true;
     }
 
     @Override
     public boolean buttonUp(Controller controller, int buttonCode) {
+        CONTROLLER_BUTTONS.put(buttonCode, false);
+
         return false;
     }
 
     @Override
     public boolean buttonDown(Controller controller, int buttonCode) {
-        System.out.println("Button down: " + buttonCode); // Print the button code of the button that was pressed
-//        if (controller.getMapping().buttonX == buttonCode) {
-//            controller.cancelVibration();
-//            controller.startVibration(1000, 0.02F);
-//        }
-//        if (controller.getMapping().buttonA == buttonCode) {
-//            controller.cancelVibration();
-//            controller.startVibration(1000, 0.1F);
-//        }
-//        if (controller.getMapping().buttonB == buttonCode) {
-//            controller.cancelVibration();
-//            controller.startVibration(1000, 1.0F);
-//        }
-
         Screen currentScreen = this.game.currentScreen;
-        if (controller.getMapping().buttonA == buttonCode) {
-            ControllerPowerLevel powerLevel = controller.getPowerLevel();
-            System.out.println("powerLevel = " + powerLevel);
+        CONTROLLER_BUTTONS.put(buttonCode, true);
 
-            Debugger.log("CONTROLLER INPUT -> Button A has been pressed.");
+        if (this.game.isPlaying()) {
+            Player player = this.game.player;
+            if (player != null) {
+                if (controller.getMapping().buttonL1 == buttonCode)
+                    player.selectBlock(player.selected - 1);
+                if (controller.getMapping().buttonR1 == buttonCode)
+                    player.selectBlock(player.selected + 1);
+            }
         }
 
         if (controller.getMapping().buttonB == buttonCode) {
@@ -137,14 +156,120 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     }
 
     public void update(float deltaTime) {
+        if (this.game.isPlaying()) {
+            Player player = this.game.player;
+            if (player != null) {
+                Joystick joystick = JOYSTICKS.get(JoystickType.RIGHT);
 
+                float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
+                float deltaY = joystick.y * deltaTime * Constants.CTRL_CAMERA_SPEED;
+
+                Vector2 rotation = player.getRotation();
+                rotation.add(deltaX * DEG_PER_PIXEL, deltaY * DEG_PER_PIXEL);
+                player.setRotation(rotation);
+
+                @Nullable World world = this.game.world;
+                if (world != null) {
+                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                    GridPoint3 pos = hitResult.pos;
+                    Block block = world.get(pos);
+                    GridPoint3 posNext = hitResult.next;
+                    Block blockNext = world.get(posNext);
+                    Block selectedBlock = this.game.player.getSelectedBlock();
+                    if (hitResult.collide && block != null && !block.isAir()) {
+                        if (TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+                            world.set(pos, Blocks.AIR);
+                            System.out.println("Break Block");
+                            this.nextBreak = System.currentTimeMillis() + 500;
+                        } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis()
+                                && blockNext != null && blockNext.isAir()
+                                && !selectedBlock.getBoundingBox(posNext).intersects(this.game.player.getBoundingBox())) {
+                            world.set(posNext, selectedBlock);
+                            System.out.println("Place Block");
+                            this.nextPlace = System.currentTimeMillis() + 500;
+                        }
+                    }
+                }
+
+                player.setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
+
+                if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                    boolean doNowFly = !player.isFlying();
+                    player.noGravity = doNowFly;
+                    player.setFlying(doNowFly);
+                }
+
+                if (!player.isFlying()) player.setCrouching(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || GameInput.isControllerButtonDown(ControllerButton.RIGHT_STICK));
+
+                float speed;
+                if (player.isFlying()) speed = player.getFlyingSpeed();
+                else speed = player.getWalkingSpeed();
+
+                if (player.isCrouching()) speed *= player.crouchModifier;
+                else if (player.isRunning()) speed *= player.runModifier;
+
+                if (!player.topView) {
+                    Vector3 tmp = new Vector3();
+                    this.game.playerInput.tick(speed);
+                    Vector3 vel = this.game.playerInput.getVel();
+
+                    if (player.isInWater() && this.game.playerInput.up) {
+                        tmp.set(0, 1, 0).nor().scl(speed);
+                        vel.add(tmp);
+                    }
+                    if (player.isFlying()) {
+                        if (this.game.playerInput.up) {
+                            tmp.set(0, 1, 0).nor().scl(speed);
+                            vel.add(tmp);
+                        }
+                        if (this.game.playerInput.down) {
+                            tmp.set(0, 1, 0).nor().scl(-speed);
+                            vel.add(tmp);
+                        }
+                    }
+
+                    vel.x *= deltaTime * UltreonCraft.TPS;
+                    vel.y *= deltaTime * UltreonCraft.TPS;
+                    vel.z *= deltaTime * UltreonCraft.TPS;
+
+                    player.setVelocity(player.getVelocity().add(vel));
+                } else {
+                    player.setX(0);
+                    player.setZ(0);
+                    player.setY(120);
+                    player.xRot = 45;
+                    player.yRot =  -45;
+                }
+            }
+        }
     }
 
     public boolean isControllerConnected() {
         return !this.controllers.isEmpty();
     }
 
-    public Vector2 getJoystick(JoystickType joystick) {
-        return this.joysticks.get(joystick).cpy();
+    public static Vector2 getJoystick(JoystickType joystick) {
+        return JOYSTICKS.get(joystick).cpy();
+    }
+
+    public static boolean isControllerButtonDown(ControllerButton button) {
+        Controller current = Controllers.getCurrent();
+        if (current == null) return false;
+        ControllerMapping mapping = current.getMapping();
+        return CONTROLLER_BUTTONS.get(button.get(mapping));
+    }
+
+    public static boolean cancelVibration() {
+        Controller current = Controllers.getCurrent();
+        if (current == null) return false;
+        current.cancelVibration();
+        return true;
+    }
+
+    public static boolean startVibration(int duration, float strength) {
+        Controller current = Controllers.getCurrent();
+        if (current == null) return false;
+        current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));
+        return true;
     }
 }

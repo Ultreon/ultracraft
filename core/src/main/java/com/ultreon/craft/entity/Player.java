@@ -2,13 +2,15 @@ package com.ultreon.craft.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.init.Sounds;
+import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.input.PlayerInput;
+import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
@@ -36,67 +38,43 @@ public class Player extends LivingEntity {
     }
 
     public void selectBlock(int i) {
-        selected = i % 9;
+        int toSelect = i % 9;
+        if (toSelect < 0) toSelect += 9;
+        this.selected = toSelect;
     }
 
     public Block getSelectedBlock() {
+        if (this.selected < 0) this.selected = 0;
         return this.selected >= ALLOWED.length ? Blocks.AIR : ALLOWED[this.selected];
-
     }
 
     @Override
     public void tick() {
-        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
+        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A);
 
         if (this.topView) {
             this.noGravity = true;
             this.flying = true;
             this.spectating = true;
         }
-        super.tick();
 
-        setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched());
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) flying = noGravity = !flying;
-        if (!flying) crouching = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
-
-        float speed;
-        if (flying) speed = this.flyingSpeed;
-        else speed = this.walkingSpeed;
-
-        if (isCrouching()) speed *= crouchModifier;
-        else if (isRunning()) speed *= runModifier;
-
-        if (!this.topView) {
-            Vector3 tmp = new Vector3();
-            this.input.tick(speed);
-            Vector3 vel = this.input.getVel();
-
-            if (this.isInWater() && this.input.up) {
-                tmp.set(0, 1, 0).nor().scl(speed);
-                vel.add(tmp);
-            }
-            if (this.flying) {
-                if (this.input.up) {
-                    tmp.set(0, 1, 0).nor().scl(speed);
-                    vel.add(tmp);
-                }
-                if (this.input.down) {
-                    tmp.set(0, 1, 0).nor().scl(-speed);
-                    vel.add(tmp);
-                }
-            }
-
-            this.setVelocity(this.getVelocity().add(vel));
-        } else {
-            this.x = this.z = 0;
-            this.y = 120;
-            this.xRot = 45;
-            this.yRot =  -45;
+        if (this.isInVoid() && !this.isDead()) {
+            GameInput.startVibration(200, 1.0F);
         }
+
+        super.tick();
     }
 
-    private boolean isInWater() {
+    @Override
+    public boolean onAttack(float damage, DamageSource source) {
+        if (source == DamageSource.FALLING) {
+            GameInput.startVibration(50, 1.0F);
+        }
+
+        return false;
+    }
+
+    public boolean isInWater() {
         return world.get(blockPosition()) == Blocks.WATER;
     }
 

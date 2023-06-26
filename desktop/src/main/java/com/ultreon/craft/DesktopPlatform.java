@@ -3,9 +3,11 @@ package com.ultreon.craft;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.craft.util.ArgParser;
 import com.ultreon.craft.util.ImGuiEx;
 
 import org.lwjgl.glfw.GLFW;
@@ -13,6 +15,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 import imgui.*;
 import imgui.flag.ImGuiCond;
@@ -26,9 +30,18 @@ public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+    private final String gameDir;
     private ImGuiImplGlfw imGuiGlfw;
     private ImGuiImplGl3 imGuiGl3;
     private final ImBoolean showImGui = new ImBoolean(false);
+    private final ArgParser argParser;
+
+    public DesktopPlatform(ArgParser argParser) {
+        this.argParser = argParser;
+
+        String gameDir = this.argParser.getKeywordArgs().get("gamedir");
+        this.gameDir = gameDir == null ? new File(".").getAbsolutePath() : gameDir;
+    }
 
     @Override
     public Logger getLogger(String name) {
@@ -238,5 +251,14 @@ public class DesktopPlatform extends GamePlatform {
         this.imGuiGl3.dispose();
         this.imGuiGlfw.dispose();
         ImGui.destroyContext();
+    }
+
+    @Override
+    public FileHandle dataFile(String path) {
+        return Gdx.files.absolute(this.gameDir).child(path);
+    }
+
+    public ArgParser getArgParser() {
+        return this.argParser;
     }
 }
