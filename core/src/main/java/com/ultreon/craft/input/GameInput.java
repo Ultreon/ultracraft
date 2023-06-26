@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
+import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -27,7 +28,6 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 public abstract class GameInput implements InputProcessor, ControllerListener {
     protected static final float DEG_PER_PIXEL = 0.6384300433839F;
     private static final IntArraySet keys = new IntArraySet();
-    private static final float DEADZONE = 0.1F;
     protected final UltreonCraft game;
     protected final Camera camera;
 
@@ -54,7 +54,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 @Override
                 public boolean axisMoved(Controller controller, int axisCode, float value) {
                     // Check if the absolute value of the value is less than the deadzone
-                    if (Math.abs(value) < DEADZONE) {
+                    if (Math.abs(value) < Constants.CONTROLLER_DEADZONE) {
                         value = 0; // Set the value to 0 if it's within the deadzone
                     }
 

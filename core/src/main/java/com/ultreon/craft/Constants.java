@@ -6,4 +6,5 @@ public class Constants {
     public static final TimeUnit AUTO_SAVE_DELAY_UNIT = TimeUnit.SECONDS;
     public static final int AUTO_SAVE_DELAY = 10;
     public static final int INITIAL_AUTO_SAVE_DELAY = 120;
+    public static final float CONTROLLER_DEADZONE = 0.1F;
 }
