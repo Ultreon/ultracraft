@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
@@ -259,6 +260,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         return CONTROLLER_BUTTONS.get(button.get(mapping));
     }
 
+    @CanIgnoreReturnValue
     public static boolean cancelVibration() {
         Controller current = Controllers.getCurrent();
         if (current == null) return false;
@@ -266,6 +268,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         return true;
     }
 
+    @CanIgnoreReturnValue
     public static boolean startVibration(int duration, float strength) {
         Controller current = Controllers.getCurrent();
         if (current == null) return false;
