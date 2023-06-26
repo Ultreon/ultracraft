@@ -696,8 +696,14 @@ public class World implements RenderableProvider, Disposable {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
+		if (this.isOutOfWorldBounds(pos)) return null;
+
 		ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
 		return this.getChunk(chunkPos);
+	}
+
+	private boolean isOutOfWorldBounds(GridPoint3 pos) {
+		return pos.y < WORLD_DEPTH || pos.y > WORLD_HEIGHT;
 	}
 
 	public int getHighest(int x, int z) {
