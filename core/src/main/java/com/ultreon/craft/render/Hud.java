@@ -16,12 +16,14 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.translations.v1.Language;
+import org.lwjgl.opengl.GL20;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
     private final GlyphLayout layout = new GlyphLayout();
 
     private final Texture texture;
+    private final Texture crosshair;
     private final Texture mobileTexture;
     private float joyStickX;
     private float joyStickY;
@@ -32,6 +34,7 @@ public class Hud implements GameRenderable {
     public Hud(UltreonCraft game) {
         this.game = game;
         this.texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
+        this.crosshair = game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/crosshair.png"));
         this.mobileTexture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/mobile_widgets.png"));
     }
 
@@ -41,11 +44,24 @@ public class Hud implements GameRenderable {
         if (player == null) return;
 
         this.renderHotbar(renderer, player);
+        this.renderCrosshair(renderer, player);
 
         GameInput input = this.game.input;
         if (input instanceof MobileInput) {
             this.renderMobileHud(renderer, player, (MobileInput) input);
         }
+    }
+
+    private void renderCrosshair(Renderer renderer, Player player) {
+        GL20.glEnable(GL20.GL_COLOR_LOGIC_OP);
+        GL20.glLogicOp(GL20.GL_SET);
+
+        int x = this.game.getScaledWidth() / 2;
+        int y = this.game.getScaledHeight() / 2;
+        renderer.texture(this.crosshair, x - 7, y - 7, 14, 14);
+
+        GL20.glLogicOp(GL20.GL_XOR);
+        GL20.glDisable(GL20.GL_COLOR_LOGIC_OP);
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
