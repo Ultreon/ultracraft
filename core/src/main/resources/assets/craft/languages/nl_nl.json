@@ -11,6 +11,7 @@
   "craft.screen.pause.back_to_game": "Terug naar spel",
   "craft.screen.pause.exit_world": "Wereld sluiten",
   "craft.screen.title.start_world": "Start nieuwe wereld",
+  "craft.screen.title.reset_world": "Wereld Resetten",
   "craft.screen.title.options": "Opties...",
   "craft.screen.title.quit": "Aflsuiten"
 }
