@@ -18,7 +18,7 @@ public class PlayerInput {
     public boolean down;
     public float moveX;
     public float moveY;
-    private Vector3 vel = new Vector3();
+    private final Vector3 vel = new Vector3();
     private final Vector3 tmp = new Vector3();
     private final UltreonCraft game;
 
@@ -79,7 +79,7 @@ public class PlayerInput {
 
     @Deprecated(forRemoval = true)
     private void setVel(Vector3 vel) {
-        this.vel = vel;
+        this.vel.set(vel);
     }
 
     public Vector3 getVel() {
