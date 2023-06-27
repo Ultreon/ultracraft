@@ -29,14 +29,14 @@ jobs:
       - name: Make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Build
-        run: ./gradlew :desktop:jpackage --info
+        run: ./gradlew :desktop-merge:jpackage --info
         env:
           GITHUB_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Ultreon Craft Linux Build ${{ github.run_number }}
-          path: desktop/build/dist
+          path: desktop-merge/build/dist
   build-macos:
     strategy:
       matrix:
@@ -59,14 +59,14 @@ jobs:
       - name: Make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Build
-        run: ./gradlew :desktop:jpackage --info
+        run: ./gradlew :desktop-merge:jpackage --info
         env:
           GITHUB_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Ultreon Craft MacOS Build ${{ github.run_number }}
-          path: desktop/build/dist
+          path: desktop-merge/build/dist
   build-windows:
     strategy:
       matrix:
@@ -94,4 +94,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Ultreon Craft Windows Build ${{ github.run_number }}
-          path: desktop/build/dist
+          path: desktop-merge/build/dist

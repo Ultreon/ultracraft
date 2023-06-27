@@ -4,11 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
+import com.ultreon.craft.desktop.render.screen.ModListScreen;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.util.ArgParser;
-import com.ultreon.craft.util.ImGuiEx;
+import com.ultreon.craft.desktop.util.util.ArgParser;
+import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -260,5 +261,15 @@ public class DesktopPlatform extends GamePlatform {
 
     public ArgParser getArgParser() {
         return this.argParser;
+    }
+
+    @Override
+    public void openModList() {
+        UltreonCraft.get().showScreen(new ModListScreen(UltreonCraft.get().currentScreen));
+    }
+
+    @Override
+    public boolean isModsSupported() {
+        return true;
     }
 }

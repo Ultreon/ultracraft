@@ -4,14 +4,13 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="" />
+      <option name="scriptParameters" value="--info" />
       <option name="taskDescriptions">
         <list />
       </option>
       <option name="taskNames">
         <list>
-          <option value=":desktop:build" />
-          <option value=":desktop:jpackage" />
+          <option value=":desktop-merge:jpackage" />
         </list>
       </option>
       <option name="vmOptions" />
@@ -19,6 +18,9 @@
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
-    <method v="2" />
+    <ForceTestExec>false</ForceTestExec>
+    <method v="2">
+      <option name="Gradle.BeforeRunTask" enabled="true" tasks=":desktop-merge:build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
+    </method>
   </configuration>
 </component>

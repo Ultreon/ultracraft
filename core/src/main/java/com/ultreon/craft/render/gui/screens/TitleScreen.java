@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class TitleScreen extends Screen {
     private Button startButton;
     private Button resetWorldButton;
+    private Button modListButton;
     private Button optionsButton;
     private Button quitButton;
     private final GlyphLayout layout = new GlyphLayout();
@@ -35,6 +36,7 @@ public class TitleScreen extends Screen {
         if (this.resetWorldButton != null) {
             this.resetWorldButton.setPos(width / 2 - 100, y -= 25);
         }
+        this.modListButton.setPos(width / 2 - 100, y -= 25);
         this.optionsButton.setPos(width / 2 - 100, y -= 25);
         this.quitButton.setPos(width / 2 + 5, y);
     }
@@ -58,6 +60,11 @@ public class TitleScreen extends Screen {
             this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> UltreonCraft.getSavedWorld().delete()));
         }
 
+        if (GamePlatform.instance.isModsSupported()) {
+            this.modListButton = this.add(new Button(this.width / 2 - 100, y -= 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
+                GamePlatform.instance.openModList();
+            }));
+        }
         optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));

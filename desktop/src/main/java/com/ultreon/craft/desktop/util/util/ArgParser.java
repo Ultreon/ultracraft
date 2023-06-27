@@ -1,4 +1,4 @@
-package com.ultreon.craft.util;
+package com.ultreon.craft.desktop.util.util;
 
 import java.util.ArrayList;
 import java.util.Collections;

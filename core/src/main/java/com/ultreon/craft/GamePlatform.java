@@ -102,4 +102,12 @@ public abstract class GamePlatform {
     public FileHandle dataFile(String path) {
         return Gdx.files.external(path);
     }
+
+    public void openModList() {
+
+    }
+
+    public boolean isModsSupported() {
+        return false;
+    }
 }

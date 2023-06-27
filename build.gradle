@@ -238,23 +238,3 @@ println("Current version: " + version)
 println("Project: " + group + ":" + name)
 
 mkdir("$buildDir/ultreon-craft")
-
-idea{
-    project{
-        settings {
-            withIDEADir { File dir ->
-                println("Callback 1 executed with: " + dir.absolutePath)
-            }
-
-            runConfigurations {
-                "Ultreon Craft"(Application) {                       // Create new run configuration "MyApp" that will run class foo.App
-                    jvmArgs = "-Xmx2G"
-                    mainClass = 'com.ultreon.craft.DesktopLauncher'
-                    moduleName = idea.module.name + ".desktop.main"
-                    workingDirectory = "$projectDir/run/"
-                    programParameters = "--dev"
-                }
-            }
-        }
-    }
-}

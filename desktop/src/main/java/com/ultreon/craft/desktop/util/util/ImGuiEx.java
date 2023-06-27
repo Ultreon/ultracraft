@@ -1,4 +1,4 @@
-package com.ultreon.craft.util;
+package com.ultreon.craft.desktop.util.util;
 
 import com.ultreon.libs.functions.v0.consumer.BooleanConsumer;
 import com.ultreon.libs.functions.v0.consumer.ByteConsumer;

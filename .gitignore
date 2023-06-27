@@ -119,3 +119,5 @@ Thumbs.db
 /run/
 
 *.log
+/gameprovider/build/
+/desktop-merge/build/

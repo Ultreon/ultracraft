@@ -68,7 +68,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        int childY = this.height + this.y;
+        int childY = this.height + this.y - this.itemHeight;
         for (Entry entry : this.entries) {
             if (entry.visible) {
                 entry.setY(childY);
@@ -207,6 +207,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
     }
 
     public T getSelected() {
+        if (this.selected == null) return null;
         return this.selected.value;
     }
 
@@ -257,7 +258,6 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
             if (selected) {
-                System.out.println("this.value = " + this.value);
                 renderer.box(1, 1, this.width - 2, this.height - 2, Color.rgb(0xffffff));
             }
             ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;

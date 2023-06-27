@@ -39,12 +39,12 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew :desktop:build :desktop:jpackage"
+            command: "./gradlew :desktop-merge:build :desktop-merge:jpackage"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
           name: "Store Desktop Binaries"
-          path: desktop/build/dist/
+          path: desktop-merge/build/dist/
       - store_artifacts:
           name: "Store Desktop Artifacts"
           path: desktop/build/libs/

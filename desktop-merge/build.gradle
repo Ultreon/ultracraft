@@ -2,7 +2,6 @@
 
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
 
 buildscript {
     repositories {
@@ -32,6 +31,7 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
+    id "org.panteleyev.jpackageplugin" version "1.5.0"
 //    id 'maven-publish'
 //    id "org.panteleyev.jpackageplugin"
 }
@@ -48,7 +48,9 @@ apply plugin: 'java-library'
 version project_version
 group project_group
 
-archivesBaseName = archives_base_name
+archivesBaseName = archives_base_name + "-merge"
+
+def packageVersion = "1.0.0"
 
 java {
     withSourcesJar()
@@ -62,9 +64,16 @@ repositories {
     }
 }
 
+configurations {
+    addToJar {
+        canBeResolved true
+    }
+}
+
 dependencies {
-    implementation project(":gameprovider")
-    implementation project(":core")
+    addToJar(project(":gameprovider"))
+    runtimeOnly project(":core")
+    runtimeOnly project(":desktop")
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
@@ -137,8 +146,6 @@ dependencies {
     implementation 'net.fabricmc:tiny-remapper:0.8.5'
     implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
     implementation 'net.fabricmc:access-widener:2.1.0'
-
-    implementation("net.fabricmc:fabric-loader:$fabric_version")
 }
 
 processResources {
@@ -159,12 +166,19 @@ jar {
                 'Multi-Release': 'true'
     }
 
+    from(configurations.addToJar.collect {
+        zipTree(it).matching {
+            exclude "*.RSA", "*.SF", "*.MF"
+        }
+    })
     from {
         compileJava.outputs
     }
     from {
         processResources.outputs
     }
+
+    exclude "*.RSA", "*.SF", "*.MF"
 
     zip64 true
     duplicatesStrategy DuplicatesStrategy.INCLUDE
@@ -192,48 +206,73 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-mkdir("$buildDir/ultreon-craft")
+delete "$buildDir/jars"
 
-def ps = System.getProperty("path.separator")
-def files = configurations.runtimeClasspath
-def strm = (files.toList()).stream()
-def rcl = String.join(ps, strm.map {
-    it.path
-}.filter{it != null }.toList())
-//\tfabric.remapClasspathFile=$buildDir/bubbles/classpath.txt
-//\tfabric.classPathGroups=$buildDir/classes/java/main/$ps$buildDir/resources/main/$ps${project(":core").buildDir}/classes/java/main/$ps${project(":core").buildDir}/resources/main/$ps${project(":desktop").buildDir}/classes/java/main/$ps${project(":desktop").buildDir}/resources/main/$ps${project(":gameprovider").buildDir}/classes/java/main/$ps${project(":gameprovider").buildDir}/resources/main/$ps$rcl
-def conf = """
-commonProperties
-\tfabric.development=true
-\tlog4j2.formatMsgNoLookups=true
-\tfabric.log.disableAnsi=false
-\tlog4j.configurationFile=$rootProject.projectDir/log4j.xml
-"""
+tasks.register('copyDependencies', Copy) {
+    from(configurations.runtimeClasspath)
+    exclude "lwjgl-2.9.3.jar"
+    exclude "lwjgl-platform-2.9.3.jar"
+    exclude "lwjgl-platform-2.9.3-*.jar"
+    into("$buildDir/jars")
+}
 
-def launchFile = file("$buildDir/ultreon-craft/launch.cfg")
-Files.writeString(launchFile.toPath(), conf, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+tasks.register('copyJar', Copy) {
+    from(tasks.jar)
+    into("$buildDir/jars")
+}
 
-def cp = "$rcl"
+jpackage {
+    dependsOn("build", "copyDependencies", "copyJar")
 
-def cpFile = file("$buildDir.absolutePath/ultreon-craft/classpath.txt")
-Files.writeString(cpFile.toPath(), cp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+    input  = "$buildDir/jars"
+    destination = "$buildDir/dist"
 
-idea{
-    project{
-        settings {
-            withIDEADir { File dir ->
-                println("Callback 1 executed with: " + dir.absolutePath)
-            }
+    appName = project.property("app_name").toString()
+    appVersion = project.version.toString()
+    vendor = "Ultreon Team"
+    copyright = "Copyright (c) 2023 Ultreon Team"
+    runtimeImage = System.getProperty("java.home")
 
-            runConfigurations {
-                "Ultreon Craft"(org.jetbrains.gradle.ext.Application) {                       // Create new run configuration "MyApp" that will run class foo.App
-                    jvmArgs = "-Xmx2g -Dfabric.dli.config=$launchFile.path -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient"
-                    mainClass = 'net.fabricmc.devlaunchinjector.Main'
-                    moduleName = idea.module.name + ".desktop.main"
-                    workingDirectory = "$rootProject.projectDir/run/"
-                    programParameters = "--gameDir=."
-                }
-            }
-        }
+//    mainJar = "fabric-loader-${fabric_loader_version}.jar"
+    mainJar = jar.archiveFileName.get()
+    mainClass = "net.fabricmc.loader.impl.launch.knot.KnotClient"
+
+    destination = "$buildDir/dist"
+
+    licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
+
+    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+
+    aboutUrl = "https://github.com/Ultreon/ultreon-craft"
+
+    mac {
+        icon = "$rootProject.projectDir/icons/icon.icns"
+        macPackageIdentifier = project_id
+        macPackageName = project_name
+        appVersion = packageVersion
+    }
+
+    linux {
+        icon = "$rootProject.projectDir/icons/icon.png"
+        linuxPackageName = project_name
+        linuxDebMaintainer = "Ultreon Team"
+        linuxRpmLicenseType = "Ultreon API License v1.1"
+        linuxAppRelease = "2"
+        linuxShortcut = true
+        appVersion = project.version.toString()
+    }
+
+    windows {
+        icon = "$rootProject.projectDir/icons/icon.ico"
+        winMenu = true
+        winDirChooser = true
+        winConsole = false
+        winPerUserInstall = true
+        winShortcutPrompt = true
+        winShortcut = false
+        winUpgradeUuid = "a539b496-ae50-4df2-9a1b-8a089e44f7ce"
+        winMenuGroup = "Ultreon Team"
+        winConsole = true
+        appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
     }
 }
