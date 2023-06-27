@@ -36,14 +36,14 @@ public class BiomeGenerator implements Disposable {
         int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z, chunk.height) * chunkAmplitude;
 
         for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
-            for (var layer : this.layers) {
+            for (TerrainLayer layer : this.layers) {
                 if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
                     break;
                 }
             }
         }
 
-        for (var layer : this.extraLayers) {
+        for (TerrainLayer layer : this.extraLayers) {
             layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
         }
 

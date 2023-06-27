@@ -83,7 +83,7 @@ public class Configuration {
     }
 
     protected <T> ConfigEntry<T> add(String key, T defaultValue, Function<String, T> reader, Function<T, String> writer, String comment) {
-        ConfigEntry<T> entry = new ConfigEntry<>(key, defaultValue, this) {
+        ConfigEntry<T> entry = new ConfigEntry<T>(key, defaultValue, this) {
             @Override
             protected T read(String text) {
                 return reader.apply(text);

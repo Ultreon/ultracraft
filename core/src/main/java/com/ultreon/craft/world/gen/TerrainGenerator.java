@@ -64,7 +64,7 @@ public class TerrainGenerator {
 
     private BiomeGenerator selectBiome(int index) {
         float temp = biomeNoise.getFloat(index);
-        for (var data : biomeGenData) {
+        for (BiomeData data : biomeGenData) {
             if (temp >= data.temperatureStartThreshold() && temp < data.temperatureEndThreshold())
                 return data.biomeGen();
         }

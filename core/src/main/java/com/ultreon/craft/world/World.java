@@ -194,10 +194,10 @@ public class World implements RenderableProvider, Disposable {
 		MapType playerData = player == null ? new MapType() : player.save(new MapType());
 		this.savedWorld.write(playerData, "data/player.ubo");
 
-		for (var entry : this.regions.entrySet()) {
+		for (Map.Entry<RegionPos, WorldRegion> entry : this.regions.entrySet()) {
 			try {
-				var region = entry.getValue();
-				var pos = entry.getKey();
+				WorldRegion region = entry.getValue();
+				RegionPos pos = entry.getKey();
 				region.save();
 				if (region.isEmpty()) {
 					region.dispose(true);
@@ -276,7 +276,7 @@ public class World implements RenderableProvider, Disposable {
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
-		for (var pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
+		for (ChunkPos pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
 			Chunk chunk = this.getChunk(pos);
 //			System.out.println("pos = " + pos);
 //			System.out.println("needed = " + needed);
@@ -607,7 +607,7 @@ public class World implements RenderableProvider, Disposable {
 	public void tick() {
 		this.playTime++;
 
-		for (var entity : this.entities.values()) {
+		for (Entity entity : this.entities.values()) {
 			entity.tick();
 		}
 	}
@@ -615,7 +615,7 @@ public class World implements RenderableProvider, Disposable {
 	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
 		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
-			for (var pos : toCreate) {
+			for (ChunkPos pos : toCreate) {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {

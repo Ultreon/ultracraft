@@ -2,6 +2,7 @@ package com.ultreon.craft.uri;
 
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 
 import java.io.FileNotFoundException;
@@ -40,12 +41,12 @@ public class ResourceUrlHandler extends URLStreamHandlerProvider {
                         if (this.resourceManager == null)
                             throw new IOException("Connection opened before game initialization");
 
-                        var resource = this.resourceManager.getResource(identifier);
+                        Resource resource = this.resourceManager.getResource(identifier);
 
                         if (resource == null)
                             throw new FileNotFoundException("Resource not found: " + identifier);
 
-                        var str = resource.loadOrOpenStream();
+                        InputStream str = resource.loadOrOpenStream();
 
                         if (str == null)
                             throw new IOException("Failed to load or open the resource stream");

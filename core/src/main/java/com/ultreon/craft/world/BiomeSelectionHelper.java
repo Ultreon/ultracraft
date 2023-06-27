@@ -23,7 +23,7 @@ public final class BiomeSelectionHelper {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (BiomeSelectionHelper) obj;
+        BiomeSelectionHelper that = (BiomeSelectionHelper) obj;
         return this.index == that.index &&
                 Float.floatToIntBits(this.distance) == Float.floatToIntBits(that.distance);
     }

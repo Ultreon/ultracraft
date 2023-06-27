@@ -63,7 +63,7 @@ public final class NoiseSettings {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (NoiseSettings) obj;
+        NoiseSettings that = (NoiseSettings) obj;
         return Float.floatToIntBits(this.noiseZoom) == Float.floatToIntBits(that.noiseZoom) &&
                 this.octaves == that.octaves &&
                 Objects.equals(this.offset, that.offset) &&

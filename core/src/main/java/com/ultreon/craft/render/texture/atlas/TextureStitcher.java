@@ -28,7 +28,7 @@ public class TextureStitcher {
             int x = 0;
             int y = 0;
             int texHeight = 0;
-            for (var tex : this.textures.values()) {
+            for (Texture tex : this.textures.values()) {
                 texHeight = Math.max(tex.getHeight(), texHeight);
                 x += tex.getWidth();
                 if (x + tex.getWidth() > width) {
@@ -54,14 +54,14 @@ public class TextureStitcher {
         int y = 0;
         int texHeight = 0;
 
-        var uvMap = new ImmutableMap.Builder<Identifier, UV>();
+        ImmutableMap.Builder<Identifier, UV> uvMap = new ImmutableMap.Builder<Identifier, UV>();
 
-        for (var e : this.textures.entrySet()) {
-            var texture = e.getValue();
-            var id = e.getKey();
+        for (Map.Entry<Identifier, Texture> e : this.textures.entrySet()) {
+            Texture texture = e.getValue();
+            Identifier id = e.getKey();
             spriteBatch.draw(texture, x, y);
 
-            var uv = new UV(x, y + texture.getHeight(), texture.getWidth(), -texture.getHeight(), width, height);
+            UV uv = new UV(x, y + texture.getHeight(), texture.getWidth(), -texture.getHeight(), width, height);
             uvMap.put(id, uv);
 
             texHeight = Math.max(texture.getHeight(), texHeight);

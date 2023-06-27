@@ -31,7 +31,7 @@ public final class BiomeData {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (BiomeData) obj;
+        BiomeData that = (BiomeData) obj;
         return Float.floatToIntBits(this.temperatureStartThreshold) == Float.floatToIntBits(that.temperatureStartThreshold) &&
                 Float.floatToIntBits(this.temperatureEndThreshold) == Float.floatToIntBits(that.temperatureEndThreshold) &&
                 Objects.equals(this.biomeGen, that.biomeGen);

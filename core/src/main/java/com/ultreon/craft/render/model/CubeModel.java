@@ -1,6 +1,7 @@
 package com.ultreon.craft.render.model;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.libs.commons.v0.Identifier;
 
@@ -59,12 +60,12 @@ public final class CubeModel {
     }
 
     public BakedCubeModel bake(TextureAtlas texture) {
-        var topTex = texture.get(this.top);
-        var bottomTex = texture.get(this.bottom);
-        var leftTex = texture.get(this.left);
-        var rightTex = texture.get(this.right);
-        var frontTex = texture.get(this.front);
-        var backTex = texture.get(this.back);
+        TextureRegion topTex = texture.get(this.top);
+        TextureRegion bottomTex = texture.get(this.bottom);
+        TextureRegion leftTex = texture.get(this.left);
+        TextureRegion rightTex = texture.get(this.right);
+        TextureRegion frontTex = texture.get(this.front);
+        TextureRegion backTex = texture.get(this.back);
         return new BakedCubeModel(
                 topTex, bottomTex,
                 leftTex, rightTex,

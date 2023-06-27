@@ -33,8 +33,8 @@ public class DataProcessing {
     }
 
     private static boolean checkNeighbours(float[][] dataMatrix, int x, int y, Float2BooleanFunction successCondition) {
-        for (var dir : directions) {
-            var newPost = new Vector2(x + dir.x, y + dir.y);
+        for (Vector2 dir : directions) {
+            Vector2 newPost = new Vector2(x + dir.x, y + dir.y);
 
             if (newPost.x < 0 || newPost.x >= dataMatrix.length || newPost.y < 0 || newPost.y >= dataMatrix[0].length) {
                 continue;

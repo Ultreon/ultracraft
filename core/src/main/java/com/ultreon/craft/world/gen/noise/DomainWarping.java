@@ -20,8 +20,8 @@ public class DomainWarping {
     }
 
     public Vector2 generateDomainOffset(int x, int z) {
-        var noiseX = MyNoise.octavePerlin(x, z, this.domainX) * this.amplitudeX;
-        var noiseY = MyNoise.octavePerlin(x, z, this.domainY) * this.amplitudeY;
+        float noiseX = MyNoise.octavePerlin(x, z, this.domainX) * this.amplitudeX;
+        float noiseY = MyNoise.octavePerlin(x, z, this.domainY) * this.amplitudeY;
         return new Vector2(noiseX, noiseY);
     }
 

@@ -799,7 +799,7 @@ public class Renderer {
     }
 
     public Color getColor() {
-        var color = new com.badlogic.gdx.graphics.Color();
+        com.badlogic.gdx.graphics.Color color = new com.badlogic.gdx.graphics.Color();
         com.badlogic.gdx.graphics.Color.abgr8888ToColor(color, shapes.getPackedColor());
         return Color.gdx(color);
     }

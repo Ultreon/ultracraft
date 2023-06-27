@@ -46,7 +46,7 @@ public class Section implements Disposable {
 
         ListType<MapType> paletteData = blocks.getList("Palette");
         List<Block> palette = new ArrayList<>();
-        for (var mapType : paletteData) {
+        for (MapType mapType : paletteData) {
             palette.add(Registries.BLOCK.getValue(Identifier.parse(mapType.getString("id"))));
         }
 
@@ -64,7 +64,7 @@ public class Section implements Disposable {
         byte[] blockData = new byte[this.size * this.size * this.size];
 
         for (int i = 0; i < this.blocks.length; i++) {
-            var block = this.blocks[i];
+            Block block = this.blocks[i];
             int blockIndex = palette.indexOf(block);
             if (blockIndex == -1) {
                 blockIndex = palette.size();

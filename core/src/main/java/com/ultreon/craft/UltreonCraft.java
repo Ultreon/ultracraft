@@ -62,6 +62,7 @@ import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.events.v1.EventResult;
+import com.ultreon.libs.events.v1.ValueEventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.Resource;
@@ -461,7 +462,7 @@ public class UltreonCraft extends ApplicationAdapter {
             Fonts.nopInit();
             Sounds.nopInit();
 
-            for (var registry : Registry.getRegistries()) {
+            for (Registry<?> registry : Registry.getRegistries()) {
                 RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
             }
             Registry.freeze();
@@ -578,7 +579,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
             return true;
         }
-        var openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
+        ValueEventResult<Screen> openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
         if (openResult.isCanceled()) {
             return false;
         }
@@ -621,7 +622,7 @@ public class UltreonCraft extends ApplicationAdapter {
         }
 
         try {
-            final var tickTime = 1f / TPS;
+            final float tickTime = 1f / TPS;
 
             float deltaTime = Gdx.graphics.getDeltaTime();
             this.timeUntilNextTick -= deltaTime;
@@ -738,7 +739,7 @@ public class UltreonCraft extends ApplicationAdapter {
                 CrashLog crashLog = crash.getCrashLog();
                 Throwable throwable = crashLog.getThrowable();
 
-                for (var category : crashLog.getCategories()) {
+                for (CrashCategory category : crashLog.getCategories()) {
                     Throwable categoryThrowable = category.getThrowable();
                     throwable.addSuppressed(categoryThrowable);
                 }

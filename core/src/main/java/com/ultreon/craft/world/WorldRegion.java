@@ -96,7 +96,7 @@ public class WorldRegion implements Disposable {
         }
 
         if (chunk == null) return false;
-        var data = chunk.save();
+        MapType data = chunk.save();
 
         synchronized (this.lock) {
             this.data.put(chunkPos.toString(), data);

@@ -50,7 +50,7 @@ public final class UV {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (UV) obj;
+        UV that = (UV) obj;
         return this.u == that.u &&
                 this.v == that.v &&
                 this.uWidth == that.uWidth &&

@@ -52,7 +52,7 @@ java {
     withJavadocJar()
     
     sourceCompatibility("1.8")
-    targetCompatibility("17")
+    targetCompatibility("11")
 }
 
 dependencies {

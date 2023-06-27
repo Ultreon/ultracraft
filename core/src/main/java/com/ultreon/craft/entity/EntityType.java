@@ -54,7 +54,7 @@ public abstract class EntityType<T extends Entity> {
         }
 
         public EntityType<T> build() {
-            return new EntityType<>(this) {
+            return new EntityType<T>(this) {
                 @Override
                 public T create(World world) {
                     return Builder.this.factory.create(this, world);
