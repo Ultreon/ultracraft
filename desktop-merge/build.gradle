@@ -156,6 +156,9 @@ processResources {
 }
 
 jar {
+    dependsOn ":gameprovider:build"
+    dependsOn ":desktop:build"
+    dependsOn ":core:build"
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
@@ -222,7 +225,7 @@ tasks.register('copyJar', Copy) {
 }
 
 jpackage {
-    dependsOn("build", "copyDependencies", "copyJar")
+    dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
 
     input  = "$buildDir/jars"
     destination = "$buildDir/dist"

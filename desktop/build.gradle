@@ -149,6 +149,8 @@ processResources {
 }
 
 jar {
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
