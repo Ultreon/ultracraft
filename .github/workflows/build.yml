@@ -14,7 +14,6 @@ jobs:
         java: [
           17    # Minimum supported
         ]
-        # and run on both Linux and not Windows
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -44,7 +43,6 @@ jobs:
         java: [
           17    # Minimum supported
         ]
-        # and run on both Linux and not Windows
         os: [macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
@@ -74,8 +72,7 @@ jobs:
         java: [
           17    # Minimum supported
         ]
-        # and run on both Linux and not Windows
-        os: [windows-2019]
+        os: [windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
