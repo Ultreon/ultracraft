@@ -195,7 +195,7 @@ jpackage {
 
     mac {
         icon = "$rootProject.projectDir/icons/icon.icns"
-        macPackageIdentifier = project_od
+        macPackageIdentifier = project_id
         macPackageName = project_name
         appVersion = packageVersion.replace(Regex("(\\d+\\.\\d+\\.\\d+).*"), "\$1")
     }
