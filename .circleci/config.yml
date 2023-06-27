@@ -25,29 +25,6 @@ jobs:
       - store_artifacts:
           name: "Store Android Artifacts"
           path: android/build/outputs/apk/release/
-  build-desktop:
-    # Specify the execution environment. You can specify an image from Dockerhub, or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: eclipse-temurin:17.0.7_7-jdk
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
-    steps:
-      - checkout
-      - run:
-            name: "Make gradlew executable"
-            command: "chmod +x gradlew"
-      - run:
-            name: "Build Project"
-            command: "./gradlew :gameprovider:build :desktop-merge:build :desktop-merge:jpackage --info"
-            environment:
-              CIRCLE_CI: true
-      - store_artifacts:
-          name: "Store Desktop Binaries"
-          path: desktop-merge/build/dist/
-      - store_artifacts:
-          name: "Store Desktop Artifacts"
-          path: desktop/build/libs/
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -55,4 +32,3 @@ workflows:
   build-workflow:
     jobs:
       - build-android
-      - build-desktop
