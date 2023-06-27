@@ -101,7 +101,7 @@ public final class CubeModel {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CubeModel) obj;
+        CubeModel that = (CubeModel) obj;
         return Objects.equals(this.top, that.top) &&
                 Objects.equals(this.bottom, that.bottom) &&
                 Objects.equals(this.left, that.left) &&

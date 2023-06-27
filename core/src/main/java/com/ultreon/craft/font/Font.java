@@ -97,7 +97,7 @@ public class Font {
     }
 
     public void setColor(Color color) {
-        var gdx = color.toGdx();
+        com.badlogic.gdx.graphics.Color gdx = color.toGdx();
         this.bitmapFont.setColor(gdx);
         UNIFONT.setColor(gdx);
     }

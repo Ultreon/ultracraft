@@ -17,6 +17,7 @@ import com.ultreon.libs.commons.v0.Mth;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Entity {
@@ -124,7 +125,7 @@ public class Entity {
     }
 
     public void tick() {
-        var size = getSize();
+        EntitySize size = getSize();
         BoundingBox boundingBox = this.getBoundingBox(size);
 
         if (!noGravity) {
@@ -151,7 +152,7 @@ public class Entity {
         float oDx = dx;
         float oDy = dy;
         float oDz = dz;
-        var ext = this.getBoundingBox();
+        BoundingBox ext = this.getBoundingBox();
         if (dx < 0) ext.min.x += dx;
         else ext.max.x += dx;
         if (dy < 0) ext.min.y += dy;
@@ -164,12 +165,12 @@ public class Entity {
             y += dy;
             z += dz;
         } else {
-            var boxes = world.collide(ext);
-            var pBox = getBoundingBox();
+            List<BoundingBox> boxes = world.collide(ext);
+            BoundingBox pBox = getBoundingBox();
             isColliding = false;
             isCollidingY = false;
             for (BoundingBox box : boxes) {
-                var dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+                float dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
                 isColliding |= dy != dy2;
                 isCollidingY |= dy != dy2;
                 dy = dy2;
@@ -179,7 +180,7 @@ public class Entity {
             pBox.update();
             isCollidingX = false;
             for (BoundingBox box : boxes) {
-                var dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+                float dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
                 isColliding |= dx != dx2;
                 isCollidingX |= dx != dx2;
                 dx = dx2;
@@ -189,7 +190,7 @@ public class Entity {
             pBox.update();
             isCollidingZ = false;
             for (BoundingBox box : boxes) {
-                var dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+                float dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
                 isColliding |= dz != dz2;
                 isCollidingZ |= dz != dz2;
                 dz = dz2;
@@ -310,7 +311,7 @@ public class Entity {
     public Vector3 getLookVector() {
         // Calculate the direction vector
         Vector3 direction = new Vector3();
-        var yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
+        float yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
         direction.x = MathUtils.cosDeg(yRot) * MathUtils.sinDeg(this.xRot);
         direction.z = MathUtils.cosDeg(yRot) * MathUtils.cosDeg(this.xRot);
         direction.y = MathUtils.sinDeg(yRot);

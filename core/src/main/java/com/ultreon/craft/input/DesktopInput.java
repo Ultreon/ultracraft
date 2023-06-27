@@ -224,7 +224,7 @@ public class DesktopInput extends GameInput {
             player.selected = i;
         }
 
-        var yPos = this.game.getHeight() - this.yPos;
+        int yPos = this.game.getHeight() - this.yPos;
         if (currentScreen != null) currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
         return false;
     }

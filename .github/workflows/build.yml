@@ -1,0 +1,89 @@
+
+build-linux:
+  strategy:
+    matrix:
+      # Use these Java versions
+      java: [
+        17    # Minimum supported
+      ]
+      # and run on both Linux and not Windows
+      os: [ubuntu-20.04]
+  runs-on: ${{ matrix.os }}
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Validate gradle wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - name: Setup JDK ${{ matrix.java }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - name: Make gradle wrapper executable
+      run: chmod +x ./gradlew
+    - name: Build
+      run: ./gradlew :desktop:jpackage --info
+      env:
+        GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+    - name: Capture the build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ultreon Craft Linux Build ${{ github.run_number }}
+        path: build/dist/
+build-macos:
+  strategy:
+    matrix:
+      # Use these Java versions
+      java: [
+        17    # Minimum supported
+      ]
+      # and run on both Linux and not Windows
+      os: [macOS-11]
+  runs-on: ${{ matrix.os }}
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Validate gradle wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - name: Setup JDK ${{ matrix.java }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - name: Make gradle wrapper executable
+      run: chmod +x ./gradlew
+    - name: Build
+      run: ./gradlew :desktop:jpackage --info
+      env:
+        GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+    - name: Capture the build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ultreon Craft MacOS Build ${{ github.run_number }}
+        path: build/dist/
+build-windows:
+  strategy:
+    matrix:
+      # Use these Java versions
+      java: [
+        17    # Minimum supported
+      ]
+      # and run on both Linux and not Windows
+      os: [windows-2019]
+  runs-on: ${{ matrix.os }}
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Validate gradle wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - name: Setup JDK ${{ matrix.java }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - name: Build
+      run: cmd /c "gradlew.bat jpackage --info"
+      env:
+        GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+    - name: Capture the build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ultreon Craft Windows Build ${{ github.run_number }}
+        path: build/dist/

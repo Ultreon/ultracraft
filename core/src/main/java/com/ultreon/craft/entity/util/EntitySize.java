@@ -23,7 +23,7 @@ public final class EntitySize {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (EntitySize) obj;
+        EntitySize that = (EntitySize) obj;
         return Float.floatToIntBits(this.width) == Float.floatToIntBits(that.width) &&
                 Float.floatToIntBits(this.height) == Float.floatToIntBits(that.height);
     }

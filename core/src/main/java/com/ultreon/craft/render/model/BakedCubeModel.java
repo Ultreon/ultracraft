@@ -51,7 +51,7 @@ public final class BakedCubeModel {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (BakedCubeModel) obj;
+        BakedCubeModel that = (BakedCubeModel) obj;
         return Objects.equals(this.top, that.top) &&
                 Objects.equals(this.bottom, that.bottom) &&
                 Objects.equals(this.left, that.left) &&

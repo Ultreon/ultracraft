@@ -69,10 +69,10 @@ public class Button extends GuiComponent {
     public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         Texture texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
 
-        var x = this.x;
-        var y = this.y;
-        var u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
-        var v = this.isPressed() ? 21 : 0;
+        int x = this.x;
+        int y = this.y;
+        int u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
+        int v = this.isPressed() ? 21 : 0;
 
         renderer.setTextureColor(this.color == null ? Color.WHITE : this.color);
         renderer.texture(texture, x, y+ this.height -7, 7, 7, u, v, 7, 7);

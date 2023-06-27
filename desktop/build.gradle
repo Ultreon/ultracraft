@@ -155,8 +155,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+delete "$buildDir/jars"
+
 tasks.register('copyDependencies', Copy) {
     from(configurations.runtimeClasspath)
+    exclude "lwjgl-2.9.3.jar"
+    exclude "lwjgl-platform-2.9.3.jar"
+    exclude "lwjgl-platform-2.9.3-*.jar"
     into("$buildDir/jars")
 }
 
@@ -177,7 +182,6 @@ jpackage {
     copyright = "Copyright (c) 2023 Ultreon Team"
     runtimeImage = System.getProperty("java.home")
 
-//    mainJar = "fabric-loader-${fabric_loader_version}.jar"
     mainJar = jar.archiveFileName.get()
     mainClass = main_class
 

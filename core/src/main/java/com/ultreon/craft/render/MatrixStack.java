@@ -55,7 +55,7 @@ public class MatrixStack {
     }
     
     public void rotate(Quaternion quaternion) {
-        var matrix = this.stack.getLast();
+        Matrix4 matrix = this.stack.getLast();
         matrix.rotate(quaternion);
         this.onEdit.accept(matrix);
     }

@@ -27,7 +27,7 @@ public final class BakedModelRegistry {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (BakedModelRegistry) obj;
+        BakedModelRegistry that = (BakedModelRegistry) obj;
         return Objects.equals(this.atlas, that.atlas);
     }
 
