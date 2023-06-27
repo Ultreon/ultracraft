@@ -39,7 +39,7 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew :desktop-merge:build :desktop-merge:jpackage --info"
+            command: "./gradlew :gameprovider:build :desktop-merge:build :desktop-merge:jpackage --info"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
