@@ -201,8 +201,8 @@ public class World implements RenderableProvider, Disposable {
 				region.save();
 				if (region.isEmpty()) {
 					region.dispose(true);
+					this.regions.remove(pos);
 				}
-				this.regions.remove(pos);
 			} catch (IOException e) {
 				LOGGER.error("Failed to save region:", e);
 				return;
