@@ -15,7 +15,7 @@ jobs:
           17    # Minimum supported
         ]
         # and run on both Linux and not Windows
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
