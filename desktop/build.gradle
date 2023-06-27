@@ -31,6 +31,7 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
+    id "org.panteleyev.jpackageplugin" version "1.5.0"
 //    id 'maven-publish'
 //    id "org.panteleyev.jpackageplugin"
 }
@@ -152,4 +153,69 @@ tasks.withType(Jar).configureEach {
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.register('copyDependencies', Copy) {
+    from(configurations.runtimeClasspath)
+    into("$buildDir/jars")
+}
+
+tasks.register('copyJar', Copy) {
+    from(tasks.jar)
+    into("$buildDir/jars")
+}
+
+jpackage {
+    dependsOn("build", "copyDependencies", "copyJar")
+
+    input  = "$buildDir/jars"
+    destination = "$buildDir/dist"
+
+    appName = project.property("app_name").toString()
+    appVersion = project.version.toString()
+    vendor = "Ultreon Team"
+    copyright = "Copyright (c) 2023 Ultreon Team"
+    runtimeImage = System.getProperty("java.home")
+
+//    mainJar = "fabric-loader-${fabric_loader_version}.jar"
+    mainJar = jar.archiveFileName.get()
+    mainClass = main_class
+
+    destination = "$buildDir/dist"
+
+    licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
+
+    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+
+    aboutUrl = "https://github.com/Ultreon/ultreon-craft"
+
+    mac {
+        icon = "$rootProject.projectDir/icons/icon.icns"
+        macPackageIdentifier = project_od
+        macPackageName = project_name
+        appVersion = packageVersion.replace(Regex("(\\d+\\.\\d+\\.\\d+).*"), "\$1")
+    }
+
+    linux {
+        icon = "$rootProject.projectDir/icons/icon.png"
+        linuxPackageName = project_name
+        linuxDebMaintainer = "Ultreon Team"
+        linuxRpmLicenseType = "Ultreon API License v1.1"
+        linuxAppRelease = "2"
+        linuxShortcut = true
+        appVersion = project.version.toString()
+    }
+
+    windows {
+        icon = "$rootProject.projectDir/icons/icon.ico"
+        winMenu = true
+        winDirChooser = true
+        winConsole = false
+        winPerUserInstall = true
+        winShortcutPrompt = true
+        winShortcut = false
+        winUpgradeUuid = "36cb25da-b6d1-4104-9607-9077b7449668"
+        winMenuGroup = "Ultreon Team"
+        appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
+    }
 }

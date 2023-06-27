@@ -19,7 +19,7 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew :desktop:build :android:packageRelease"
+            command: "./gradlew :desktop:build :desktop:jpackage :android:packageRelease"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
