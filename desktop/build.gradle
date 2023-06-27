@@ -53,10 +53,6 @@ archivesBaseName = archives_base_name
 java {
     withSourcesJar()
     withJavadocJar()
-
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
 }
 
 dependencies {
@@ -152,6 +148,11 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.register('copyDependencies', Copy) {
