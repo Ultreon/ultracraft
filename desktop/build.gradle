@@ -53,6 +53,10 @@ archivesBaseName = archives_base_name
 java {
     withSourcesJar()
     withJavadocJar()
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 dependencies {
