@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build Game" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Build Desktop Game" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -12,7 +12,6 @@
         <list>
           <option value=":desktop:build" />
           <option value=":desktop:jpackage" />
-          <option value=":android:packageRelease" />
         </list>
       </option>
       <option name="vmOptions" />
