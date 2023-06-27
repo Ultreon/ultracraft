@@ -26,7 +26,10 @@ jobs:
           name: "Store Android Artifacts"
           path: android/build/outputs/apk/release/
       - store_artifacts:
-          name: "Store Android Artifacts"
+          name: "Store Desktop Binaries"
+          path: desktop/build/dist/
+      - store_artifacts:
+          name: "Store Desktop Artifacts"
           path: desktop/build/libs/
 
 # Invoke jobs via workflows
