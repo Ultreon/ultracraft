@@ -1,3 +1,7 @@
+precision highp float;
+precision highp int;
+precision lowp sampler2D;
+
 uniform mat4 u_projTrans;
 uniform sampler2D u_texture;
 varying vec2 v_texCoord0;

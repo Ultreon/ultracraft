@@ -1,3 +1,6 @@
+precision highp float;
+precision highp int;
+
 attribute vec4 a_position;
 attribute vec2 a_texCoord0;
 uniform mat4 u_projTrans;

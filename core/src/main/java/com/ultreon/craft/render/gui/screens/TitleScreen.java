@@ -36,7 +36,9 @@ public class TitleScreen extends Screen {
         if (this.resetWorldButton != null) {
             this.resetWorldButton.setPos(width / 2 - 100, y -= 25);
         }
-        this.modListButton.setPos(width / 2 - 100, y -= 25);
+        if (this.modListButton != null) {
+            this.modListButton.setPos(width / 2 - 100, y -= 25);
+        }
         this.optionsButton.setPos(width / 2 - 100, y -= 25);
         this.quitButton.setPos(width / 2 + 5, y);
     }
