@@ -266,7 +266,6 @@ jpackage {
         linuxAppRelease = "2"
         linuxShortcut = true
         appVersion = project.version.toString()
-        type = ImageType.APP_IMAGE
     }
 
     windows {
