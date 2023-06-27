@@ -154,11 +154,6 @@ tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
 tasks.register('copyDependencies', Copy) {
     from(configurations.runtimeClasspath)
     into("$buildDir/jars")
