@@ -54,4 +54,5 @@ jobs:
 workflows:
   build-workflow:
     jobs:
-      - build
+      - build-android
+      - build-desktop
