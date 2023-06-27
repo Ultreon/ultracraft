@@ -22,9 +22,9 @@ public class Player extends LivingEntity {
     public static final Block[] ALLOWED = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
     public int selected;
     private boolean running;
-    private float walkingSpeed = .08F;
+    private float walkingSpeed = .09F;
     private float flyingSpeed = 0.5F;
-    public float runModifier = 1.75F;
+    public float runModifier = 1.5F;
     public float crouchModifier = 0.5F;
     private boolean flying;
     private boolean crouching;
