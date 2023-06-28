@@ -64,7 +64,7 @@ public class Hud implements GameRenderable {
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
-        renderer.texture(this.mobileTexture, 20, 20, 50, 45, 0, 0);
+        renderer.texture(this.mobileTexture, 20, 25, 50, 45, 0, 0);
 
         int joyStickX = 24 - 7 + 21;
         int joyStickY = 24 - 7 + 21;
