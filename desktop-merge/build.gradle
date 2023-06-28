@@ -292,3 +292,11 @@ jpackage {
         appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
     }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
