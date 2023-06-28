@@ -5,7 +5,9 @@ import com.badlogic.gdx.ApplicationLogger;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -18,7 +20,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -38,7 +39,6 @@ import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.*;
-import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
@@ -54,13 +54,11 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
+import com.ultreon.craft.render.texture.atlas.TextureStitcher;
 import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.util.GG;
-import com.ultreon.craft.world.SavedWorld;
-import com.ultreon.craft.render.texture.atlas.TextureStitcher;
 import com.ultreon.craft.util.HitResult;
-import com.ultreon.craft.util.ImGuiEx;
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -77,15 +75,11 @@ import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -100,7 +94,6 @@ public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
-    private String allUnicode;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
@@ -115,7 +108,6 @@ public class UltreonCraft extends ApplicationAdapter {
     @Nullable public World world;
     private static UltreonCraft instance;
     @Nullable public Player player;
-    public int renderDistance = 8;
     private SpriteBatch spriteBatch;
     private ModelBatch batch;
     GameCamera camera;
@@ -163,6 +155,7 @@ public class UltreonCraft extends ApplicationAdapter {
     private Integer deferredHeight;
     private Texture windowTex;
     private DebugRenderer debugRenderer;
+    private int oldSelected;
 
     public UltreonCraft(String[] args) {
         LOGGER.info("Booting game!");
@@ -268,7 +261,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
             Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
             if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
-            this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
+            String allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
             LOGGER.info("Generating bitmap fonts");
             this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
@@ -276,7 +269,7 @@ public class UltreonCraft extends ApplicationAdapter {
             FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
             FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
             fontParameter.size = 8;
-            fontParameter.characters = this.allUnicode;
+            fontParameter.characters = allUnicode;
             fontParameter.minFilter = Texture.TextureFilter.Nearest;
             fontParameter.magFilter = Texture.TextureFilter.Nearest;
             fontParameter.mono = true;
@@ -699,7 +692,7 @@ public class UltreonCraft extends ApplicationAdapter {
             if (this.timeUntilNextTick < 0) {
                 this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
 
-                tick();
+                this.tick();
             }
 
             this.tasks.forEach(runnable -> {
@@ -835,21 +828,27 @@ public class UltreonCraft extends ApplicationAdapter {
 
         GridPoint3 breaking = this.breaking;
 		if (this.world != null && breaking != null) {
-			var hitResult = this.hitResult;
+			HitResult hitResult = this.hitResult;
 
-			if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock)) {
-				resetBreaking(hitResult);
+			if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
+                this.resetBreaking(hitResult);
 			} else {
-				var efficiency = 1.0F;
-				if (this.player.getSelectedItem() instanceof ToolItem toolItem &&
-						this.breakingBlock.getEffectiveTool() == toolItem.getToolType()) {
-					efficiency = toolItem.getEfficiency();
+				float efficiency = 1.0F;
+				if (this.player.getSelectedItem() instanceof ToolItem &&
+						this.breakingBlock.getEffectiveTool() == ((ToolItem) this.player.getSelectedItem()).getToolType()) {
+                    ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
+                    efficiency = toolItem.getEfficiency();
 				}
 				if (!this.world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
-					stopBreaking();
-				}
+                    this.stopBreaking();
+				} else {
+                    if (this.oldSelected != this.player.selected) {
+                        this.resetBreaking();
+                    }
+                    this.oldSelected = this.player.selected;
+                }
 			}
-		}
+        }
 
 		Player player = this.player;
 		if (player != null) {
@@ -863,7 +862,8 @@ public class UltreonCraft extends ApplicationAdapter {
 	}
 
 	private void resetBreaking(HitResult hitResult) {
-		this.world.stopBreaking(this.breaking);
+        if (this.world == null) return;
+        this.world.stopBreaking(this.breaking);
 		Block block = hitResult.getBlock();
 		if (block == null || block.isAir()) {
 			this.breaking = null;
@@ -1114,6 +1114,7 @@ public class UltreonCraft extends ApplicationAdapter {
 	public void startBreaking() {
 		HitResult hitResult = this.hitResult;
 		if (hitResult == null || this.world == null) return;
+        if (this.world.getBreakProgress(hitResult.getPos()) >= 0.0F) return;
 		this.world.startBreaking(hitResult.getPos());
 		this.breaking = hitResult.getPos();
 		this.breakingBlock = hitResult.getBlock();

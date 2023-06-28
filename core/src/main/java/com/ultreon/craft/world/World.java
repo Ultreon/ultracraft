@@ -1,9 +1,6 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
@@ -55,6 +52,7 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
@@ -73,12 +71,11 @@ public class World implements RenderableProvider, Disposable {
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
-	private static final Logger LOGGER = LoggerFactory.getLogger("World");
 	private final Texture breakingTex;
 	private final short[] indices;
 	private float[] vertices;
 
-	private final Biome DEFAULT_BIOME = BiomeGenerator.builder()
+	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
 			.domainWarping((seed) -> new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(seed), NoiseSettingsInit.DOMAIN_Y.create(seed)))
 			.layer(new WaterTerrainLayer(64))
@@ -91,9 +88,7 @@ public class World implements RenderableProvider, Disposable {
 
 	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
-	private final short[] indices;
 	private final GridPoint3 spawnPoint = new GridPoint3();
-	private float[] vertices;
 
 	private final long seed = 512;
 	private int renderedChunks;
@@ -809,15 +804,15 @@ public class World implements RenderableProvider, Disposable {
 
 					MeshBuilder builder = new MeshBuilder();
 					builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
-					chunk.breaking.forEach((pos, progress) -> {
+					section.breaking.forEach((pos, progress) -> {
 						if (progress <= 0.0F) return;
-						builder.setUVRange(chunk.getBreakTex(progress));
-						BoxShapeBuilder.build(builder, chunk.offset.x + pos.x - 0.1F, chunk.offset.y + pos.y - 0.1F, chunk.offset.z + pos.z - 0.1F, 1.2F, 1.2F, 1.2F);
+						builder.setUVRange(section.getBreakTex(progress));
+						BoxShapeBuilder.build(builder, section.offset.x + pos.x - 0.1F, section.offset.y + pos.y - 0.1F, section.offset.z + pos.z - 0.1F, 1.2F, 1.2F, 1.2F);
 					});
 
 					Renderable breakingPiece = pool.obtain();
 
-					breakingPiece.material = chunk.material.;
+					breakingPiece.material = section.material;
 					breakingPiece.meshPart.mesh = builder.end();
 					breakingPiece.meshPart.offset = 0;
 					breakingPiece.meshPart.size = builder.getNumVertices();
@@ -828,9 +823,9 @@ public class World implements RenderableProvider, Disposable {
 					this.renderedChunks = this.renderedChunks + 1;
 				}
 			}
-		}
 
-		chunks.values().forEach(chunk -> chunk.updateNeighbours = false);
+			chunks.forEach(chunk -> chunk.updateNeighbours = false);
+		}
 	}
 
 	private List<Chunk> getChunks() {
@@ -844,11 +839,11 @@ public class World implements RenderableProvider, Disposable {
 
 	private boolean needsUpdateByNeighbour(Chunk chunk) {
 		ChunkPos pos = chunk.pos;
-		var needsUpdate = false;
-		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x - 1, pos.z)));
-		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x + 1, pos.z)));
-		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x, pos.z - 1)));
-		needsUpdate |= updatesNeighbour(getChunk(new ChunkPos(pos.x, pos.z + 1)));
+		boolean needsUpdate = false;
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() - 1, pos.z())));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() + 1, pos.z())));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() - 1)));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() + 1)));
 		return needsUpdate;
 	}
 
@@ -867,18 +862,18 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public <T extends Entity> T spawn(T entity, MapType spawnData) {
-		setEntityId(entity);
+		this.setEntityId(entity);
 		entity.onPrepareSpawn(spawnData);
-		entities.put(entity.getId(), entity);
+		this.entities.put(entity.getId(), entity);
 		return entity;
 	}
 
 	private <T extends Entity> void setEntityId(T entity) {
 		int oldId = entity.getId();
-		if (oldId > 0 && entities.containsKey(oldId)) {
+		if (oldId > 0 && this.entities.containsKey(oldId)) {
 			throw new IllegalStateException("Entity already spawned: " + entity);
 		}
-		int newId = oldId > 0 ? oldId : nextId();
+		int newId = oldId > 0 ? oldId : this.nextId();
 		entity.setId(newId);
 	}
 
@@ -973,31 +968,31 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public void startBreaking(GridPoint3 breaking) {
-		Chunk chunkAt = getChunkAt(breaking);
+		Chunk chunkAt = this.getChunkAt(breaking);
 		if (chunkAt == null) return;
-		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		GridPoint3 chunkCoords = this.toLocalBlockPos(breaking);
 		chunkAt.startBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 
 	public boolean continueBreaking(GridPoint3 breaking, float amount) {
-		Chunk chunkAt = getChunkAt(breaking);
+		Chunk chunkAt = this.getChunkAt(breaking);
 		if (chunkAt == null) return false;
-		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		GridPoint3 chunkCoords = this.toLocalBlockPos(breaking);
 		chunkAt.continueBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z, amount);
 		return true;
 	}
 
 	public void stopBreaking(GridPoint3 breaking) {
-		Chunk chunkAt = getChunkAt(breaking);
+		Chunk chunkAt = this.getChunkAt(breaking);
 		if (chunkAt == null) return;
-		GridPoint3 chunkCoords = toChunkCoords(breaking);
+		GridPoint3 chunkCoords = this.toLocalBlockPos(breaking);
 		chunkAt.stopBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 
 	public float getBreakProgress(GridPoint3 pos) {
-		Chunk chunkAt = getChunkAt(pos);
-		if (chunkAt == null) return 0.0F;
-		GridPoint3 chunkCoords = toChunkCoords(pos);
+		Chunk chunkAt = this.getChunkAt(pos);
+		if (chunkAt == null) return -1.0F;
+		GridPoint3 chunkCoords = this.toLocalBlockPos(pos);
 		return chunkAt.getBreakProgress(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 

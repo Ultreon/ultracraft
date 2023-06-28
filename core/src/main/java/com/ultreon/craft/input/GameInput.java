@@ -179,9 +179,10 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                     if (hitResult.isCollide() && block != null && !block.isAir()) {
                         float right = TRIGGERS.get(TriggerType.RIGHT).value;
                         if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
-                            world.set(pos, Blocks.AIR);
+                            this.game.startBreaking();
                             this.nextBreak = System.currentTimeMillis() + 500;
                         } else if (right < 0.3F) {
+                            this.game.stopBreaking();
                             this.nextBreak = 0;
                         }
 

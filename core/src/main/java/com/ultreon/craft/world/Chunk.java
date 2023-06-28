@@ -2,31 +2,19 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.ultreon.craft.world.World.CHUNK_SIZE;
+import java.util.Arrays;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
 
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
-	public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
-	final Map<Vec3i, Float> breaking = new HashMap<>();
 	public final ChunkPos pos;
 	protected final Object lock = new Object();
 	protected boolean modifiedByPlayer;
@@ -126,7 +114,7 @@ public class Chunk implements Disposable {
 			this.sections[y / this.size].setFast(x, y % this.size, z, block);
 			this.dirty = true;
 		}
-		updateNeighbours = true;
+		this.updateNeighbours = true;
 	}
 
 	public Section getSection(int sectionY) {
@@ -166,7 +154,7 @@ public class Chunk implements Disposable {
 	}
 
 	public Iterable<Section> getSections() {
-		return List.of(this.sections);
+		return Arrays.asList(this.sections);
 	}
 
 	public GridPoint3 getOffset() {
@@ -175,5 +163,29 @@ public class Chunk implements Disposable {
 
 	public World getWorld() {
 		return world;
+	}
+
+	public void startBreaking(int x, int y, int z) {
+		Section sectionAt = this.getSectionAt(y);
+		if (sectionAt == null) return;
+		sectionAt.startBreaking(x, y % CHUNK_SIZE, z);
+	}
+
+	public void continueBreaking(int x, int y, int z, float amount) {
+		Section sectionAt = this.getSectionAt(y);
+		if (sectionAt == null) return;
+		sectionAt.continueBreaking(x, y % CHUNK_SIZE, z, amount);
+	}
+
+	public void stopBreaking(int x, int y, int z) {
+		Section sectionAt = this.getSectionAt(y);
+		if (sectionAt == null) return;
+		sectionAt.stopBreaking(x, y % CHUNK_SIZE, z);
+	}
+
+	public float getBreakProgress(int x, int y, int z) {
+		Section sectionAt = this.getSectionAt(y);
+		if (sectionAt == null) return -1.0F;
+		return sectionAt.getBreakProgress(x, y % CHUNK_SIZE, z);
 	}
 }

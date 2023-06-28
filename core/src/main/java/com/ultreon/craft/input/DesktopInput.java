@@ -55,7 +55,7 @@ public class DesktopInput extends GameInput {
         }
 
         if (Gdx.input.isCursorCatched()) {
-            if (isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
+            if (GameInput.isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
                 this.game.showScreen(new PauseScreen());
                 return true;
             }
@@ -97,10 +97,6 @@ public class DesktopInput extends GameInput {
     @Override
     public boolean keyTyped(char character) {
         return true;
-    }
-
-    public static boolean isKeyDown(int keycode) {
-        return keys.contains(keycode);
     }
 
     private void updatePlayerMovement(int screenX, int screenY) {
@@ -211,7 +207,7 @@ public class DesktopInput extends GameInput {
                 currentScreen.mouseClick((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button, 1);
             }
         }
-        game.stopBreaking();
+        this.game.stopBreaking();
         return false;
     }
 
@@ -226,24 +222,14 @@ public class DesktopInput extends GameInput {
             if (i < 0) {
                 i += 9;
             }
-            int old = player.selected;
             player.selected = i;
-            if (old != player.selected) {
-                this.game.resetBreaking();
-            }
             return true;
         } else {
-            var yPos = this.game.getHeight() - this.yPos;
+            int yPos = this.game.getHeight() - this.yPos;
             if (currentScreen != null)
                 return currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
         }
 
-        int yPos = this.game.getHeight() - this.yPos;
-        if (currentScreen != null) currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
         return false;
-    }
-
-    public void update() {
-
     }
 }

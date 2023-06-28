@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 
 public class HitResult {
     // input
@@ -14,7 +15,7 @@ public class HitResult {
     protected Vector3 normal = new Vector3();
     protected GridPoint3 pos = new GridPoint3();
     protected GridPoint3 next = new GridPoint3();
-    protected Block block;
+    protected Block block = Blocks.AIR;
     protected boolean collide;
     protected float distance;
 

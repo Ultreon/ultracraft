@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.World;
 
 public class DebugRenderer {
@@ -35,6 +34,7 @@ public class DebugRenderer {
                 this.drawLine(renderer, "chunk xyz", this.block2sectionPos(blockPosition));
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
                 this.drawLine(renderer, "region open", world.getRegionAt(blockPosition) != null);
+                this.drawLine(renderer, "break progress", world.getBreakProgress(this.game.hitResult.getPos()));
             }
         }
 

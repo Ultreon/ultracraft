@@ -15,14 +15,20 @@ import com.ultreon.craft.util.Utils;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
 
 public class Section implements Disposable {
+    public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
+    final Map<Vec3i, Float> breaking = new HashMap<>();
     private final int size;
     private Block[] blocks;
     protected boolean ready;
@@ -31,7 +37,7 @@ public class Section implements Disposable {
     protected Material material;
     protected int numVertices;
     protected final Object lock = new Object();
-    private final GridPoint3 offset;
+    final GridPoint3 offset;
 
     public Section(GridPoint3 offset) {
         this.offset = offset;
@@ -422,6 +428,41 @@ public class Section implements Disposable {
         vertices.add(-1);
         vertices.add(region.getU());
         vertices.add(region.getV2());
+    }
+
+    TextureRegion getBreakTex(float progress) {
+        if (progress < 0) {
+            return null;
+        }
+        Identifier identifier = new Identifier("textures/misc/breaking" + (int) (6 * progress + 1) + ".png");
+        TextureRegion textureRegion = UltreonCraft.get().blocksTextureAtlas.get(identifier);
+        System.out.println("identifier = " + identifier + ", textureRegion = " + textureRegion);
+        return textureRegion;
+    }
+
+    float getBreakProgress(float x, float y, float z) {
+        Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
+        Float v = this.breaking.get(pos);
+        if (v != null) {
+            return v;
+        }
+        return -1.0F;
+    }
+
+    public void startBreaking(int x, int y, int z) {
+        this.breaking.put(new Vec3i(x, y, z), 0.0F);
+    }
+
+    public void stopBreaking(int x, int y, int z) {
+        this.breaking.remove(new Vec3i(x, y, z));
+    }
+
+    public void continueBreaking(int x, int y, int z, float amount) {
+        Vec3i pos = new Vec3i(x, y, z);
+        Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
+        if (v != null && v == 1.0F) {
+            this.set(new GridPoint3(x, y, z), Blocks.AIR);
+        }
     }
 
     @Override
