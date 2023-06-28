@@ -37,11 +37,26 @@ public class DesktopPlatform extends GamePlatform {
     private final ImBoolean showImGui = new ImBoolean(false);
     private final ArgParser argParser;
 
-    public DesktopPlatform(ArgParser argParser) {
+    public DesktopPlatform(ArgParser argParser, boolean packaged) {
         this.argParser = argParser;
 
-        String gameDir = this.argParser.getKeywordArgs().get("gamedir");
-        this.gameDir = gameDir == null ? new File(".").getAbsolutePath() : gameDir;
+        if (packaged) {
+            switch (this.getOperatingSystem()) {
+                case WINDOWS:
+                    this.gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\Ultreon Craft\\").getAbsolutePath();
+                    break;
+                case LINUX:
+                case UNIX:
+                case MAC_OS:
+                    this.gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/").getAbsolutePath();
+                    break;
+                default:
+                    this.gameDir = new File(System.getProperty("user.home"), "Games/UltreonCraft/").getAbsolutePath();
+            }
+        } else {
+            String gameDir = this.argParser.getKeywordArgs().get("gamedir");
+            this.gameDir = gameDir == null ? new File(".").getAbsolutePath() : gameDir;
+        }
     }
 
     @Override

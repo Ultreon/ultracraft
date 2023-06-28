@@ -1,6 +1,5 @@
 package com.ultreon.craft.render.gui.screens;
 
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
@@ -14,7 +13,6 @@ import java.io.IOException;
 
 public class WorldLoadScreen extends Screen {
     private final SavedWorld savedWorld;
-    private final GlyphLayout layout = new GlyphLayout();
     private long nextLog;
 
     public WorldLoadScreen(SavedWorld savedWorld) {
@@ -77,7 +75,7 @@ public class WorldLoadScreen extends Screen {
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;
-                    World.LOGGER.info("Loading world: " + s);
+                    UltreonCraft.LOGGER.info(World.MARKER, "Loading world: " + s);
                 }
             }
         }

@@ -247,7 +247,7 @@ jpackage {
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Pcom.ultreon.craft.jpackage=true" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
 

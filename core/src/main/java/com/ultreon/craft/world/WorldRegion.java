@@ -3,6 +3,7 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.data.types.MapType;
 
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+
+import static com.ultreon.craft.UltreonCraft.LOGGER;
 
 public class WorldRegion implements Disposable {
     public static final int REGION_SIZE = 32;
@@ -43,7 +46,7 @@ public class WorldRegion implements Disposable {
                     try {
                         this.load(onLoad);
                     } catch (IOException e) {
-                        World.LOGGER.error("Failed to load region file: {}", pos, e);
+                        LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
                         this.corrupt = true;
                         this.loading = false;
                         return;
@@ -56,7 +59,7 @@ public class WorldRegion implements Disposable {
                 try {
                     this.load(onLoad);
                 } catch (IOException e) {
-                    World.LOGGER.error("Failed to load region file: {}", pos, e);
+                    LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
                     this.corrupt = true;
                     this.loading = false;
                     break load;
@@ -81,7 +84,7 @@ public class WorldRegion implements Disposable {
                 savedWorld.writeRegion(this.pos.x(), this.pos.z(), this.data);
             }
         } catch (Exception e) {
-            World.LOGGER.error(String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
+            LOGGER.error(World.MARKER, String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
         }
     }
 
@@ -159,10 +162,10 @@ public class WorldRegion implements Disposable {
             if (save) this.save();
         } catch (IOException e) {
             if (!force) {
-                World.LOGGER.error("Failed to save when unloading region {}", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region {}", this.pos, e);
                 return false;
             } else {
-                World.LOGGER.error("Failed to save when unloading region {} (unloading anyways)", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region {} (unloading anyways)", this.pos, e);
             }
         }
 
@@ -239,5 +242,9 @@ public class WorldRegion implements Disposable {
 
     public boolean isInitialized() {
         return this.initialized;
+    }
+
+    public RegionPos getPosition() {
+        return this.pos;
     }
 }

@@ -1,6 +1,5 @@
 package com.ultreon.craft.render.gui.screens;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
@@ -50,7 +49,7 @@ public class DeathScreen extends Screen {
     }
 
     private void exitWorld(Button caller) {
-        this.game.exitWorld();
+        this.game.exitWorldToTitle();
     }
 
     public Button getRespawnButton() {

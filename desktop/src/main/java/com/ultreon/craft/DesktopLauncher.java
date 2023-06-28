@@ -10,10 +10,14 @@ import com.ultreon.craft.desktop.util.util.ArgParser;
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
+	private static boolean packaged;
 
 	public static void main(String[] argv) {
 		ArgParser argParser = new ArgParser(argv);
-		GamePlatform.instance = new DesktopPlatform(argParser);
+
+		packaged = System.getProperty("com.ultreon.craft.jpackage", "false").equals("true");
+
+		GamePlatform.instance = new DesktopPlatform(argParser, packaged);
 
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(0);
@@ -76,5 +80,13 @@ public class DesktopLauncher {
 		}
 
 		return icons;
+	}
+
+	/**
+	 * Check whether the application is packaged using JPackage.
+	 * @return true if in the JPackage environment.
+	 */
+	public static boolean isPackaged() {
+		return packaged;
 	}
 }

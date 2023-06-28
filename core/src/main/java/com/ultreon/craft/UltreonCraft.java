@@ -1,6 +1,7 @@
 package com.ultreon.craft;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.ApplicationLogger;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
@@ -44,10 +45,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.gui.screens.PauseScreen;
-import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.render.gui.screens.TitleScreen;
-import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
@@ -67,17 +65,23 @@ import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
+import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
@@ -151,14 +155,14 @@ public class UltreonCraft extends ApplicationAdapter {
         Identifier.setDefaultNamespace(NAMESPACE);
         GamePlatform.instance.preInitImGui();
 
-        List<String> argList = List.of(args);
-        isDevMode = argList.contains("--dev");
+        List<String> argList = Arrays.asList(args);
+        this.isDevMode = argList.contains("--dev");
 
-        if (isDevMode) {
+        if (this.isDevMode) {
             LOGGER.debug("Developer mode is enabled");
         }
 
-        instance = this;
+        UltreonCraft.instance = this;
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
@@ -188,6 +192,40 @@ public class UltreonCraft extends ApplicationAdapter {
     public void create() {
         try {
             LOGGER.info("Data directory is at: " + new DataFileHandle(".").file().getAbsolutePath());
+
+            Gdx.app.setApplicationLogger(new ApplicationLogger() {
+                private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+
+                @Override
+                public void log(String tag, String message) {
+                    this.LOGGER.info(MarkerFactory.getMarker(tag), message);
+                }
+
+                @Override
+                public void log(String tag, String message, Throwable exception) {
+                    this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
+                }
+
+                @Override
+                public void error(String tag, String message) {
+                    this.LOGGER.error(MarkerFactory.getMarker(tag), message);
+                }
+
+                @Override
+                public void error(String tag, String message, Throwable exception) {
+                    this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
+                }
+
+                @Override
+                public void debug(String tag, String message) {
+                    this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
+                }
+
+                @Override
+                public void debug(String tag, String message, Throwable exception) {
+                    this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
+                }
+            });
 
             this.configDir = new DataFileHandle("config/");
             if (!this.configDir.isDirectory()) {
@@ -902,11 +940,20 @@ public class UltreonCraft extends ApplicationAdapter {
         return ceil(getHeight() / getGuiScale());
     }
 
-    public void exitWorld() {
-        world.dispose();
-        world = null;
-        System.gc();
-        showScreen(new TitleScreen());
+    public void exitWorldToTitle() {
+        this.exitWorldAndThen(() -> this.showScreen(new TitleScreen()));
+    }
+
+    public synchronized void exitWorldAndThen(Runnable runnable) {
+        final World world = this.world;
+        if (world == null) return;
+        this.showScreen(new MessageScreen(Language.translate("Saving world...")));
+        this.world = null;
+        CompletableFuture.runAsync(() -> {
+            world.dispose();
+            System.gc();
+            this.runLater(new Task(id("post_world_exit"), runnable));
+        });
     }
 
     /**
@@ -963,11 +1010,24 @@ public class UltreonCraft extends ApplicationAdapter {
 
     public boolean closeRequested() {
         EventResult eventResult = WindowCloseEvent.EVENT.factory().onWindowClose();
+        if (!eventResult.isCanceled()) {
+            if (this.world != null) {
+                this.exitWorldAndThen(() -> {
+                    Gdx.app.exit();
+                });
+                return false;
+            }
+        }
         return !eventResult.isCanceled();
     }
 
     public void filesDropped(String[] files) {
+        Screen currentScreen = this.currentScreen;
+        List<FileHandle> handles = Arrays.stream(files).map(FileHandle::new).collect(Collectors.toList());
 
+        if (currentScreen != null) {
+            currentScreen.filesDropped(handles);
+        }
     }
 
     public void addFuture(CompletableFuture<?> future) {

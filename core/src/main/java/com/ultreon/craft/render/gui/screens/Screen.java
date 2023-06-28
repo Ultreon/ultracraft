@@ -2,12 +2,14 @@ package com.ultreon.craft.render.gui.screens;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiContainer;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class Screen extends GuiContainer {
     @Nullable private Screen back;
@@ -67,5 +69,9 @@ public class Screen extends GuiContainer {
         if (!this.canClose()) return false;
         this.game.showScreen(this.back);
         return true;
+    }
+
+    public void filesDropped(List<FileHandle> files) {
+
     }
 }

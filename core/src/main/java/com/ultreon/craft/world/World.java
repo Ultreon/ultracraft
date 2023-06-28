@@ -1,5 +1,6 @@
 package com.ultreon.craft.world;
 
+import static com.ultreon.craft.UltreonCraft.LOGGER;
 import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 import com.badlogic.gdx.graphics.GL20;
@@ -22,7 +23,6 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
-import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
@@ -34,6 +34,7 @@ import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.util.WorldRayCaster;
+import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
@@ -53,7 +54,6 @@ import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,17 +64,17 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 public class World implements RenderableProvider, Disposable {
@@ -82,7 +82,7 @@ public class World implements RenderableProvider, Disposable {
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
-	public static final Logger LOGGER = GamePlatform.instance.getLogger("World");
+	public static final Marker MARKER = MarkerFactory.getMarker("World");
 	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
 			.domainWarping((seed) -> new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(seed), NoiseSettingsInit.DOMAIN_Y.create(seed)))
@@ -170,7 +170,7 @@ public class World implements RenderableProvider, Disposable {
 				try {
 					World.this.save(true);
 				} catch (Exception e) {
-					LOGGER.error("Failed to save world", e);
+					LOGGER.error(MARKER, "Failed to save world", e);
 				}
 				World.this.saveSchedule = World.this.game.schedule(this, Constants.AUTO_SAVE_DELAY, Constants.AUTO_SAVE_DELAY_UNIT);
 			}
@@ -179,7 +179,7 @@ public class World implements RenderableProvider, Disposable {
 
 	@ApiStatus.Internal
 	public void save(boolean silent) throws IOException {
-		if (!silent) LOGGER.info("Saving world: " + this.savedWorld.getDirectory().name());
+		if (!silent) LOGGER.info(MARKER, "Saving world: " + this.savedWorld.getDirectory().name());
 
 		ListType<MapType> entitiesData = new ListType<>();
 		for (Entity entity : this.entities.values()) {
@@ -204,12 +204,12 @@ public class World implements RenderableProvider, Disposable {
 					this.regions.remove(pos);
 				}
 			} catch (IOException e) {
-				LOGGER.error("Failed to save region:", e);
+				LOGGER.error(MARKER, "Failed to save region:", e);
 				return;
 			}
 		}
 
-		if (!silent) LOGGER.info("Saved world: " + this.savedWorld.getDirectory().name());
+		if (!silent) LOGGER.info(MARKER, "Saved world: " + this.savedWorld.getDirectory().name());
 	}
 
 	@ApiStatus.Internal
@@ -225,7 +225,7 @@ public class World implements RenderableProvider, Disposable {
 				this.save(silent);
 				return true;
 			} catch (Exception e) {
-				LOGGER.error("Failed to save world", e);
+				LOGGER.error(MARKER, "Failed to save world", e);
 				return false;
 			}
 		}, this.saveExecutor);
@@ -342,7 +342,7 @@ public class World implements RenderableProvider, Disposable {
 	@CanIgnoreReturnValue
 	private CompletableFuture<Boolean> unloadChunkAsync(@NotNull Chunk chunk) {
 		synchronized (chunk.lock) {
-            LOGGER.debug("UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
+            LOGGER.debug(MARKER, "UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
             return CompletableFuture.supplyAsync(() -> {
 				WorldRegion region = this.getRegionFor(chunk.pos);
 				if (region == null) {
@@ -378,22 +378,26 @@ public class World implements RenderableProvider, Disposable {
 
 	@Nullable
 	private WorldRegion getRegionFor(ChunkPos chunkPos) {
-		RegionPos regionPos = new RegionPos(chunkPos.x() / REGION_SIZE, chunkPos.z() / REGION_SIZE);
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
 		return this.getRegion(regionPos);
 	}
 
 	private WorldRegion getRegion(RegionPos regionPos) {
-		return this.regions.get(regionPos);
+		WorldRegion region = this.regions.get(regionPos);
+		if (region != null && !region.getPosition().equals(regionPos)) {
+			throw new ValueMismatchException("Position of region received (" + region.getPosition() + ") doesn't match the requested position (" + regionPos + ")");
+		}
+		return region;
 	}
 
 	private WorldRegion getOrOpenRegionFor(ChunkPos chunkPos, boolean loadAsync) {
-		RegionPos regionPos = new RegionPos(chunkPos.x() / REGION_SIZE, chunkPos.z() / REGION_SIZE);
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
 		ChunkPos localChunkPos = this.toLocalChunkPos(chunkPos.x(), chunkPos.z());
 		return this.getOrOpenRegion(regionPos, loadAsync);
 	}
 
 	private CompletableFuture<WorldRegion> getOrOpenRegionForAsync(ChunkPos chunkPos) {
-		RegionPos regionPos = new RegionPos(chunkPos.x() / REGION_SIZE, chunkPos.z() / REGION_SIZE);
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
 		ChunkPos localChunkPos = this.toLocalChunkPos(chunkPos.x(), chunkPos.z());
 		return this.getOrOpenRegionAsync(regionPos);
 	}
@@ -405,7 +409,7 @@ public class World implements RenderableProvider, Disposable {
 		}
 		WorldRegion region = new WorldRegion(this, regionPos, loadAsync);
 		if (region.isCorrupt()) {
-			LOGGER.warn("Corrupted region: " + regionPos);
+			LOGGER.warn(MARKER, "Corrupted region: " + regionPos);
 		}
 		return this.regions.computeIfAbsent(regionPos, pos -> region);
 	}
@@ -418,7 +422,7 @@ public class World implements RenderableProvider, Disposable {
 		return CompletableFuture.supplyAsync(() -> {
 			WorldRegion region = new WorldRegion(this, regionPos, false);
 			if (region.isCorrupt()) {
-				LOGGER.warn("Corrupted region: " + regionPos);
+				LOGGER.warn(MARKER, "Corrupted region: " + regionPos);
 			}
 			return this.regions.computeIfAbsent(regionPos, pos -> region);
 		});
@@ -445,8 +449,8 @@ public class World implements RenderableProvider, Disposable {
 		}
 
 		ChunkPos localPos = this.toLocalChunkPos(x, z);
-		int regionX = x / REGION_SIZE;
-		int regionZ = z / REGION_SIZE;
+		int regionX = Math.floorDiv(x, REGION_SIZE);
+		int regionZ = Math.floorDiv(z, REGION_SIZE);
 
 		CompletableFuture<Chunk> future = this.getOrOpenRegionAsync(new RegionPos(regionX, regionZ)).thenApplyAsync(region -> {
 			try {
@@ -464,14 +468,14 @@ public class World implements RenderableProvider, Disposable {
 					chunk = loadedChunk;
 				}
 				if (chunk == null) {
-					LOGGER.warn("Tried to load chunk at {} but it still wasn't loaded:", pos);
+					LOGGER.warn(MARKER, "Tried to load chunk at {} but it still wasn't loaded:", pos);
 					return oldChunk;
 				}
 
 				this.renderChunk(x, z, chunk);
 				return chunk;
 			} catch (RuntimeException e) {
-				LOGGER.error("Failed to load chunk {}:", pos, e);
+				LOGGER.error(MARKER, "Failed to load chunk {}:", pos, e);
 				throw e;
 			}
 		});
@@ -497,8 +501,8 @@ public class World implements RenderableProvider, Disposable {
 		loadingChunk = new CompletableFuture<>();
 
 		ChunkPos localPos = this.toLocalChunkPos(x, z);
-		int regionX = x / REGION_SIZE;
-		int regionZ = z / REGION_SIZE;
+		int regionX = Math.floorDiv(x, REGION_SIZE);
+		int regionZ = Math.floorDiv(z, REGION_SIZE);
 
 		WorldRegion region = this.getOrOpenRegion(new RegionPos(regionX, regionZ), false);
 		try {
@@ -517,7 +521,7 @@ public class World implements RenderableProvider, Disposable {
 				chunk = loadedChunk;
 			}
 			if (chunk == null) {
-				LOGGER.warn("Tried to load chunk at {} but it still wasn't loaded:", pos);
+				LOGGER.warn(MARKER, "Tried to load chunk at {} but it still wasn't loaded:", pos);
 				loadingChunk.complete(oldChunk);
 				return oldChunk;
 			}
@@ -526,7 +530,7 @@ public class World implements RenderableProvider, Disposable {
 			loadingChunk.complete(chunk);
 			return chunk;
 		} catch (RuntimeException e) {
-			LOGGER.error("Failed to load chunk {}:", pos, e);
+			LOGGER.error(MARKER, "Failed to load chunk {}:", pos, e);
 			throw e;
 		}
 	}
@@ -554,7 +558,7 @@ public class World implements RenderableProvider, Disposable {
 
 		try {
 			if (!this.putChunk(region, pos, chunk)) {
-				LOGGER.warn("Tried to overwrite chunk {}", chunk.pos);
+				LOGGER.warn(MARKER, "Tried to overwrite chunk {}", chunk.pos);
 				chunk.dispose();
 				return null;
 			}
@@ -569,7 +573,7 @@ public class World implements RenderableProvider, Disposable {
 
 			return chunk;
 		} catch (Exception e) {
-			LOGGER.error("Failed to generate chunk {}:", pos, e);
+			LOGGER.error(MARKER, "Failed to generate chunk {}:", pos, e);
 			return null;
 		}
 	}
@@ -690,6 +694,9 @@ public class World implements RenderableProvider, Disposable {
 			return null;
 		}
 		Chunk chunk = region.getChunk(this.toLocalChunkPos(chunkPos.x(), chunkPos.z()));
+		if (chunk != null && !chunk.pos.equals(chunkPos)) {
+			throw new ValueMismatchException("Position of chunk received (" + chunk.pos + ") doesn't match the requested position (" + chunkPos + ")");
+		}
 		return chunk;
 	}
 
@@ -894,7 +901,7 @@ public class World implements RenderableProvider, Disposable {
 		try {
 			this.save(true);
 		} catch (IOException e) {
-			LOGGER.warn("Saving failed:", e);
+			LOGGER.warn(MARKER, "Saving failed:", e);
 		}
 
 		for (WorldRegion chunk : this.regions.values()) {
@@ -930,7 +937,7 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public WorldRegion getRegionAt(GridPoint3 blockPos) {
-		RegionPos regionPos = new RegionPos(blockPos.x / CHUNK_SIZE / REGION_SIZE, blockPos.z / CHUNK_SIZE / REGION_SIZE);
+		RegionPos regionPos = new RegionPos(Math.floorDiv(Math.floorDiv(blockPos.x, CHUNK_SIZE), REGION_SIZE), Math.floorDiv(Math.floorDiv(blockPos.z, CHUNK_SIZE), REGION_SIZE));
 		return this.getRegion(regionPos);
 	}
 

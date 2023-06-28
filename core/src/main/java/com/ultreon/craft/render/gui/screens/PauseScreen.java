@@ -55,7 +55,7 @@ public class PauseScreen extends Screen {
     }
 
     private void exitWorld(Button caller) {
-        this.game.exitWorld();
+        this.game.exitWorldToTitle();
     }
 
     private void resumeGame(Button caller) {
