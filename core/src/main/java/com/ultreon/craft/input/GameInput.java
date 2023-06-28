@@ -24,6 +24,8 @@ import com.ultreon.craft.input.util.Joystick;
 import com.ultreon.craft.input.util.JoystickType;
 import com.ultreon.craft.input.util.Trigger;
 import com.ultreon.craft.input.util.TriggerType;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
@@ -62,7 +64,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     }
 
     private long nextBreak;
-    private long nextPlace;
+    private long itemUse;
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
@@ -172,22 +174,25 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 @Nullable World world = this.game.world;
                 if (world != null) {
                     HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    GridPoint3 pos = hitResult.pos;
+                    GridPoint3 pos = hitResult.getPos();
                     Block block = world.get(pos);
-                    GridPoint3 posNext = hitResult.next;
-                    Block blockNext = world.get(posNext);
-                    Block selectedBlock = this.game.player.getSelectedBlock();
-                    if (hitResult.collide && block != null && !block.isAir()) {
-                        if (TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+                    if (hitResult.isCollide() && block != null && !block.isAir()) {
+                        float right = TRIGGERS.get(TriggerType.RIGHT).value;
+                        if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
                             world.set(pos, Blocks.AIR);
-                            System.out.println("Break Block");
                             this.nextBreak = System.currentTimeMillis() + 500;
-                        } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis()
-                                && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersects(this.game.player.getBoundingBox())) {
-                            world.set(posNext, selectedBlock);
-                            System.out.println("Place Block");
-                            this.nextPlace = System.currentTimeMillis() + 500;
+                        } else if (right < 0.3F) {
+                            this.nextBreak = 0;
+                        }
+
+                        float left = TRIGGERS.get(TriggerType.LEFT).value;
+                        if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
+                            UseItemContext context = new UseItemContext(world, player, hitResult);
+                            Item item = player.getSelectedItem();
+                            item.use(context);
+                            this.itemUse = System.currentTimeMillis() + 500;
+                        } else if (left < 0.3F) {
+                            this.itemUse = 0;
                         }
                     }
                 }

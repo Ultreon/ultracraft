@@ -3,7 +3,7 @@ package com.ultreon.craft.item;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.UV;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -14,8 +14,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.google.common.base.Preconditions;
 import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.font.Font;

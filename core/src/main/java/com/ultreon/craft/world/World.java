@@ -919,7 +919,7 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public boolean intersectEntities(BoundingBox boundingBox) {
-		for (var entity : entities.values())
+		for (Entity entity : this.entities.values())
 			if (entity.getBoundingBox().intersects(boundingBox)) return true;
 
 		return false;

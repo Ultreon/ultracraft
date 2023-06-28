@@ -92,7 +92,8 @@ public class Hud implements GameRenderable {
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
-            if (item instanceof BlockItem blockItem) {
+            if (item instanceof BlockItem) {
+                BlockItem blockItem = (BlockItem) item;
                 BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(blockItem.getBlock());
                 if (bakedBlockModel == null) {
                     renderer.setTextureColor(Color.WHITE);

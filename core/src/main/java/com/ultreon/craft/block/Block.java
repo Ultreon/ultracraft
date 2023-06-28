@@ -8,7 +8,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
 
 public class Block {
