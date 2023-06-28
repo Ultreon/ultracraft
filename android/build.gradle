@@ -137,7 +137,7 @@ publishing {
 
             afterEvaluate {
                 println(components.properties)
-                from components.release_apk
+                from components.release_aab
             }
         }
     }
