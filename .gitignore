@@ -117,3 +117,7 @@ Thumbs.db
 !.idea/discord.xml
 
 /run/
+
+*.log
+/gameprovider/build/
+/desktop-merge/build/

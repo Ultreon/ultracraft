@@ -25,4 +25,8 @@ public class Utils {
     public static ChunkPos chunkPosFromBlockCoords(GridPoint3 pos) {
         return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
     }
+
+    public static int normalizeToInt(byte b) {
+        return b < 0 ? (int)b + 128 : b;
+    }
 }

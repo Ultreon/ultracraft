@@ -1,11 +1,9 @@
 package com.ultreon.craft.uri;
 
-import com.ultreon.craft.UltreonCraft;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.resources.v0.Resource;
-import com.ultreon.libs.resources.v0.ResourceManager;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;

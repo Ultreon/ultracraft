@@ -3,6 +3,7 @@ package com.ultreon.craft.entity;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+
 import org.jetbrains.annotations.Contract;
 
 public abstract class EntityType<T extends Entity> {
@@ -53,7 +54,7 @@ public abstract class EntityType<T extends Entity> {
         }
 
         public EntityType<T> build() {
-            return new EntityType<>(this) {
+            return new EntityType<T>(this) {
                 @Override
                 public T create(World world) {
                     return Builder.this.factory.create(this, world);
