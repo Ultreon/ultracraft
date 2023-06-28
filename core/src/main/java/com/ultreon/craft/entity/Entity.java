@@ -1,16 +1,24 @@
 package com.ultreon.craft.entity;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.ultreon.craft.entity.util.EntitySize;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
+
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Objects;
 
 public class Entity {
     private final EntityType<? extends Entity> type;
@@ -18,8 +26,8 @@ public class Entity {
     protected float x;
     protected float y;
     protected float z;
-    protected float xRot;
-    protected float yRot;
+    public float xRot;
+    public float yRot;
     private int id = -1;
     public boolean onGround;
     public float velocityX;
@@ -42,12 +50,82 @@ public class Entity {
         this.world = world;
     }
 
+    public static @NotNull Entity loadFrom(World world, MapType data) {
+        Identifier typeId = Identifier.parse(data.getString("type"));
+        EntityType<?> type = Registries.ENTITIES.getValue(typeId);
+        Entity entity = type.create(world);
+
+        entity.id = data.getInt("id");
+
+        entity.loadWithPos(data);
+        return entity;
+    }
+
+    public void loadWithPos(MapType data) {
+        MapType position = data.getMap("Position", new MapType());
+        this.x = position.getFloat("x", this.x);
+        this.y = position.getFloat("y", this.y);
+        this.z = position.getFloat("z", this.z);
+
+        this.load(data);
+    }
+
+    public void load(MapType data) {
+        MapType rotation = data.getMap("Rotation", new MapType());
+        this.xRot = rotation.getFloat("x", this.xRot);
+        this.yRot = rotation.getFloat("y", this.yRot);
+
+        MapType velocity = data.getMap("Velocity", new MapType());
+        this.velocityX = velocity.getFloat("x", this.velocityX);
+        this.velocityY = velocity.getFloat("y", this.velocityY);
+        this.velocityZ = velocity.getFloat("z", this.velocityZ);
+
+        this.fallDistance = data.getFloat("fallDistance", this.fallDistance);
+        this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
+        this.gravity = data.getFloat("gravity", this.gravity);
+        this.jumping = data.getBoolean("jumping", this.jumping);
+        this.noGravity = data.getBoolean("noGravity", this.noGravity);
+        this.noClip = data.getBoolean("noClip", this.noClip);
+    }
+
+
+    public MapType save(MapType data) {
+        MapType position = new MapType();
+        position.putFloat("x", this.x);
+        position.putFloat("y", this.y);
+        position.putFloat("z", this.z);
+        data.put("Position", position);
+
+        MapType rotation = new MapType();
+        rotation.putFloat("x", this.xRot);
+        rotation.putFloat("y", this.yRot);
+        data.put("Rotation", rotation);
+
+        MapType velocity = new MapType();
+        velocity.putFloat("x", this.velocityX);
+        velocity.putFloat("y", this.velocityY);
+        velocity.putFloat("z", this.velocityZ);
+        data.put("Velocity", velocity);
+
+        data.putInt("id", this.id);
+        data.putString("type", Objects.requireNonNull(Registries.ENTITIES.getKey(this.type)).toString());
+
+        data.putFloat("fallDistance", this.fallDistance);
+        data.putFloat("jumpVelocity", this.jumpVel);
+        data.putFloat("gravity", this.gravity);
+        data.putBoolean("jumping", this.jumping);
+        data.putBoolean("noGravity", this.noGravity);
+        data.putBoolean("noClip", this.noClip);
+
+        return data;
+    }
+
     public EntitySize getSize() {
         return this.type.getSize();
     }
 
     public void tick() {
-        var size = getSize();
+        EntitySize size = getSize();
         BoundingBox boundingBox = this.getBoundingBox(size);
 
         if (!noGravity) {
@@ -60,9 +138,9 @@ public class Entity {
             this.jump();
         }
 
-        this.velocityX *= 0.8F;
+        this.velocityX *= 0.6F;
         this.velocityY *= 0.98F;
-        this.velocityZ *= 0.8F;
+        this.velocityZ *= 0.6F;
 
         if (this.onGround) {
             this.velocityX *= 0.9f;
@@ -74,7 +152,7 @@ public class Entity {
         float oDx = dx;
         float oDy = dy;
         float oDz = dz;
-        var ext = this.getBoundingBox();
+        BoundingBox ext = this.getBoundingBox();
         if (dx < 0) ext.min.x += dx;
         else ext.max.x += dx;
         if (dy < 0) ext.min.y += dy;
@@ -87,12 +165,12 @@ public class Entity {
             y += dy;
             z += dz;
         } else {
-            var boxes = world.collide(ext, false);
-            var pBox = getBoundingBox();
+            List<BoundingBox> boxes = world.collide(ext, false);
+            BoundingBox pBox = getBoundingBox();
             isColliding = false;
             isCollidingY = false;
             for (BoundingBox box : boxes) {
-                var dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+                float dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
                 isColliding |= dy != dy2;
                 isCollidingY |= dy != dy2;
                 dy = dy2;
@@ -102,7 +180,7 @@ public class Entity {
             pBox.update();
             isCollidingX = false;
             for (BoundingBox box : boxes) {
-                var dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+                float dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
                 isColliding |= dx != dx2;
                 isCollidingX |= dx != dx2;
                 dx = dx2;
@@ -112,7 +190,7 @@ public class Entity {
             pBox.update();
             isCollidingZ = false;
             for (BoundingBox box : boxes) {
-                var dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+                float dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
                 isColliding |= dz != dz2;
                 isCollidingZ |= dz != dz2;
                 dz = dz2;
@@ -142,6 +220,10 @@ public class Entity {
 
     protected void hitGround() {
 
+    }
+
+    public boolean isInVoid() {
+        return this.y < World.WORLD_DEPTH - 64;
     }
 
     public BoundingBox getBoundingBox() {
@@ -229,7 +311,7 @@ public class Entity {
     public Vector3 getLookVector() {
         // Calculate the direction vector
         Vector3 direction = new Vector3();
-        var yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
+        float yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
         direction.x = MathUtils.cosDeg(yRot) * MathUtils.sinDeg(this.xRot);
         direction.z = MathUtils.cosDeg(yRot) * MathUtils.cosDeg(this.xRot);
         direction.y = MathUtils.sinDeg(yRot);
@@ -248,7 +330,7 @@ public class Entity {
         return new Vector3(this.velocityX, this.velocityY, this.velocityZ);
     }
 
-    protected void setVelocity(Vector3 velocity) {
+    public void setVelocity(Vector3 velocity) {
         this.velocityX = velocity.x;
         this.velocityY = velocity.y;
         this.velocityZ = velocity.z;
@@ -277,5 +359,10 @@ public class Entity {
 
     public void setGravity(float gravity) {
         this.gravity = gravity;
+    }
+
+    public void rotate(GridPoint2 rotation) {
+        this.xRot = this.xRot + rotation.x;
+        this.yRot = Mth.clamp(this.yRot + rotation.y, -90, 90);
     }
 }

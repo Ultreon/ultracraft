@@ -60,7 +60,7 @@ public class BlockModelRegistry {
     }
 
     public static BakedModelRegistry bake(TextureAtlas atlas) {
-        var bakedModels = new ImmutableMap.Builder<Block, BakedCubeModel>();
+        ImmutableMap.Builder<Block, BakedCubeModel> bakedModels = new ImmutableMap.Builder<Block, BakedCubeModel>();
         REGISTRY.forEach((block, model) -> bakedModels.put(block, model.bake(atlas)));
 
         return new BakedModelRegistry(atlas, bakedModels.build());

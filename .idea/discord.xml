@@ -3,7 +3,7 @@
   <component name="DiscordProjectSettings">
     <option name="show" value="PROJECT_FILES" />
     <option name="nameOverrideEnabled" value="true" />
-    <option name="nameOverrideText" value="UltreonCraft" />
-    <option name="description" value="A voxel engine that makes other games look easy!" />
+    <option name="nameOverrideText" value="Ultreon Craft" />
+    <option name="description" value="" />
   </component>
 </project>

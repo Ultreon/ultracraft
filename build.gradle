@@ -21,12 +21,15 @@ buildscript {
             url = "https://maven.atlassian.com/3rdparty/"
         }
 
+        maven {
+            url 'https://storage.googleapis.com/r8-releases/raw'
+        }
+
         google()
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
-        classpath "com.google.code.gson:gson:2.8.9"
+        classpath 'com.android.tools.build:gradle:7.2.2'
     }
 }
 
@@ -34,17 +37,12 @@ buildscript {
 //     Plugins     //
 //*****************//
 plugins {
-    id 'java'
-    id 'java-library'
-    id 'maven-publish'
-    id "org.panteleyev.jpackageplugin" version "1.5.0"
-    id 'com.github.johnrengelman.shadow' version '7.+'
+//    id 'maven-publish'
+//    id 'com.github.johnrengelman.shadow' version '7.+'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
 
-apply plugin: 'java'
-apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
@@ -52,13 +50,6 @@ apply plugin: 'maven-publish'
 
 version project_version
 group project_group
-
-archivesBaseName = archives_base_name
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
 
 //**********************//
 //     Repositories     //
@@ -111,18 +102,18 @@ configurations {
  */
 dependencies {
     // Projects
-    shadow(runtimeOnly project(":core")) { transitive false }
-    shadow(runtimeOnly project(":desktop")) { transitive false }
-    implementation(runtimeOnly project(":core"))
-    implementation(runtimeOnly project(":desktop"))
+//    shadow(project(":core")) { transitive false }
+//    shadow(project(":desktop")) { transitive false }
+    implementation(project(":core"))
+    implementation(project(":desktop"))
 }
 
 allprojects {
     apply plugin: "maven-publish"
-    apply plugin: "java"
-    apply plugin: "java-library"
-    apply plugin: "idea"
-    apply plugin: "groovy"
+//    apply plugin: "java"
+//    apply plugin: "java-library"
+//    apply plugin: "idea"
+//    apply plugin: "groovy"
 
     ext {
         app_name = "Ultreon Craft"
@@ -131,14 +122,14 @@ allprojects {
         box_2d_lights_version = '1.5'
         ashley_version = '1.7.4'
         ai_version = '1.8.2'
-        gdx_controllers_version = '2.2.1'
+        gdx_controllers_version = '2.2.3'
     }
 
     publishing {
         publications {
-            mavenJava(MavenPublication) {
-                from components.java
-            }
+//            mavenJava(MavenPublication) {
+//                from components.java
+//            }
         }
         repositories {
             maven {
@@ -178,57 +169,7 @@ allprojects {
 
     }
 
-    publish.dependsOn build
-}
-
-// task to add addons.json to all relevant folders
-task replaceResources(type: Copy) {
-    from("src/main/resources/META-INF/addons.json")
-    outputs.upToDateWhen {
-        false
-    }
-
-    filter { line -> line.replaceAll('\\\$\\\$ADDON_VERSION\\\$\\\$', version.toString()) }
-    into new File(processResources.destinationDir, "META-INF")
-}
-
-processResources {
-    exclude 'META-INF/addons.json'
-    finalizedBy replaceResources
-}
-
-jar {
-    //noinspection GroovyAssignabilityCheck
-    manifest {
-        //noinspection GroovyAssignabilityCheck
-        attributes 'Implementation-Title': 'Ultreon Craft',
-                'Implementation-Vendor': 'Ultreon Team',
-                'Implementation-Version': project.version,
-                'Main-Class': 'com.ultreon.craft.DesktopLauncher',
-                'Multi-Release': 'true'
-    }
-
-    from {
-        compileJava.outputs
-    }
-    from {
-        processResources.outputs
-    }
-
-    from(configurations.addToJar.collect {
-        zipTree(it)
-    })
-
-    zip64 true
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
-
-processResources {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
-
-test {
-    useJUnitPlatform()
+//    publish.dependsOn build
 }
 
 tasks.create('prepareRun', {
@@ -246,41 +187,6 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
-}
-
-task packedJar(type: Jar) {    dependsOn ":jar"
-
-    //noinspection GroovyAssignabilityCheck
-    manifest {
-        //noinspection GroovyAssignabilityCheck
-        attributes 'Implementation-Title': 'Ultreon Craft',
-                'Implementation-Vendor': 'Ultreon Team',
-                'Implementation-Version': "1.0-indev1",
-                'Main-Class': 'com.ultreon.premain.PreMain',
-                'Multi-Release': 'true'
-    }
-
-    archivesBaseName = "ultreon-craft"
-
-    from zipTree(jar.archiveFile.get())
-    classifier "packed"
-    zip64 true
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-
-    from {
-        configurations.include.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    doLast {
-        copy {
-            from archiveFile
-            into buildDir
-            rename ".*", "packed.jar"
-        }
-    }
-}
-
-build {
-//    mustRunAfter ":packedJar"
 }
 
 task createExec {
@@ -325,95 +231,10 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-task("copyDependencies", type: Copy) {
-    from(configurations.runtimeClasspath)
-    into("$buildDir/jars")
-}
-
-task("copyJar", type: Copy) {
-    from(tasks.jar)
-    into("$buildDir/jars")
-}
-
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 println("OS: " + System.getProperty("os.name") + " Version: " + System.getProperty("os.version"))
 
 println("Current version: " + version)
-println("Project: " + group + ":" + archivesBaseName)
-println("Bulding a Java " + compileJava.targetCompatibility + " project...")
+println("Project: " + group + ":" + name)
 
 mkdir("$buildDir/ultreon-craft")
-
-jpackage {
-    dependsOn("build", "copyDependencies", "copyJar")
-
-    input  = "$projectDir/jars"
-    destination = "$buildDir/dist"
-
-    app_name = project.property("app_name").toString()
-    appVersion = project.version.toString()
-    vendor = "Ultreon Team"
-    copyright = "Copyright (c) 2022 Ultreon Team"
-    runtimeImage = System.getProperty("java.home")
-
-    mainJar = shadowJar.archiveFileName.get()
-    mainClass = "com.ultreon.craft.DesktopLauncher"
-
-    destination = "$buildDir/dist"
-
-    licenseFile = "$projectDir/package/LICENSE.txt"
-
-    javaOptions = [ "-Dfile.encoding=UTF-8" ]
-
-    aboutUrl = "https://github.com/Ultreon/ultreon-craft"
-
-    mac {
-        icon = "icons/icon.icns"
-        macPackageIdentifier = "com.ultreon.browser"
-        macPackageName = "ultreon-browser"
-        appVersion = packageVersion.replace(Regex("(\\d+\\.\\d+\\.\\d+).*"), "\$1")
-    }
-
-    linux {
-        icon = "icons/icon.png"
-        linuxPackageName = "ultreon-browser"
-        linuxDebMaintainer = "Ultreon Team"
-        linuxRpmLicenseType = "Ultreon API License v1.1"
-        linuxAppRelease = "2"
-        linuxShortcut = true
-        appVersion = project.version.toString()
-    }
-
-    windows {
-        icon = "icons/icon.ico"
-        winMenu = true
-        winDirChooser = true
-        winConsole = false
-        winPerUserInstall = true
-        winShortcutPrompt = true
-        winShortcut = false
-        winUpgradeUuid = "36cb25da-b6d1-4104-9607-9077b7449668"
-        winMenuGroup = "Ultreon Team"
-        appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
-    }
-}
-
-idea{
-    project{
-        settings {
-            withIDEADir { File dir ->
-                println("Callback 1 executed with: " + dir.absolutePath)
-            }
-
-            runConfigurations {
-                "Ultreon Craft"(Application) {                       // Create new run configuration "MyApp" that will run class foo.App
-                    jvmArgs = "-Xmx2G"
-                    mainClass = 'com.ultreon.craft.DesktopLauncher'
-                    moduleName = idea.module.name + ".desktop.main"
-                    workingDirectory = "$projectDir/run/"
-                    programParameters = "--dev"
-                }
-            }
-        }
-    }
-}

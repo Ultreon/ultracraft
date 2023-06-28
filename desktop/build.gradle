@@ -2,6 +2,7 @@
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 
 buildscript {
     repositories {
@@ -20,8 +21,8 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
-        classpath "com.google.code.gson:gson:2.8.9"
+        classpath group: 'commons-io', name: 'commons-io', version: '2.11.0'
+        classpath "com.google.code.gson:gson:2.10.1"
     }
 }
 
@@ -31,13 +32,13 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
-    id 'maven-publish'
-    id "org.panteleyev.jpackageplugin"
+//    id 'maven-publish'
+//    id "org.panteleyev.jpackageplugin"
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
@@ -47,12 +48,22 @@ apply plugin: 'maven-publish'
 version project_version
 group project_group
 
+archivesBaseName = archives_base_name
+
 java {
     withSourcesJar()
     withJavadocJar()
 }
 
+repositories {
+    maven {
+        url = "https://maven.fabricmc.net"
+        name = "FabricMC"
+    }
+}
+
 dependencies {
+    implementation project(":gameprovider")
     implementation project(":core")
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
@@ -70,12 +81,26 @@ dependencies {
     implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
 
-    implementation 'it.unimi.dsi:fastutil:8.5.11'
-    implementation 'com.google.guava:guava:31.1-jre'
+    // Apache Log4J
+    implementation "org.apache.logging.log4j:log4j:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+
+    // JNA
+    implementation "net.java.dev.jna:jna:$jna_version"
+    implementation "net.java.dev.jna:jna-platform:$jna_version"
+
+    // SLF4J
+    api "org.slf4j:slf4j-api:$slf4j_version"
+
+    // Google
+    implementation "com.google.code.gson:gson:2.10.1"
+    implementation 'com.google.guava:guava:32.0.0-jre'
+
+    // Misc
+    implementation 'it.unimi.dsi:fastutil:8.5.12'
     implementation 'com.raylabz:opensimplex:1.0.3'
-    implementation 'de.articdive:jnoise-modules:4.0.0'
-    implementation 'de.articdive:jnoise-generators:4.0.0'
-    implementation 'de.articdive:jnoise-modifiers:4.0.0'
 
     implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
 
@@ -85,9 +110,45 @@ dependencies {
     implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
     implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
     implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+
+    implementation "it.unimi.dsi:fastutil-core:8.5.9"
+    implementation "com.google.code.findbugs:jsr305:$jsr_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+
+    implementation "org.xbib.elasticsearch:joptsimple:6.3.2.1"
+    implementation "org.apache.logging.log4j:log4j:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+
+    // fabric-loader dependencies
+    implementation "org.ow2.asm:asm:${project.asm_version}"
+    implementation "org.ow2.asm:asm-analysis:${project.asm_version}"
+    implementation "org.ow2.asm:asm-commons:${project.asm_version}"
+    implementation "org.ow2.asm:asm-tree:${project.asm_version}"
+    implementation "org.ow2.asm:asm-util:${project.asm_version}"
+
+    implementation("net.fabricmc:sponge-mixin:${project.mixin_version}") {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+
+    implementation 'net.fabricmc:tiny-mappings-parser:0.3.0+build.17'
+    implementation 'net.fabricmc:tiny-remapper:0.8.5'
+    implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
+    implementation 'net.fabricmc:access-widener:2.1.0'
+
+    implementation("net.fabricmc:fabric-loader:$fabric_version")
+}
+
+compileJava {
+    dependsOn ":core:jar"
+    dependsOn ":gameprovider:jar"
 }
 
 processResources {
+    dependsOn ":core:jar"
+    dependsOn ":gameprovider:jar"
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
@@ -95,6 +156,8 @@ processResources {
 }
 
 jar {
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
@@ -131,4 +194,55 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+mkdir("$buildDir/ultreon-craft")
+
+def ps = System.getProperty("path.separator")
+def files = configurations.runtimeClasspath
+def strm = (files.toList()).stream()
+def rcl = String.join(ps, strm.map {
+    it.path
+}.filter{it != null }.toList())
+//\tfabric.remapClasspathFile=$buildDir/bubbles/classpath.txt
+//\tfabric.classPathGroups=$buildDir/classes/java/main/$ps$buildDir/resources/main/$ps${project(":core").buildDir}/classes/java/main/$ps${project(":core").buildDir}/resources/main/$ps${project(":desktop").buildDir}/classes/java/main/$ps${project(":desktop").buildDir}/resources/main/$ps${project(":gameprovider").buildDir}/classes/java/main/$ps${project(":gameprovider").buildDir}/resources/main/$ps$rcl
+def conf = """
+commonProperties
+\tfabric.development=true
+\tlog4j2.formatMsgNoLookups=true
+\tfabric.log.disableAnsi=false
+\tlog4j.configurationFile=$rootProject.projectDir/log4j.xml
+"""
+
+def launchFile = file("$buildDir/ultreon-craft/launch.cfg")
+Files.writeString(launchFile.toPath(), conf, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+
+def cp = "$rcl"
+
+def cpFile = file("$buildDir.absolutePath/ultreon-craft/classpath.txt")
+Files.writeString(cpFile.toPath(), cp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+
+idea{
+    project{
+        settings {
+            withIDEADir { File dir ->
+                println("Callback 1 executed with: " + dir.absolutePath)
+            }
+
+            runConfigurations {
+                "Ultreon Craft"(org.jetbrains.gradle.ext.Application) {                       // Create new run configuration "MyApp" that will run class foo.App
+                    jvmArgs = "-Xmx2g -Dfabric.dli.config=$launchFile.path -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient"
+                    mainClass = 'net.fabricmc.devlaunchinjector.Main'
+                    moduleName = idea.module.name + ".desktop.main"
+                    workingDirectory = "$rootProject.projectDir/run/"
+                    programParameters = "--gameDir=."
+                }
+            }
+        }
+    }
 }

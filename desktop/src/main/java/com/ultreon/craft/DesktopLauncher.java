@@ -2,16 +2,29 @@ package com.ultreon.craft;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
+import com.ultreon.craft.desktop.util.util.ArgParser;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
+	private static boolean packaged;
 
-	public static void main(String[] arg) {
+	public static void main(String[] argv) {
+		ArgParser argParser = new ArgParser(argv);
+
+		packaged = System.getProperty("com.ultreon.craft.jpackage", "false").equals("true");
+
+		GamePlatform.instance = new DesktopPlatform(argParser, packaged);
+
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setForegroundFPS(240);
+		config.setForegroundFPS(0);
+		config.setIdleFPS(10);
+		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
+		config.setInitialVisible(false);
+//		config.setDecorated(false);
 		config.setTitle("Ultreon Craft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);
@@ -56,7 +69,7 @@ public class DesktopLauncher {
 
 			}
 		});
-		new Lwjgl3Application(new UltreonCraft(arg), config);
+		new Lwjgl3Application(new UltreonCraft(argv), config);
 	}
 
 	private static String[] getIcons() {
@@ -67,5 +80,13 @@ public class DesktopLauncher {
 		}
 
 		return icons;
+	}
+
+	/**
+	 * Check whether the application is packaged using JPackage.
+	 * @return true if in the JPackage environment.
+	 */
+	public static boolean isPackaged() {
+		return packaged;
 	}
 }

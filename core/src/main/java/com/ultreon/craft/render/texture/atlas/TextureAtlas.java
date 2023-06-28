@@ -2,7 +2,6 @@ package com.ultreon.craft.render.texture.atlas;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.render.UV;
 import com.ultreon.libs.commons.v0.Identifier;
 
@@ -21,7 +20,7 @@ public class TextureAtlas {
 
     public TextureRegion get(Identifier id) {
         if (id == null) return null;
-        var uv = this.uvMap.get(id);
+        UV uv = this.uvMap.get(id);
         if (uv == null) return null;
         return new TextureRegion(this.textureAtlas, uv.u(), uv.v(), uv.uWidth(), uv.vHeight());
     }
