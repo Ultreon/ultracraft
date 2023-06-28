@@ -1,4 +1,5 @@
 jdk:
   - openjdk17
 install:
+  - chmod +x ./gradlew
   - ./gradlew clean :desktop:publish :desktop:build :core:publish :core:build
