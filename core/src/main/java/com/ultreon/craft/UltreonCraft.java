@@ -69,8 +69,6 @@ import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -89,6 +87,7 @@ public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
+    private static final int CULL_FACE = GL20.GL_FRONT;
     private String allUnicode;
     public FileHandle configDir;
 
@@ -191,7 +190,7 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
-            LOGGER.info("Data directory is at: " + new DataFileHandle(".").file().getAbsolutePath());
+            LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getAbsolutePath());
 
             Gdx.app.setApplicationLogger(new ApplicationLogger() {
                 private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
@@ -227,11 +226,13 @@ public class UltreonCraft extends ApplicationAdapter {
                 }
             });
 
-            this.configDir = new DataFileHandle("config/");
-            if (!this.configDir.isDirectory()) {
-                this.configDir.delete();
-                this.configDir.mkdirs();
-            }
+            this.configDir = createDir("config/");
+
+            createDir("screenshots/");
+            createDir("game-crashes/");
+            createDir("logs/");
+
+            GamePlatform.instance.setupMods();
 
             this.settings = new GameSettings();
             this.settings.reload();
@@ -242,10 +243,6 @@ public class UltreonCraft extends ApplicationAdapter {
             LOGGER.info("Initializing game");
             this.textureManager = new TextureManager();
             this.spriteBatch = new SpriteBatch();
-
-            createDir("screenshots/");
-            createDir("game-crashes/");
-            createDir("logs/");
 
             this.resourceManager = new ResourceManager("assets");
             LOGGER.info("Importing resources");
@@ -275,6 +272,7 @@ public class UltreonCraft extends ApplicationAdapter {
             DefaultShader.Config config = new DefaultShader.Config();
             config.defaultCullFace = GL20.GL_FRONT;
             this.batch = new ModelBatch(new DefaultShaderProvider(config));
+            this.batch.getRenderContext().setCullFace(CULL_FACE);
             this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
             this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             this.camera.near = 0.01f;
@@ -540,7 +538,7 @@ public class UltreonCraft extends ApplicationAdapter {
             LOGGER.info("Opening title screen");
             this.showScreen(new TitleScreen());
 
-            savedWorld = new SavedWorld(new DataFileHandle("world"));
+            savedWorld = new SavedWorld(GamePlatform.data("world"));
 
             GamePlatform.instance.setupImGui();
         } catch (Throwable t) {
@@ -571,11 +569,15 @@ public class UltreonCraft extends ApplicationAdapter {
         BlockModelRegistry.registerDefault(Blocks.STONE);
     }
 
-    private static void createDir(String dirName) {
-        FileHandle directory = Gdx.files.local(dirName);
+    private static FileHandle createDir(String dirName) {
+        FileHandle directory = GamePlatform.data(dirName);
         if (!directory.exists()) {
             directory.mkdirs();
+        } else if (!directory.isDirectory()) {
+            directory.delete();
+            directory.mkdirs();
         }
+        return directory;
     }
 
     @Override
@@ -687,6 +689,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
             if (this.renderWorld && world != null) {
                 this.batch.begin(this.camera);
+                this.batch.getRenderContext().setCullFace(CULL_FACE);
                 this.batch.render(world, this.env);
                 this.batch.end();
             }
@@ -714,6 +717,8 @@ public class UltreonCraft extends ApplicationAdapter {
         } catch (Throwable t) {
             crash(t);
         }
+
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
     }
 
     private void renderWindow(Renderer renderer, int width, int height) {

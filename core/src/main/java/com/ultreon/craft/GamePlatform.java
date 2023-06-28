@@ -110,4 +110,20 @@ public abstract class GamePlatform {
     public boolean isModsSupported() {
         return false;
     }
+
+    public static FileHandle data(String path) {
+        return instance.dataFile(path);
+    }
+
+    public void setupMods() {
+
+    }
+
+    public void setupModsClient() {
+
+    }
+
+    public void setupModsServer() {
+
+    }
 }

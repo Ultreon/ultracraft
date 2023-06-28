@@ -11,6 +11,10 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.impl.entrypoint.EntrypointUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
@@ -43,15 +47,15 @@ public class DesktopPlatform extends GamePlatform {
         if (packaged) {
             switch (this.getOperatingSystem()) {
                 case WINDOWS:
-                    this.gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\Ultreon Craft\\").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "\\AppData\\Roaming\\.ultreon-craft\\";
                     break;
                 case LINUX:
                 case UNIX:
                 case MAC_OS:
-                    this.gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "/.ultreon-craft/";
                     break;
                 default:
-                    this.gameDir = new File(System.getProperty("user.home"), "Games/UltreonCraft/").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "/Games/ultreon-craft/";
             }
         } else {
             String gameDir = this.argParser.getKeywordArgs().get("gamedir");
@@ -286,5 +290,29 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public boolean isModsSupported() {
         return true;
+    }
+
+    @Override
+    public void setupMods() {
+        super.setupMods();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+    }
+
+    @Override
+    public void setupModsClient() {
+        super.setupModsClient();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+    }
+
+    @Override
+    public void setupModsServer() {
+        super.setupModsServer();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
     }
 }
