@@ -2,16 +2,17 @@ package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
-import com.ultreon.craft.util.Mth;
+import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BiomeData;
 import com.ultreon.craft.world.BiomeSelectionHelper;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TerrainGenerator {
     private final DomainWarping biomeDomainWarping;
@@ -24,14 +25,14 @@ public class TerrainGenerator {
     }
 
     public Chunk generateChunkData(Chunk chunk, long seed) {
-        BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.offset, chunk, false);
+        BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.getOffset(), chunk, false);
         //TreeData treeData = biomeGenerator.GetTreeData(chunk, seed);
         chunk.treeData = biomeSelection.biomeGenerator.getTreeData(chunk, seed);
 
         for (int x = 0; x < chunk.size; x++) {
             for (int z = 0; z < chunk.size; z++) {
-                biomeSelection = selectBiomeGenerator(new GridPoint3(chunk.offset.x + x, 0, chunk.offset.z + z), chunk);
-                chunk = biomeSelection.biomeGenerator.processColumn(chunk, x, z, seed, biomeSelection.terrainSurfaceNoise);
+                biomeSelection = selectBiomeGenerator(new GridPoint3(chunk.getOffset().x + x, 0, chunk.getOffset().z + z), chunk);
+                chunk = biomeSelection.biomeGenerator.processColumn(chunk, x, z, biomeSelection.terrainSurfaceNoise);
             }
         }
         return chunk;
@@ -43,7 +44,7 @@ public class TerrainGenerator {
 
     private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk, boolean useDomainWarping) {
         if (useDomainWarping) {
-            GridPoint2 domainOffset = Mth.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
+            GridPoint2 domainOffset = MathHelper.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
             worldPosition.add(domainOffset.x, 0, domainOffset.y);
         }
 
@@ -63,7 +64,7 @@ public class TerrainGenerator {
 
     private BiomeGenerator selectBiome(int index) {
         float temp = biomeNoise.getFloat(index);
-        for (var data : biomeGenData) {
+        for (BiomeData data : biomeGenData) {
             if (temp >= data.temperatureStartThreshold() && temp < data.temperatureEndThreshold())
                 return data.biomeGen();
         }

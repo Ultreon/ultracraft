@@ -2,8 +2,8 @@ package com.ultreon.craft.uri;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.ultreon.craft.DataFileHandle;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -20,7 +20,7 @@ public class GdxExternalUrlHandler extends URLStreamHandlerProvider {
         return new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL u) {
-                FileHandle external = Gdx.files.external(u.getPath());
+                FileHandle external = new DataFileHandle(u.getPath());
                 return new URLConnection(u) {
                     private InputStream inputStream;
                     private OutputStream outputStream;

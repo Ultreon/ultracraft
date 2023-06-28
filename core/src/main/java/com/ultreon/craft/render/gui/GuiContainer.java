@@ -1,19 +1,21 @@
 package com.ultreon.craft.render.gui;
 
 import com.ultreon.craft.render.Renderer;
+
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class GuiContainer extends GuiComponent {
+public abstract class GuiContainer extends GuiComponent implements IGuiContainer {
     protected final List<GuiComponent> children = new CopyOnWriteArrayList<>();
     protected final List<Widget> statics = new CopyOnWriteArrayList<>();
     protected GuiComponent hoveredWidget;
+    protected GuiComponent pressingWidget;
     int innerXOffset;
     int innerYOffset;
-    private GuiComponent pressingWidget;
 
     public GuiContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(x, y, width, height);
@@ -24,10 +26,9 @@ public abstract class GuiContainer extends GuiComponent {
         renderChildren(renderer, mouseX, mouseY, deltaTime);
     }
 
-    protected void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+    public void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         for (GuiComponent child : this.children) {
             if (child.visible) {
-//                renderer.subInstance(child.getX(), child.getY(), child.getWidth(), child.getHeight(), renderer1 -> child.render(renderer1, deltaTime));
                 child.render(renderer, mouseX, mouseY, deltaTime);
             }
         }
@@ -36,7 +37,8 @@ public abstract class GuiContainer extends GuiComponent {
     @Nullable
     public GuiComponent getExactWidgetAt(int x, int y) {
         GuiComponent widgetAt = getWidgetAt(x, y);
-        if (widgetAt instanceof GuiContainer container) {
+        if (widgetAt instanceof GuiContainer) {
+            GuiContainer container = (GuiContainer) widgetAt;
             return container.getExactWidgetAt(x, y);
         }
         return widgetAt;
@@ -173,5 +175,10 @@ public abstract class GuiContainer extends GuiComponent {
 
     public GuiComponent getHoveredWidget() {
         return hoveredWidget;
+    }
+
+    @Override
+    public List<GuiComponent> children() {
+        return this.children;
     }
 }
