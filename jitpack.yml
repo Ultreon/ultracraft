@@ -1,5 +1,2 @@
 jdk:
   - openjdk17
-install:
-  - chmod +x ./gradlew
-  - ./gradlew clean -Pgroup=com.github.Ultreon -Pversion=af58e6575f -xtest -xlint build publishToMavenLocal

@@ -190,6 +190,13 @@ jar {
 
     zip64 true
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+
+    doLast {
+        println "DESK_MERGE FILE: ${file("$buildDir/libs/").list().toArrayString()}"
+        println "CORE FILE: ${file("${project(":core")buildDir}/libs/").list().toArrayString()}"
+        println "DESKTOP FILE: ${file("${project(":desktop")buildDir}/libs/").list().toArrayString()}"
+        println "GAMEPROVIDER FILE: ${file("${project(":gameprovider")buildDir}/libs/").list().toArrayString()}"
+    }
 }
 
 tasks.create('prepareRun', {
