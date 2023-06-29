@@ -29,6 +29,8 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.BlockEvents;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Utils;
@@ -224,8 +226,8 @@ public class World implements RenderableProvider, Disposable {
 
 	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
 		List<ChunkPos> needed = getChunksAround(this, pos);
-		List<ChunkPos> chunkPositionsToCreate = getChunksToLoad(needed, pos);
-		List<ChunkPos> chunkPositionsToRemove = getChunksToUnload(needed);
+		List<ChunkPos> chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
+		List<ChunkPos> chunkPositionsToRemove = this.getChunksToUnload(needed);
 
 		WorldGenInfo data = new WorldGenInfo();
 		data.toCreate = chunkPositionsToCreate;
@@ -432,46 +434,7 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public CompletableFuture<Chunk> loadChunkAsync(int x, int z, boolean overwrite) {
-		ChunkPos pos = new ChunkPos(x, z);
-		CompletableFuture<Chunk> loadingChunk = this.loadingChunks.get(pos);
-		if (loadingChunk != null) {
-			if (loadingChunk.isDone()) this.loadingChunks.remove(pos);
-			return loadingChunk;
-		}
-
-		ChunkPos localPos = this.toLocalChunkPos(x, z);
-		int regionX = Math.floorDiv(x, REGION_SIZE);
-		int regionZ = Math.floorDiv(z, REGION_SIZE);
-
-		CompletableFuture<Chunk> future = this.getOrOpenRegionAsync(new RegionPos(regionX, regionZ)).thenApplyAsync(region -> {
-			try {
-				Chunk oldChunk = region.getChunk(localPos);
-
-				if (oldChunk != null && !overwrite) {
-					return oldChunk;
-				}
-
-				Chunk loadedChunk = region.loadChunk(localPos);
-				Chunk chunk;
-				if (loadedChunk == null) {
-					chunk = this.generateChunk(x, z);
-				} else {
-					chunk = loadedChunk;
-				}
-				if (chunk == null) {
-					LOGGER.warn(MARKER, "Tried to load chunk at {} but it still wasn't loaded:", pos);
-					return oldChunk;
-				}
-
-				this.renderChunk(x, z, chunk);
-				return chunk;
-			} catch (RuntimeException e) {
-				LOGGER.error(MARKER, "Failed to load chunk {}:", pos, e);
-				throw e;
-			}
-		});
-		this.loadingChunks.put(pos, future);
-		return future;
+		return CompletableFuture.supplyAsync(() -> this.loadChunk(x, z, overwrite));
 	}
 
 	protected Chunk loadChunk(ChunkPos pos) {
@@ -519,6 +482,7 @@ public class World implements RenderableProvider, Disposable {
 
 			this.renderChunk(x, z, chunk);
 			loadingChunk.complete(chunk);
+			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
 			return chunk;
 		} catch (RuntimeException e) {
 			LOGGER.error(MARKER, "Failed to load chunk {}:", pos, e);
@@ -561,6 +525,8 @@ public class World implements RenderableProvider, Disposable {
 			}
 
 			region.initialized = true;
+
+			WorldEvents.CHUNK_GENERATED.factory().onChunkGenerated(this, pos, chunk);
 
 			return chunk;
 		} catch (Exception e) {
@@ -625,10 +591,12 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public void set(GridPoint3 blockPos, Block block) {
-		set(blockPos.x, blockPos.y, blockPos.z, block);
+		this.set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
+		BlockEvents.SET_BLOCK.factory().onSetBlock(this, new GridPoint3(x, y, z), block);
+
 		Chunk chunk = getChunkAt(x, y, z);
 		GridPoint3 cp = toLocalBlockPos(x, y, z);
 		chunk.set(cp.x, cp.y, cp.z, block);

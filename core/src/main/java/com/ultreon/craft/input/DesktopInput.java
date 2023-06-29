@@ -7,9 +7,12 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.ItemEvents;
+import com.ultreon.craft.events.ScreenEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
@@ -50,7 +53,7 @@ public class DesktopInput extends GameInput {
 
         if (keycode == this.screenshotKey) {
             Pixmap pixmap = Pixmap.createFromFrameBuffer(this.game.getDrawOffset().x, this.game.getDrawOffset().y, this.game.getWidth(), this.game.getHeight());
-            PixmapIO.writePNG(Gdx.files.local(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+            PixmapIO.writePNG(GamePlatform.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
         }
 
@@ -180,6 +183,7 @@ public class DesktopInput extends GameInput {
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
                             UseItemContext context = new UseItemContext(world, player, hitResult);
                             Item item = player.getSelectedItem();
+                            ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                         }
                     }
@@ -188,8 +192,10 @@ public class DesktopInput extends GameInput {
         } else {
             screenY = this.game.getHeight() - screenY;
             Screen currentScreen = this.game.currentScreen;
-            if (currentScreen != null)
+            if (currentScreen != null) {
+                ScreenEvents.MOUSE_PRESS.factory().onMousePressScreen((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
                 currentScreen.mousePress((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
+            }
         }
         return false;
     }
@@ -203,7 +209,10 @@ public class DesktopInput extends GameInput {
             Screen currentScreen = this.game.currentScreen;
             screenY = this.game.getHeight() - screenY;
             if (currentScreen != null) {
+                ScreenEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
                 currentScreen.mouseRelease((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
+
+                ScreenEvents.MOUSE_CLICK.factory().onMouseClickScreen((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button, 1);
                 currentScreen.mouseClick((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button, 1);
             }
         }
@@ -226,8 +235,10 @@ public class DesktopInput extends GameInput {
             return true;
         } else {
             int yPos = this.game.getHeight() - this.yPos;
-            if (currentScreen != null)
+            if (currentScreen != null) {
+                ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
                 return currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
+            }
         }
 
         return false;

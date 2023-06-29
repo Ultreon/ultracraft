@@ -128,4 +128,19 @@ task run(type: Exec) {
     commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.ultreon.craft/com.ultreon.craft.AndroidLauncher'
 }
 
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = project_group
+            artifactId = project_id
+            version = project_version
+
+            afterEvaluate {
+                println(components.properties)
+                from components.release_aab
+            }
+        }
+    }
+}
+
 //eclipse.project.name = project_name + "-android"

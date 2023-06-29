@@ -1,9 +1,11 @@
 package com.ultreon.craft.world;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 
 import java.util.ArrayList;
@@ -33,7 +35,9 @@ public abstract class Biome {
     protected abstract void onBuildLayers(List<TerrainLayer> layers, List<TerrainLayer> extraLayers);
 
     public BiomeGenerator create(World world, long seed) {
-        return new BiomeGenerator(world, this.settings.create(seed), this.domainWarping.get(seed), this.layers, this.extraLayers);
+        NoiseInstance noiseInstance = this.settings.create(seed);
+        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, this.domainWarping.get(seed), this.layers, this.extraLayers);
+        return new BiomeGenerator(world, noiseInstance, this.domainWarping.get(seed), this.layers, this.extraLayers);
     }
 
     public NoiseSettings getSettings() {

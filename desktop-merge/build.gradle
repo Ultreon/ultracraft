@@ -51,7 +51,7 @@ apply plugin: 'java-library'
 version project_version
 group project_group
 
-archivesBaseName = archives_base_name + "-merge"
+archivesBaseName = archives_base_name + "-premain"
 
 def packageVersion = "1.0.0"
 
@@ -75,8 +75,8 @@ configurations {
 
 dependencies {
     addToJar(project(":gameprovider"))
-    runtimeOnly project(":core")
-    runtimeOnly project(":desktop")
+    implementation project(":core")
+    implementation project(":desktop")
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
@@ -149,6 +149,8 @@ dependencies {
     implementation 'net.fabricmc:tiny-remapper:0.8.5'
     implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
     implementation 'net.fabricmc:access-widener:2.1.0'
+
+    compileOnly "net.fabricmc:fabric-loader:$fabric_version"
 }
 
 processResources {
@@ -188,6 +190,13 @@ jar {
 
     zip64 true
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+
+    doLast {
+        println "DESK_MERGE FILE: ${file("$buildDir/libs/").list().toArrayString()}"
+        println "CORE FILE: ${file("${project(":core")buildDir}/libs/").list().toArrayString()}"
+        println "DESKTOP FILE: ${file("${project(":desktop")buildDir}/libs/").list().toArrayString()}"
+        println "GAMEPROVIDER FILE: ${file("${project(":gameprovider")buildDir}/libs/").list().toArrayString()}"
+    }
 }
 
 tasks.create('prepareRun', {
@@ -241,13 +250,14 @@ jpackage {
 
 //    mainJar = "fabric-loader-${fabric_loader_version}.jar"
     mainJar = jar.archiveFileName.get()
-    mainClass = "net.fabricmc.loader.impl.launch.knot.KnotClient"
+    mainClass = "com.ultreon.craft.premain.PreMain"
 
     destination = "$buildDir/dist"
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8", "-Pcom.ultreon.craft.jpackage=true" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+    arguments = [ "--packaged" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
 
@@ -280,5 +290,13 @@ jpackage {
         winMenuGroup = "Ultreon Team"
         winConsole = true
         appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
     }
 }

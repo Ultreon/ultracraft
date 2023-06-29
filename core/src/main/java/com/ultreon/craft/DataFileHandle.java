@@ -6,6 +6,6 @@ import java.io.InputStream;
 
 public class DataFileHandle extends FileHandle {
     public DataFileHandle(String path) {
-        super(GamePlatform.instance.dataFile(path).file());
+        super(GamePlatform.data(path).file());
     }
 }

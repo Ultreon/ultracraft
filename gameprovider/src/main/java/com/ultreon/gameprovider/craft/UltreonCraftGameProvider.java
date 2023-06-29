@@ -19,7 +19,9 @@ import net.fabricmc.loader.impl.util.SystemProperties;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.fabricmc.loader.impl.util.log.LogHandler;
+import org.lwjgl.system.Platform;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
@@ -119,6 +121,26 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public Path getLaunchDirectory() {
+        if (this.arguments.containsKey("packaged")) {
+            File gameDir;
+            switch (Platform.get()) {
+                case WINDOWS:
+                    gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\.ultreon-craft\\");
+                    break;
+                case LINUX:
+                case MACOSX:
+                    gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/");
+                    break;
+                default:
+                    gameDir = new File(System.getProperty("user.home"), "Games/ultreon-craft/");
+            }
+
+            if (!gameDir.exists()) {
+                gameDir.mkdirs();
+            }
+
+            return gameDir.getAbsoluteFile().toPath();
+        }
         return Path.of(".");
     }
 
@@ -283,6 +305,10 @@ public class UltreonCraftGameProvider implements GameProvider {
     @Override
     public void launch(ClassLoader loader) {
         var targetClass = this.entrypoint;
+
+        Path launchDirectory = this.getLaunchDirectory();
+        String absolutePath = launchDirectory.toFile().getAbsolutePath();
+        System.setProperty("user.dir", absolutePath);
 
         MethodHandle invoker;
 

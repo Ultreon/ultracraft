@@ -86,7 +86,7 @@ public class TitleScreen extends Screen {
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        renderer.drawCenteredTextScaled("Ultreon Craft", 3, (int)((float) this.width / 2), (int)((float) (this.height - 40)));
+        renderer.drawCenteredTextScaled("UltraCraft", 3, (int)((float) this.width / 2), (int)((float) (this.height - 40)));
     }
 
     @Override

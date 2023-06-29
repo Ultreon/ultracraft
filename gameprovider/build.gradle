@@ -50,6 +50,8 @@ configurations {
 }
 
 dependencies {
+    compileOnly "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+
     compileOnly "it.unimi.dsi:fastutil-core:8.5.9"
     compileOnly "com.google.code.findbugs:jsr305:$jsr_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
@@ -107,4 +109,12 @@ jar {
 }
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
