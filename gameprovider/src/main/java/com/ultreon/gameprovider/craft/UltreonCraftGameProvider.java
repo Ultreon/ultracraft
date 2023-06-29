@@ -121,24 +121,27 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public Path getLaunchDirectory() {
-        File gameDir;
-        switch (Platform.get()) {
-            case WINDOWS:
-                gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\.ultreon-craft\\");
-                break;
-            case LINUX:
-            case MACOSX:
-                gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/");
-                break;
-            default:
-                gameDir = new File(System.getProperty("user.home"), "Games/ultreon-craft/");
-        }
+        if (this.arguments.containsKey("packaged")) {
+            File gameDir;
+            switch (Platform.get()) {
+                case WINDOWS:
+                    gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\.ultreon-craft\\");
+                    break;
+                case LINUX:
+                case MACOSX:
+                    gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/");
+                    break;
+                default:
+                    gameDir = new File(System.getProperty("user.home"), "Games/ultreon-craft/");
+            }
 
-        if (!gameDir.exists()) {
-            gameDir.mkdirs();
-        }
+            if (!gameDir.exists()) {
+                gameDir.mkdirs();
+            }
 
-        return gameDir.getAbsoluteFile().toPath();
+            return gameDir.getAbsoluteFile().toPath();
+        }
+        return Path.of(".");
     }
 
     @Override

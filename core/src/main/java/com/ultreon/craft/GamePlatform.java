@@ -6,6 +6,7 @@ import com.ultreon.craft.platform.GdxPlatform;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.platform.PlatformType;
 
+import com.ultreon.libs.resources.v0.ResourceManager;
 import org.slf4j.Logger;
 
 public abstract class GamePlatform {
@@ -124,6 +125,10 @@ public abstract class GamePlatform {
     }
 
     public void setupModsServer() {
+
+    }
+
+    public void importModResources(ResourceManager resourceManager) {
 
     }
 }

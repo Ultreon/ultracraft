@@ -11,9 +11,12 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
+import com.ultreon.libs.resources.v0.ResourceManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.impl.entrypoint.EntrypointUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -22,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import imgui.*;
 import imgui.flag.ImGuiCond;
@@ -30,11 +35,14 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.*;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+    private static final Marker MARKER = MarkerFactory.getMarker("Platform");
     private final String gameDir;
     private ImGuiImplGlfw imGuiGlfw;
     private ImGuiImplGl3 imGuiGl3;
@@ -314,5 +322,20 @@ public class DesktopPlatform extends GamePlatform {
 
         // Invoke entry points.
         EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+    }
+
+    @Override
+    public void importModResources(ResourceManager resourceManager) {
+        super.importModResources(resourceManager);
+
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            for (Path rootPath : mod.getRootPaths()) {
+                try {
+                    resourceManager.importPackage(rootPath);
+                } catch (IOException e) {
+                    UltreonCraft.LOGGER.warn(MARKER, "Importing resources failed for path: " + rootPath.toFile(), e);
+                }
+            }
+        }
     }
 }
