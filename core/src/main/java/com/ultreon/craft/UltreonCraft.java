@@ -32,8 +32,8 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.config.GameSettings;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.LifecycleEvents;
 import com.ultreon.craft.events.ScreenEvents;
-import com.ultreon.craft.events.WindowCloseEvent;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
@@ -355,6 +355,8 @@ public class UltreonCraft extends ApplicationAdapter {
             }
 
             this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
+
+            LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
 
             //*************//
             // Final stuff //
@@ -731,6 +733,8 @@ public class UltreonCraft extends ApplicationAdapter {
             for (Font font : Registries.FONTS.values()) {
                 font.dispose();
             }
+
+            LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -860,7 +864,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public boolean closeRequested() {
-        EventResult eventResult = WindowCloseEvent.EVENT.factory().onWindowClose();
+        EventResult eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
                 this.exitWorldAndThen(() -> {

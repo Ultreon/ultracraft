@@ -3,9 +3,10 @@ package com.ultreon.craft.entity;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.entity.damagesource.DamageSource;
-import com.ultreon.craft.input.GameInput;
+import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.events.v1.ValueEventResult;
 
 public class LivingEntity extends Entity {
     private float health;
@@ -68,6 +69,10 @@ public class LivingEntity extends Entity {
     public final void attack(float damage, DamageSource source) {
         if (isDead) return;
         if (damageImmunity > 0) return;
+
+        ValueEventResult<Float> result = EntityEvents.DAMAGE.factory().onEntityDamage(this, source, damage);
+        Float value = result.getValue();
+        if (value != null) damage = value;
 
         if (this.onAttack(damage, source)) return;
 
