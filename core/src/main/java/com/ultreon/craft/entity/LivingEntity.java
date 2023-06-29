@@ -6,6 +6,7 @@ import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.events.v1.ValueEventResult;
 
 public class LivingEntity extends Entity {
@@ -27,7 +28,7 @@ public class LivingEntity extends Entity {
     }
 
     public void setHealth(float health) {
-        this.health = health;
+        this.health = Mth.clamp(health, 0, this.maxHeath);
     }
 
     public float getMaxHeath() {
