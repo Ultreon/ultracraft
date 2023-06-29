@@ -15,7 +15,8 @@ public class LivingEntity extends Entity {
     private int damageImmunity = 0;
 
     public float jumpVel = 0.55F;
-    public boolean jumping;
+    public boolean jumping = false;
+    public boolean invincible = false;
 
     public LivingEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -37,6 +38,22 @@ public class LivingEntity extends Entity {
         this.maxHeath = maxHeath;
     }
 
+    public float getJumpVel() {
+        return this.jumpVel;
+    }
+
+    public void setJumpVel(float jumpVel) {
+        this.jumpVel = jumpVel;
+    }
+
+    public boolean isInvincible() {
+        return this.invincible;
+    }
+
+    public void setInvincible(boolean invincible) {
+        this.invincible = invincible;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -52,7 +69,7 @@ public class LivingEntity extends Entity {
         }
 
         if (this.isInVoid()) {
-            this.attack(5, DamageSource.VOID);
+            this.hurt(5, DamageSource.VOID);
         }
 
         if (this.health <= 0) {
@@ -76,14 +93,13 @@ public class LivingEntity extends Entity {
         if (!this.noGravity && this.fallDistance > 4.5F) {
             float damage = this.fallDistance - 4.5F;
             if (damage > 0) {
-                this.attack(damage, DamageSource.FALLING);
+                this.hurt(damage, DamageSource.FALLING);
             }
         }
     }
 
-    public final void attack(float damage, DamageSource source) {
-        if (this.isDead || this.health <= 0) return;
-        if (this.damageImmunity > 0) return;
+    public final void hurt(float damage, DamageSource source) {
+        if (this.isDead || this.health <= 0 || this.invincible || this.damageImmunity > 0) return;
 
         ValueEventResult<Float> result = EntityEvents.DAMAGE.factory().onEntityDamage(this, source, damage);
         Float value = result.getValue();
@@ -133,6 +149,7 @@ public class LivingEntity extends Entity {
         this.isDead = data.getBoolean("isDead", this.isDead);
         this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
         this.jumping = data.getBoolean("jumping", this.jumping);
+        this.invincible = data.getBoolean("invincible", this.invincible);
     }
 
     @Override
@@ -145,6 +162,7 @@ public class LivingEntity extends Entity {
         data.putBoolean("isDead", this.isDead);
         data.putFloat("jumpVelocity", this.jumpVel);
         data.putBoolean("jumping", this.jumping);
+        data.putBoolean("jumping", this.invincible);
 
         return data;
     }
