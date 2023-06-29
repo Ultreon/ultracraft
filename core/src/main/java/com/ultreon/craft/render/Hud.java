@@ -1,6 +1,5 @@
 package com.ultreon.craft.render;
 
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -86,7 +85,7 @@ public class Hud implements GameRenderable {
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81, 0, 162, 39, 0, 42);
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81 + x, 0, 18, 22, 0, 81);
 
-        Block[] allowed = Player.ALLOWED;
+        Block[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Block block = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;

@@ -19,7 +19,7 @@ import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
-    public static final Block[] ALLOWED = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
+    public static Block[] allowed = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
     public int selected;
     private boolean running;
     private float walkingSpeed = .09F;
@@ -45,7 +45,7 @@ public class Player extends LivingEntity {
 
     public Block getSelectedBlock() {
         if (this.selected < 0) this.selected = 0;
-        return this.selected >= ALLOWED.length ? Blocks.AIR : ALLOWED[this.selected];
+        return this.selected >= allowed.length ? Blocks.AIR : allowed[this.selected];
     }
 
     @Override
