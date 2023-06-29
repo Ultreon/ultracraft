@@ -14,6 +14,9 @@ public class LivingEntity extends Entity {
     private boolean isDead = false;
     private int damageImmunity = 0;
 
+    public float jumpVel = 0.55F;
+    public boolean jumping;
+
     public LivingEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -38,6 +41,12 @@ public class LivingEntity extends Entity {
     public void tick() {
         super.tick();
 
+        if (this.isDead) return;
+
+        if (this.jumping && this.onGround) {
+            this.jump();
+        }
+
         if (damageImmunity > 0) {
             damageImmunity--;
         }
@@ -50,10 +59,16 @@ public class LivingEntity extends Entity {
             this.health = 0;
 
             if (!this.isDead) {
-                this.isDead = true;
-                this.onDeath();
+                if (!EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
+                    this.isDead = true;
+                    this.onDeath();
+                }
             }
         }
+    }
+
+    public void jump() {
+        this.velocityY = this.jumpVel;
     }
 
     @Override
@@ -67,8 +82,8 @@ public class LivingEntity extends Entity {
     }
 
     public final void attack(float damage, DamageSource source) {
-        if (isDead) return;
-        if (damageImmunity > 0) return;
+        if (this.isDead || this.health <= 0) return;
+        if (this.damageImmunity > 0) return;
 
         ValueEventResult<Float> result = EntityEvents.DAMAGE.factory().onEntityDamage(this, source, damage);
         Float value = result.getValue();
@@ -85,6 +100,15 @@ public class LivingEntity extends Entity {
 
         health = Math.max(health - damage, 0);
         damageImmunity = 10;
+
+        if (this.health <= 0) {
+            this.health = 0;
+
+            if (!EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
+                this.isDead = true;
+                this.onDeath();
+            }
+        }
     }
 
     public boolean onAttack(float damage, DamageSource source) {
@@ -107,6 +131,8 @@ public class LivingEntity extends Entity {
         this.maxHeath = data.getFloat("maxHealth", this.maxHeath);
         this.damageImmunity = data.getInt("damageImmunity", this.damageImmunity);
         this.isDead = data.getBoolean("isDead", this.isDead);
+        this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
+        this.jumping = data.getBoolean("jumping", this.jumping);
     }
 
     @Override
@@ -117,6 +143,8 @@ public class LivingEntity extends Entity {
         data.putFloat("maxHealth", this.maxHeath);
         data.putInt("damageImmunity", this.damageImmunity);
         data.putBoolean("isDead", this.isDead);
+        data.putFloat("jumpVelocity", this.jumpVel);
+        data.putBoolean("jumping", this.jumping);
 
         return data;
     }

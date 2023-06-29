@@ -35,8 +35,6 @@ public class Entity {
     public float velocityZ;
     public float gravity = 0.08F;
     public boolean noGravity;
-    public float jumpVel = 0.55F;
-    public boolean jumping;
     public boolean isColliding;
     public boolean isCollidingX;
     public boolean isCollidingY;
@@ -81,9 +79,7 @@ public class Entity {
         this.velocityZ = velocity.getFloat("z", this.velocityZ);
 
         this.fallDistance = data.getFloat("fallDistance", this.fallDistance);
-        this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
         this.gravity = data.getFloat("gravity", this.gravity);
-        this.jumping = data.getBoolean("jumping", this.jumping);
         this.noGravity = data.getBoolean("noGravity", this.noGravity);
         this.noClip = data.getBoolean("noClip", this.noClip);
     }
@@ -111,9 +107,7 @@ public class Entity {
         data.putString("type", Objects.requireNonNull(Registries.ENTITIES.getKey(this.type)).toString());
 
         data.putFloat("fallDistance", this.fallDistance);
-        data.putFloat("jumpVelocity", this.jumpVel);
         data.putFloat("gravity", this.gravity);
-        data.putBoolean("jumping", this.jumping);
         data.putBoolean("noGravity", this.noGravity);
         data.putBoolean("noClip", this.noClip);
 
@@ -133,10 +127,6 @@ public class Entity {
         }
 
         move(velocityX, velocityY, velocityZ);
-
-        if (this.jumping && this.onGround) {
-            this.jump();
-        }
 
         this.velocityX *= 0.6F;
         this.velocityY *= 0.98F;
@@ -238,10 +228,6 @@ public class Entity {
         float y2 = this.y + size.height();
         float z2 = this.z + size.width() / 2;
         return new BoundingBox(new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
-    }
-
-    public void jump() {
-        this.velocityY = this.jumpVel;
     }
 
     public float getX() {
