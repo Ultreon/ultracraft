@@ -110,10 +110,6 @@ dependencies {
 
 allprojects {
     apply plugin: "maven-publish"
-//    apply plugin: "java"
-//    apply plugin: "java-library"
-//    apply plugin: "idea"
-//    apply plugin: "groovy"
 
     ext {
         app_name = "Ultreon Craft"
@@ -127,19 +123,10 @@ allprojects {
 
     publishing {
         publications {
-//            mavenJava(MavenPublication) {
-//                from components.java
-//            }
+
         }
         repositories {
-            maven {
-                name = "GitHubPackages"
-                url = "https://maven.pkg.github.com/Ultreon/ultreon-craft"
-                credentials {
-                    username = getenv("GITHUB_ACTOR")
-                    password = getenv("GITHUB_TOKEN")
-                }
-            }
+
         }
     }
 

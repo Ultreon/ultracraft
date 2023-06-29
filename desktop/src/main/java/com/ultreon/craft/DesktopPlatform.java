@@ -11,6 +11,13 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
+import com.ultreon.libs.resources.v0.ResourceManager;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.impl.entrypoint.EntrypointUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
@@ -18,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import imgui.*;
 import imgui.flag.ImGuiCond;
@@ -26,11 +35,14 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.*;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+    private static final Marker MARKER = MarkerFactory.getMarker("Platform");
     private final String gameDir;
     private ImGuiImplGlfw imGuiGlfw;
     private ImGuiImplGl3 imGuiGl3;
@@ -43,15 +55,15 @@ public class DesktopPlatform extends GamePlatform {
         if (packaged) {
             switch (this.getOperatingSystem()) {
                 case WINDOWS:
-                    this.gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\Ultreon Craft\\").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "\\AppData\\Roaming\\.ultreon-craft\\";
                     break;
                 case LINUX:
                 case UNIX:
                 case MAC_OS:
-                    this.gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "/.ultreon-craft/";
                     break;
                 default:
-                    this.gameDir = new File(System.getProperty("user.home"), "Games/UltreonCraft/").getAbsolutePath();
+                    this.gameDir = System.getProperty("user.home") + "/Games/ultreon-craft/";
             }
         } else {
             String gameDir = this.argParser.getKeywordArgs().get("gamedir");
@@ -286,5 +298,44 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public boolean isModsSupported() {
         return true;
+    }
+
+    @Override
+    public void setupMods() {
+        super.setupMods();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+    }
+
+    @Override
+    public void setupModsClient() {
+        super.setupModsClient();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+    }
+
+    @Override
+    public void setupModsServer() {
+        super.setupModsServer();
+
+        // Invoke entry points.
+        EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+    }
+
+    @Override
+    public void importModResources(ResourceManager resourceManager) {
+        super.importModResources(resourceManager);
+
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            for (Path rootPath : mod.getRootPaths()) {
+                try {
+                    resourceManager.importPackage(rootPath);
+                } catch (IOException e) {
+                    UltreonCraft.LOGGER.warn(MARKER, "Importing resources failed for path: " + rootPath.toFile(), e);
+                }
+            }
+        }
     }
 }

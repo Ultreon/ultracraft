@@ -1,6 +1,5 @@
 package com.ultreon.craft.render;
 
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -66,7 +65,7 @@ public class Hud implements GameRenderable {
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
-        renderer.texture(this.mobileTexture, 20, 20, 50, 45, 0, 0);
+        renderer.texture(this.mobileTexture, 20, 25, 50, 45, 0, 0);
 
         int joyStickX = 24 - 7 + 21;
         int joyStickY = 24 - 7 + 21;
@@ -88,7 +87,7 @@ public class Hud implements GameRenderable {
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81, 0, 162, 39, 0, 42);
         renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81 + x, 0, 18, 22, 0, 81);
 
-        Item[] allowed = Player.ALLOWED;
+        Item[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;

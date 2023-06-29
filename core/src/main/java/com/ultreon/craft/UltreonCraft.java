@@ -32,8 +32,8 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.config.GameSettings;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.LifecycleEvents;
 import com.ultreon.craft.events.ScreenEvents;
-import com.ultreon.craft.events.WindowCloseEvent;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
@@ -44,6 +44,7 @@ import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.platform.PlatformType;
+import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
@@ -54,6 +55,7 @@ import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.resources.ResourceFileHandle;
+import com.ultreon.craft.text.LanguageData;
 import com.ultreon.craft.util.GG;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.render.texture.atlas.TextureStitcher;
@@ -73,13 +75,12 @@ import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Duration;
@@ -96,6 +97,7 @@ public class UltreonCraft extends ApplicationAdapter {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
+    private static final int CULL_FACE = GL20.GL_FRONT;
     private String allUnicode;
     public FileHandle configDir;
 
@@ -156,6 +158,7 @@ public class UltreonCraft extends ApplicationAdapter {
     private Integer deferredHeight;
     private Texture windowTex;
     private DebugRenderer debugRenderer;
+    private boolean closingWorld;
 
     public UltreonCraft(String[] args) {
         LOGGER.info("Booting game!");
@@ -199,7 +202,7 @@ public class UltreonCraft extends ApplicationAdapter {
     @Override
     public void create() {
         try {
-            LOGGER.info("Data directory is at: " + new DataFileHandle(".").file().getAbsolutePath());
+            LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
 
             Gdx.app.setApplicationLogger(new ApplicationLogger() {
                 private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
@@ -235,11 +238,13 @@ public class UltreonCraft extends ApplicationAdapter {
                 }
             });
 
-            this.configDir = new DataFileHandle("config/");
-            if (!this.configDir.isDirectory()) {
-                this.configDir.delete();
-                this.configDir.mkdirs();
-            }
+            this.configDir = createDir("config/");
+
+            createDir("screenshots/");
+            createDir("game-crashes/");
+            createDir("logs/");
+
+            GamePlatform.instance.setupMods();
 
             this.settings = new GameSettings();
             this.settings.reload();
@@ -251,13 +256,10 @@ public class UltreonCraft extends ApplicationAdapter {
             this.textureManager = new TextureManager();
             this.spriteBatch = new SpriteBatch();
 
-            createDir("screenshots/");
-            createDir("game-crashes/");
-            createDir("logs/");
-
             this.resourceManager = new ResourceManager("assets");
             LOGGER.info("Importing resources");
             this.resourceManager.importDeferredPackage(this.getClass());
+            GamePlatform.instance.importModResources(this.resourceManager);
 
             Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
             if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
@@ -283,6 +285,7 @@ public class UltreonCraft extends ApplicationAdapter {
             DefaultShader.Config config = new DefaultShader.Config();
             config.defaultCullFace = GL20.GL_FRONT;
             this.batch = new ModelBatch(new DefaultShaderProvider(config));
+            this.batch.getRenderContext().setCullFace(CULL_FACE);
             this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
             this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             this.camera.near = 0.01f;
@@ -315,189 +318,7 @@ public class UltreonCraft extends ApplicationAdapter {
             // Registering game content //
             //**************************//
             LOGGER.info("Loading languages");
-            this.registerLanguage(id("af_za"));
-            this.registerLanguage(id("ar_ae"));
-            this.registerLanguage(id("ar_ar"));
-            this.registerLanguage(id("ar_bh"));
-            this.registerLanguage(id("ar_dj"));
-            this.registerLanguage(id("ar_dz"));
-            this.registerLanguage(id("ar_eg"));
-            this.registerLanguage(id("ar_eh"));
-            this.registerLanguage(id("ar_er"));
-            this.registerLanguage(id("ar_il"));
-            this.registerLanguage(id("ar_iq"));
-            this.registerLanguage(id("ar_iq"));
-            this.registerLanguage(id("ar_jo"));
-            this.registerLanguage(id("ar_km"));
-            this.registerLanguage(id("ar_kw"));
-            this.registerLanguage(id("ar_lb"));
-            this.registerLanguage(id("ar_ly"));
-            this.registerLanguage(id("ar_ma"));
-            this.registerLanguage(id("ar_mr"));
-            this.registerLanguage(id("ar_om"));
-            this.registerLanguage(id("ar_ps"));
-            this.registerLanguage(id("ar_qa"));
-            this.registerLanguage(id("ar_sa"));
-            this.registerLanguage(id("ar_sd"));
-            this.registerLanguage(id("ar_so"));
-            this.registerLanguage(id("ar_sy"));
-            this.registerLanguage(id("ar_td"));
-            this.registerLanguage(id("ar_tn"));
-            this.registerLanguage(id("ar_ye"));
-            this.registerLanguage(id("ar_az"));
-            this.registerLanguage(id("be_by"));
-            this.registerLanguage(id("bg_bg"));
-            this.registerLanguage(id("bn_in"));
-            this.registerLanguage(id("bs_ba"));
-            this.registerLanguage(id("ca_ad"));
-            this.registerLanguage(id("ca_es"));
-            this.registerLanguage(id("cs_cz"));
-            this.registerLanguage(id("cs_sk"));
-            this.registerLanguage(id("cy_gb"));
-            this.registerLanguage(id("da_dk"));
-            this.registerLanguage(id("da_fo"));
-            this.registerLanguage(id("da_gl"));
-            this.registerLanguage(id("de_at"));
-            this.registerLanguage(id("de_be"));
-            this.registerLanguage(id("de_ch"));
-            this.registerLanguage(id("de_de"));
-            this.registerLanguage(id("de_li"));
-            this.registerLanguage(id("de_lu"));
-            this.registerLanguage(id("de_na"));
-            this.registerLanguage(id("el_cy"));
-            this.registerLanguage(id("el_gr"));
-            this.registerLanguage(id("en_au"));
-            this.registerLanguage(id("en_gb"));
-            this.registerLanguage(id("en_pi"));
-            this.registerLanguage(id("en_ud"));
-            this.registerLanguage(id("en_us"));
-            this.registerLanguage(id("eo_eo"));
-            this.registerLanguage(id("es_ar"));
-            this.registerLanguage(id("es_bo"));
-            this.registerLanguage(id("es_cl"));
-            this.registerLanguage(id("es_co"));
-            this.registerLanguage(id("es_cr"));
-            this.registerLanguage(id("es_cu"));
-            this.registerLanguage(id("es_do"));
-            this.registerLanguage(id("es_ec"));
-            this.registerLanguage(id("es_es"));
-            this.registerLanguage(id("es_gi"));
-            this.registerLanguage(id("es_gq"));
-            this.registerLanguage(id("es_gt"));
-            this.registerLanguage(id("es_hn"));
-            this.registerLanguage(id("es_la"));
-            this.registerLanguage(id("es_mx"));
-            this.registerLanguage(id("es_ni"));
-            this.registerLanguage(id("es_pa"));
-            this.registerLanguage(id("es_pe"));
-            this.registerLanguage(id("es_pr"));
-            this.registerLanguage(id("es_py"));
-            this.registerLanguage(id("es_sv"));
-            this.registerLanguage(id("es_us"));
-            this.registerLanguage(id("es_uy"));
-            this.registerLanguage(id("es_ve"));
-            this.registerLanguage(id("et_ee"));
-            this.registerLanguage(id("eu_es"));
-            this.registerLanguage(id("fa_ir"));
-            this.registerLanguage(id("fb_lt"));
-            this.registerLanguage(id("fi_fi"));
-            this.registerLanguage(id("fo_fo"));
-            this.registerLanguage(id("fr_be"));
-            this.registerLanguage(id("fr_bf"));
-            this.registerLanguage(id("fr_bi"));
-            this.registerLanguage(id("fr_bj"));
-            this.registerLanguage(id("fr_ca"));
-            this.registerLanguage(id("fr_cg"));
-            this.registerLanguage(id("fr_ch"));
-            this.registerLanguage(id("fr_fr"));
-            this.registerLanguage(id("fr_fr"));
-            this.registerLanguage(id("fr_ht"));
-            this.registerLanguage(id("fr_td"));
-            this.registerLanguage(id("fy_nl"));
-            this.registerLanguage(id("ga_ie"));
-            this.registerLanguage(id("gl_es"));
-            this.registerLanguage(id("ge_il"));
-            this.registerLanguage(id("hi_fj"));
-            this.registerLanguage(id("hi_in"));
-            this.registerLanguage(id("hi_pk"));
-            this.registerLanguage(id("hr_ba"));
-            this.registerLanguage(id("hr_hr"));
-            this.registerLanguage(id("hu_hu"));
-            this.registerLanguage(id("hy_am"));
-            this.registerLanguage(id("id_id"));
-            this.registerLanguage(id("is_is"));
-            this.registerLanguage(id("it_ch"));
-            this.registerLanguage(id("it_it"));
-            this.registerLanguage(id("it_sm"));
-            this.registerLanguage(id("ja_jp"));
-            this.registerLanguage(id("ja_pw"));
-            this.registerLanguage(id("ka_ge"));
-            this.registerLanguage(id("km_kh"));
-            this.registerLanguage(id("km_kh"));
-            this.registerLanguage(id("ko_kp"));
-            this.registerLanguage(id("ko_kr"));
-            this.registerLanguage(id("ku_tr"));
-            this.registerLanguage(id("la_va"));
-            this.registerLanguage(id("la_va"));
-            this.registerLanguage(id("it_lt"));
-            this.registerLanguage(id("lv_lv"));
-            this.registerLanguage(id("mk_mk"));
-            this.registerLanguage(id("ml_in"));
-            this.registerLanguage(id("ms_my"));
-            this.registerLanguage(id("ms_sg"));
-            this.registerLanguage(id("mt_mt"));
-            this.registerLanguage(id("ne_np"));
-            this.registerLanguage(id("nl_an"));
-            this.registerLanguage(id("nl_aw"));
-            this.registerLanguage(id("nl_be"));
-            this.registerLanguage(id("nl_nl"));
-            this.registerLanguage(id("nl_sr"));
-            this.registerLanguage(id("nl_sx"));
-            this.registerLanguage(id("nn_no"));
-            this.registerLanguage(id("no_no"));
-            this.registerLanguage(id("pa_in"));
-            this.registerLanguage(id("pl_pl"));
-            this.registerLanguage(id("pt_ao"));
-            this.registerLanguage(id("pt_br"));
-            this.registerLanguage(id("pt_cv"));
-            this.registerLanguage(id("pt_gq"));
-            this.registerLanguage(id("pt_gw"));
-            this.registerLanguage(id("pt_mo"));
-            this.registerLanguage(id("pt_mz"));
-            this.registerLanguage(id("pt_pt"));
-            this.registerLanguage(id("pt_st"));
-            this.registerLanguage(id("pt_tl"));
-            this.registerLanguage(id("ro_md"));
-            this.registerLanguage(id("ro_ro"));
-            this.registerLanguage(id("ru_by"));
-            this.registerLanguage(id("ru_kg"));
-            this.registerLanguage(id("ru_kz"));
-            this.registerLanguage(id("ru_ru"));
-            this.registerLanguage(id("ru_tj"));
-            this.registerLanguage(id("sk_cz"));
-            this.registerLanguage(id("sk_sk"));
-            this.registerLanguage(id("sl_sl"));
-            this.registerLanguage(id("sq_al"));
-            this.registerLanguage(id("sq_ks"));
-            this.registerLanguage(id("sr_ba"));
-            this.registerLanguage(id("sr_me"));
-            this.registerLanguage(id("sr_rs"));
-            this.registerLanguage(id("sv_fi"));
-            this.registerLanguage(id("sv_se"));
-            this.registerLanguage(id("sw_ke"));
-            this.registerLanguage(id("ta_in"));
-            this.registerLanguage(id("te_in"));
-            this.registerLanguage(id("th_th"));
-            this.registerLanguage(id("tl_ph"));
-            this.registerLanguage(id("tr_cy"));
-            this.registerLanguage(id("tr_tr"));
-            this.registerLanguage(id("uk_ua"));
-            this.registerLanguage(id("ul_vn"));
-            this.registerLanguage(id("zh_cn"));
-            this.registerLanguage(id("zh_hk"));
-            this.registerLanguage(id("zh_mo"));
-            this.registerLanguage(id("zh_sg"));
-            this.registerLanguage(id("zh_gw"));
+            this.loadLanguages();
 
             LOGGER.info("Registering stuff");
             Registries.init();
@@ -543,13 +364,15 @@ public class UltreonCraft extends ApplicationAdapter {
 
             this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
 
+            LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
+
             //*************//
             // Final stuff //
             //*************//
             LOGGER.info("Opening title screen");
             this.showScreen(new TitleScreen());
 
-            savedWorld = new SavedWorld(new DataFileHandle("world"));
+            savedWorld = new SavedWorld(GamePlatform.data("world"));
 
             GamePlatform.instance.setupImGui();
         } catch (Throwable t) {
@@ -559,6 +382,29 @@ public class UltreonCraft extends ApplicationAdapter {
 
         booted = true;
         LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
+    }
+
+    private void loadLanguages() {
+        FileHandle internal = Gdx.files.internal("assets/craft/languages.json");
+        List<String> languages;
+        try (Reader reader = internal.reader()) {
+            languages = GSON.fromJson(reader, LanguageData.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to load languages register", e);
+        }
+
+        for (String language : languages) {
+            this.registerLanguage(id(language));
+        }
+
+        LanguageRegistry.doRegistration(this::registerLanguage);
+    }
+
+    private void registerLanguage(Identifier id) {
+        String[] s = id.path().split("_", 2);
+        Locale locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
+        LanguageManager.INSTANCE.register(locale, id);
+        LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
     }
 
 	private void stitchTextures() {
@@ -584,22 +430,20 @@ public class UltreonCraft extends ApplicationAdapter {
 		BlockModelRegistry.registerDefault(Blocks.STONE);
 		BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
 	}
-    private void registerLanguage(Identifier id) {
-        String[] s = id.path().split("_", 2);
-        Locale locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
-        LanguageManager.INSTANCE.register(locale, id);
-        LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
-    }
 
     private GameInput createInput() {
         return GamePlatform.instance.isMobile() ? new MobileInput(this, this.camera) : new DesktopInput(this, this.camera);
     }
 
-    private static void createDir(String dirName) {
-        FileHandle directory = Gdx.files.local(dirName);
+    private static FileHandle createDir(String dirName) {
+        FileHandle directory = GamePlatform.data(dirName);
         if (!directory.exists()) {
             directory.mkdirs();
+        } else if (!directory.isDirectory()) {
+            directory.delete();
+            directory.mkdirs();
         }
+        return directory;
     }
 
     @Override
@@ -711,6 +555,7 @@ public class UltreonCraft extends ApplicationAdapter {
 
             if (this.renderWorld && world != null) {
                 this.batch.begin(this.camera);
+                this.batch.getRenderContext().setCullFace(CULL_FACE);
                 this.batch.render(world, this.env);
                 this.batch.end();
             }
@@ -738,6 +583,8 @@ public class UltreonCraft extends ApplicationAdapter {
         } catch (Throwable t) {
             crash(t);
         }
+
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
     }
 
     private void renderWindow(Renderer renderer, int width, int height) {
@@ -910,6 +757,8 @@ public class UltreonCraft extends ApplicationAdapter {
             for (Font font : Registries.FONTS.values()) {
                 font.dispose();
             }
+
+            LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -969,6 +818,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public synchronized void exitWorldAndThen(Runnable runnable) {
+        this.closingWorld = true;
         final World world = this.world;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
@@ -977,7 +827,12 @@ public class UltreonCraft extends ApplicationAdapter {
             world.dispose();
             System.gc();
             this.runLater(new Task(id("post_world_exit"), runnable));
+            this.closingWorld = false;
         });
+    }
+
+    public boolean isClosingWorld() {
+        return this.closingWorld;
     }
 
     /**
@@ -1033,7 +888,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public boolean closeRequested() {
-        EventResult eventResult = WindowCloseEvent.EVENT.factory().onWindowClose();
+        EventResult eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
                 this.exitWorldAndThen(() -> {

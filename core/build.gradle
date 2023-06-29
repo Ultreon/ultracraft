@@ -154,3 +154,11 @@ task("copyJar", type: Copy) {
     from(tasks.jar)
     into("$buildDir/jars")
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

@@ -20,7 +20,7 @@ import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
     private final PlayerInput input = UltreonCraft.get().playerInput;
-    public static final Item[] ALLOWED = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE};
+    public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE};
     public int selected;
     private boolean running;
     private float walkingSpeed = .09F;
@@ -46,12 +46,14 @@ public class Player extends LivingEntity {
 
     public Item getSelectedItem() {
         if (this.selected < 0) this.selected = 0;
-        return this.selected >= ALLOWED.length ? Items.AIR : ALLOWED[this.selected];
+        return this.selected >= allowed.length ? Items.AIR : allowed[this.selected];
     }
 
     @Override
     public void tick() {
-        this.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A);
+        super.tick();
+
+        this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         if (this.topView) {
             this.noGravity = true;
@@ -63,7 +65,6 @@ public class Player extends LivingEntity {
             GameInput.startVibration(200, 1.0F);
         }
 
-        super.tick();
     }
 
     @Override
