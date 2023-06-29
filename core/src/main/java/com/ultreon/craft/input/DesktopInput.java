@@ -13,6 +13,7 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.ScreenEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.UseItemContext;
@@ -184,6 +185,7 @@ public class DesktopInput extends GameInput {
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
                             UseItemContext context = new UseItemContext(world, player, hitResult);
                             Item item = player.getSelectedItem();
+                            ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                         }
                     }

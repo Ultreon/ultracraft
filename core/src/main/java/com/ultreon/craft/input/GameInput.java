@@ -19,6 +19,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.input.util.Joystick;
 import com.ultreon.craft.input.util.JoystickType;
@@ -189,6 +190,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                         if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
                             UseItemContext context = new UseItemContext(world, player, hitResult);
                             Item item = player.getSelectedItem();
+                            ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                             this.itemUse = System.currentTimeMillis() + 500;
                         } else if (left < 0.3F) {
