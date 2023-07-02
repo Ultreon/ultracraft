@@ -10,11 +10,12 @@ import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.Ray;
+import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.craft.util.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
@@ -45,6 +46,21 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
+
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.stream.Collectors;
+
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
@@ -64,7 +80,7 @@ import static com.ultreon.craft.UltreonCraft.LOGGER;
 import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-public class World implements RenderableProvider, Disposable {
+public class World implements Disposable {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
@@ -83,10 +99,7 @@ public class World implements RenderableProvider, Disposable {
 
 	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
-	private final short[] indices;
-	private final GridPoint3 spawnPoint = new GridPoint3();
-	private float[] vertices;
-
+	private final Vec3i spawnPoint = new Vec3i();
 	private final long seed = 512;
 	private int renderedChunks;
 
@@ -112,21 +125,6 @@ public class World implements RenderableProvider, Disposable {
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
-
-		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
-
-		int len = World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE * 6 * 6 / 3;
-
-		this.indices = new short[len];
-		short j = 0;
-		for (int i = 0; i < len; i += 6, j += 4) {
-			this.indices[i] = j;
-			this.indices[i + 1] = (short) (j + 1);
-			this.indices[i + 2] = (short) (j + 2);
-			this.indices[i + 3] = (short) (j + 2);
-			this.indices[i + 4] = (short) (j + 3);
-			this.indices[i + 5] = j;
-		}
 
 		this.generator = DEFAULT_BIOME.create(this, this.seed);
 	}
@@ -218,7 +216,7 @@ public class World implements RenderableProvider, Disposable {
 		}, this.saveExecutor);
 	}
 
-	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
+	private WorldGenInfo getWorldGenInfo(Vec3d pos) {
 		List<ChunkPos> needed = getChunksAround(this, pos);
 		List<ChunkPos> chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
 		List<ChunkPos> chunkPositionsToRemove = this.getChunksToUnload(needed);
@@ -231,7 +229,7 @@ public class World implements RenderableProvider, Disposable {
 
 	}
 
-	static List<ChunkPos> getChunksAround(World world, Vector3 pos) {
+	static List<ChunkPos> getChunksAround(World world, Vec3d pos) {
 		int startX = (int) (pos.x - (world.getRenderDistance()) * World.CHUNK_SIZE);
 		int startZ = (int) (pos.z - (world.getRenderDistance()) * World.CHUNK_SIZE);
 		int endX = (int) (pos.x + (world.getRenderDistance()) * World.CHUNK_SIZE);
@@ -282,10 +280,10 @@ public class World implements RenderableProvider, Disposable {
 		return this.isSpawnChunk(pos);
 	}
 
-	private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vector3 pos) {
+	private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
 		return needed.stream()
 				.filter(chunkPos -> this.getChunk(chunkPos) == null)
-				.sorted((o1, o2) -> Float.compare(o1.getChunkOrigin().dst(pos), o2.getChunkOrigin().dst(pos)))
+				.sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos)))
 				.collect(Collectors.toList());
 	}
 
@@ -293,7 +291,7 @@ public class World implements RenderableProvider, Disposable {
 		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(player.getPosition()));
 	}
 
-	private CompletableFuture<Void> updateChunksForPlayerAsync(Vector3 position) {
+	private CompletableFuture<Void> updateChunksForPlayerAsync(Vec3d position) {
 		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(position));
 	}
 
@@ -302,10 +300,10 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public void updateChunksForPlayer(float x, float z) {
-		this.updateChunksForPlayer(new Vector3(x, WORLD_DEPTH, z));
+		this.updateChunksForPlayer(new Vec3d(x, WORLD_DEPTH, z));
 	}
 
-	public void updateChunksForPlayer(Vector3 player) {
+	public void updateChunksForPlayer(Vec3d player) {
 		WorldGenInfo worldGenInfo = this.getWorldGenInfo(player);
 		List<ChunkPos> toCreate = worldGenInfo.toCreate;
 		this.chunksToLoad = toCreate.size();
@@ -331,14 +329,7 @@ public class World implements RenderableProvider, Disposable {
 		synchronized (chunk.lock) {
             LOGGER.debug(MARKER, "UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
             return CompletableFuture.supplyAsync(() -> {
-				WorldRegion region = this.getRegionFor(chunk.pos);
-				if (region == null) {
-					return false;
-				}
-				synchronized (region.lock) {
-					region.unloadChunk(this.toLocalChunkPos(chunk.pos.x(), chunk.pos.z()), true, false);
-					return true;
-				}
+				return this.unloadChunk(chunk);
 			});
 		}
 	}
@@ -358,6 +349,7 @@ public class World implements RenderableProvider, Disposable {
 			}
 			synchronized (region.lock) {
 				region.unloadChunk(this.toLocalChunkPos(chunk.pos.x(), chunk.pos.z()), true, false);
+				WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.pos, chunk);
 				return true;
 			}
 		}
@@ -532,11 +524,6 @@ public class World implements RenderableProvider, Disposable {
 	private void renderChunk(int x, int z, Chunk chunk) {
 		chunk.dirty = false;
 		for (Section section : chunk.getSections()) {
-			section.numVertices = 0;
-			section.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
-			section.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-			section.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
-
 			this.game.runLater(new Task(new Identifier("post_section_render"), () -> {
 				section.ready = true;
 				section.dirty = true;
@@ -584,19 +571,19 @@ public class World implements RenderableProvider, Disposable {
 		});
 	}
 
-	public void set(GridPoint3 blockPos, Block block) {
+	public void set(Vec3i blockPos, Block block) {
 		this.set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		BlockEvents.SET_BLOCK.factory().onSetBlock(this, new GridPoint3(x, y, z), block);
+		BlockEvents.SET_BLOCK.factory().onSetBlock(this, new Vec3i(x, y, z), block);
 
 		Chunk chunk = getChunkAt(x, y, z);
-		GridPoint3 cp = toLocalBlockPos(x, y, z);
+		Vec3i cp = toLocalBlockPos(x, y, z);
 		chunk.set(cp.x, cp.y, cp.z, block);
 	}
 
-	public Block get(GridPoint3 pos) {
+	public Block get(Vec3i pos) {
 		return get(pos.x, pos.y, pos.z);
 	}
 
@@ -610,16 +597,16 @@ public class World implements RenderableProvider, Disposable {
 		synchronized (chunkAt.lock) {
 			if (!chunkAt.ready) return Blocks.AIR;
 
-			GridPoint3 cp = this.toLocalBlockPos(x, y, z);
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
 			return chunkAt.get(cp.x, cp.y, cp.z);
 		}
 	}
 
-	private GridPoint3 toLocalBlockPos(GridPoint3 worldCoords) {
+	private Vec3i toLocalBlockPos(Vec3i worldCoords) {
 		return this.toLocalBlockPos(worldCoords.x, worldCoords.y, worldCoords.z);
 	}
 
-	private GridPoint3 toLocalBlockPos(int x, int y, int z) {
+	private Vec3i toLocalBlockPos(int x, int y, int z) {
 		int cx = x % CHUNK_SIZE;
 		int cy = y % CHUNK_HEIGHT;
 		int cz = z % CHUNK_SIZE;
@@ -627,7 +614,7 @@ public class World implements RenderableProvider, Disposable {
 		if (cx < 0) cx += CHUNK_SIZE;
 		if (cz < 0) cz += CHUNK_SIZE;
 
-		return new GridPoint3(cx, cy, cz);
+		return new Vec3i(cx, cy, cz);
 	}
 
 	private ChunkPos toLocalChunkPos(int x, int z) {
@@ -654,10 +641,10 @@ public class World implements RenderableProvider, Disposable {
 	}
 
 	public Chunk getChunkAt(int x, int y, int z) {
-		return this.getChunkAt(new GridPoint3(x, y, z));
+		return this.getChunkAt(new Vec3i(x, y, z));
 	}
 
-	public Chunk getChunkAt(GridPoint3 pos) {
+	public Chunk getChunkAt(Vec3i pos) {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
@@ -667,7 +654,7 @@ public class World implements RenderableProvider, Disposable {
 		return this.getChunk(chunkPos);
 	}
 
-	private boolean isOutOfWorldBounds(GridPoint3 pos) {
+	private boolean isOutOfWorldBounds(Vec3i pos) {
 		return pos.y < WORLD_DEPTH || pos.y > WORLD_HEIGHT;
 	}
 
@@ -717,58 +704,7 @@ public class World implements RenderableProvider, Disposable {
 //		}
 	}
 
-	@Override
-	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-		this.renderedChunks = 0;
-		List<Chunk> chunks = this.getChunks();
-		this.totalChunks = chunks.size();
-		List<Chunk> toSort = new ArrayList<>(chunks);
-		Player player = this.game.player;
-		if (player == null) return;
-		toSort.sort((o1, o2) -> {
-			Vector3 mid1 = new Vector3(o1.getOffset().x + (float) CHUNK_SIZE / 2, o1.getOffset().y + (float) CHUNK_HEIGHT / 2, o1.getOffset().z + (float) CHUNK_SIZE / 2);
-			Vector3 mid2 = new Vector3(o2.getOffset().x + (float) CHUNK_SIZE / 2, o2.getOffset().y + (float) CHUNK_HEIGHT / 2, o2.getOffset().z + (float) CHUNK_SIZE / 2);
-			return Float.compare(mid2.dst(player.getPosition()), mid1.dst(player.getPosition()));
-		});
-		for (Chunk chunk1 : toSort) {
-			if (!chunk1.ready) continue;
-
-			for (Section section : chunk1.getSections()) {
-				synchronized (section.lock) {
-					if (!section.ready) continue;
-
-					Mesh mesh = section.mesh;
-					if (section.dirty || section.mesh == null) {
-						if (section.mesh != null) section.mesh.dispose();
-						FloatList vertices = new FloatArrayList();
-						int numVertices = section.buildVertices(vertices);
-						mesh = section.mesh = new Mesh(false, false, numVertices,
-								this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-						section.mesh.setIndices(this.indices);
-						section.numVertices = numVertices / 4 * 6;
-						section.mesh.setVertices(vertices.toFloatArray());
-						vertices.clear();
-						section.dirty = false;
-					}
-
-					if (section.numVertices == 0) continue;
-
-					Renderable piece = pool.obtain();
-
-					piece.material = section.material;
-					piece.meshPart.mesh = mesh;
-					piece.meshPart.offset = 0;
-					piece.meshPart.size = section.numVertices;
-					piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
-
-					renderables.add(piece);
-					this.renderedChunks = this.renderedChunks + 1;
-				}
-			}
-		}
-	}
-
-	private List<Chunk> getChunks() {
+	public List<Chunk> getChunks() {
 		List<Chunk> chunks = new ArrayList<>();
 		for (WorldRegion region : this.regions.values()) {
 			Collection<Chunk> regionChunks = region.getChunks();
@@ -821,12 +757,12 @@ public class World implements RenderableProvider, Disposable {
 
 	public List<BoundingBox> collide(BoundingBox box) {
 		List<BoundingBox> boxes = new ArrayList<>();
-		int xMin = MathUtils.floor(box.min.x);
-		int xMax = MathUtils.floor(box.max.x);
-		int yMin = MathUtils.floor(box.min.y);
-		int yMax = MathUtils.floor(box.max.y);
-		int zMin = MathUtils.floor(box.min.z);
-		int zMax = MathUtils.floor(box.max.z);
+		int xMin = (int) Math.floor(box.min.x);
+		int xMax = (int) Math.floor(box.max.x);
+		int yMin = (int) Math.floor(box.min.y);
+		int yMax = (int) Math.floor(box.max.y);
+		int zMin = (int) Math.floor(box.min.z);
+		int zMax = (int) Math.floor(box.max.z);
 
 		for (int x = xMin; x <= xMax; x++) {
 			for (int y = yMin; y <= yMax; y++) {
@@ -862,11 +798,10 @@ public class World implements RenderableProvider, Disposable {
 			chunk.dispose(true);
 		}
 		this.generator.dispose();
-		this.vertices = null;
 	}
 
 	public CompletableFuture<Void> updateChunksForPlayerAsync(float spawnX, float spawnZ) {
-		return this.updateChunksForPlayerAsync(new Vector3(spawnX, 0, spawnZ));
+		return this.updateChunksForPlayerAsync(new Vec3d(spawnX, 0, spawnZ));
 	}
 
 	public int getRenderedChunks() {
@@ -897,7 +832,7 @@ public class World implements RenderableProvider, Disposable {
 		return savedWorld;
 	}
 
-	public WorldRegion getRegionAt(GridPoint3 blockPos) {
+	public WorldRegion getRegionAt(Vec3i blockPos) {
 		RegionPos regionPos = new RegionPos(Math.floorDiv(Math.floorDiv(blockPos.x, CHUNK_SIZE), REGION_SIZE), Math.floorDiv(Math.floorDiv(blockPos.z, CHUNK_SIZE), REGION_SIZE));
 		return this.getRegion(regionPos);
 	}
@@ -918,7 +853,7 @@ public class World implements RenderableProvider, Disposable {
 				this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
 	}
 
-	public GridPoint3 getSpawnPoint() {
+	public Vec3i getSpawnPoint() {
 		this.spawnPoint.y = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
 		return this.spawnPoint;
 	}

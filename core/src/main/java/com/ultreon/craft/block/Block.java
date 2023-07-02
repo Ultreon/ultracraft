@@ -1,10 +1,10 @@
 package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -75,14 +75,14 @@ public class Block {
     }
 
     public BoundingBox getBoundingBox(int x, int y, int z) {
-        return new BoundingBox(new Vector3(x, y, z), new Vector3(x + 1, y + 1, z + 1));
+        return new BoundingBox(new Vec3d(x, y, z), new Vec3d(x + 1, y + 1, z + 1));
     }
 
     public boolean isTransparent() {
         return transparent;
     }
 
-    public BoundingBox getBoundingBox(GridPoint3 posNext) {
+    public BoundingBox getBoundingBox(Vec3i posNext) {
         return getBoundingBox(posNext.x, posNext.y, posNext.z);
     }
 

@@ -81,7 +81,7 @@ public class Player extends LivingEntity {
     }
 
     public ChunkPos getChunkPos() {
-        return Utils.chunkPosFromBlockCoords(getPosition());
+        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 
     public float getEyeHeight() {

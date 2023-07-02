@@ -1,6 +1,6 @@
 package com.ultreon.craft.events;
 
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.events.v1.Event;
@@ -10,6 +10,6 @@ public class BlockEvents {
 
     @FunctionalInterface
     public interface SetBlock {
-        void onSetBlock(World world, GridPoint3 pos, Block block);
+        void onSetBlock(World world, Vec3i pos, Block block);
     }
 }

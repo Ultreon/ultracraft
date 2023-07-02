@@ -2,6 +2,7 @@ package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BiomeData;
 import com.ultreon.craft.world.BiomeSelectionHelper;
@@ -31,18 +32,18 @@ public class TerrainGenerator {
 
         for (int x = 0; x < chunk.size; x++) {
             for (int z = 0; z < chunk.size; z++) {
-                biomeSelection = selectBiomeGenerator(new GridPoint3(chunk.getOffset().x + x, 0, chunk.getOffset().z + z), chunk);
+                biomeSelection = selectBiomeGenerator(new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z), chunk);
                 chunk = biomeSelection.biomeGenerator.processColumn(chunk, x, z, biomeSelection.terrainSurfaceNoise);
             }
         }
         return chunk;
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk) {
+    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, Chunk chunk) {
         return selectBiomeGenerator(worldPosition, chunk, true);
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(GridPoint3 worldPosition, Chunk chunk, boolean useDomainWarping) {
+    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, Chunk chunk, boolean useDomainWarping) {
         if (useDomainWarping) {
             GridPoint2 domainOffset = MathHelper.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
             worldPosition.add(domainOffset.x, 0, domainOffset.y);
@@ -71,17 +72,17 @@ public class TerrainGenerator {
         return biomeGenData.get(0).biomeGen();
     }
 
-    private List<BiomeSelectionHelper> getBiomeGeneratorSelectionHelpers(GridPoint3 position) {
+    private List<BiomeSelectionHelper> getBiomeGeneratorSelectionHelpers(Vec3i position) {
         position.y = 0;
         return getClosestBiomeIndex(position);
     }
 
-    private List<BiomeSelectionHelper> getClosestBiomeIndex(GridPoint3 position) {
+    private List<BiomeSelectionHelper> getClosestBiomeIndex(Vec3i position) {
         List<BiomeSelectionHelper> helpers = new ArrayList<>();
 
         for (int index = 0; index < biomeCenters.size(); index++) {
             GridPoint3 center = biomeCenters.get(index);
-            helpers.add(new BiomeSelectionHelper(index, center.dst(position)));
+            helpers.add(new BiomeSelectionHelper(index, center.dst(position.x, position.y, position.z)));
         }
 
         helpers.sort((o1, o2) -> Float.compare(o1.distance(), o2.distance()));

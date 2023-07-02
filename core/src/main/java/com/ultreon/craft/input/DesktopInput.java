@@ -5,9 +5,9 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.collision.Ray;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
@@ -175,9 +175,9 @@ public class DesktopInput extends GameInput {
                 Player player = this.game.player;
                 if (player != null) {
                     HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    GridPoint3 pos = hitResult.getPos();
+                    Vec3i pos = hitResult.getPos();
                     Block block = world.get(pos);
-                    GridPoint3 posNext = hitResult.getNext();
+                    Vec3i posNext = hitResult.getNext();
                     Block blockNext = world.get(posNext);
                     if (hitResult.isCollide() && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {

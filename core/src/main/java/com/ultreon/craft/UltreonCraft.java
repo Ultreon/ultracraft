@@ -21,7 +21,8 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
@@ -111,6 +112,7 @@ public class UltreonCraft extends ApplicationAdapter {
     public BitmapFont unifont;
     public GameInput input;
     @Nullable public World world;
+    @Nullable public WorldRenderer worldRenderer;
     private static UltreonCraft instance;
     @Nullable public Player player;
     public int renderDistance = 8;
@@ -552,11 +554,12 @@ public class UltreonCraft extends ApplicationAdapter {
 
             ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
             World world = this.world;
+            WorldRenderer worldRenderer = this.worldRenderer;
 
-            if (this.renderWorld && world != null) {
+            if (this.renderWorld && world != null && worldRenderer != null) {
                 this.batch.begin(this.camera);
                 this.batch.getRenderContext().setCullFace(CULL_FACE);
-                this.batch.render(world, this.env);
+                this.batch.render(worldRenderer, this.env);
                 this.batch.end();
             }
 
@@ -688,7 +691,7 @@ public class UltreonCraft extends ApplicationAdapter {
             this.world.despawn(this.player);
         }
 
-        GridPoint3 spawnPoint = this.world.getSpawnPoint();
+        Vec3i spawnPoint = this.world.getSpawnPoint();
 
         return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
             this.player = Entities.PLAYER.create(this.world);
@@ -704,7 +707,7 @@ public class UltreonCraft extends ApplicationAdapter {
             this.world.despawn(this.player);
         }
 
-        GridPoint3 spawnPoint = this.world.getSpawnPoint();
+        Vec3i spawnPoint = this.world.getSpawnPoint();
 
         this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
         this.player = Entities.PLAYER.create(this.world);
@@ -822,6 +825,7 @@ public class UltreonCraft extends ApplicationAdapter {
         final World world = this.world;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
+        this.worldRenderer = null;
         this.world = null;
         CompletableFuture.runAsync(() -> {
             world.dispose();

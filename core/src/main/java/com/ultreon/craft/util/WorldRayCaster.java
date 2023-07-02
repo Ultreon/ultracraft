@@ -1,24 +1,20 @@
 package com.ultreon.craft.util;
 
-import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public class WorldRayCaster {
-	private static final GridPoint3 abs = new GridPoint3();
-	private static final GridPoint3 origin = new GridPoint3();
-	private static final GridPoint3 loc = new GridPoint3();
-	private static final Vector3 dir = new Vector3();
-	private static final Vector3 ext = new Vector3();
-	private static final Vector3 intersection = new Vector3();
-	private static final Vector3 local = new Vector3();
+	private static final Vec3i abs = new Vec3i();
+	private static final Vec3i origin = new Vec3i();
+	private static final Vec3i loc = new Vec3i();
+	private static final Vec3d dir = new Vec3d();
+	private static final Vec3d ext = new Vec3d();
+	private static final Vec3d intersection = new Vec3d();
+	private static final Vec3d local = new Vec3d();
 	private static final BoundingBox box = new BoundingBox();
 
 	public static HitResult rayCast(World map) {
@@ -41,21 +37,21 @@ public class WorldRayCaster {
 
 		Chunk chunk = null;
 
-		origin.set(MathUtils.floor(ray.origin.x), MathUtils.floor(ray.origin.y), MathUtils.floor(ray.origin.z));
+		origin.set((int) Math.floor(ray.origin.x), (int) Math.floor(ray.origin.y), (int) Math.floor(ray.origin.z));
 		abs.set(origin);
 
-		final float nextX = abs.x + ext.x;
-		final float nextY = abs.y + ext.y;
-		final float nextZ = abs.z + ext.z;
+		final double nextX = abs.x + ext.x;
+		final double nextY = abs.y + ext.y;
+		final double nextZ = abs.z + ext.z;
 
-		float tMaxX = ray.direction.x == 0 ? Float.MAX_VALUE : (nextX - ray.origin.x) / ray.direction.x;
-		float tMaxY = ray.direction.y == 0 ? Float.MAX_VALUE : (nextY - ray.origin.y) / ray.direction.y;
-		float tMaxZ = ray.direction.z == 0 ? Float.MAX_VALUE : (nextZ - ray.origin.z) / ray.direction.z;
+		double tMaxX = ray.direction.x == 0 ? Float.MAX_VALUE : (nextX - ray.origin.x) / ray.direction.x;
+		double tMaxY = ray.direction.y == 0 ? Float.MAX_VALUE : (nextY - ray.origin.y) / ray.direction.y;
+		double tMaxZ = ray.direction.z == 0 ? Float.MAX_VALUE : (nextZ - ray.origin.z) / ray.direction.z;
 
 
-		final float tDeltaX = ray.direction.x == 0 ? Float.MAX_VALUE : dir.x / ray.direction.x;
-		final float tDeltaY = ray.direction.y == 0 ? Float.MAX_VALUE : dir.y / ray.direction.y;
-		final float tDeltaZ = ray.direction.z == 0 ? Float.MAX_VALUE : dir.z / ray.direction.z;
+		final double tDeltaX = ray.direction.x == 0 ? Float.MAX_VALUE : dir.x / ray.direction.x;
+		final double tDeltaY = ray.direction.y == 0 ? Float.MAX_VALUE : dir.y / ray.direction.y;
+		final double tDeltaZ = ray.direction.z == 0 ? Float.MAX_VALUE : dir.z / ray.direction.z;
 
 
 		for(;;){
@@ -71,12 +67,12 @@ public class WorldRayCaster {
 				chunk = null;
 				continue;
 			}
-			Block voxel = chunk.get(new GridPoint3(loc));
+			Block voxel = chunk.get(loc.cpy());
 			if(voxel != null && voxel != Blocks.AIR){
 				box.set(box.min.set(abs.x, abs.y, abs.z), box.max.set(abs.x+1,abs.y+1,abs.z+1));
 				box.update();
 				if(Intersector.intersectRayBounds(ray, box, intersection)){
-					float dst = intersection.dst(ray.origin);
+					double dst = intersection.dst(ray.origin);
 					result.collide = true;
 					result.distance = dst;
 					result.position.set(intersection);
@@ -115,9 +111,9 @@ public class WorldRayCaster {
 			.sub(result.pos.x,result.pos.y,result.pos.z)
 			.sub(.5f);
 
-		float absX = Math.abs(local.x);
-		float absY = Math.abs(local.y);
-		float absZ = Math.abs(local.z);
+		double absX = Math.abs(local.x);
+		double absY = Math.abs(local.y);
+		double absZ = Math.abs(local.z);
 
 		if(absY > absX){
 			if(absZ > absY){
@@ -135,9 +131,9 @@ public class WorldRayCaster {
 		}
 
 		result.next.set(result.pos).add(
-				MathUtils.floor(result.normal.x),
-				MathUtils.floor(result.normal.y),
-				MathUtils.floor(result.normal.z));
+				(int) Math.floor(result.normal.x),
+				(int) Math.floor(result.normal.y),
+				(int) Math.floor(result.normal.z));
 	}
 
 }
