@@ -1,6 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.Objects;
 
@@ -56,7 +57,7 @@ public final class ChunkPos {
         }
     }
 
-    public Vector3 getChunkOrigin() {
-        return new Vector3(this.x * World.CHUNK_SIZE, World.WORLD_DEPTH, this.z * World.CHUNK_SIZE);
+    public Vec3d getChunkOrigin() {
+        return new Vec3d(this.x * World.CHUNK_SIZE, World.WORLD_DEPTH, this.z * World.CHUNK_SIZE);
     }
 }

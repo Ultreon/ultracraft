@@ -8,10 +8,11 @@ import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
+import com.ultreon.craft.util.Ray;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
@@ -172,9 +173,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 @Nullable World world = this.game.world;
                 if (world != null) {
                     HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    GridPoint3 pos = hitResult.pos;
+                    Vec3i pos = hitResult.pos;
                     Block block = world.get(pos);
-                    GridPoint3 posNext = hitResult.next;
+                    Vec3i posNext = hitResult.next;
                     Block blockNext = world.get(posNext);
                     Block selectedBlock = this.game.player.getSelectedBlock();
                     if (hitResult.collide && block != null && !block.isAir()) {
@@ -210,21 +211,21 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 else if (player.isRunning()) speed *= player.runModifier;
 
                 if (!player.topView) {
-                    Vector3 tmp = new Vector3();
+                    Vec3d tmp = new Vec3d();
                     this.game.playerInput.tick(speed);
-                    Vector3 vel = this.game.playerInput.getVel();
+                    Vec3d vel = this.game.playerInput.getVel();
 
                     if (player.isInWater() && this.game.playerInput.up) {
-                        tmp.set(0, 1, 0).nor().scl(speed);
+                        tmp.set(0, 1, 0).nor().mul(speed);
                         vel.add(tmp);
                     }
                     if (player.isFlying()) {
                         if (this.game.playerInput.up) {
-                            tmp.set(0, 1, 0).nor().scl(speed);
+                            tmp.set(0, 1, 0).nor().mul(speed);
                             vel.add(tmp);
                         }
                         if (this.game.playerInput.down) {
-                            tmp.set(0, 1, 0).nor().scl(-speed);
+                            tmp.set(0, 1, 0).nor().mul(-speed);
                             vel.add(tmp);
                         }
                     }

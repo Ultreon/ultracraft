@@ -1,9 +1,7 @@
 package com.ultreon.craft.util;
 
-import com.badlogic.gdx.math.collision.BoundingBox;
-
 public class BoundingBoxUtils {
-    public static BoundingBox offset(BoundingBox boundingBox, float dx, float dy, float dz) {
+    public static BoundingBox offset(BoundingBox boundingBox, double dx, double dy, double dz) {
         BoundingBox b = new BoundingBox(boundingBox);
         b.min.add(dx, dy, dz);
         b.max.add(dx, dy, dz);
@@ -11,8 +9,8 @@ public class BoundingBoxUtils {
         return b;
     }
     
-    public static float clipXCollide(BoundingBox a, BoundingBox c, float xa) {
-        float max;
+    public static double clipXCollide(BoundingBox a, BoundingBox c, double xa) {
+        double max;
         if (c.max.y <= a.min.y || c.min.y >= a.max.y) {
             return xa;
         }
@@ -28,8 +26,8 @@ public class BoundingBoxUtils {
         return xa;
     }
 
-    public static float clipZCollide(BoundingBox a, BoundingBox c, float za) {
-        float max;
+    public static double clipZCollide(BoundingBox a, BoundingBox c, double za) {
+        double max;
         if (c.max.x <= a.min.x || c.min.x >= a.max.x) {
             return za;
         }
@@ -45,8 +43,8 @@ public class BoundingBoxUtils {
         return za;
     }
 
-    public static float clipYCollide(BoundingBox a, BoundingBox c, float ya) {
-        float max;
+    public static double clipYCollide(BoundingBox a, BoundingBox c, double ya) {
+        double max;
         if (c.max.x <= a.min.x || c.min.x >= a.max.x) {
             return ya;
         }

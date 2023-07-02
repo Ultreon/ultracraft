@@ -1,6 +1,6 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
@@ -22,7 +22,7 @@ public class Chunk implements Disposable {
 	private Section[] sections;
 	public final int size;
 	public final int height;
-	private final GridPoint3 offset;
+	private final Vec3i offset;
 	private final int sizeTimesHeight;
 	private final int topOffset;
 	private final int bottomOffset;
@@ -38,7 +38,7 @@ public class Chunk implements Disposable {
 	public Chunk(World world, int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
 		
-		this.offset = new GridPoint3(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
+		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
 		this.world = world;
 		this.pos = pos;
@@ -54,7 +54,7 @@ public class Chunk implements Disposable {
 		this.sizeTimesHeight = size * size;
 
 		for (int i = 0; i < this.sections.length; i++) {
-			this.sections[i] = new Section(new GridPoint3(this.offset.x, this.offset.y + i * size, this.offset.z));
+			this.sections[i] = new Section(new Vec3i(this.offset.x, this.offset.y + i * size, this.offset.z));
 		}
 	}
 
@@ -69,7 +69,7 @@ public class Chunk implements Disposable {
 		int y = 0;
 		for (MapType sectionData : sectionsData) {
 			this.sections[y].dispose();
-			this.sections[y] = new Section(new GridPoint3(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
+			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
 		}
 	}
@@ -84,7 +84,7 @@ public class Chunk implements Disposable {
 		return chunkData;
 	}
 
-	public Block get(GridPoint3 pos) {
+	public Block get(Vec3i pos) {
 		return get(pos.x, pos.y, pos.z);
 	}
 
@@ -95,7 +95,7 @@ public class Chunk implements Disposable {
 		return getFast(x, y, z);
 	}
 
-	public Block getFast(GridPoint3 pos) {
+	public Block getFast(Vec3i pos) {
 		return getFast(pos.x, pos.y, pos.z);
 	}
 
@@ -105,7 +105,7 @@ public class Chunk implements Disposable {
 		}
 	}
 
-	public void set(GridPoint3 pos, Block block) {
+	public void set(Vec3i pos, Block block) {
 		set(pos.x, pos.y, pos.z, block);
 	}
 
@@ -116,7 +116,7 @@ public class Chunk implements Disposable {
 		setFast(x, y, z, block);
 	}
 
-	public void setFast(GridPoint3 pos, Block block) {
+	public void setFast(Vec3i pos, Block block) {
 		set(pos.x, pos.y, pos.z, block);
 	}
 
@@ -138,11 +138,11 @@ public class Chunk implements Disposable {
 		return this.getSection(chunkY / this.size);
 	}
 
-	private GridPoint3 reverse(int index) {
+	private Vec3i reverse(int index) {
 		int y = index / sizeTimesHeight;
 		int z = (index - y * sizeTimesHeight) / size;
 		int x = index - y * sizeTimesHeight - z * size;
-		return new GridPoint3(x, y, z);
+		return new Vec3i(x, y, z);
 	}
 
 	@Override
@@ -167,7 +167,11 @@ public class Chunk implements Disposable {
 		return List.of(this.sections);
 	}
 
-	public GridPoint3 getOffset() {
+	public Vec3i getOffset() {
 		return this.offset.cpy();
+	}
+
+	public boolean isReady() {
+		return this.ready;
 	}
 }
