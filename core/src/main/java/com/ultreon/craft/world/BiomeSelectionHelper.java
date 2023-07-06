@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public final class BiomeSelectionHelper {
     private final int index;
-    private final float distance;
+    private final double distance;
 
-    public BiomeSelectionHelper(int index, float distance) {
+    public BiomeSelectionHelper(int index, double distance) {
         this.index = index;
         this.distance = distance;
     }
@@ -15,7 +15,7 @@ public final class BiomeSelectionHelper {
         return index;
     }
 
-    public float distance() {
+    public double distance() {
         return distance;
     }
 
@@ -25,7 +25,7 @@ public final class BiomeSelectionHelper {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         BiomeSelectionHelper that = (BiomeSelectionHelper) obj;
         return this.index == that.index &&
-                Float.floatToIntBits(this.distance) == Float.floatToIntBits(that.distance);
+                Double.doubleToLongBits(this.distance) == Double.doubleToLongBits(that.distance);
     }
 
     @Override

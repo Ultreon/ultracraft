@@ -137,7 +137,7 @@ public class UltreonCraft extends ApplicationAdapter {
     public Hud hud;
     private int chunkRefresh;
     public HitResult hitResult;
-	private GridPoint3 breaking;
+	private Vec3i breaking;
 	private Block breakingBlock;
 	public boolean showDebugHud = true;
 
@@ -680,7 +680,7 @@ public class UltreonCraft extends ApplicationAdapter {
             WorldEvents.POST_TICK.factory().onPostTick(world);
         }
 
-        GridPoint3 breaking = this.breaking;
+        Vec3i breaking = this.breaking;
 		if (this.world != null && breaking != null) {
 			HitResult hitResult = this.hitResult;
 
@@ -792,6 +792,9 @@ public class UltreonCraft extends ApplicationAdapter {
             if (this.world != null) {
                 this.world.dispose();
             }
+            if (this.worldRenderer != null) {
+                this.worldRenderer.dispose();
+            }
 
             this.blocksTextureAtlas.dispose();
 
@@ -867,12 +870,15 @@ public class UltreonCraft extends ApplicationAdapter {
     public synchronized void exitWorldAndThen(Runnable runnable) {
         this.closingWorld = true;
         final World world = this.world;
+        final @Nullable WorldRenderer worldRenderer = this.worldRenderer;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
         this.worldRenderer = null;
         this.world = null;
         CompletableFuture.runAsync(() -> {
             world.dispose();
+            if (worldRenderer != null) worldRenderer.dispose();
+
             System.gc();
             this.runLater(new Task(id("post_world_exit"), runnable));
             this.closingWorld = false;
@@ -967,16 +973,16 @@ public class UltreonCraft extends ApplicationAdapter {
 
 	public void resetBreaking() {
 		HitResult hitResult = this.hitResult;
-		if (hitResult == null || this.world == null || this.breaking == null) return;
-		this.world.stopBreaking(hitResult.getPos());
-		this.world.startBreaking(hitResult.getPos());
+        if (hitResult == null || this.world == null || this.breaking == null) return;
+        this.world.stopBreaking(hitResult.getPos());
+        this.world.startBreaking(hitResult.getPos());
 		this.breaking = hitResult.getPos();
 		this.breakingBlock = hitResult.getBlock();
 	}
 
 	public void startBreaking() {
 		HitResult hitResult = this.hitResult;
-		if (hitResult == null || this.world == null) return;
+        if (hitResult == null || this.world == null) return;
         if (this.world.getBreakProgress(hitResult.getPos()) >= 0.0F) return;
 		this.world.startBreaking(hitResult.getPos());
 		this.breaking = hitResult.getPos();

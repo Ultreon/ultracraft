@@ -1,10 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.Task;
-import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
@@ -14,12 +11,8 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Section implements Disposable {
     public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
@@ -159,7 +152,7 @@ public class Section implements Disposable {
         Vec3i pos = new Vec3i(x, y, z);
         Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
         if (v != null && v == 1.0F) {
-            this.set(new GridPoint3(x, y, z), Blocks.AIR);
+            this.set(new Vec3i(x, y, z), Blocks.AIR);
         }
     }
 
@@ -178,5 +171,9 @@ public class Section implements Disposable {
 
     public boolean isReady() {
         return this.ready;
+    }
+
+    public Map<Vec3i, Float> getBreaking() {
+        return Collections.unmodifiableMap(this.breaking);
     }
 }

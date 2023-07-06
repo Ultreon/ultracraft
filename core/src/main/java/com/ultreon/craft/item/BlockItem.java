@@ -1,6 +1,5 @@
 package com.ultreon.craft.item;
 
-import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;

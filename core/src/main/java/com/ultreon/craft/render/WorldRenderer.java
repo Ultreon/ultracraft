@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
@@ -43,9 +45,10 @@ public class WorldRenderer implements RenderableProvider {
     private int renderedChunks;
     private int totalChunks;
 
-    private final short[] indices;
+    private short[] indices;
     private final World world;
     private final UltreonCraft game = UltreonCraft.get();
+    private Mesh blockBreakMesh;
 
     public WorldRenderer(World world) {
         this.world = world;
@@ -135,10 +138,44 @@ public class WorldRenderer implements RenderableProvider {
                     piece.worldTransform.setToTranslation(offset.x, offset.y, offset.z);
 
                     renderables.add(piece);
+
+                    this.renderedChunks = this.renderedChunks + 1;
+
+                    if (this.blockBreakMesh == null) {
+                        MeshBuilder builder = new MeshBuilder();
+                        builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+                        BoxShapeBuilder.build(builder, -0.1F, -0.1F, -0.1F, 1.2F, 1.2F, 1.2F);
+
+                        this.blockBreakMesh = builder.end();
+                    }
+                    section.getBreaking().forEach((pos, progress) -> {
+                        Vec3f breakOff = offset.cpy().add(pos.f());
+                        Renderable breakingPiece = pool.obtain();
+
+                        breakingPiece.material = this.material;
+                        breakingPiece.meshPart.mesh = this.blockBreakMesh;
+                        breakingPiece.meshPart.offset = 0;
+                        breakingPiece.meshPart.size = this.blockBreakMesh.getNumVertices();
+                        breakingPiece.meshPart.primitiveType = GL20.GL_TRIANGLES;
+                        breakingPiece.worldTransform.setToTranslation(breakOff.x, breakOff.y, breakOff.z);
+
+                        renderables.add(breakingPiece);
+                    });
                     this.renderedChunks = this.renderedChunks + 1;
                 }
             }
         }
+        chunks.forEach(Chunk::onNeighboursUpdated);
+    }
+
+    public void dispose() {
+        this.blockBreakMesh.dispose();
+        this.blockBreakMesh = null;
+        this.indices = null;
+        this.renderInfoMap.keySet().forEach(section -> {
+            SectionRenderInfo remove = this.renderInfoMap.remove(section);
+            remove.dispose();
+        });
     }
 
     /** Creates a mesh out of the chunk, returning the number of indices produced

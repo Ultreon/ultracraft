@@ -192,4 +192,8 @@ public class Chunk implements Disposable {
 	public boolean isReady() {
 		return this.ready;
 	}
+
+	public void onNeighboursUpdated() {
+		this.updateNeighbours = false;
+	}
 }

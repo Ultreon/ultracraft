@@ -89,7 +89,6 @@ public class World implements Disposable {
 	public static final int WORLD_DEPTH = 0;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
 	private final Texture breakingTex;
-	private final short[] indices;
 	private float[] vertices;
 
 	private static final Biome DEFAULT_BIOME = Biome.builder()
@@ -245,14 +244,14 @@ public class World implements Disposable {
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
 			for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
-				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, 0, z));
+				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
 				toCreate.add(chunkPos);
 				if (x >= pos.x - World.CHUNK_SIZE
 						&& x <= pos.x + World.CHUNK_SIZE
 						&& z >= pos.z - World.CHUNK_SIZE
 						&& z <= pos.z + World.CHUNK_SIZE) {
 					for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
-						chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, y, z));
+						chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
 						toCreate.add(chunkPos);
 					}
 				}
@@ -335,9 +334,7 @@ public class World implements Disposable {
 	private CompletableFuture<Boolean> unloadChunkAsync(@NotNull Chunk chunk) {
 		synchronized (chunk.lock) {
             LOGGER.debug(MARKER, "UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
-            return CompletableFuture.supplyAsync(() -> {
-				return this.unloadChunk(chunk);
-			});
+            return CompletableFuture.supplyAsync(() -> this.unloadChunk(chunk));
 		}
 	}
 
@@ -561,8 +558,8 @@ public class World implements Disposable {
 		}
 	}
 
-	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
-		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
+	public CompletableFuture<ConcurrentMap<Vec3d, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
+		ConcurrentMap<Vec3d, Chunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
 			for (ChunkPos pos : toCreate) {
 				try {

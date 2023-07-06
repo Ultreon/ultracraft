@@ -2,8 +2,6 @@ package com.ultreon.craft.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Blocks;
@@ -16,6 +14,7 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
