@@ -169,7 +169,9 @@ public class WorldRenderer implements RenderableProvider {
     }
 
     public void dispose() {
-        this.blockBreakMesh.dispose();
+        if (this.blockBreakMesh != null) {
+            this.blockBreakMesh.dispose();
+        }
         this.blockBreakMesh = null;
         this.indices = null;
         this.renderInfoMap.keySet().forEach(section -> {

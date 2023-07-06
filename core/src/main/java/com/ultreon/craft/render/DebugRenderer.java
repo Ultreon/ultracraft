@@ -1,6 +1,7 @@
 package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.util.HitResult;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
@@ -34,7 +35,8 @@ public class DebugRenderer {
                 this.drawLine(renderer, "chunk xyz", this.block2sectionPos(blockPosition));
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
                 this.drawLine(renderer, "region open", world.getRegionAt(blockPosition) != null);
-                this.drawLine(renderer, "break progress", world.getBreakProgress(this.game.hitResult.getPos()));
+                HitResult hitResult = this.game.hitResult;
+                if (hitResult != null) this.drawLine(renderer, "break progress", world.getBreakProgress(hitResult.getPos()));
             }
         }
 

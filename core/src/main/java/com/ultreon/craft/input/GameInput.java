@@ -8,43 +8,31 @@ import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.ultreon.craft.util.Ray;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ItemEvents;
-import com.ultreon.craft.input.util.ControllerButton;
-import com.ultreon.craft.input.util.Joystick;
-import com.ultreon.craft.input.util.JoystickType;
-import com.ultreon.craft.input.util.Trigger;
-import com.ultreon.craft.input.util.TriggerType;
+import com.ultreon.craft.input.util.*;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
-
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class GameInput implements InputProcessor, ControllerListener {
     protected static final float DEG_PER_PIXEL = 0.6384300433839F;
@@ -67,6 +55,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     private long nextBreak;
     private long itemUse;
+    private boolean breaking;
+    private boolean using;
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
@@ -163,7 +153,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     public void update(float deltaTime) {
         if (this.game.isPlaying()) {
             Player player = this.game.player;
-            if (player != null) {
+            if (player != null && this.isControllerConnected()) {
                 Joystick joystick = JOYSTICKS.get(JoystickType.RIGHT);
 
                 float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
@@ -183,9 +173,11 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                         if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
                             this.game.startBreaking();
                             this.nextBreak = System.currentTimeMillis() + 500;
-                        } else if (right < 0.3F) {
+                            this.breaking = true;
+                        } else if (right < 0.3F && this.breaking) {
                             this.game.stopBreaking();
                             this.nextBreak = 0;
+                            this.breaking = false;
                         }
 
                         float left = TRIGGERS.get(TriggerType.LEFT).value;
@@ -195,8 +187,10 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                             ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                             this.itemUse = System.currentTimeMillis() + 500;
-                        } else if (left < 0.3F) {
+                            this.using = true;
+                        } else if (left < 0.3F && this.using) {
                             this.itemUse = 0;
+                            this.using = false;
                         }
                     }
                 }

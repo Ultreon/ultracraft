@@ -77,6 +77,11 @@ public class DesktopPlatform extends GamePlatform {
     }
 
     @Override
+    public boolean isDevelopmentEnvironment() {
+        return FabricLoader.getInstance().isDevelopmentEnvironment();
+    }
+
+    @Override
     public OperatingSystem getOperatingSystem() {
         switch (Platform.get()) {
             case LINUX:

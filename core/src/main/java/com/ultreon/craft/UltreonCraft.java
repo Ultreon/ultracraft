@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -681,7 +682,7 @@ public class UltreonCraft extends ApplicationAdapter {
         }
 
         Vec3i breaking = this.breaking;
-		if (this.world != null && breaking != null) {
+        if (this.world != null && breaking != null) {
 			HitResult hitResult = this.hitResult;
 
 			if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
@@ -693,6 +694,7 @@ public class UltreonCraft extends ApplicationAdapter {
                     ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
                     efficiency = toolItem.getEfficiency();
 				}
+
 				if (!this.world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
                     this.stopBreaking();
 				} else {
@@ -877,10 +879,12 @@ public class UltreonCraft extends ApplicationAdapter {
         this.world = null;
         CompletableFuture.runAsync(() -> {
             world.dispose();
-            if (worldRenderer != null) worldRenderer.dispose();
 
             System.gc();
-            this.runLater(new Task(id("post_world_exit"), runnable));
+            this.runLater(new Task(id("post_world_exit"), () -> {
+                if (worldRenderer != null) worldRenderer.dispose();
+                runnable.run();
+            }));
             this.closingWorld = false;
         });
     }

@@ -131,4 +131,8 @@ public abstract class GamePlatform {
     public void importModResources(ResourceManager resourceManager) {
 
     }
+
+    public boolean isDevelopmentEnvironment() {
+        return false;
+    }
 }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.data.types.ListType;
