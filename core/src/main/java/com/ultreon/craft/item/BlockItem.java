@@ -3,6 +3,7 @@ package com.ultreon.craft.item;
 import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
 
 public class BlockItem extends Item {
@@ -22,7 +23,7 @@ public class BlockItem extends Item {
         super.use(useItemContext);
 
         World world = useItemContext.world();
-        GridPoint3 next = useItemContext.result().getNext();
+        Vec3i next = useItemContext.result().getNext();
         if (!world.intersectEntities(block.getBoundingBox(next))) {
             world.set(next, this.block);
         }
