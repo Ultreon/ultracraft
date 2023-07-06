@@ -17,6 +17,7 @@ public class WorldEvents {
     public static final Event<PostTick> POST_TICK = Event.create();
     public static final Event<ChunkGenerated> CHUNK_GENERATED = Event.create();
     public static final Event<ChunkLoaded> CHUNK_LOADED = Event.create();
+    public static final Event<ChunkUnloaded> CHUNK_UNLOADED = Event.create();
     public static final Event<CreateBiome> CREATE_BIOME = Event.create();
 
     @FunctionalInterface
@@ -37,6 +38,11 @@ public class WorldEvents {
     @FunctionalInterface
     public interface ChunkLoaded {
         void onChunkLoaded(World world, ChunkPos pos, Chunk chunk);
+    }
+
+    @FunctionalInterface
+    public interface ChunkUnloaded {
+        void onChunkUnloaded(World world, ChunkPos pos, Chunk chunk);
     }
 
     @FunctionalInterface

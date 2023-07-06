@@ -29,7 +29,7 @@ public class StonePatchTerrainLayer extends TerrainLayer {
 //
 //        if (stoneNoise > this.stoneThreshold) {
 //            for (int i = chunk.offset.y; i <= endPosition; i++) {
-//                GridPoint3 pos = new GridPoint3(x, i, z);
+//                Vec3i pos = new Vec3i(x, i, z);
 //                try {
 //                    chunk.set(pos, Blocks.STONE);
 //                } catch (Exception e) {

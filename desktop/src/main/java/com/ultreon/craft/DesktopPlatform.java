@@ -184,16 +184,16 @@ public class DesktopPlatform extends GamePlatform {
 
             if (ImGui.collapsingHeader("Position")) {
                 ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerX", game.player.getX(), v -> game.player.setX(v));
-                ImGuiEx.editFloat("Y:", "PlayerY", game.player.getY(), v -> game.player.setY(v));
-                ImGuiEx.editFloat("Z:", "PlayerZ", game.player.getZ(), v -> game.player.setZ(v));
+                ImGuiEx.editDouble("X:", "PlayerX", game.player.getX(), v -> game.player.setX(v));
+                ImGuiEx.editDouble("Y:", "PlayerY", game.player.getY(), v -> game.player.setY(v));
+                ImGuiEx.editDouble("Z:", "PlayerZ", game.player.getZ(), v -> game.player.setZ(v));
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Velocity")) {
                 ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerVelocityX", game.player.velocityX, v -> game.player.velocityX = v);
-                ImGuiEx.editFloat("Y:", "PlayerVelocityY", game.player.velocityY, v -> game.player.velocityY = v);
-                ImGuiEx.editFloat("Z:", "PlayerVelocityZ", game.player.velocityZ, v -> game.player.velocityZ = v);
+                ImGuiEx.editDouble("X:", "PlayerVelocityX", game.player.velocityX, v -> game.player.velocityX = v);
+                ImGuiEx.editDouble("Y:", "PlayerVelocityY", game.player.velocityY, v -> game.player.velocityY = v);
+                ImGuiEx.editDouble("Z:", "PlayerVelocityZ", game.player.velocityZ, v -> game.player.velocityZ = v);
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Rotation")) {

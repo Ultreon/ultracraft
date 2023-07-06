@@ -1,23 +1,22 @@
 package com.ultreon.craft.util;
 
-import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public class HitResult {
     // input
     protected Ray ray;
     protected float distanceMax = 5.0F;
     // output
-    protected Vector3 position = new Vector3();
-    protected Vector3 normal = new Vector3();
-    protected GridPoint3 pos = new GridPoint3();
-    protected GridPoint3 next = new GridPoint3();
+    protected Vec3d position = new Vec3d();
+    protected Vec3d normal = new Vec3d();
+    protected Vec3i pos = new Vec3i();
+    protected Vec3i next = new Vec3i();
     protected Block block = Blocks.AIR;
     protected boolean collide;
-    protected float distance;
+    protected double distance;
 
     public HitResult() {
 
@@ -37,38 +36,38 @@ public class HitResult {
     }
 
     public Ray getRay() {
-        return ray;
+        return this.ray;
     }
 
     public float getDistanceMax() {
-        return distanceMax;
+        return this.distanceMax;
     }
 
-    public Vector3 getPosition() {
-        return position;
+    public Vec3d getPosition() {
+        return this.position;
     }
 
-    public Vector3 getNormal() {
-        return normal;
+    public Vec3d getNormal() {
+        return this.normal;
     }
 
-    public GridPoint3 getPos() {
-        return pos;
+    public Vec3i getPos() {
+        return this.pos;
     }
 
-    public GridPoint3 getNext() {
-        return next;
+    public Vec3i getNext() {
+        return this.next;
     }
 
     public Block getBlock() {
-        return block;
+        return this.block;
     }
 
     public boolean isCollide() {
-        return collide;
+        return this.collide;
     }
 
-    public float getDistance() {
-        return distance;
+    public double getDistance() {
+        return this.distance;
     }
 }

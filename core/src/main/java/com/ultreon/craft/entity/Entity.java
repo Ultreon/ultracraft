@@ -1,11 +1,11 @@
 package com.ultreon.craft.entity;
 
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
+import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.BoundingBoxUtils;
@@ -14,6 +14,7 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,16 +24,16 @@ import java.util.Objects;
 public class Entity {
     private final EntityType<? extends Entity> type;
     protected final World world;
-    protected float x;
-    protected float y;
-    protected float z;
+    protected double x;
+    protected double y;
+    protected double z;
     public float xRot;
     public float yRot;
     private int id = -1;
     public boolean onGround;
-    public float velocityX;
-    public float velocityY;
-    public float velocityZ;
+    public double velocityX;
+    public double velocityY;
+    public double velocityZ;
     public float gravity = 0.08F;
     public boolean noGravity;
     public boolean isColliding;
@@ -61,9 +62,9 @@ public class Entity {
 
     public void loadWithPos(MapType data) {
         MapType position = data.getMap("Position", new MapType());
-        this.x = position.getFloat("x", this.x);
-        this.y = position.getFloat("y", this.y);
-        this.z = position.getFloat("z", this.z);
+        this.x = position.getDouble("x", this.x);
+        this.y = position.getDouble("y", this.y);
+        this.z = position.getDouble("z", this.z);
 
         this.load(data);
     }
@@ -74,9 +75,9 @@ public class Entity {
         this.yRot = rotation.getFloat("y", this.yRot);
 
         MapType velocity = data.getMap("Velocity", new MapType());
-        this.velocityX = velocity.getFloat("x", this.velocityX);
-        this.velocityY = velocity.getFloat("y", this.velocityY);
-        this.velocityZ = velocity.getFloat("z", this.velocityZ);
+        this.velocityX = velocity.getDouble("x", this.velocityX);
+        this.velocityY = velocity.getDouble("y", this.velocityY);
+        this.velocityZ = velocity.getDouble("z", this.velocityZ);
 
         this.fallDistance = data.getFloat("fallDistance", this.fallDistance);
         this.gravity = data.getFloat("gravity", this.gravity);
@@ -87,9 +88,9 @@ public class Entity {
 
     public MapType save(MapType data) {
         MapType position = new MapType();
-        position.putFloat("x", this.x);
-        position.putFloat("y", this.y);
-        position.putFloat("z", this.z);
+        position.putDouble("x", this.x);
+        position.putDouble("y", this.y);
+        position.putDouble("z", this.z);
         data.put("Position", position);
 
         MapType rotation = new MapType();
@@ -98,9 +99,9 @@ public class Entity {
         data.put("Rotation", rotation);
 
         MapType velocity = new MapType();
-        velocity.putFloat("x", this.velocityX);
-        velocity.putFloat("y", this.velocityY);
-        velocity.putFloat("z", this.velocityZ);
+        velocity.putDouble("x", this.velocityX);
+        velocity.putDouble("y", this.velocityY);
+        velocity.putDouble("z", this.velocityZ);
         data.put("Velocity", velocity);
 
         data.putInt("id", this.id);
@@ -138,10 +139,10 @@ public class Entity {
         }
     }
 
-    public void move(float dx, float dy, float dz) {
-        float oDx = dx;
-        float oDy = dy;
-        float oDz = dz;
+    public void move(double dx, double dy, double dz) {
+        double oDx = dx;
+        double oDy = dy;
+        double oDz = dz;
         BoundingBox ext = this.getBoundingBox();
         if (dx < 0) ext.min.x += dx;
         else ext.max.x += dx;
@@ -160,7 +161,7 @@ public class Entity {
             isColliding = false;
             isCollidingY = false;
             for (BoundingBox box : boxes) {
-                float dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+                double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
                 isColliding |= dy != dy2;
                 isCollidingY |= dy != dy2;
                 dy = dy2;
@@ -170,7 +171,7 @@ public class Entity {
             pBox.update();
             isCollidingX = false;
             for (BoundingBox box : boxes) {
-                float dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+                double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
                 isColliding |= dx != dx2;
                 isCollidingX |= dx != dx2;
                 dx = dx2;
@@ -180,7 +181,7 @@ public class Entity {
             pBox.update();
             isCollidingZ = false;
             for (BoundingBox box : boxes) {
-                float dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+                double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
                 isColliding |= dz != dz2;
                 isCollidingZ |= dz != dz2;
                 dz = dz2;
@@ -221,36 +222,36 @@ public class Entity {
     }
 
     public BoundingBox getBoundingBox(EntitySize size) {
-        float x1 = this.x - size.width() / 2;
-        float y1 = this.y;
-        float z1 = this.z - size.width() / 2;
-        float x2 = this.x + size.width() / 2;
-        float y2 = this.y + size.height();
-        float z2 = this.z + size.width() / 2;
-        return new BoundingBox(new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
+        double x1 = this.x - size.width() / 2;
+        double y1 = this.y;
+        double z1 = this.z - size.width() / 2;
+        double x2 = this.x + size.width() / 2;
+        double y2 = this.y + size.height();
+        double z2 = this.z + size.width() / 2;
+        return new BoundingBox(new Vec3d(x1, y1, z1), new Vec3d(x2, y2, z2));
     }
 
-    public float getX() {
+    public double getX() {
         return x;
     }
 
-    public void setX(float x) {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public float getY() {
+    public double getY() {
         return y;
     }
 
-    public void setY(float y) {
+    public void setY(double y) {
         this.y = y;
     }
 
-    public float getZ() {
+    public double getZ() {
         return z;
     }
 
-    public void setZ(float z) {
+    public void setZ(double z) {
         this.z = z;
     }
 
@@ -270,8 +271,8 @@ public class Entity {
         this.yRot = Mth.clamp(yRot, -90, 90);
     }
 
-    public Vector3 getPosition() {
-        return new Vector3(x, y, z);
+    public Vec3d getPosition() {
+        return new Vec3d(x, y, z);
     }
 
     public void setPosition(Vector3 position) {
@@ -286,17 +287,17 @@ public class Entity {
         this.z = z;
     }
 
-    public GridPoint3 blockPosition() {
-        return new GridPoint3((int) this.x, (int) this.y, (int) this.z);
+    public Vec3i blockPosition() {
+        return new Vec3i((int) this.x, (int) this.y, (int) this.z);
     }
 
     public Vector2 getRotation() {
         return new Vector2(this.xRot, this.yRot);
     }
 
-    public Vector3 getLookVector() {
+    public Vec3d getLookVector() {
         // Calculate the direction vector
-        Vector3 direction = new Vector3();
+        Vec3d direction = new Vec3d();
         float yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
         direction.x = MathUtils.cosDeg(yRot) * MathUtils.sinDeg(this.xRot);
         direction.z = MathUtils.cosDeg(yRot) * MathUtils.cosDeg(this.xRot);
@@ -312,11 +313,11 @@ public class Entity {
         this.yRot = Mth.clamp(position.y, -90, 90);
     }
 
-    public Vector3 getVelocity() {
-        return new Vector3(this.velocityX, this.velocityY, this.velocityZ);
+    public Vec3d getVelocity() {
+        return new Vec3d(this.velocityX, this.velocityY, this.velocityZ);
     }
 
-    public void setVelocity(Vector3 velocity) {
+    public void setVelocity(Vec3d velocity) {
         this.velocityX = velocity.x;
         this.velocityY = velocity.y;
         this.velocityZ = velocity.z;

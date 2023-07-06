@@ -5,6 +5,7 @@ import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -54,6 +55,7 @@ public class WorldLoadScreen extends Screen {
 
         this.game.respawn();
         UltreonCraft.LOGGER.debug("Player spawned, enabling world rendering now.");
+        this.game.worldRenderer = new WorldRenderer(this.game.world);
         this.game.renderWorld = true;
         UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
         this.game.runLater(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));

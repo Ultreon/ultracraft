@@ -98,9 +98,9 @@ public class MobileInput extends GameInput {
 //            Player player = this.game.player;
 //            if (player != null) {
 //                HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-//                GridPoint3 pos = hitResult.pos;
+//                Vec3i pos = hitResult.pos;
 //                Block block = world.get(pos);
-//                GridPoint3 posNext = hitResult.next;
+//                Vec3i posNext = hitResult.next;
 //                Block blockNext = world.get(posNext);
 //                Block selectedBlock = this.game.player.getSelectedBlock();
 //                if (hitResult.collide && block != null && !block.isAir()) {

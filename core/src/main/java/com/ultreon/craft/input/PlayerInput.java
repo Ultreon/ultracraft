@@ -8,6 +8,8 @@ import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.input.util.JoystickType;
+import com.ultreon.craft.util.Utils;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 public class PlayerInput {
     public boolean forward;
@@ -82,7 +84,7 @@ public class PlayerInput {
         this.vel.set(vel);
     }
 
-    public Vector3 getVel() {
-        return this.vel;
+    public Vec3d getVel() {
+        return Utils.toCoreLibs(this.vel);
     }
 }

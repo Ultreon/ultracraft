@@ -1,7 +1,7 @@
 package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
@@ -29,7 +29,7 @@ public class DebugRenderer {
             // Player
             Player player = this.game.player;
             if (player != null) {
-                GridPoint3 blockPosition = player.blockPosition();
+                Vec3i blockPosition = player.blockPosition();
                 this.drawLine(renderer, "block xyz", blockPosition);
                 this.drawLine(renderer, "chunk xyz", this.block2sectionPos(blockPosition));
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
@@ -48,8 +48,8 @@ public class DebugRenderer {
         }
     }
 
-    private GridPoint3 block2sectionPos(GridPoint3 blockPos) {
-        return new GridPoint3(blockPos.x / 16, blockPos.y / 16, blockPos.z / 16);
+    private Vec3i block2sectionPos(Vec3i blockPos) {
+        return new Vec3i(blockPos.x / 16, blockPos.y / 16, blockPos.z / 16);
     }
 
     public void drawLine(Renderer renderer, String name, Object value) {
