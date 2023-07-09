@@ -442,7 +442,7 @@ public class World implements Disposable {
 				chunk = loadedChunk;
 			}
 			if (chunk == null) {
-				LOGGER.warn(MARKER, "Tried to load chunk at {} but it still wasn't loaded:", pos);
+				LOGGER.warn(MARKER, "Tried to load chunk at " + pos + " but it still wasn't loaded:");
 				loadingChunk.complete(oldChunk);
 				return oldChunk;
 			}
@@ -452,7 +452,7 @@ public class World implements Disposable {
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
 			return chunk;
 		} catch (RuntimeException e) {
-			LOGGER.error(MARKER, "Failed to load chunk {}:", pos, e);
+			LOGGER.error(MARKER, "Failed to load chunk " + pos + ":", e);
 			throw e;
 		}
 	}
@@ -480,7 +480,7 @@ public class World implements Disposable {
 
 		try {
 			if (!this.putChunk(region, pos, chunk)) {
-				LOGGER.warn(MARKER, "Tried to overwrite chunk {}", chunk.pos);
+				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
 				chunk.dispose();
 				return null;
 			}
@@ -497,7 +497,7 @@ public class World implements Disposable {
 
 			return chunk;
 		} catch (Exception e) {
-			LOGGER.error(MARKER, "Failed to generate chunk {}:", pos, e);
+			LOGGER.error(MARKER, "Failed to generate chunk " + pos + ":", e);
 			return null;
 		}
 	}

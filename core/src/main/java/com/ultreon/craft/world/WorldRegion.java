@@ -45,7 +45,7 @@ public class WorldRegion implements Disposable {
                     try {
                         this.load(onLoad);
                     } catch (IOException e) {
-                        LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
+                        LOGGER.error(World.MARKER, "Failed to load region file: " +  pos, e);
                         this.corrupt = true;
                         this.loading = false;
                         return;
@@ -58,7 +58,7 @@ public class WorldRegion implements Disposable {
                 try {
                     this.load(onLoad);
                 } catch (IOException e) {
-                    LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
+                    LOGGER.error(World.MARKER, "Failed to load region file: " +  pos, e);
                     this.corrupt = true;
                     this.loading = false;
                     break load;
@@ -161,10 +161,10 @@ public class WorldRegion implements Disposable {
             if (save) this.save();
         } catch (IOException e) {
             if (!force) {
-                LOGGER.error(World.MARKER, "Failed to save when unloading region {}", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region " + this.pos, e);
                 return false;
             } else {
-                LOGGER.error(World.MARKER, "Failed to save when unloading region {} (unloading anyways)", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region " + this.pos + " (unloading anyways)", e);
             }
         }
 
@@ -241,6 +241,10 @@ public class WorldRegion implements Disposable {
 
     public boolean isInitialized() {
         return this.initialized;
+    }
+
+    public boolean isLoading() {
+        return this.loading;
     }
 
     public RegionPos getPosition() {

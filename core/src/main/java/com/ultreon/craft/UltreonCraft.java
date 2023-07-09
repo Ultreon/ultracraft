@@ -834,7 +834,7 @@ public class UltreonCraft extends ApplicationAdapter {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task {}:", task.id(), e);
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         });
     }
@@ -844,7 +844,7 @@ public class UltreonCraft extends ApplicationAdapter {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task {}:", task.id(), e);
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         }, timeMillis, TimeUnit.MILLISECONDS);
     }
@@ -854,7 +854,7 @@ public class UltreonCraft extends ApplicationAdapter {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task {}:", task.id(), e);
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         }, time, unit);
     }
