@@ -3,25 +3,12 @@ package com.ultreon.craft.world;
 import static com.ultreon.craft.UltreonCraft.LOGGER;
 import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.Ray;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Pool;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.Task;
@@ -68,8 +55,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.slf4j.Marker;
@@ -487,7 +472,7 @@ public class World implements Disposable {
 	@Nullable
 	protected Chunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		WorldRegion region = this.getRegionFor(pos);
 
@@ -560,7 +545,7 @@ public class World implements Disposable {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				Chunk newChunk = terrainGen.generateChunkData(chunk, seed);
 			}
 			return map;
@@ -594,7 +579,7 @@ public class World implements Disposable {
 			if (!chunkAt.ready) return Blocks.AIR;
 
 			Vec3i cp = this.toLocalBlockPos(x, y, z);
-			return chunkAt.get(cp.x, cp.y, cp.z);
+			return chunkAt.getFast(cp.x, cp.y, cp.z);
 		}
 	}
 

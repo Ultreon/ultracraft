@@ -3,7 +3,6 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
-import com.ultreon.craft.UltreonCraft;
 import com.ultreon.data.types.MapType;
 
 import org.jetbrains.annotations.Nullable;
@@ -121,7 +120,7 @@ public class WorldRegion implements Disposable {
         MapType mapType = this.get(chunkPos);
         if (mapType == null) return null;
 
-        Chunk chunk = Chunk.load(this.world, worldChunkPos, mapType);
+        Chunk chunk = Chunk.load(worldChunkPos, mapType);
 
         synchronized (this.lock) {
             this.chunks.put(chunkPos, chunk);
