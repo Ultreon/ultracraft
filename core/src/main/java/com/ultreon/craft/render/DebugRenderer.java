@@ -34,6 +34,7 @@ public class DebugRenderer {
                 this.drawLine(renderer, "block xyz", blockPosition);
                 this.drawLine(renderer, "chunk xyz", this.block2sectionPos(blockPosition));
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
+                this.drawLine(renderer, "direction", player.getDirection().name().toLowerCase());
                 this.drawLine(renderer, "region open", world.getRegionAt(blockPosition) != null);
             }
         }

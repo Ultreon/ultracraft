@@ -26,6 +26,7 @@ public class Chunk implements Disposable {
 	private final int sizeTimesHeight;
 	public TreeData treeData;
 	protected boolean dirty;
+	private final HeightMap heightMap = new HeightMap();
 
 	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
@@ -104,19 +105,49 @@ public class Chunk implements Disposable {
 	public void setFast(int x, int y, int z, Block block) {
 		synchronized (this.lock) {
 			this.sections[y / this.size].setFast(x, y % this.size, z, block);
+			if (block.blocksLight()) {
+				if (this.heightMap.get(x, z) < y) {
+					int newPosY = y;
+					while (newPosY > this.heightMap.get(x, z)) {
+						this.setSkyLightValue(x, newPosY, z, (byte) 4);
+						newPosY--;
+					}
+					this.heightMap.set(x, z, y);
+				}
+			} else if (this.heightMap.get(x, z) <= y) {
+				int newPosY = y;
+				while (!this.getFast(x, newPosY, z).blocksLight()) {
+					this.setSkyLightValue(x, newPosY, z, (byte) 16);
+					newPosY--;
+				}
+				this.heightMap.set(x, z, newPosY);
+			}
 			this.dirty = true;
 		}
 	}
 
-	public int getLightValue(int x, int y, int z) {
+	public int getBlockLightValue(int x, int y, int z) {
 		synchronized (this.lock) {
-			return this.sections[y / this.size].getLightValue(x, y % this.size, z);
+			return this.sections[y / this.size].getBlockLightValue(x, y % this.size, z);
 		}
 	}
 
-	public void setLightValue(int x, int y, int z, byte value) {
+	public void setBlockLightValue(int x, int y, int z, byte value) {
 		synchronized (this.lock) {
-			this.sections[y / this.size].setLightValue(x, y % this.size, z, value);
+			this.sections[y / this.size].setBlockLightValue(x, y % this.size, z, value);
+			this.dirty = true;
+		}
+	}
+
+	public int getSkyLightValue(int x, int y, int z) {
+		synchronized (this.lock) {
+			return this.sections[y / this.size].getSkyLightValue(x, y % this.size, z);
+		}
+	}
+
+	public void setSkyLightValue(int x, int y, int z, byte value) {
+		synchronized (this.lock) {
+			this.sections[y / this.size].setSkyLightValue(x, y % this.size, z, value);
 			this.dirty = true;
 		}
 	}

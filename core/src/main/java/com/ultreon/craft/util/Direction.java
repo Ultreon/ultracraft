@@ -1,5 +1,6 @@
 package com.ultreon.craft.util;
 
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public enum Direction {
@@ -28,5 +29,32 @@ public enum Direction {
 
     public enum Axis {
         X, Y, Z
+    }
+
+
+    public Direction ofLookVector(Vec3d lookVector) {
+        double x = lookVector.x;
+        double y = lookVector.y;
+        double z = lookVector.z;
+
+        if (Math.abs(x) > Math.abs(y) && Math.abs(x) > Math.abs(z)) {
+            if (x > 0) {
+                return Direction.EAST;
+            } else {
+                return Direction.WEST;
+            }
+        } else if (Math.abs(y) > Math.abs(z)) {
+            if (y > 0) {
+                return Direction.UP;
+            } else {
+                return Direction.DOWN;
+            }
+        } else {
+            if (z > 0) {
+                return Direction.SOUTH;
+            } else {
+                return Direction.NORTH;
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ public class Block implements DataWriter<MapType> {
     private final CubeModel model;
     @Deprecated
     private BakedCubeModel bakedModel;
+    private boolean blockLight;
 
     public Block() {
         this(new Properties());
@@ -28,6 +29,7 @@ public class Block implements DataWriter<MapType> {
     public Block(Properties properties) {
         this.id = globalId++;
         this.transparent = properties.transparent;
+        this.blockLight = properties.blockLight;
         this.solid = properties.solid;
         this.model = null;
     }
@@ -99,12 +101,22 @@ public class Block implements DataWriter<MapType> {
         return block == null ? Blocks.AIR : block;
     }
 
+    public boolean blocksLight() {
+        return this.blockLight;
+    }
+
     public static class Properties {
         private boolean transparent = false;
+        private boolean blockLight = true;
         private boolean solid = true;
 
         public Properties transparent() {
             this.transparent = true;
+            return this;
+        }
+
+        public Properties passLight() {
+            this.blockLight = false;
             return this;
         }
 

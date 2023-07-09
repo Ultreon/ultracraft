@@ -583,7 +583,7 @@ public class World implements Disposable {
 		}
 	}
 
-	public int getLightValue(int x, int y, int z) {
+	public int getBlockLightValue(int x, int y, int z) {
 		Chunk chunkAt = this.getChunkAt(x, y, z);
 		if (chunkAt == null) {
 			return 0;
@@ -593,11 +593,11 @@ public class World implements Disposable {
 			if (!chunkAt.ready) return 0;
 
 			Vec3i cp = this.toLocalBlockPos(x, y, z);
-			return chunkAt.getLightValue(cp.x, cp.y, cp.z);
+			return chunkAt.getBlockLightValue(cp.x, cp.y, cp.z);
 		}
 	}
 
-	public void setLightValue(int x, int y, int z, byte value) {
+	public void setBlockLightValue(int x, int y, int z, byte value) {
 		Chunk chunkAt = this.getChunkAt(x, y, z);
 		if (chunkAt == null) {
 			return;
@@ -607,7 +607,35 @@ public class World implements Disposable {
 			if (!chunkAt.ready) return;
 
 			Vec3i cp = this.toLocalBlockPos(x, y, z);
-			chunkAt.setLightValue(cp.x, cp.y, cp.z, value);
+			chunkAt.setBlockLightValue(cp.x, cp.y, cp.z, value);
+		}
+	}
+
+	public int getSkyLightValue(int x, int y, int z) {
+		Chunk chunkAt = this.getChunkAt(x, y, z);
+		if (chunkAt == null) {
+			return 0;
+		}
+
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return 0;
+
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
+			return chunkAt.getSkyLightValue(cp.x, cp.y, cp.z);
+		}
+	}
+
+	public void setSkyLightValue(int x, int y, int z, byte value) {
+		Chunk chunkAt = this.getChunkAt(x, y, z);
+		if (chunkAt == null) {
+			return;
+		}
+
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return;
+
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
+			chunkAt.setSkyLightValue(cp.x, cp.y, cp.z, value);
 		}
 	}
 
@@ -867,7 +895,7 @@ public class World implements Disposable {
 		return this.chunksLoaded;
 	}
 
-	public int getSkyLight() {
+	public float getSkyBrightness() {
 		return 1;
 	}
 }

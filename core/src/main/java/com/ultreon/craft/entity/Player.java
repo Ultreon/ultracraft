@@ -12,6 +12,7 @@ import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
+import com.ultreon.craft.util.Direction;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -179,5 +180,9 @@ public class Player extends LivingEntity {
         data.putFloat("runModifier", this.runModifier);
 
         return data;
+    }
+
+    public Direction getDirection() {
+        return Direction.DOWN.ofLookVector(this.getLookVector());
     }
 }

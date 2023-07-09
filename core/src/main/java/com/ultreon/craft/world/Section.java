@@ -15,7 +15,8 @@ public class Section implements Disposable {
     public final Object lock = new Object();
     private final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
-    private final LightMap lightMap = new LightMap(4096);
+    private final LightMap blockLightMap = new LightMap(4096);
+    private final LightMap skyLightMap = new LightMap(4096);
 
     public Section(Vec3i offset) {
         this.offset = offset;
@@ -69,12 +70,25 @@ public class Section implements Disposable {
         this.dirty = true;
     }
 
-    public int getLightValue(int x, int y, int z) {
-        return this.lightMap.get(this.toIndex(x, y, z));
+    public int getBlockLightValue(int x, int y, int z) {
+        if (this.isOutOfBounds(x, y, z)) return 0;
+        return this.blockLightMap.get(this.toIndex(x, y, z));
     }
 
-    public void setLightValue(int x, int y, int z, byte value) {
-        this.lightMap.set(this.toIndex(x, y, z), value);
+    public void setBlockLightValue(int x, int y, int z, byte value) {
+        if (this.isOutOfBounds(x, y, z)) return;
+        this.blockLightMap.set(this.toIndex(x, y, z), value);
+        this.dirty = true;
+    }
+
+    public int getSkyLightValue(int x, int y, int z) {
+        if (this.isOutOfBounds(x, y, z)) return 0;
+        return this.skyLightMap.get(this.toIndex(x, y, z));
+    }
+
+    public void setSkyLightValue(int x, int y, int z, byte value) {
+        if (this.isOutOfBounds(x, y, z)) return;
+        this.skyLightMap.set(this.toIndex(x, y, z), value);
         this.dirty = true;
     }
 
@@ -111,7 +125,11 @@ public class Section implements Disposable {
         return this.ready;
     }
 
-    public LightMap getLightMap() {
-        return this.lightMap;
+    public LightMap getBlockLightMap() {
+        return this.blockLightMap;
+    }
+
+    public LightMap getSkyLightMap() {
+        return this.skyLightMap;
     }
 }

@@ -6,7 +6,7 @@ import com.ultreon.craft.util.UtilityClass;
 import com.ultreon.libs.commons.v0.Identifier;
 
 public final class Blocks extends UtilityClass {
-    public static final Block AIR = register("air", new Block());
+    public static final Block AIR = register("air", new Block(new Properties().passLight()));
 
     public static final Block GRASS_BLOCK = register("grass_block", new Block());
 
