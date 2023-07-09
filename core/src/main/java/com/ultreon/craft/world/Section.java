@@ -15,6 +15,7 @@ public class Section implements Disposable {
     public final Object lock = new Object();
     private final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
+    private final LightMap lightMap = new LightMap(4096);
 
     public Section(Vec3i offset) {
         this.offset = offset;
@@ -68,6 +69,15 @@ public class Section implements Disposable {
         this.dirty = true;
     }
 
+    public int getLightValue(int x, int y, int z) {
+        return this.lightMap.get(this.toIndex(x, y, z));
+    }
+
+    public void setLightValue(int x, int y, int z, byte value) {
+        this.lightMap.set(this.toIndex(x, y, z), value);
+        this.dirty = true;
+    }
+
     private boolean isOutOfBounds(int x, int y, int z) {
         return x < 0 || x >= this.size || y < 0 || y >= this.size || z < 0 || z >= this.size;
     }
@@ -99,5 +109,9 @@ public class Section implements Disposable {
 
     public boolean isReady() {
         return this.ready;
+    }
+
+    public LightMap getLightMap() {
+        return this.lightMap;
     }
 }

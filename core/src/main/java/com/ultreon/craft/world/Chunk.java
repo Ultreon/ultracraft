@@ -108,6 +108,19 @@ public class Chunk implements Disposable {
 		}
 	}
 
+	public int getLightValue(int x, int y, int z) {
+		synchronized (this.lock) {
+			return this.sections[y / this.size].getLightValue(x, y % this.size, z);
+		}
+	}
+
+	public void setLightValue(int x, int y, int z, byte value) {
+		synchronized (this.lock) {
+			this.sections[y / this.size].setLightValue(x, y % this.size, z, value);
+			this.dirty = true;
+		}
+	}
+
 	private boolean isOutOfBounds(int x, int y, int z) {
 		return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
 	}

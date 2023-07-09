@@ -4,7 +4,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ShortArray;
 import com.ultreon.craft.ubo.DataHolder;
 import com.ultreon.craft.ubo.DataWriter;
-import com.ultreon.craft.util.exceptions.PaletteSizeException;
 import com.ultreon.data.types.*;
 
 import java.util.function.Function;

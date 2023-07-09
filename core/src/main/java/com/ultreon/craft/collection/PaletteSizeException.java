@@ -1,4 +1,4 @@
-package com.ultreon.craft.util.exceptions;
+package com.ultreon.craft.collection;
 
 public class PaletteSizeException extends IllegalArgumentException {
     public PaletteSizeException() {

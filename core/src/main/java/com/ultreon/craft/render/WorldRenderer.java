@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
@@ -21,6 +22,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -115,7 +117,7 @@ public class WorldRenderer implements RenderableProvider {
                         FloatList vertices = new FloatArrayList();
                         int numVertices = this.buildVertices(section, vertices);
                         mesh = info.mesh = new Mesh(false, false, numVertices,
-                                this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
+                                this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked(), VertexAttribute.TexCoords(0)));
                         info.mesh.setIndices(this.indices);
                         info.numVertices = numVertices / 4 * 6;
                         info.mesh.setVertices(vertices.toFloatArray());
@@ -159,34 +161,34 @@ public class WorldRenderer implements RenderableProvider {
                     if (model == null) continue;
 
                     if (y < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y + 1, z) == null || this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
+                        if (this.getB(section, x, y + 1, z) == null || this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices, getLV(x, y + 1, z));
                     } else {
-                        createTop(offset, x, y, z, model.top(), vertices);
+                        createTop(offset, x, y, z, model.top(), vertices, getLV(x, y + 1, z));
                     }
                     if (y > 0) {
-                        if (this.getB(section, x, y - 1, z) == null || this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
+                        if (this.getB(section, x, y - 1, z) == null || this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices, getLV(x, y - 1, z));
                     } else {
-                        createBottom(offset, x, y, z, model.bottom(), vertices);
+                        createBottom(offset, x, y, z, model.bottom(), vertices, getLV(x, y - 1, z));
                     }
                     if (x > 0) {
-                        if (this.getB(section, x - 1, y, z) == null || this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
+                        if (this.getB(section, x - 1, y, z) == null || this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices, getLV(x - 1, y, z));
                     } else {
-                        createLeft(offset, x, y, z, model.left(), vertices);
+                        createLeft(offset, x, y, z, model.left(), vertices, getLV(x - 1, y, z));
                     }
                     if (x < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x + 1, y, z) == null || this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
+                        if (this.getB(section, x + 1, y, z) == null || this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices, getLV(x + 1, y, z));
                     } else {
-                        createRight(offset, x, y, z, model.right(), vertices);
+                        createRight(offset, x, y, z, model.right(), vertices, getLV(x + 1, y, z));
                     }
                     if (z > 0) {
-                        if (this.getB(section, x, y, z - 1) == null || this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
+                        if (this.getB(section, x, y, z - 1) == null || this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices, getLV(x, y, z - 1));
                     } else {
-                        createFront(offset, x, y, z, model.front(), vertices);
+                        createFront(offset, x, y, z, model.front(), vertices, getLV(x, y, z - 1));
                     }
                     if (z < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y, z + 1) == null || this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
+                        if (this.getB(section, x, y, z + 1) == null || this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices, getLV(x, y, z + 1));
                     } else {
-                        createBack(offset, x, y, z, model.back(), vertices);
+                        createBack(offset, x, y, z, model.back(), vertices, getLV(x, y, z + 1));
                     }
                 }
             }
@@ -199,13 +201,22 @@ public class WorldRenderer implements RenderableProvider {
         return section.get(new Vec3i(x, y, z));
     }
 
-    protected static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    private byte[] getLV(int x, int y, int z) {
+        byte v = (byte) Math.min(this.world.getLightValue(x, y, z), this.world.getSkyLight() * 16);
+        return new byte[]{v, v, v, 1};
+    }
+
+    protected static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x);
         vertices.add(offset.y + y + 1);
         vertices.add(offset.z + z);
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -215,6 +226,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
@@ -224,6 +239,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -233,17 +252,25 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
     }
 
-    protected static void createBottom(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    protected static void createBottom(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x);
         vertices.add(offset.y + y);
         vertices.add(offset.z + z);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -253,6 +280,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
@@ -262,6 +293,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -271,17 +306,25 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
     }
 
-    protected static void createLeft(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    protected static void createLeft(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x);
         vertices.add(offset.y + y);
         vertices.add(offset.z + z);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -291,6 +334,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
@@ -300,6 +347,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -309,17 +360,25 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
     }
 
-    protected static void createRight(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    protected static void createRight(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x + 1);
         vertices.add(offset.y + y);
         vertices.add(offset.z + z);
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -329,6 +388,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
@@ -338,6 +401,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -347,17 +414,25 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
     }
 
-    protected static void createFront(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    protected static void createFront(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x);
         vertices.add(offset.y + y);
         vertices.add(offset.z + z);
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -367,6 +442,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
@@ -376,6 +455,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -385,17 +468,25 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
     }
 
-    protected static void createBack(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
+    protected static void createBack(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices, byte[] light) {
         vertices.add(offset.x + x);
         vertices.add(offset.y + y);
         vertices.add(offset.z + z + 1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
@@ -405,6 +496,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
@@ -414,6 +509,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
@@ -423,6 +522,10 @@ public class WorldRenderer implements RenderableProvider {
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
+        vertices.add(light[0]);
+        vertices.add(light[1]);
+        vertices.add(light[2]);
+        vertices.add(light[3]);
         vertices.add(region.getU());
         vertices.add(region.getV2());
     }

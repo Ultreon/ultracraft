@@ -583,6 +583,34 @@ public class World implements Disposable {
 		}
 	}
 
+	public int getLightValue(int x, int y, int z) {
+		Chunk chunkAt = this.getChunkAt(x, y, z);
+		if (chunkAt == null) {
+			return 0;
+		}
+
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return 0;
+
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
+			return chunkAt.getLightValue(cp.x, cp.y, cp.z);
+		}
+	}
+
+	public void setLightValue(int x, int y, int z, byte value) {
+		Chunk chunkAt = this.getChunkAt(x, y, z);
+		if (chunkAt == null) {
+			return;
+		}
+
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return;
+
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
+			chunkAt.setLightValue(cp.x, cp.y, cp.z, value);
+		}
+	}
+
 	private Vec3i toLocalBlockPos(Vec3i worldCoords) {
 		return this.toLocalBlockPos(worldCoords.x, worldCoords.y, worldCoords.z);
 	}
@@ -837,5 +865,9 @@ public class World implements Disposable {
 
 	public int getChunksLoaded() {
 		return this.chunksLoaded;
+	}
+
+	public int getSkyLight() {
+		return 1;
 	}
 }
