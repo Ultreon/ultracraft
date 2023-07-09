@@ -1,14 +1,17 @@
 package com.ultreon.craft.block;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.badlogic.gdx.math.Vector3;
-import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.CubeModel;
+import com.ultreon.craft.ubo.DataWriter;
+import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-public class Block {
+public class Block implements DataWriter<MapType> {
     private static int globalId;
     private final int id;
     private final boolean transparent;
@@ -52,9 +55,8 @@ public class Block {
         return bakedModel;
     }
 
-    @Deprecated
-    public byte id() {
-        return (byte) id;
+    public Identifier id() {
+        return Registries.BLOCK.getKey(this);
     }
 
     @Deprecated
@@ -81,6 +83,20 @@ public class Block {
 
     public BoundingBox getBoundingBox(Vec3i posNext) {
         return getBoundingBox(posNext.x, posNext.y, posNext.z);
+    }
+
+    @Override
+    public MapType save() {
+        MapType data = new MapType();
+        data.putString("Id", this.id().toString());
+        return data;
+    }
+
+    public static Block load(MapType data) {
+        Identifier id = Identifier.tryParse(data.getString("Id"));
+        if (id == null) return Blocks.AIR;
+        Block block = Registries.BLOCK.getValue(id);
+        return block == null ? Blocks.AIR : block;
     }
 
     public static class Properties {

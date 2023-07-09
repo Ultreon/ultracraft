@@ -1,14 +1,14 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
@@ -24,33 +24,18 @@ public class Chunk implements Disposable {
 	public final int height;
 	private final Vec3i offset;
 	private final int sizeTimesHeight;
-	private final int topOffset;
-	private final int bottomOffset;
-	private final int leftOffset;
-	private final int rightOffset;
-	private final int frontOffset;
-	private final int backOffset;
 	public TreeData treeData;
 	protected boolean dirty;
 
-	private final World world;
-
-	public Chunk(World world, int size, int height, ChunkPos pos) {
+	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
 		
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
-		this.world = world;
 		this.pos = pos;
 		this.sections = new Section[sectionCount];
 		this.size = size;
 		this.height = height;
-		this.topOffset = size * size;
-		this.bottomOffset = -size * size;
-		this.leftOffset = -1;
-		this.rightOffset = 1;
-		this.frontOffset = -size;
-		this.backOffset = size;
 		this.sizeTimesHeight = size * size;
 
 		for (int i = 0; i < this.sections.length; i++) {
@@ -58,8 +43,8 @@ public class Chunk implements Disposable {
 		}
 	}
 
-	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
-		Chunk chunk = new Chunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+	public static Chunk load(ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
 		chunk.load(mapType);
 		return chunk;
 	}
@@ -85,18 +70,16 @@ public class Chunk implements Disposable {
 	}
 
 	public Block get(Vec3i pos) {
-		return get(pos.x, pos.y, pos.z);
+		return this.get(pos.x, pos.y, pos.z);
 	}
 
 	public Block get(int x, int y, int z) {
-		if (x < 0 || x >= size) return Blocks.AIR;
-		if (y < 0 || y >= height) return Blocks.AIR;
-		if (z < 0 || z >= size) return Blocks.AIR;
-		return getFast(x, y, z);
+		if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+		return this.getFast(x, y, z);
 	}
 
 	public Block getFast(Vec3i pos) {
-		return getFast(pos.x, pos.y, pos.z);
+		return this.getFast(pos.x, pos.y, pos.z);
 	}
 
 	public Block getFast(int x, int y, int z) {
@@ -106,18 +89,16 @@ public class Chunk implements Disposable {
 	}
 
 	public void set(Vec3i pos, Block block) {
-		set(pos.x, pos.y, pos.z, block);
+		this.set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		if (x < 0 || x >= size) return;
-		if (y < 0 || y >= height) return;
-		if (z < 0 || z >= size) return;
-		setFast(x, y, z, block);
+		if (this.isOutOfBounds(x, y, z)) return;
+		this.setFast(x, y, z, block);
 	}
 
 	public void setFast(Vec3i pos, Block block) {
-		set(pos.x, pos.y, pos.z, block);
+		this.set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
@@ -125,6 +106,10 @@ public class Chunk implements Disposable {
 			this.sections[y / this.size].setFast(x, y % this.size, z, block);
 			this.dirty = true;
 		}
+	}
+
+	private boolean isOutOfBounds(int x, int y, int z) {
+		return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
 	}
 
 	public Section getSection(int sectionY) {
@@ -139,9 +124,9 @@ public class Chunk implements Disposable {
 	}
 
 	private Vec3i reverse(int index) {
-		int y = index / sizeTimesHeight;
-		int z = (index - y * sizeTimesHeight) / size;
-		int x = index - y * sizeTimesHeight - z * size;
+		int y = index / this.sizeTimesHeight;
+		int z = (index - y * this.sizeTimesHeight) / this.size;
+		int x = index - y * this.sizeTimesHeight - z * this.size;
 		return new Vec3i(x, y, z);
 	}
 
@@ -164,7 +149,7 @@ public class Chunk implements Disposable {
 	}
 
 	public Iterable<Section> getSections() {
-		return List.of(this.sections);
+		return Arrays.asList(this.sections);
 	}
 
 	public Vec3i getOffset() {
