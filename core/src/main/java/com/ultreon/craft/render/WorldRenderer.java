@@ -23,6 +23,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -146,6 +147,8 @@ public class WorldRenderer implements RenderableProvider {
                         builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
                         BoxShapeBuilder.build(builder, -0.1F, -0.1F, -0.1F, 1.2F, 1.2F, 1.2F);
 
+                        builder.setUVRange(this.getBreakTex(this.game.getBreakProgress()));
+
                         this.blockBreakMesh = builder.end();
                     }
                     section.getBreaking().forEach((pos, progress) -> {
@@ -161,12 +164,47 @@ public class WorldRenderer implements RenderableProvider {
 
                         renderables.add(breakingPiece);
                     });
+                    Renderable breakingPiece = pool.obtain();
+
+                    breakingPiece.material = this.material;
+                    breakingPiece.meshPart.mesh = this.blockBreakMesh;
+                    breakingPiece.meshPart.offset = 0;
+                    breakingPiece.meshPart.size = this.blockBreakMesh.getNumVertices();
+                    breakingPiece.meshPart.primitiveType = GL20.GL_TRIANGLES;
+                    breakingPiece.worldTransform.setToTranslation(0, 0, -3);
+
+                    renderables.add(breakingPiece);
                     this.renderedChunks = this.renderedChunks + 1;
                 }
             }
         }
         chunks.forEach(Chunk::onNeighboursUpdated);
     }
+
+
+    private TextureRegion getBreakTex(float progress) {
+        progress =  0.5F;
+        if (progress < 0) {
+            return null;
+        }
+        Identifier identifier = new Identifier("textures/misc/breaking" + (int) (6 * progress + 1) + ".png");
+        TextureRegion textureRegion = UltreonCraft.get().blocksTextureAtlas.get(identifier);
+        System.out.println("identifier = " + identifier + ", textureRegion = " + textureRegion);
+        float u = textureRegion.getU();
+        System.out.println("u = " + u);
+
+        float v = textureRegion.getV();
+        System.out.println("v = " + v);
+
+        float u2 = textureRegion.getU2();
+        System.out.println("u2 = " + u2);
+
+        float v2 = textureRegion.getV2();
+        System.out.println("v2 = " + v2);
+
+        return textureRegion;
+    }
+
 
     public void dispose() {
         if (this.blockBreakMesh != null) {

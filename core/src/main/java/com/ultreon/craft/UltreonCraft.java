@@ -980,7 +980,7 @@ public class UltreonCraft extends ApplicationAdapter {
         if (hitResult == null || this.world == null || this.breaking == null) return;
         this.world.stopBreaking(hitResult.getPos());
         this.world.startBreaking(hitResult.getPos());
-		this.breaking = hitResult.getPos();
+        this.breaking = hitResult.getPos();
 		this.breakingBlock = hitResult.getBlock();
 	}
 
@@ -988,7 +988,7 @@ public class UltreonCraft extends ApplicationAdapter {
 		HitResult hitResult = this.hitResult;
         if (hitResult == null || this.world == null) return;
         if (this.world.getBreakProgress(hitResult.getPos()) >= 0.0F) return;
-		this.world.startBreaking(hitResult.getPos());
+        this.world.startBreaking(hitResult.getPos());
 		this.breaking = hitResult.getPos();
 		this.breakingBlock = hitResult.getBlock();
 	}
@@ -1000,6 +1000,13 @@ public class UltreonCraft extends ApplicationAdapter {
 		this.breaking = null;
 		this.breakingBlock = null;
 	}
+
+    public float getBreakProgress() {
+        Vec3i breaking = this.breaking;
+        World world = this.world;
+        if (breaking == null || world == null) return -1;
+        return world.getBreakProgress(breaking);
+    }
 
     private float calculateGuiScale() {
         switch (GamePlatform.instance.getPlatformType()) {
