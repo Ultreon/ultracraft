@@ -543,7 +543,7 @@ public class UltreonCraft extends ApplicationAdapter {
                     this.fbo.dispose();
                 }
                 this.fbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
-                this.fbo.bind();
+                this.fbo.begin();
                 this.batch.begin(this.camera);
                 this.batch.getRenderContext().setCullFace(CULL_FACE);
                 this.batch.render(worldRenderer, this.env);
@@ -702,13 +702,13 @@ public class UltreonCraft extends ApplicationAdapter {
         Vec3i spawnPoint = this.world.getSpawnPoint();
 
         this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
-        this.player = Entities.PLAYER.create(this.world);
+        Player player = this.player = Entities.PLAYER.create(this.world);
         LOGGER.debug("Player created, setting health now.");
-        this.player.setHealth(this.player.getMaxHeath());
+        player.setHealth(this.player.getMaxHeath());
         LOGGER.debug("Health set, setting position now.");
-        this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+        player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
         LOGGER.debug("Position set, spawning in world now..");
-        this.world.spawn(this.player);
+        this.world.spawn(player);
     }
 
     @Override
