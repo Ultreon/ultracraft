@@ -1,17 +1,18 @@
+#version 330 core
+
 precision highp float;
 precision highp int;
-precision lowp sampler2D;
 
-uniform mat4 u_projTrans;
-uniform sampler2D u_texture;
-varying vec2 v_texCoord0;
+in vec2 UV;
+out vec4 color;
+
+uniform sampler2D u_crosshair;
+uniform sampler2D u_fbo;
+
+uniform vec2 u_frameSize;
 
 void main() {
-    vec4 color = texture2D(u_texture, v_texCoord0);
-
-    // XOR RGB components with alpha component
-    color.rgb = color.rgb * color.a;
-    color.rgb = vec3(1.0) - color.rgb;
-
-    gl_FragColor = color;
+    color = texture2D(u_crosshair, UV);
+    vec4 frame_color = texture2D(u_fbo, gl_FragCoord.xy / u_frameSize);
+    color *= 1.0f - frame_color;
 }

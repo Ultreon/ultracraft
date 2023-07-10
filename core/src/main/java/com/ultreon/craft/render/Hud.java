@@ -1,8 +1,11 @@
 package com.ultreon.craft.render;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
@@ -53,13 +56,23 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-        renderer.setShader(Shaders.XOR);
+        ShaderProgram shader = Shaders.XOR;
+        FrameBuffer frame = this.game.getFramebuffer();
+        if (frame == null) return;
+        Texture framebufferTex = frame.getColorBufferTexture();
+        this.crosshair.bind(0);
+        framebufferTex.bind(1);
+        shader.bind();
+        shader.setUniformi("u_crosshair", 0);
+        shader.setUniformi("u_fbo", 1);
+        shader.setUniformf("u_position", 0.5f, 0.5f, 0.0f, 0.0f);
+        shader.setUniformMatrix("u_projTrans", this.game.getCamera().projection);
 
         int x = this.game.getScaledWidth() / 2;
         int y = this.game.getScaledHeight() / 2;
-        renderer.texture(this.crosshair, x - 7, y - 7, 14, 14);
+        renderer.rect(x - 7, y - 7, 14, 14);
 
-        renderer.unsetShader();
+        Gdx.gl.glUseProgram(0);
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {

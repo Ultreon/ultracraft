@@ -1,12 +1,15 @@
+#version 330 core
+
 precision highp float;
 precision highp int;
 
-attribute vec4 a_position;
-attribute vec2 a_texCoord0;
+out vec2 UV;
+
+uniform vec4 u_position;
 uniform mat4 u_projTrans;
-varying vec2 v_texCoord0;
 
 void main() {
-    v_texCoord0 = a_texCoord0;
-    gl_Position = u_projTrans * a_position;
+    UV = vec2(u_position.x, u_position.y);
+
+    gl_Position = u_projTrans * u_position;
 }

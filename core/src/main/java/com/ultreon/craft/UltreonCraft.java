@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -154,6 +155,7 @@ public class UltreonCraft extends ApplicationAdapter {
     private Texture windowTex;
     private DebugRenderer debugRenderer;
     private boolean closingWorld;
+    private FrameBuffer fbo;
 
     public UltreonCraft(String[] args) {
         LOGGER.info("Booting game!");
@@ -173,6 +175,10 @@ public class UltreonCraft extends ApplicationAdapter {
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
         });
+    }
+
+    public GameCamera getCamera() {
+        return this.camera;
     }
 
     public void delayCrash(CrashLog crashLog) {
@@ -533,10 +539,16 @@ public class UltreonCraft extends ApplicationAdapter {
             WorldRenderer worldRenderer = this.worldRenderer;
 
             if (this.renderWorld && world != null && worldRenderer != null) {
+                if (this.fbo != null) {
+                    this.fbo.dispose();
+                }
+                this.fbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+                this.fbo.bind();
                 this.batch.begin(this.camera);
                 this.batch.getRenderContext().setCullFace(CULL_FACE);
                 this.batch.render(worldRenderer, this.env);
                 this.batch.end();
+                this.fbo.end();
             }
 
             this.spriteBatch.begin();
@@ -582,6 +594,10 @@ public class UltreonCraft extends ApplicationAdapter {
         if (screen != null) {
             screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((this.getHeight() - Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
         }
+    }
+
+    public FrameBuffer getFramebuffer() {
+        return this.fbo;
     }
 
     public static void crash(Throwable throwable) {
