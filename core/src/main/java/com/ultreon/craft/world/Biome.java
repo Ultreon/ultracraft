@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceFunction;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class Biome {
     private final NoiseSettings settings;
@@ -45,7 +46,9 @@ public abstract class Biome {
     }
 
     public static class Builder {
+        @Nullable
         private NoiseSettings biomeNoise;
+        @Nullable
         private Long2ReferenceFunction<DomainWarping> domainWarping;
         private final List<TerrainLayer> layers = new ArrayList<>();
         private final List<TerrainLayer> extraLayers = new ArrayList<>();

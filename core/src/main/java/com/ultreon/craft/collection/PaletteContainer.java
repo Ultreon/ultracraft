@@ -6,11 +6,12 @@ import com.ultreon.craft.ubo.DataHolder;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.exceptions.PaletteSizeException;
 import com.ultreon.data.types.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> implements DataHolder<MapType> {
-    private Array<D> palette;
+    private Array<@Nullable D> palette;
     private ShortArray references;
     private final Function<T, D> deserializer;
     private final int dataId;
@@ -37,7 +38,7 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
         MapType data = new MapType();
 
         ListType<T> paletteData = new ListType<>(this.dataId);
-        for (D t : this.palette.items) if (t != null) paletteData.add(t.save());
+        for (@Nullable D t : this.palette.items) if (t != null) paletteData.add(t.save());
         data.put("Palette", paletteData);
 
         data.putShortArray("Data", this.references.items);
@@ -74,11 +75,13 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
         }
     }
 
+    @Nullable
     public D get(int index) {
         short paletteIndex = this.references.get(index);
         return this.palette.get(paletteIndex);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     public void dispose() {
         this.palette = null;
         this.references = null;

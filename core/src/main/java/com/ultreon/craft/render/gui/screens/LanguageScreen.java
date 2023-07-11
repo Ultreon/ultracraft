@@ -86,6 +86,8 @@ public class LanguageScreen extends Screen {
         String text = locale.getDisplayLanguage(new Locale("en")) + " (" + locale.getDisplayCountry(new Locale("en")) + ")";
         text += " - " + locale.getDisplayLanguage(locale) + " (" + locale.getDisplayCountry(locale) + ")";
         renderer.drawCenteredText(text, this.width / 2, 11f);
+
+        throw new RuntimeException("TEST");
     }
 
     private void updateTexts() {

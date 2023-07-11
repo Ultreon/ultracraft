@@ -1,0 +1,8 @@
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+@FieldsAreNonnullByDefault
+@TypeParametersAreNonnullByDefault
+@TypeUsesAreNonnullByDefault
+package com.ultreon.craft;
+
+import javax.annotation.ParametersAreNonnullByDefault;

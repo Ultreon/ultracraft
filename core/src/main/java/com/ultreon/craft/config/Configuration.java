@@ -142,7 +142,7 @@ public class Configuration {
                 String value = e.write();
 
                 String comment = e.getComment();
-                if (comment != null && !comment.isBlank()) {
+                if (comment != null && !comment.isEmpty()) {
                     writer.write("# ");
                     writer.write(comment.trim().replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
                     writer.newLine();
