@@ -484,16 +484,16 @@ public class World implements Disposable {
 		if (region == null) return null;
 
 		try {
-			if (!this.putChunk(region, pos, chunk)) {
-				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
-				chunk.dispose();
-				return null;
-			}
-
 			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 				for (int by = 0; by < CHUNK_SIZE; by++) {
 					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
 				}
+			}
+
+			if (!this.putChunk(region, pos, chunk)) {
+				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
+				chunk.dispose();
+				return null;
 			}
 
 			region.initialized = true;
