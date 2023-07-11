@@ -619,18 +619,6 @@ public class UltreonCraft {
 
             CrashLog crashLog = crash.getCrashLog();
             GamePlatform.instance.handleCrash(crashLog);
-//            if (GamePlatform.instance.canAccessData()) {
-//            } else {
-//                CrashLog crashLog = crash.getCrashLog();
-//                Throwable throwable = crashLog.getThrowable();
-//
-//                for (CrashCategory category : crashLog.getCategories()) {
-//                    Throwable categoryThrowable = category.getThrowable();
-//                    throwable.addSuppressed(categoryThrowable);
-//                }
-//
-//                throw throwable;
-//            }
             if (GamePlatform.instance.isDesktop()) Gdx.app.exit();
         } catch (Throwable t) {
             LOGGER.error(FATAL_ERROR_MSG, t);
