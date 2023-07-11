@@ -4,8 +4,10 @@ import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.data.types.IType;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.data.types.ShortArrayType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +61,11 @@ public class Chunk implements Disposable {
 			this.sections[y].dispose();
 			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
+		}
+
+		IType<?> heightMapData = chunkData.get("HeightMap");
+		if (heightMapData instanceof ShortArrayType) {
+			this.heightMap.load((ShortArrayType) heightMapData);
 		}
 	}
 

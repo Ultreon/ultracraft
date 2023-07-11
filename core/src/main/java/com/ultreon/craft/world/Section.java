@@ -29,11 +29,21 @@ public class Section implements Disposable {
         this(offset);
 
         this.paletteContainer.load(sectionData.getMap("Blocks"));
+
+        MapType lightMaps = sectionData.getMap("LightMaps");
+        this.blockLightMap.load(lightMaps.getMap("Block"));
+        this.skyLightMap.load(lightMaps.getMap("Sky"));
     }
 
     public MapType save() {
         MapType data = new MapType();
         data.put("Blocks", this.paletteContainer.save());
+
+        MapType lightMaps = new MapType();
+        lightMaps.put("Block", this.blockLightMap.save());
+        lightMaps.put("Sky", this.skyLightMap.save());
+        data.put("LightMaps", lightMaps);
+
         return data;
     }
 
