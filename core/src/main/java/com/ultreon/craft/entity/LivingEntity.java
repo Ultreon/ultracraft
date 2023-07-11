@@ -8,6 +8,7 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.events.v1.ValueEventResult;
+import org.jetbrains.annotations.Nullable;
 
 public class LivingEntity extends Entity {
     private float health;
@@ -24,7 +25,7 @@ public class LivingEntity extends Entity {
     }
 
     public float getHealth() {
-        return health;
+        return this.health;
     }
 
     public void setHealth(float health) {
@@ -32,7 +33,7 @@ public class LivingEntity extends Entity {
     }
 
     public float getMaxHeath() {
-        return maxHeath;
+        return this.maxHeath;
     }
 
     public void setMaxHeath(float maxHeath) {
@@ -65,8 +66,8 @@ public class LivingEntity extends Entity {
             this.jump();
         }
 
-        if (damageImmunity > 0) {
-            damageImmunity--;
+        if (this.damageImmunity > 0) {
+            this.damageImmunity--;
         }
 
         if (this.isInVoid()) {
@@ -108,15 +109,15 @@ public class LivingEntity extends Entity {
 
         if (this.onAttack(damage, source)) return;
 
-        SoundEvent hurtSound = getHurtSound();
+        SoundEvent hurtSound = this.getHurtSound();
         if (hurtSound != null) {
             UltreonCraft.get().playSound(hurtSound);
         }
 
         damage = Math.max(damage, 0);
 
-        health = Math.max(health - damage, 0);
-        damageImmunity = 10;
+        this.health = Math.max(this.health - damage, 0);
+        this.damageImmunity = 10;
 
         if (this.health <= 0) {
             this.health = 0;
@@ -132,6 +133,7 @@ public class LivingEntity extends Entity {
         return false;
     }
 
+    @Nullable
     public SoundEvent getHurtSound() {
         return null;
     }

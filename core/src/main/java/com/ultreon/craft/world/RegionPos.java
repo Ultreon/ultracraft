@@ -14,16 +14,16 @@ public final class RegionPos {
     }
 
     public int x() {
-        return x;
+        return this.x;
     }
 
     public int z() {
-        return z;
+        return this.z;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, z);
+        return Objects.hash(this.x, this.z);
     }
 
     @Override

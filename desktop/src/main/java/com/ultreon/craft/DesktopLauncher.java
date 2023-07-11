@@ -83,7 +83,7 @@ public class DesktopLauncher {
 
 			}
 		});
-		new Lwjgl3Application(new UltreonCraft(argv), config);
+		new Lwjgl3Application(new GameLibGDXWrapper(argv), config);
 	}
 
 	private static String[] getIcons() {

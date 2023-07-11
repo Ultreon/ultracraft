@@ -3,12 +3,15 @@ apply plugin: "com.android.application"
 configurations { natives }
 
 repositories {
-
+    google()
 }
 
 dependencies {
     implementation project(":core")
+    api 'com.android.support:appcompat-v7:33.0.0'
     api "com.badlogicgames.gdx:gdx-backend-android:$gdx_version"
+    api 'androidx.appcompat:appcompat:1.6.1'
+    api 'androidx.constraintlayout:constraintlayout:2.1.4'
     natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-armeabi-v7a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-x86"
@@ -43,7 +46,6 @@ android {
             assets.srcDirs = ['../core/src/main/resources']
             jniLibs.srcDirs = ['libs']
         }
-
     }
     packagingOptions {
         resources {
@@ -72,6 +74,9 @@ android {
     }
 
     namespace "com.ultreon.craft"
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 

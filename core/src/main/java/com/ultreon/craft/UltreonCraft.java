@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.SharedLibraryLoader;
 import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -71,10 +72,12 @@ import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
@@ -88,7 +91,7 @@ import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
-public class UltreonCraft extends ApplicationAdapter {
+public class UltreonCraft {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
@@ -112,11 +115,13 @@ public class UltreonCraft extends ApplicationAdapter {
     public int renderDistance = 8;
     private SpriteBatch spriteBatch;
     private ModelBatch batch;
+    @Nullable
     GameCamera camera;
     private Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
     private final boolean isDevMode;
+    @Nullable
     public Screen currentScreen;
     public GameSettings settings;
     ShapeDrawer shapes;
@@ -125,7 +130,7 @@ public class UltreonCraft extends ApplicationAdapter {
     private ResourceManager resourceManager;
     @Deprecated
     private Texture tilesTex;
-    private float guiScale = calculateGuiScale();
+    private float guiScale = this.calculateGuiScale();
 
     private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
@@ -149,13 +154,15 @@ public class UltreonCraft extends ApplicationAdapter {
     private List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    @Nullable
     private Integer deferredWidth;
+    @Nullable
     private Integer deferredHeight;
     private Texture windowTex;
     private DebugRenderer debugRenderer;
     private boolean closingWorld;
 
-    public UltreonCraft(String[] args) {
+    public UltreonCraft(String[] args) throws Throwable {
         LOGGER.info("Booting game!");
 
         Identifier.setDefaultNamespace(NAMESPACE);
@@ -173,6 +180,182 @@ public class UltreonCraft extends ApplicationAdapter {
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
         });
+
+        LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
+
+        Gdx.app.setApplicationLogger(new ApplicationLogger() {
+            private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+
+            @Override
+            public void log(String tag, String message) {
+                this.LOGGER.info(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void log(String tag, String message, Throwable exception) {
+                this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
+            }
+
+            @Override
+            public void error(String tag, String message) {
+                this.LOGGER.error(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void error(String tag, String message, Throwable exception) {
+                this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
+            }
+
+            @Override
+            public void debug(String tag, String message) {
+                this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void debug(String tag, String message, Throwable exception) {
+                this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
+            }
+        });
+
+        this.configDir = createDir("config/");
+
+        createDir("screenshots/");
+        createDir("game-crashes/");
+        createDir("logs/");
+
+        GamePlatform.instance.setupMods();
+
+        this.settings = new GameSettings();
+        this.settings.reload();
+        this.settings.reloadLanguage();
+
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
+
+        LOGGER.info("Initializing game");
+        this.textureManager = new TextureManager();
+        this.spriteBatch = new SpriteBatch();
+
+        this.resourceManager = new ResourceManager("assets");
+        LOGGER.info("Importing resources");
+        this.resourceManager.importDeferredPackage(this.getClass());
+        GamePlatform.instance.importModResources(this.resourceManager);
+
+        Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
+        if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
+        this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
+
+        LOGGER.info("Generating bitmap fonts");
+        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
+        FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
+        fontParameter.size = 8;
+        fontParameter.characters = this.allUnicode;
+        fontParameter.minFilter = Texture.TextureFilter.Nearest;
+        fontParameter.magFilter = Texture.TextureFilter.Nearest;
+        fontParameter.mono = true;
+
+        this.font = new Font(generator.generateFont(fontParameter));
+
+        //**********************//
+        // Setting up rendering //
+        //**********************//
+        LOGGER.info("Initializing rendering stuffs");
+        DefaultShader.Config config = new DefaultShader.Config();
+        config.defaultCullFace = GL20.GL_FRONT;
+        this.batch = new ModelBatch(new DefaultShaderProvider(config));
+        this.batch.getRenderContext().setCullFace(CULL_FACE);
+        this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
+        this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        this.camera.near = 0.01f;
+        this.camera.far = 1000;
+        this.input = this.createInput();
+        Gdx.input.setInputProcessor(this.input);
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(1F, 1F, 1F, 1F);
+        pixmap.drawPixel(0, 0);
+        this.white = new TextureRegion(new Texture(pixmap));
+
+        this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
+
+        LOGGER.info("Setting up world environment");
+        this.env = new Environment();
+        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
+        this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
+        this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
+
+        LOGGER.info("Setting up HUD");
+        this.hud = new Hud(this);
+
+        LOGGER.info("Setting up Debug Renderer");
+        this.debugRenderer = new DebugRenderer(this);
+
+        //**************************//
+        // Registering game content //
+        //**************************//
+        LOGGER.info("Loading languages");
+        this.loadLanguages();
+
+        LOGGER.info("Registering stuff");
+        Registries.init();
+
+        Blocks.nopInit();
+        NoiseSettingsInit.nopInit();
+        Entities.nopInit();
+        Fonts.nopInit();
+        Sounds.nopInit();
+
+        for (Registry<?> registry : Registry.getRegistries()) {
+            RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
+        }
+        Registry.freeze();
+
+        LOGGER.info("Registering models");
+        this.registerModels();
+
+        //********************************************//
+        // Post-initialize game content               //
+        // Such as model baking and texture stitching //
+        //********************************************//
+        LOGGER.info("Stitching textures");
+        this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+
+        LOGGER.info("Initializing sounds");
+        for (SoundEvent sound : Registries.SOUNDS.values()) {
+            if (sound == null) {
+                continue;
+            }
+            sound.register();
+        }
+
+        LOGGER.info("Baking models");
+        this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
+
+        if (this.deferredWidth != null && this.deferredHeight != null) {
+            this.camera.viewportWidth = this.deferredWidth;
+            this.camera.viewportHeight = this.deferredHeight;
+            this.camera.update();
+        }
+
+        this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
+
+        LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
+
+        //*************//
+        // Final stuff //
+        //*************//
+        LOGGER.info("Opening title screen");
+        this.showScreen(new TitleScreen());
+
+        savedWorld = new SavedWorld(GamePlatform.data("world"));
+
+        GamePlatform.instance.setupImGui();
+
+        this.booted = true;
+        LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
     }
 
     public void delayCrash(CrashLog crashLog) {
@@ -192,190 +375,6 @@ public class UltreonCraft extends ApplicationAdapter {
 
     public static GG ggBro() {
         return new GG();
-    }
-
-    @Override
-    public void create() {
-        try {
-            LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
-
-            Gdx.app.setApplicationLogger(new ApplicationLogger() {
-                private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
-
-                @Override
-                public void log(String tag, String message) {
-                    this.LOGGER.info(MarkerFactory.getMarker(tag), message);
-                }
-
-                @Override
-                public void log(String tag, String message, Throwable exception) {
-                    this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
-                }
-
-                @Override
-                public void error(String tag, String message) {
-                    this.LOGGER.error(MarkerFactory.getMarker(tag), message);
-                }
-
-                @Override
-                public void error(String tag, String message, Throwable exception) {
-                    this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
-                }
-
-                @Override
-                public void debug(String tag, String message) {
-                    this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
-                }
-
-                @Override
-                public void debug(String tag, String message, Throwable exception) {
-                    this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
-                }
-            });
-
-            this.configDir = createDir("config/");
-
-            createDir("screenshots/");
-            createDir("game-crashes/");
-            createDir("logs/");
-
-            GamePlatform.instance.setupMods();
-
-            this.settings = new GameSettings();
-            this.settings.reload();
-            this.settings.reloadLanguage();
-
-            Gdx.input.setCatchKey(Input.Keys.BACK, true);
-
-            LOGGER.info("Initializing game");
-            this.textureManager = new TextureManager();
-            this.spriteBatch = new SpriteBatch();
-
-            this.resourceManager = new ResourceManager("assets");
-            LOGGER.info("Importing resources");
-            this.resourceManager.importDeferredPackage(this.getClass());
-            GamePlatform.instance.importModResources(this.resourceManager);
-
-            Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
-            if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
-            this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
-
-            LOGGER.info("Generating bitmap fonts");
-            this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
-
-            FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
-            FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
-            fontParameter.size = 8;
-            fontParameter.characters = this.allUnicode;
-            fontParameter.minFilter = Texture.TextureFilter.Nearest;
-            fontParameter.magFilter = Texture.TextureFilter.Nearest;
-            fontParameter.mono = true;
-
-            this.font = new Font(generator.generateFont(fontParameter));
-
-            //**********************//
-            // Setting up rendering //
-            //**********************//
-            LOGGER.info("Initializing rendering stuffs");
-            DefaultShader.Config config = new DefaultShader.Config();
-            config.defaultCullFace = GL20.GL_FRONT;
-            this.batch = new ModelBatch(new DefaultShaderProvider(config));
-            this.batch.getRenderContext().setCullFace(CULL_FACE);
-            this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
-            this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            this.camera.near = 0.01f;
-            this.camera.far = 1000;
-            this.input = createInput();
-            Gdx.input.setInputProcessor(this.input);
-
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(1F, 1F, 1F, 1F);
-            pixmap.drawPixel(0, 0);
-            this.white = new TextureRegion(new Texture(pixmap));
-
-            this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
-
-            LOGGER.info("Setting up world environment");
-            this.env = new Environment();
-            this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-            this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
-            this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
-            this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
-            this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
-
-            LOGGER.info("Setting up HUD");
-            this.hud = new Hud(this);
-
-            LOGGER.info("Setting up Debug Renderer");
-            this.debugRenderer = new DebugRenderer(this);
-
-            //**************************//
-            // Registering game content //
-            //**************************//
-            LOGGER.info("Loading languages");
-            this.loadLanguages();
-
-            LOGGER.info("Registering stuff");
-            Registries.init();
-
-            Blocks.nopInit();
-            NoiseSettingsInit.nopInit();
-            Entities.nopInit();
-            Fonts.nopInit();
-            Sounds.nopInit();
-
-            for (Registry<?> registry : Registry.getRegistries()) {
-                RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
-            }
-            Registry.freeze();
-
-            LOGGER.info("Registering models");
-            this.registerModels();
-
-            //********************************************//
-            // Post-initialize game content               //
-            // Such as model baking and texture stitching //
-            //********************************************//
-            LOGGER.info("Stitching textures");
-            this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
-
-            LOGGER.info("Initializing sounds");
-            for (SoundEvent sound : Registries.SOUNDS.values()) {
-                if (sound == null) {
-                    continue;
-                }
-                sound.register();
-            }
-
-            LOGGER.info("Baking models");
-            this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
-
-            if (this.deferredWidth != null && this.deferredHeight != null) {
-                this.camera.viewportWidth = this.deferredWidth;
-                this.camera.viewportHeight = this.deferredHeight;
-                this.camera.update();
-            }
-
-            this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
-
-            LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
-
-            //*************//
-            // Final stuff //
-            //*************//
-            LOGGER.info("Opening title screen");
-            this.showScreen(new TitleScreen());
-
-            savedWorld = new SavedWorld(GamePlatform.data("world"));
-
-            GamePlatform.instance.setupImGui();
-        } catch (Throwable t) {
-            crash(t);
-            return;
-        }
-
-        booted = true;
-        LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
     }
 
     private void loadLanguages() {
@@ -424,28 +423,22 @@ public class UltreonCraft extends ApplicationAdapter {
         return directory;
     }
 
-    @Override
     public void pause() {
-        super.pause();
-
         if (this.currentScreen == null && this.world != null) {
             this.showScreen(new PauseScreen());
         }
     }
 
-    @Override
     public void resume() {
-        super.resume();
-
         if (this.currentScreen instanceof PauseScreen && this.world != null) {
             this.showScreen(null);
         }
     }
 
     @CanIgnoreReturnValue
-    public boolean showScreen(Screen open) {
+    public boolean showScreen(@Nullable Screen open) {
         Screen cur = this.currentScreen;
-        if (open == null && world == null) {
+        if (open == null && this.world == null) {
             open = new TitleScreen();
         }
 
@@ -473,14 +466,14 @@ public class UltreonCraft extends ApplicationAdapter {
         }
 
         if (cur != null) {
-            EventResult closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
+            EventResult closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(cur);
             if (closeResult.isCanceled()) return false;
 
             cur.hide();
             if (open != null) {
                 LOGGER.debug("Changing screen to: " + open.getClass());
             } else {
-                LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
+                LOGGER.debug("Closing screen: " + cur.getClass());
             }
         } else {
             if (open != null) {
@@ -499,7 +492,6 @@ public class UltreonCraft extends ApplicationAdapter {
         return true;
     }
 
-    @Override
     public void render() {
         if (!this.booted) {
             return;
@@ -513,7 +505,7 @@ public class UltreonCraft extends ApplicationAdapter {
             if (this.timeUntilNextTick < 0) {
                 this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
 
-                tick();
+                this.tick();
             }
 
             this.tasks.forEach(runnable -> {
@@ -570,7 +562,7 @@ public class UltreonCraft extends ApplicationAdapter {
         renderer.draw9PatchTexture(this.windowTex, 0, 0, width, height, 0, 0, 18, 22, 256, 256);
     }
 
-    private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
+    private void renderGame(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
         if (world != null) {
             if (this.showDebugHud) {
                 this.debugRenderer.render(renderer);
@@ -613,7 +605,11 @@ public class UltreonCraft extends ApplicationAdapter {
 
         CrashCategory game = new CrashCategory("Game Details");
         game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
-        game.add("Game booted", this.booted); // Could be the game isn't booted yet.
+        game.add("Game booted", this.booted); // Could be that the game isn't booted yet.
+        game.add("LibGDX Platform", GamePlatform.instance.getGdxPlatform().getDisplayName());
+        game.add("Can Access Data", GamePlatform.instance.canAccessData());
+        game.add("Supports Mods", GamePlatform.instance.isModsSupported());
+        game.add("Supports Quit", GamePlatform.instance.supportsQuit());
         crashLog.addCategory(game);
     }
 
@@ -621,20 +617,9 @@ public class UltreonCraft extends ApplicationAdapter {
         try {
             crash.printCrash();
 
-            if (GamePlatform.instance.canAccessData()) {
-                crash.getCrashLog().defaultSave();
-            } else {
-                CrashLog crashLog = crash.getCrashLog();
-                Throwable throwable = crashLog.getThrowable();
-
-                for (CrashCategory category : crashLog.getCategories()) {
-                    Throwable categoryThrowable = category.getThrowable();
-                    throwable.addSuppressed(categoryThrowable);
-                }
-
-                throw throwable;
-            }
-            Gdx.app.exit();
+            CrashLog crashLog = crash.getCrashLog();
+            GamePlatform.instance.handleCrash(crashLog);
+            if (GamePlatform.instance.isDesktop()) Gdx.app.exit();
         } catch (Throwable t) {
             LOGGER.error(FATAL_ERROR_MSG, t);
             Gdx.app.exit();
@@ -695,7 +680,6 @@ public class UltreonCraft extends ApplicationAdapter {
         this.world.spawn(this.player);
     }
 
-    @Override
     public void resize(int width, int height) {
         this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         this.deferredWidth = width;
@@ -708,11 +692,10 @@ public class UltreonCraft extends ApplicationAdapter {
 
         Screen cur = this.currentScreen;
         if (cur != null) {
-            cur.resize(ceil(width / getGuiScale()), ceil(height / getGuiScale()));
+            cur.resize(ceil(width / this.getGuiScale()), ceil(height / this.getGuiScale()));
         }
     }
 
-    @Override
     public void dispose() {
         try {
             while (!this.futures.isEmpty()) {
@@ -764,12 +747,12 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public TextureManager getTextureManager() {
-        return textureManager;
+        return this.textureManager;
     }
 
     @Deprecated
     public Texture getTilesTex() {
-        return tilesTex;
+        return this.tilesTex;
     }
 
     public void startWorld() {
@@ -781,15 +764,15 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public float getGuiScale() {
-        return guiScale;
+        return this.guiScale;
     }
 
     public int getScaledWidth() {
-        return ceil(getWidth() / getGuiScale());
+        return ceil(this.getWidth() / this.getGuiScale());
     }
 
     public int getScaledHeight() {
-        return ceil(getHeight() / getGuiScale());
+        return ceil(this.getHeight() / this.getGuiScale());
     }
 
     public void exitWorldToTitle() {
@@ -860,7 +843,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public ResourceManager getResourceManager() {
-        return resourceManager;
+        return this.resourceManager;
     }
 
     public void playSound(SoundEvent event) {
@@ -894,7 +877,7 @@ public class UltreonCraft extends ApplicationAdapter {
     }
 
     public BakedCubeModel getBakedBlockModel(Block block) {
-        return bakedBlockModels.bakedModels().get(block);
+        return this.bakedBlockModels.bakedModels().get(block);
     }
 
     private float calculateGuiScale() {

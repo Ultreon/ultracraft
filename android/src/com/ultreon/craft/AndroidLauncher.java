@@ -17,11 +17,12 @@ public class AndroidLauncher extends AndroidApplication {
 		WindowManager.LayoutParams attrib = applicationWindow.getAttributes();
 		attrib.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 
-		GamePlatform.instance = new AndroidPlatform();
+		GamePlatform.instance = new AndroidPlatform(this);
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useImmersiveMode = true;
 		config.useGL30 = true;
-		this.initialize(new UltreonCraft(new String[]{}), config);
+		this.initialize(new GameLibGDXWrapper(new String[]{}), config);
+
 	}
 }

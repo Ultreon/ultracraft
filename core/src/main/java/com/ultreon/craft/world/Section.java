@@ -1,12 +1,14 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.Null;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.data.Types;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.jetbrains.annotations.Nullable;
 
 public class Section implements Disposable {
     private final int size;
@@ -49,7 +51,8 @@ public class Section implements Disposable {
     }
 
     public Block getFast(int x, int y, int z) {
-        return this.paletteContainer.get(this.toIndex(x, y, z));
+        Block block = this.paletteContainer.get(this.toIndex(x, y, z));
+        return block == null ? Blocks.AIR : block;
     }
 
     public void set(Vec3i pos, Block block) {

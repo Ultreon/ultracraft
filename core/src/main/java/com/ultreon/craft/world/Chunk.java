@@ -7,6 +7,7 @@ import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -24,6 +25,7 @@ public class Chunk implements Disposable {
 	public final int height;
 	private final Vec3i offset;
 	private final int sizeTimesHeight;
+	@Nullable
 	public TreeData treeData;
 	protected boolean dirty;
 	private final HeightMap heightMap = new HeightMap();
@@ -156,6 +158,7 @@ public class Chunk implements Disposable {
 		return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
 	}
 
+	@Nullable
 	public Section getSection(int sectionY) {
 		synchronized (this.lock) {
 			if (sectionY < 0 || sectionY > this.sections.length) return null;
@@ -163,6 +166,7 @@ public class Chunk implements Disposable {
 		}
 	}
 
+	@Nullable
 	public Section getSectionAt(int chunkY) {
 		return this.getSection(chunkY / this.size);
 	}
@@ -175,6 +179,7 @@ public class Chunk implements Disposable {
 	}
 
 	@Override
+	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
 		synchronized (this.lock) {
 			this.ready = false;
