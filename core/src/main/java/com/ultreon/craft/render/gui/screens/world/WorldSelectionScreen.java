@@ -61,6 +61,7 @@ public class WorldSelectionScreen extends Screen {
 
     private void openWorld(Button caller) {
         SavedWorld selected = this.list.getSelected();
+        if (selected == null) return;
         this.game.loadWorld(selected);
     }
 
