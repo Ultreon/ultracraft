@@ -3,6 +3,7 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.data.types.MapType;
 
 import org.jetbrains.annotations.Nullable;
@@ -81,6 +82,8 @@ public class WorldRegion implements Disposable {
                 }
 
                 savedWorld.writeRegion(this.pos.x(), this.pos.z(), this.data);
+
+                WorldEvents.SAVE_REGION.factory().onSaveRegion(this.world, this);
             }
         } catch (Exception e) {
             LOGGER.error(World.MARKER, String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
@@ -217,6 +220,8 @@ public class WorldRegion implements Disposable {
         this.data = this.world.getSavedWorld().readRegion(this.pos.x(), this.pos.z());
         this.ready = true;
         onLoad.accept(this);
+
+        WorldEvents.LOAD_REGION.factory().onLoadRegion(this.world, this);
     }
 
     public boolean putChunk(ChunkPos chunkPos, Chunk chunk, boolean overwrite) {

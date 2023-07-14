@@ -3,6 +3,7 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
@@ -59,6 +60,11 @@ public class Chunk implements Disposable {
 			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
 		}
+
+		MapType extra = chunkData.getMap("Extra");
+		if (extra != null) {
+			WorldEvents.LOAD_CHUNK.factory().onLoadChunk(this, extra);
+		}
 	}
 
 	public MapType save() {
@@ -68,6 +74,12 @@ public class Chunk implements Disposable {
 			sectionsData.add(section.save());
 		}
 		chunkData.put("Sections", sectionsData);
+
+		MapType extra = new MapType();
+		WorldEvents.SAVE_CHUNK.factory().onSaveChunk(this, extra);
+		if (!extra.getValue().isEmpty()) {
+			chunkData.put("Extra", extra);
+		}
 		return chunkData;
 	}
 

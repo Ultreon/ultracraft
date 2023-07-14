@@ -344,4 +344,9 @@ public class DesktopPlatform extends GamePlatform {
     public void handleCrash(CrashLog crashLog) {
         crashLog.writeToFile(new File(GamePlatform.data("game-crashes").file(), crashLog.getDefaultFileName()));
     }
+
+    @Override
+    public boolean isDevelopmentEnvironment() {
+        return FabricLoader.getInstance().isDevelopmentEnvironment();
+    }
 }

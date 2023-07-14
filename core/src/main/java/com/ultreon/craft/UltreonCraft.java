@@ -1,6 +1,5 @@
 package com.ultreon.craft;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationLogger;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,13 +16,9 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.utils.SharedLibraryLoader;
-import com.ultreon.craft.render.WorldRenderer;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
@@ -41,13 +36,13 @@ import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.*;
-import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
@@ -60,6 +55,7 @@ import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -77,12 +73,12 @@ import org.slf4j.Logger;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -96,28 +92,29 @@ public class UltreonCraft {
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     private static final int CULL_FACE = GL20.GL_FRONT;
-    private String allUnicode;
+    private final Instant bootTime;
+    private final String allUnicode;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
-
+    @UnknownNullability
     private static SavedWorld savedWorld;
     public boolean forceUnicode = false;
-    private boolean booted = false;
+    @SuppressWarnings("FieldMayBeFinal")
+    private boolean booted;
     public static final int TPS = 20;
     public Font font;
     public BitmapFont unifont;
     public GameInput input;
     @Nullable public World world;
     @Nullable public WorldRenderer worldRenderer;
+    @UnknownNullability
     private static UltreonCraft instance;
     @Nullable public Player player;
-    public int renderDistance = 8;
-    private SpriteBatch spriteBatch;
-    private ModelBatch batch;
-    @Nullable
+    private final SpriteBatch spriteBatch;
+    private final ModelBatch batch;
     GameCamera camera;
-    private Environment env;
+    private final Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
     private final boolean isDevMode;
@@ -125,12 +122,9 @@ public class UltreonCraft {
     public Screen currentScreen;
     public GameSettings settings;
     ShapeDrawer shapes;
-    private TextureRegion white;
-    private TextureManager textureManager;
-    private ResourceManager resourceManager;
-    @Deprecated
-    private Texture tilesTex;
-    private float guiScale = this.calculateGuiScale();
+    private final TextureManager textureManager;
+    private final ResourceManager resourceManager;
+    private final float guiScale = this.calculateGuiScale();
 
     private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
@@ -139,27 +133,24 @@ public class UltreonCraft {
 
     // Public Flags
     public boolean renderWorld = false;
-    public boolean advancedShadows = true;
 
     // Startup time
     public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
 
     // Texture Atlases
     public TextureAtlas blocksTextureAtlas;
-    private BakedModelRegistry bakedBlockModels;
+    private final BakedModelRegistry bakedBlockModels;
 
     // Advanced Shadows
-    private DirectionalShadowLight shadowLight;
-    private ModelBatch shadowBatch;
-    private List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
+    private final List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     @Nullable
     private Integer deferredWidth;
     @Nullable
     private Integer deferredHeight;
-    private Texture windowTex;
-    private DebugRenderer debugRenderer;
+    private final Texture windowTex;
+    private final DebugRenderer debugRenderer;
     private boolean closingWorld;
 
     public UltreonCraft(String[] args) throws Throwable {
@@ -177,9 +168,7 @@ public class UltreonCraft {
 
         UltreonCraft.instance = this;
 
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
-        });
+        Thread.setDefaultUncaughtExceptionHandler(UltreonCraft::uncaughtException);
 
         LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
 
@@ -265,7 +254,6 @@ public class UltreonCraft {
         config.defaultCullFace = GL20.GL_FRONT;
         this.batch = new ModelBatch(new DefaultShaderProvider(config));
         this.batch.getRenderContext().setCullFace(CULL_FACE);
-        this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
         this.camera.far = 1000;
@@ -275,9 +263,9 @@ public class UltreonCraft {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1F, 1F, 1F, 1F);
         pixmap.drawPixel(0, 0);
-        this.white = new TextureRegion(new Texture(pixmap));
+        TextureRegion white = new TextureRegion(new Texture(pixmap));
 
-        this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
+        this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
         LOGGER.info("Setting up world environment");
         this.env = new Environment();
@@ -325,9 +313,6 @@ public class UltreonCraft {
 
         LOGGER.info("Initializing sounds");
         for (SoundEvent sound : Registries.SOUNDS.values()) {
-            if (sound == null) {
-                continue;
-            }
             sound.register();
         }
 
@@ -355,7 +340,17 @@ public class UltreonCraft {
         GamePlatform.instance.setupImGui();
 
         this.booted = true;
-        LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
+
+        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
+        LOGGER.info("Game booted in " + this.bootTime + "ms");
+    }
+
+    private static void uncaughtException(Thread t, Throwable e) {
+        LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
+    }
+
+    public Instant getBootTime() {
+        return this.bootTime;
     }
 
     public void delayCrash(CrashLog crashLog) {
@@ -684,6 +679,8 @@ public class UltreonCraft {
         this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
         this.deferredWidth = width;
         this.deferredHeight = height;
+
+        //noinspection ConstantValue
         if (this.camera != null) {
             this.camera.viewportWidth = width;
             this.camera.viewportHeight = height;
@@ -748,11 +745,6 @@ public class UltreonCraft {
 
     public TextureManager getTextureManager() {
         return this.textureManager;
-    }
-
-    @Deprecated
-    public Texture getTilesTex() {
-        return this.tilesTex;
     }
 
     public void startWorld() {
@@ -854,9 +846,7 @@ public class UltreonCraft {
         EventResult eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
-                this.exitWorldAndThen(() -> {
-                    Gdx.app.exit();
-                });
+                this.exitWorldAndThen(() -> Gdx.app.exit());
                 return false;
             }
         }
@@ -876,7 +866,7 @@ public class UltreonCraft {
         this.futures.add(future);
     }
 
-    public BakedCubeModel getBakedBlockModel(Block block) {
+    public @Nullable BakedCubeModel getBakedBlockModel(Block block) {
         return this.bakedBlockModels.bakedModels().get(block);
     }
 
@@ -887,18 +877,6 @@ public class UltreonCraft {
             case DESKTOP:
             case WEB:
                 return 2.0F;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    private int calculateRenderDistance() {
-        switch (GamePlatform.instance.getPlatformType()) {
-            case DESKTOP:
-                return 8;
-            case MOBILE:
-            case WEB:
-                return 4;
             default:
                 throw new IllegalArgumentException();
         }
@@ -919,5 +897,9 @@ public class UltreonCraft {
     public boolean isCustomBorderShown() {
 //        return !Gdx.graphics.isFullscreen();
         return false;
+    }
+
+    public String getAllUnicode() {
+        return this.allUnicode;
     }
 }

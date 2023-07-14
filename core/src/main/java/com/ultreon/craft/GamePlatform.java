@@ -8,9 +8,11 @@ import com.ultreon.craft.platform.PlatformType;
 
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
+import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 
 public abstract class GamePlatform {
+    @UnknownNullability
     public static GamePlatform instance;
 
     public abstract Logger getLogger(String name);
@@ -135,5 +137,9 @@ public abstract class GamePlatform {
 
     public void handleCrash(CrashLog crashLog) {
 
+    }
+
+    public boolean isDevelopmentEnvironment() {
+        return false;
     }
 }

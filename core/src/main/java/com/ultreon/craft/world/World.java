@@ -110,6 +110,7 @@ public class World implements Disposable {
 	private int chunksToLoad;
 	private int chunksLoaded;
 	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
+	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -130,12 +131,21 @@ public class World implements Disposable {
 			}
 		}
 
+		if (this.savedWorld.exists("player.ubo")) {
+			MapType playerData = this.savedWorld.read("player.ubo");
+			Player player = Entities.PLAYER.create(this);
+			player.loadWithPos(playerData);
+			UltreonCraft.get().player = player;
+		}
+
 		if (this.savedWorld.exists("data/player.ubo")) {
 			MapType playerData = this.savedWorld.read("data/player.ubo");
 			Player player = Entities.PLAYER.create(this);
 			player.loadWithPos(playerData);
 			UltreonCraft.get().player = player;
 		}
+
+		WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.savedWorld);
 
 		this.saveSchedule = this.game.schedule(new Task(new Identifier("auto_save")) {
 			@Override
@@ -181,6 +191,8 @@ public class World implements Disposable {
 				return;
 			}
 		}
+
+		WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.savedWorld);
 
 		if (!silent) LOGGER.info(MARKER, "Saved world: " + this.savedWorld.getDirectory().name());
 	}
@@ -262,8 +274,12 @@ public class World implements Disposable {
 		return toRemove;
 	}
 
-	private boolean isAlwaysLoaded(ChunkPos pos) {
-		return this.isSpawnChunk(pos);
+	private boolean shouldStayLoaded(ChunkPos pos) {
+		return this.isSpawnChunk(pos) || this.isAlwaysLoaded(pos);
+	}
+
+	public boolean isAlwaysLoaded(ChunkPos pos) {
+		return this.alwaysLoaded.contains(pos);
 	}
 
 	private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
@@ -802,6 +818,7 @@ public class World implements Disposable {
 		return this.updateChunksForPlayerAsync(new Vec3d(spawnX, 0, spawnZ));
 	}
 
+	@Deprecated
 	public int getRenderedChunks() {
 		return this.renderedChunks;
 	}

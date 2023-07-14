@@ -37,4 +37,9 @@ public class AndroidPlatform extends GamePlatform {
         intent.putExtra("CrashLog", crashLog.toString());
         this.launcher.startActivity(intent);
     }
+
+    @Override
+    public boolean isDevelopmentEnvironment() {
+        return BuildConfig.DEBUG;
+    }
 }
