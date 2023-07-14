@@ -708,7 +708,7 @@ public class World implements Disposable {
 	}
 
 	/**
-	 * ⚠️ <b>NOTE:</b> This method is obsolete, {@link #spawn(Entity, MapType)} exists with more functionality.
+	 * <b>NOTE:</b> This method is obsolete, {@link #spawn(Entity, MapType)} exists with more functionality.
 	 */
 	@ApiStatus.Obsolete
 	public <T extends Entity> T spawn(T entity) {
