@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -44,6 +45,7 @@ import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.WorldRenderer;
 import com.ultreon.craft.render.gui.screens.*;
+import com.ultreon.craft.render.gui.screens.world.WorldLoadScreen;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
@@ -53,6 +55,7 @@ import com.ultreon.craft.text.LanguageData;
 import com.ultreon.craft.util.GG;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.WorldInfo;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -92,7 +95,7 @@ public class UltreonCraft {
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     private static final int CULL_FACE = GL20.GL_FRONT;
-    private final Instant bootTime;
+    private final Duration bootTime;
     private final String allUnicode;
     public FileHandle configDir;
 
@@ -341,15 +344,15 @@ public class UltreonCraft {
 
         this.booted = true;
 
-        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
-        LOGGER.info("Game booted in " + this.bootTime + "ms");
+        this.bootTime = Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP);
+        LOGGER.info("Game booted in " + this.bootTime.toMillis() + "ms");
     }
 
     private static void uncaughtException(Thread t, Throwable e) {
         LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
     }
 
-    public Instant getBootTime() {
+    public Duration getBootTime() {
         return this.bootTime;
     }
 
@@ -747,8 +750,22 @@ public class UltreonCraft {
         return this.textureManager;
     }
 
+    @Deprecated
     public void startWorld() {
         this.showScreen(new WorldLoadScreen(getSavedWorld()));
+    }
+
+    public void loadWorld(SavedWorld world) {
+        Preconditions.checkNotNull(world, "Can't load null world");
+        this.showScreen(new WorldLoadScreen(world));
+    }
+
+    public void createWorld(String worldName, long seed) throws IOException {
+        Preconditions.checkNotNull(worldName, "Can't create world without name.");
+        SavedWorld world = new SavedWorld(new FileHandle(Constants.WORLDS_DIR).child(worldName));
+        WorldInfo info = new WorldInfo(worldName, Instant.now(), seed);
+        world.saveWorldInfo(info);
+        this.loadWorld(world);
     }
 
     public static SavedWorld getSavedWorld() {

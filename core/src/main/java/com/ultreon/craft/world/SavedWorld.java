@@ -5,11 +5,14 @@ import com.google.common.base.Preconditions;
 import com.ultreon.data.DataIo;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.MapType;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
 public final class SavedWorld {
     private final FileHandle directory;
+    @Nullable
+    private WorldInfo worldInfo;
 
     public SavedWorld(FileHandle directory) {
         this.directory = directory;
@@ -83,5 +86,33 @@ public final class SavedWorld {
 
     public void delete() {
         this.directory.deleteDirectory();
+    }
+
+    public WorldInfo getWorldInfo() throws IOException {
+        WorldInfo worldInfo = this.worldInfo;
+        if (worldInfo == null) {
+            return this.loadWorldInfo();
+        }
+        return worldInfo;
+    }
+
+    public WorldInfo loadWorldInfo() throws IOException {
+        if (this.worldInfo != null) {
+            this.worldInfo = null;
+        }
+
+        WorldInfo worldInfo = new WorldInfo(this.read("local.ubo"));
+
+        return this.worldInfo = worldInfo;
+    }
+
+    public WorldInfo saveWorldInfo(WorldInfo info) throws IOException {
+        this.write(info.save(), "local.ubo");
+
+        return this.worldInfo = info;
+    }
+
+    public void unloadWorldInfo() {
+        this.worldInfo = null;
     }
 }

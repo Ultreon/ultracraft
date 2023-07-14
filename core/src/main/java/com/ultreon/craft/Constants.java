@@ -8,4 +8,5 @@ public class Constants {
     public static final int INITIAL_AUTO_SAVE_DELAY = 120;
     public static final float CONTROLLER_DEADZONE = 0.2F;
     public static final float CTRL_CAMERA_SPEED = 130.0F;
+    public static final String WORLDS_DIR = "worlds/";
 }

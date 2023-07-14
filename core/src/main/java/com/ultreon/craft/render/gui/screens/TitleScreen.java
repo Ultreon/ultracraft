@@ -7,6 +7,7 @@ import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.gui.screens.world.WorldSelectionScreen;
 import com.ultreon.craft.render.gui.widget.Button;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -20,7 +21,6 @@ public class TitleScreen extends Screen {
     private Button modListButton;
     private Button optionsButton;
     private Button quitButton;
-    private final GlyphLayout layout = new GlyphLayout();
     private static int hiddenClicks = 0;
 
     public TitleScreen() {
@@ -28,32 +28,12 @@ public class TitleScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
-
-        int y = height - height / 2 + 5;
-        this.startButton.setPos(width / 2 - 100, y);
-        if (this.resetWorldButton != null) {
-            this.resetWorldButton.setPos(width / 2 - 100, y -= 25);
-        }
-        if (this.modListButton != null) {
-            this.modListButton.setPos(width / 2 - 100, y -= 25);
-        }
-        this.optionsButton.setPos(width / 2 - 100, y -= 25);
-        this.quitButton.setPos(width / 2 + 5, y);
-    }
-
-    @Override
     public void show() {
-        clearWidgets();
-
         super.show();
 
-        int y = height - height / 2 + 5;
+        int y = this.height - this.height / 2 + 5;
 
-        startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
-            UltreonCraft.get().startWorld();
-        }));
+        this.startButton = this.add(new Button(this.width / 2 - 100, y, 200, Language.translate("craft.screen.title.world_selection"), caller -> this.game.showScreen(new WorldSelectionScreen())));
 
         if ((GamePlatform.instance.isMobile() && GameFlags.ENABLE_RESET_WORLD_IN_MOBILE) ||
                 (GamePlatform.instance.isDesktop() && GameFlags.ENABLE_RESET_WORLD_IN_DESKTOP) ||
@@ -63,14 +43,10 @@ public class TitleScreen extends Screen {
         }
 
         if (GamePlatform.instance.isModsSupported()) {
-            this.modListButton = this.add(new Button(this.width / 2 - 100, y -= 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
-                GamePlatform.instance.openModList();
-            }));
+            this.modListButton = this.add(new Button(this.width / 2 - 100, y -= 25, 200, Language.translate("craft.screen.mod_list"), caller -> GamePlatform.instance.openModList()));
         }
-        optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {
-            UltreonCraft.get().showScreen(new LanguageScreen());
-        }));
-        this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
+        this.optionsButton = this.add(new Button(this.width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> UltreonCraft.get().showScreen(new LanguageScreen())));
+        this.quitButton = new Button(this.width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
             if (GamePlatform.instance.supportsQuit()) {
                 Gdx.app.exit();
             }
@@ -94,9 +70,7 @@ public class TitleScreen extends Screen {
         if (!GamePlatform.instance.supportsQuit() && this.quitButton.isWithinBounds(x, y)) {
             hiddenClicks++;
             if (hiddenClicks == 1) {
-                this.game.schedule(new Task(new Identifier("button_crash"), () -> {
-                    hiddenClicks = 0;
-                }), 2, TimeUnit.MINUTES);
+                this.game.schedule(new Task(new Identifier("button_crash"), () -> hiddenClicks = 0), 2, TimeUnit.MINUTES);
             }
 
             UltreonCraft.LOGGER.warn("Clicks: " + hiddenClicks);
@@ -109,15 +83,23 @@ public class TitleScreen extends Screen {
     }
 
     public Button getStartButton() {
-        return startButton;
+        return this.startButton;
+    }
+
+    public Button getResetWorldButton() {
+        return this.resetWorldButton;
+    }
+
+    public Button getModListButton() {
+        return this.modListButton;
     }
 
     public Button getOptionsButton() {
-        return optionsButton;
+        return this.optionsButton;
     }
 
     public Button getQuitButton() {
-        return quitButton;
+        return this.quitButton;
     }
 
     @Override

@@ -16,19 +16,11 @@ public class DeathScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
-
-        this.respawnButton.setPos(width / 2 - 100, height - height / 3 + 5);
-        this.exitWorldButton.setPos(width / 2 - 100, height - height / 3 - 25);
-    }
-
-    @Override
     public void show() {
         super.show();
 
-        this.respawnButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft.screen.death.respawn"), this::respawn));
-        this.exitWorldButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 200, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.respawnButton = this.add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft.screen.death.respawn"), this::respawn));
+        this.exitWorldButton = this.add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 200, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.RED);
         this.exitWorldButton.setTextColor(Color.WHITE);
     }

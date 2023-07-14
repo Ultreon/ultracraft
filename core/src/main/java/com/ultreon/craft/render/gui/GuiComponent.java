@@ -32,6 +32,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     private boolean hovered = false;
     private int lastMouseX;
     private int lastMouseY;
+    private boolean focused;
 
     /**
      * @param x      position create the widget
@@ -346,5 +347,13 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     public static void fill(Renderer renderer, int x, int y, int width, int height, Color color) {
         renderer.setColor(color);
         renderer.rect(x, y, width, height);
+    }
+
+    public boolean isFocused() {
+        return this.focused;
+    }
+
+    public void setFocused(boolean focused) {
+        this.focused = focused;
     }
 }

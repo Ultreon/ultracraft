@@ -12,7 +12,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class GuiContainer extends GuiComponent implements IGuiContainer {
     protected final List<GuiComponent> children = new CopyOnWriteArrayList<>();
     protected final List<Widget> statics = new CopyOnWriteArrayList<>();
+    @Nullable
     protected GuiComponent hoveredWidget;
+    @Nullable
+    protected GuiComponent focusedWidget;
+    @Nullable
     protected GuiComponent pressingWidget;
     int innerXOffset;
     int innerYOffset;
@@ -75,6 +79,11 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
     @Override
     public boolean mouseClick(int x, int y, int button, int count) {
         GuiComponent widgetAt = getWidgetAt(x, y);
+        if (widgetAt != this.focusedWidget) {
+            if (this.focusedWidget != null) this.focusedWidget.setFocused(false);
+            if (widgetAt != null) widgetAt.setFocused(true);
+            this.focusedWidget = widgetAt;
+        }
         return widgetAt != null && widgetAt.mouseClick(x - widgetAt.getX(), y - widgetAt.getY(), button, count);
     }
 
@@ -173,8 +182,33 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
         this.children.clear();
     }
 
-    public GuiComponent getHoveredWidget() {
-        return hoveredWidget;
+    @Override
+    public boolean keyPress(int keyCode) {
+        GuiComponent widget = this.focusedWidget;
+        if (widget != null && widget.keyPress(keyCode)) return true;
+        return super.keyPress(keyCode);
+    }
+
+    @Override
+    public boolean keyRelease(int keyCode) {
+        GuiComponent widget = this.focusedWidget;
+        if (widget != null && widget.keyRelease(keyCode)) return true;
+        return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean charType(char character) {
+        GuiComponent widget = this.focusedWidget;
+        if (widget != null && widget.charType(character)) return true;
+        return super.charType(character);
+    }
+
+    public @Nullable GuiComponent getFocusedWidget() {
+        return this.focusedWidget;
+    }
+
+    public @Nullable GuiComponent getHoveredWidget() {
+        return this.hoveredWidget;
     }
 
     @Override

@@ -903,6 +903,11 @@ public class Renderer {
     }
 
     public void box(int x, int y, int width, int height, Color rgb) {
+        this.box(x, y, width, height, rgb, 1);
+    }
+
+    public void box(int x, int y, int width, int height, Color rgb, int strokeWidth) {
+        this.setStrokeWidth(strokeWidth);
         this.setColor(rgb);
         this.rectLine(x, y, width, height);
     }

@@ -1,4 +1,4 @@
-package com.ultreon.craft.render.gui.screens;
+package com.ultreon.craft.render.gui.screens.world;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.Task;
@@ -6,26 +6,34 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.WorldInfo;
 import com.ultreon.libs.commons.v0.Identifier;
 
 import java.io.IOException;
 
 public class WorldLoadScreen extends Screen {
     private final SavedWorld savedWorld;
+    private final WorldInfo info;
     private long nextLog;
 
     public WorldLoadScreen(SavedWorld savedWorld) {
         super("Loading World");
         this.savedWorld = savedWorld;
+        try {
+            this.info = this.savedWorld.getWorldInfo();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void show() {
         super.show();
 
-        this.game.world = new World(this.savedWorld, 16, 16);
+        this.game.world = new World(this.savedWorld, this.info.getSeed());
         new Thread(this::run, "World Loading").start();
     }
 
@@ -86,5 +94,9 @@ public class WorldLoadScreen extends Screen {
     @Override
     public boolean canClose() {
         return false;
+    }
+
+    public WorldInfo getInfo() {
+        return this.info;
     }
 }

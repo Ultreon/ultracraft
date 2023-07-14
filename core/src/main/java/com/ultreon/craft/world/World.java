@@ -85,7 +85,7 @@ public class World implements Disposable {
 	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
 	private final Vec3i spawnPoint = new Vec3i();
-	private final long seed = 512;
+	private final long seed;
 	private int renderedChunks;
 
 	private final Map<RegionPos, WorldRegion> regions = new ConcurrentHashMap<>();
@@ -112,10 +112,11 @@ public class World implements Disposable {
 	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
 	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
 
-	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
+	public World(SavedWorld savedWorld, long seed) {
 		this.savedWorld = savedWorld;
+		this.seed = seed;
 
-		this.generator = DEFAULT_BIOME.create(this, this.seed);
+		this.generator = DEFAULT_BIOME.create(this, seed);
 	}
 
 	@ApiStatus.Internal

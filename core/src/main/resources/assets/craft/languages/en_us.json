@@ -14,5 +14,14 @@
   "craft.screen.title.start_world": "Start New World",
   "craft.screen.title.reset_world": "Reset World",
   "craft.screen.title.options": "Options...",
-  "craft.screen.title.quit": "Quit"
+  "craft.screen.title.quit": "Quit",
+  "craft.screen.world_selection": "Worlds",
+  "craft.screen.world_selection.open": "Open",
+  "craft.screen.world_selection.modify": "Modify",
+  "craft.screen.world_selection.create": "Create",
+  "craft.screen.world_selection.delete": "Delete",
+  "craft.screen.world_create": "Create a new World",
+  "craft.screen.world_create.create": "Create World",
+  "craft.screen.world_create.world_name": "Name of World",
+  "misc.back": "Back"
 }

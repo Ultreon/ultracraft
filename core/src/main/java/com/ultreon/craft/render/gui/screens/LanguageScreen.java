@@ -15,11 +15,6 @@ import java.util.stream.Collectors;
 
 public class LanguageScreen extends Screen {
     private Button backButton;
-    private Button langButton1;
-    private Button langButton2;
-    private Button langButton3;
-    private Button prevPageButton;
-    private Button nextPageButton;
     private SelectionList<Locale> list;
     private final GlyphLayout layout = new GlyphLayout();
 
@@ -51,35 +46,6 @@ public class LanguageScreen extends Screen {
             }
         }));
         this.backButton.setColor(Color.rgb(0xff0000));
-
-        if (false) {
-            this.prevPageButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 - 21 - 15, 21, 21 * 3 + 20, "<"));
-            this.nextPageButton = this.add(new Button(this.width / 2 + 100 + 10, this.height / 2 - 21 - 15, 21, 21 * 3 + 20, ">"));
-
-            this.langButton1 = this.add(new Button(this.width / 2 - 100, this.height / 2 + 21 + 5, 200, "English (" + new Locale("en").getDisplayLanguage(new Locale("en")) + ")", caller -> {
-                this.game.settings.language.set(new Locale("en"));
-                this.game.settings.save();
-                this.updateTexts();
-            }));
-            this.langButton2 = this.add(new Button(this.width / 2 - 100, this.height / 2 - 5, 200, "Dutch (" + new Locale("nl").getDisplayLanguage(new Locale("nl")) + ")", caller -> {
-                this.game.settings.language.set(new Locale("nl"));
-                this.game.settings.save();
-                this.updateTexts();
-            }));
-            this.langButton3 = this.add(new Button(this.width / 2 - 100, this.height / 2 - 21 - 15, 200, "German (" + new Locale("de").getDisplayLanguage(new Locale("de")) + ")", caller -> {
-                this.game.settings.language.set(new Locale("de"));
-                this.game.settings.save();
-                this.updateTexts();
-            }));
-            this.backButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 - 42 - 25, 200 + 10 * 2 + 21 * 2, Language.translate("craft.screen.language.back"), caller -> {
-                if (this.game.world != null) {
-                    this.game.showScreen(new PauseScreen());
-                } else {
-                    this.game.showScreen(null);
-                }
-            }));
-            this.backButton.setColor(Color.rgb(0xff0000));
-        }
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
@@ -94,25 +60,5 @@ public class LanguageScreen extends Screen {
 
     public Button getBackButton() {
         return this.backButton;
-    }
-
-    public Button getLangButton1() {
-        return this.langButton1;
-    }
-
-    public Button getLangButton2() {
-        return this.langButton2;
-    }
-
-    public Button getLangButton3() {
-        return this.langButton3;
-    }
-
-    public Button getPrevPageButton() {
-        return this.prevPageButton;
-    }
-
-    public Button getNextPageButton() {
-        return this.nextPageButton;
     }
 }
