@@ -210,7 +210,7 @@ public class WorldRenderer implements RenderableProvider {
     private boolean areFacesVisible(Section section, int x, int y, int z, int offX, int offY, int offZ) {
         Block block = this.get(section, x, y, z);
         Block off = this.get(section, x + offX, y + offY, z + offZ);
-        return off.isAir() || (off.isTransparent() && (!block.isTransparent() || block.isAir()));
+        return (off.isTransparent() && (!block.isTransparent() || block.isAir()));
     }
 
     private Block get(Section section, int x, int y, int z) {
