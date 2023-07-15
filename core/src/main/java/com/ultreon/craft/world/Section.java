@@ -49,10 +49,8 @@ public class Section implements Disposable {
     }
 
     public Block getFast(int x, int y, int z) {
-        synchronized (this.lock) {
-            Block block = this.paletteContainer.get(this.toIndex(x, y, z));
-            return block == null ? Blocks.AIR : block;
-        }
+        Block block = this.paletteContainer.get(this.toIndex(x, y, z));
+        return block == null ? Blocks.AIR : block;
     }
 
     public void set(Vec3i pos, Block block) {
@@ -69,10 +67,8 @@ public class Section implements Disposable {
     }
 
     public void setFast(int x, int y, int z, Block block) {
-        synchronized (this.lock) {
-            this.paletteContainer.set(this.toIndex(x, y, z), block);
-            this.dirty = true;
-        }
+        this.paletteContainer.set(this.toIndex(x, y, z), block);
+        this.dirty = true;
     }
 
     private boolean isOutOfBounds(int x, int y, int z) {
