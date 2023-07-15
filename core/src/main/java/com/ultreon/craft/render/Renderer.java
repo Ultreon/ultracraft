@@ -8,25 +8,27 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.google.common.base.Preconditions;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.font.Font;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import com.ultreon.libs.text.v0.TextObject;
-import space.earlygrey.shapedrawer.ShapeDrawer;
+
+import org.jetbrains.annotations.ApiStatus;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Objects;
+import java.util.Stack;
 import java.util.function.Consumer;
+
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * Renderer class.
@@ -39,14 +41,14 @@ public class Renderer {
     //     Fields     //
     ////////////////////
     private final UltreonCraft game = UltreonCraft.get();
-    private final Vector3 globalTranslation = new Vector3();
+    private final Stack<Vector3> globalTranslation = new Stack<>();
     private final GL20 gl20;
     private final GL30 gl30;
     private final Batch batch;
     private final ShapeDrawer shapes;
-    private float strokeWidth;
+    private float strokeWidth = 1;
     private Texture curTexture;
-    private BitmapFont font;
+    private Font font;
     private final MatrixStack matrixStack;
     private Color textureColor = Color.rgb(0xffffff);
 
@@ -62,7 +64,8 @@ public class Renderer {
      * @param matrixStack current matrix stack.
      */
     public Renderer(ShapeDrawer shapes, MatrixStack matrixStack) {
-        this.font = game.getBitmapFont();
+        this.globalTranslation.push(new Vector3());
+        this.font = this.game.font;
         this.gl20 = Gdx.gl20;
         this.gl30 = Gdx.gl30;
         this.batch = shapes.getBatch();
@@ -73,8 +76,8 @@ public class Renderer {
         Consumer<Matrix4> projectionMatrixSetter = matrix -> {
             shapes.getBatch().setTransformMatrix(matrix);
         };
-        this.matrixStack.onPush = projectionMatrixSetter;
-        this.matrixStack.onPop = projectionMatrixSetter;
+//        this.matrixStack.onPush = projectionMatrixSetter;
+//        this.matrixStack.onPop = projectionMatrixSetter;
         this.matrixStack.onEdit = projectionMatrixSetter;
     }
 
@@ -88,8 +91,8 @@ public class Renderer {
 
     public void setColor(Color c) {
         if (c == null) return;
-        font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
-        shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        this.shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
     }
 
     public void setColor(int r, int g, int b) {
@@ -325,40 +328,424 @@ public class Renderer {
     //////////////////
     //     Text     //
     //////////////////
-    public void text(String str, int x, int y) {
-        font.draw(batch, str, x, y);
+    public void drawText(String text, int x, int y) {
+        this.drawText(text, x, y, Color.WHITE);
     }
 
-    public void text(String str, float x, float y) {
-        font.draw(batch, str, x, y);
+    public void drawText(String text, int x, int y, Color color) {
+        this.drawText(text, x, y, color, true);
     }
 
-    public void text(String str, float x, float y, float maxWidth,  String truncate) {
-        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, false, truncate);
+    public void drawText(String text, int x, int y, boolean shadow) {
+        this.drawText(text, x, y, Color.WHITE, shadow);
     }
 
-    public void text(String str, float x, float y, float maxWidth, boolean wrap, String truncate) {
-        font.draw(batch, str, x, y, 0, str.length(), maxWidth, 0, wrap);
+    public void drawText(String text, int x, int y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
     }
 
-    public void text(TextObject str, int x, int y) {
-        font.draw(batch, str.getText(), x, y);
+    public void drawText(String text, float x, float y) {
+        this.drawText(text, x, y, Color.WHITE);
     }
 
-    public void text(TextObject str, float x, float y) {
-        font.draw(batch, str.getText(), x, y);
+    public void drawText(String text, float x, float y, Color color) {
+        this.drawText(text, x, y, color, true);
     }
 
-    public void multiLineText(String str, int x, int y) {
-        y -= font.getLineHeight();
-
-        for (String line : str.split("\n"))
-            text(line, x, y += font.getLineHeight());
+    public void drawText(String text, float x, float y, boolean shadow) {
+        this.drawText(text, x, y, Color.WHITE, shadow);
     }
 
-    public void tabString(String str, int x, int y) {
-        for (String line : str.split("\t"))
-            text(line, x += font.getLineHeight(), y);
+    public void drawText(String text, float x, float y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
+    }
+
+    public void drawText(String text, float x, float y, float maxWidth, String truncate) {
+        this.drawText(text, x, y, Color.WHITE, maxWidth, truncate);
+    }
+
+    public void drawText(String text, float x, float y, Color color, float maxWidth, String truncate) {
+        this.drawText(text, x, y, color, true, maxWidth, truncate);
+    }
+
+    public void drawText(String text, float x, float y, boolean shadow, float maxWidth, String truncate) {
+        this.drawText(text, x, y, Color.WHITE, shadow, maxWidth, truncate);
+    }
+
+    public void drawText(String text, float x, float y, Color color, boolean shadow, float maxWidth, String truncate) {
+        this.font.drawText(this, text, x, y, color, shadow);
+    }
+
+    public void drawText(String text, float x, float y, float maxWidth, boolean wrap, String truncate) {
+        this.drawText(text, x, y, Color.WHITE, maxWidth, wrap, truncate);
+    }
+
+    public void drawText(String text, float x, float y, Color color, float maxWidth, boolean wrap, String truncate) {
+        this.drawText(text, x, y, color, true, maxWidth, wrap, truncate);
+    }
+
+    public void drawText(String text, float x, float y, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+        this.drawText(text, x, y, Color.WHITE, shadow, maxWidth, wrap, truncate);
+    }
+
+    public void drawText(String text, float x, float y, Color color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+        this.font.drawText(this, text, x, y, color, shadow);
+    }
+
+    public void drawText(TextObject text, int x, int y) {
+        this.drawText(text, x, y, Color.WHITE);
+    }
+
+    public void drawText(TextObject text, int x, int y, Color color) {
+        this.drawText(text, x, y, color, true);
+    }
+
+    public void drawText(TextObject text, int x, int y, boolean shadow) {
+        this.drawText(text, x, y, Color.WHITE, shadow);
+    }
+
+    public void drawText(TextObject text, int x, int y, Color color, boolean shadow) {
+        this.font.drawText(this, text.getText(), x, y, color, shadow);
+    }
+
+    public void drawText(TextObject text, float x, float y) {
+        this.drawText(text, x, y, Color.WHITE);
+    }
+
+    public void drawText(TextObject text, float x, float y, Color color) {
+        this.drawText(text, x, y, color, true);
+    }
+
+    public void drawText(TextObject text, float x, float y, boolean shadow) {
+        this.drawText(text, x, y, Color.WHITE, shadow);
+    }
+
+    public void drawText(TextObject text, float x, float y, Color color, boolean shadow) {
+        this.font.drawText(this, text.getText(), x, y, color, shadow);
+    }
+
+    public void drawCenteredText(String text, int x, int y) {
+        this.drawText(text, x - this.font.width(text) / 2, y);
+    }
+
+    public void drawCenteredText(String text, int x, int y, Color color) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color);
+    }
+
+    public void drawCenteredText(String text, int x, int y, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, shadow);
+    }
+
+    public void drawCenteredText(String text, int x, int y, Color color, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color, shadow);
+    }
+
+    public void drawCenteredText(String text, float x, float y) {
+        this.drawText(text, x - this.font.width(text) / 2, y);
+    }
+
+    public void drawCenteredText(String text, float x, float y, Color color) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color);
+    }
+
+    public void drawCenteredText(String text, float x, float y, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, shadow);
+    }
+
+    public void drawCenteredText(String text, float x, float y, Color color, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color, shadow);
+    }
+
+    public void drawCenteredText(TextObject text, int x, int y) {
+        this.drawText(text, x - this.font.width(text) / 2, y);
+    }
+
+    public void drawCenteredText(TextObject text, int x, int y, Color color) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color);
+    }
+
+    public void drawCenteredText(TextObject text, int x, int y, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, shadow);
+    }
+
+    public void drawCenteredText(TextObject text, int x, int y, Color color, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color, shadow);
+    }
+
+    public void drawCenteredText(TextObject text, float x, float y) {
+        this.drawText(text, x - this.font.width(text) / 2, y);
+    }
+
+    public void drawCenteredText(TextObject text, float x, float y, Color color) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color);
+    }
+
+    public void drawCenteredText(TextObject text, float x, float y, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, shadow);
+    }
+
+    public void drawCenteredText(TextObject text, float x, float y, Color color, boolean shadow) {
+        this.drawText(text, x - this.font.width(text) / 2, y, color, shadow);
+    }
+
+    public void drawTextScaled(String text, float scale, int x, int y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, int x, int y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, int x, int y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, int x, int y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, float x, float y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, float x, float y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, float x, float y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(String text, float scale, float x, float y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, int x, int y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, int x, int y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, int x, int y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, float x, float y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, float x, float y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, float x, float y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaled(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, int x, int y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, int x, int y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, int x, int y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, int x, int y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, float x, float y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, float x, float y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, float x, float y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(String text, float scale, float x, float y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawText(text, x / scale - this.font.width(text) / scale * 1.5f, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void multiLineText(String text, int x, int y) {
+        this.multiLineText(text, x, y, Color.WHITE);
+    }
+
+    public void multiLineText(String text, int x, int y, Color color) {
+        this.multiLineText(text, x, y, color, true);
+    }
+
+    public void multiLineText(String text, int x, int y,  boolean shadow) {
+        this.multiLineText(text, x, y, Color.WHITE, shadow);
+    }
+
+    public void multiLineText(String text, int x, int y, Color color, boolean shadow) {
+        y -= this.font.lineHeight;
+
+        for (String line : text.split("\n"))
+            this.drawText(line, x, y += this.font.lineHeight, color, shadow);
+    }
+
+    public void tabString(String text, int x, int y) {
+        this.tabString(text, x, y, Color.WHITE);
+    }
+
+    public void tabString(String text, int x, int y, Color color) {
+        this.tabString(text, x, y, color, true);
+    }
+
+    public void tabString(String text, int x, int y,  boolean shadow) {
+        this.tabString(text, x, y, Color.WHITE, shadow);
+    }
+
+    public void tabString(String text, int x, int y, Color color, boolean shadow) {
+        for (String line : text.split("\t"))
+            this.drawText(line, x += this.font.lineHeight, y, color, shadow);
     }
 
     public void clear() {
@@ -368,27 +755,43 @@ public class Renderer {
     ////////////////////////////
     //     Transformation     //
     ////////////////////////////
-    public void translate(float tx, float ty) {
-        globalTranslation.add(tx, ty, 0);
-        matrixStack.translate(tx, ty);
+    public void translate(float x, float y) {
+        this.globalTranslation.peek().add(x, y, 0);
+        this.matrixStack.translate(x, y);
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void translate(int x, int y) {
-        globalTranslation.add(x, y, 0);
-        matrixStack.translate((float) x, (float) y);
+        this.globalTranslation.peek().add(x, y, 0);
+        this.matrixStack.translate((float) x, (float) y);
+        this.batch.setTransformMatrix(this.matrixStack.last());
+    }
+
+    public void translate(float x, float y, float z) {
+        this.globalTranslation.peek().add(x, y, z);
+        this.matrixStack.translate(x, y, z);
+        this.batch.setTransformMatrix(this.matrixStack.last());
+    }
+
+    public void translate(int x, int y, int z) {
+        this.globalTranslation.peek().add(x, y, z);
+        this.matrixStack.translate((float) x, (float) y, (float) z);
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void rotate(double x, double y) {
-        matrixStack.rotate(new Quaternion(1, 0, 0, (float) x));
-        matrixStack.rotate(new Quaternion(0, 1, 0, (float) y));
+        this.matrixStack.rotate(new Quaternion(1, 0, 0, (float) x));
+        this.matrixStack.rotate(new Quaternion(0, 1, 0, (float) y));
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void scale(double sx, double sy) {
-        matrixStack.scale((float) sx, (float) sy);
+        this.matrixStack.scale((float) sx, (float) sy);
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public Matrix4 getTransform() {
-        return matrixStack.last();
+        return this.matrixStack.last();
     }
 
     public float getStrokeWidth() {
@@ -396,33 +799,51 @@ public class Renderer {
     }
 
     public Color getColor() {
-        var color = new com.badlogic.gdx.graphics.Color();
+        com.badlogic.gdx.graphics.Color color = new com.badlogic.gdx.graphics.Color();
         com.badlogic.gdx.graphics.Color.abgr8888ToColor(color, shapes.getPackedColor());
         return Color.gdx(color);
     }
 
-    public BitmapFont getFont() {
-        return font;
+    public Font getFont() {
+        return this.font;
     }
 
     ///////////////////////////
     //     Miscellaneous     //
     ///////////////////////////
-    public void subInstance(int x, int y, int width, int height, Consumer<Renderer> consumer) {
-        var rectangle = new Rectangle(x, y, width, height);
+    public void drawRegion(int x, int y, int width, int height, Consumer<Renderer> consumer) {
         boolean doPop = false;
-        if (!Objects.equals(ScissorStack.peekScissors(), rectangle)) {
-            doPop = true;
-            ScissorStack.pushScissors(rectangle);
-        }
-        matrixStack.push();
-        matrixStack.translate(x, y);
-        batch.setProjectionMatrix(matrixStack.last());
-
+        this.pushMatrix();
+        this.translate(x, y);
+        this.pushScissors(x, y, width, height);
         consumer.accept(this);
+        this.popScissors();
+        this.popMatrix();
+    }
 
-        matrixStack.pop();
-        if (doPop) {
+    public void pushScissorsRaw(int x, int y, int width, int height) {
+        ScissorStack.pushScissors(new Rectangle(x, y, width, height));
+    }
+
+    public void pushScissors(int x, int y, int width, int height) {
+        ScissorStack.pushScissors(new Rectangle(
+                x * this.game.getGuiScale(), y * this.game.getGuiScale(),
+                width * this.game.getGuiScale(), height * this.game.getGuiScale()));
+    }
+
+    public void pushScissors(float x, float y, float width, float height) {
+        ScissorStack.pushScissors(new Rectangle(
+                x * this.game.getGuiScale(), y * this.game.getGuiScale(),
+                width * this.game.getGuiScale(), height * this.game.getGuiScale()));
+    }
+
+    public void popScissors() {
+        ScissorStack.popScissors();
+    }
+
+    @ApiStatus.Experimental
+    public void clearScissors() {
+        while (ScissorStack.peekScissors() != null) {
             ScissorStack.popScissors();
         }
     }
@@ -444,7 +865,7 @@ public class Renderer {
         this.curTexture = game.getTextureManager().getTexture(texture);
     }
 
-    public void setFont(BitmapFont font) {
+    public void setFont(Font font) {
         this.font = font;
     }
 
@@ -453,18 +874,65 @@ public class Renderer {
     }
 
     public Color getTextureColor() {
-        return textureColor;
+        return this.textureColor;
     }
 
     public void pushMatrix() {
-        matrixStack.push();
+        this.globalTranslation.push(this.globalTranslation.peek().cpy());
+        this.matrixStack.push();
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void popMatrix() {
-        matrixStack.pop();
+        this.globalTranslation.pop();
+        this.matrixStack.pop();
+        this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public Batch getBatch() {
-        return batch;
+        return this.batch;
+    }
+
+    public Vector3 getGlobalTranslation() {
+        return this.globalTranslation.peek().cpy();
+    }
+
+    public void fill(int x, int y, int width, int height, Color rgb) {
+        this.setColor(rgb);
+        this.rect(x, y, width, height);
+    }
+
+    public void box(int x, int y, int width, int height, Color rgb) {
+        this.setColor(rgb);
+        this.rectLine(x, y, width, height);
+    }
+
+    public void draw9PatchTexture(Texture texture, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
+        this.texture(texture, x + 0,              y + height - vHeight, uWidth, vHeight, u + 0,          v + 0,           uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v + 0,           uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x + 0,              y + 0,                uWidth, vHeight, u + 0,          v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x + width - uWidth, y + 0,                uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        
+        for (int dx = x + uWidth; dx < width - uWidth; dx += uWidth) {
+            int maxX = Math.min(dx + uWidth, width - uWidth);
+            int uW = maxX - dx;
+            this.texture(texture, dx, y + height - vHeight, uW, vHeight, u + uWidth, v, uW, vHeight, texWidth, texHeight);
+            this.texture(texture, dx, y, uW, vHeight, u + uWidth, v + vHeight * 2, uW, vHeight, texWidth, texHeight);
+        }
+        
+        for (int dy = y + vHeight; dy < height - vHeight; dy += vHeight) {
+            int maxX = Math.min(dy + vHeight, height - vHeight);
+            int vH = maxX - dy;
+            this.texture(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
+            this.texture(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
+        }
+    }
+
+    public void setShader(ShaderProgram program) {
+        this.batch.setShader(program);
+    }
+
+    public void unsetShader() {
+        this.batch.setShader(null);
     }
 }

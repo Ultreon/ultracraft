@@ -3,7 +3,7 @@ package com.ultreon.craft.world.gen.noise;
 import java.util.Arrays;
 import java.util.Random;
 
-public class SimplexNoise {
+public class SimplexNoise implements NoiseType {
     private Ocatave[] octaves;
     private double[] frequencies;
     private double[] amplitudes;
@@ -17,45 +17,48 @@ public class SimplexNoise {
         // Math.ceil(7) = 7 = numberOfOctaves
         int numberOfOctaves = (int) Math.ceil(Math.log10(largestFeature) / Math.log10(2));
 
-        octaves = new Ocatave[numberOfOctaves];
-        frequencies = new double[numberOfOctaves];
-        amplitudes = new double[numberOfOctaves];
+        this.octaves = new Ocatave[numberOfOctaves];
+        this.frequencies = new double[numberOfOctaves];
+        this.amplitudes = new double[numberOfOctaves];
 
         Random rnd = new Random(seed);
 
         for (int i = 0; i < numberOfOctaves; i++) {
-            octaves[i] = new Ocatave(rnd.nextInt());
-            frequencies[i] = Math.pow(2, i);
-            amplitudes[i] = Math.pow(this.persistence, octaves.length - i);
+            this.octaves[i] = new Ocatave(rnd.nextInt());
+            this.frequencies[i] = Math.pow(2, i);
+            this.amplitudes[i] = Math.pow(this.persistence, this.octaves.length - i);
         }
     }
 
+    @Override
     public double eval(double x, double y) {
         double result = 0;
-        for (int i = 0; i < octaves.length; i++) {
-            result = result + octaves[i].noise(x / frequencies[i], y / frequencies[i]) * amplitudes[i];
+        for (int i = 0; i < this.octaves.length; i++) {
+            result = result + this.octaves[i].noise(x / this.frequencies[i], y / this.frequencies[i]) * this.amplitudes[i];
         }
 
         return result;
     }
 
+    @Override
     public double eval(double x, double y, double z) {
         double result = 0;
-        for (int i = 0; i < octaves.length; i++) {
+        for (int i = 0; i < this.octaves.length; i++) {
             double frequency = Math.pow(2, i);
-            double amplitude = Math.pow(persistence, octaves.length - i);
+            double amplitude = Math.pow(this.persistence, this.octaves.length - i);
 
-            result = result + octaves[i].noise(x / frequency, y / frequency, z / frequency) * amplitude;
+            result = result + this.octaves[i].noise(x / frequency, y / frequency, z / frequency) * amplitude;
         }
 
         return result;
     }
 
+    @Override
     public void dispose() {
-        Arrays.stream(octaves).forEach(Ocatave::dispose);
-        octaves = null;
-        frequencies = null;
-        amplitudes = null;
+        Arrays.stream(this.octaves).forEach(Ocatave::dispose);
+        this.octaves = null;
+        this.frequencies = null;
+        this.amplitudes = null;
     }
 
     /**
@@ -92,7 +95,7 @@ public class SimplexNoise {
         private short[] permMod12 = new short[512];
 
         public Ocatave(int seed) {
-            p = P_SUPPLY.clone();
+            this.p = P_SUPPLY.clone();
 
             if (seed == RANDOM_SEED) {
                 Random rand = new Random();
@@ -104,18 +107,18 @@ public class SimplexNoise {
 
             //the seed determines the swaps that occur between the default order and the order we're actually going to use
             for (int i = 0; i < NUMBER_OF_SWAPS; i++) {
-                int swapFrom = rand.nextInt(p.length);
-                int swapTo = rand.nextInt(p.length);
+                int swapFrom = rand.nextInt(this.p.length);
+                int swapTo = rand.nextInt(this.p.length);
 
-                short temp = p[swapFrom];
-                p[swapFrom] = p[swapTo];
-                p[swapTo] = temp;
+                short temp = this.p[swapFrom];
+                this.p[swapFrom] = this.p[swapTo];
+                this.p[swapTo] = temp;
             }
 
 
             for (int i = 0; i < 512; i++) {
-                perm[i] = p[i & 255];
-                permMod12[i] = (short) (perm[i] % 12);
+                this.perm[i] = this.p[i & 255];
+                this.permMod12[i] = (short) (this.perm[i] % 12);
             }
         }
 
@@ -178,9 +181,9 @@ public class SimplexNoise {
             // Work out the hashed gradient indices of the three simplex corners
             int ii = i & 255;
             int jj = j & 255;
-            int gi0 = permMod12[ii + perm[jj]];
-            int gi1 = permMod12[ii + i1 + perm[jj + j1]];
-            int gi2 = permMod12[ii + 1 + perm[jj + 1]];
+            int gi0 = this.permMod12[ii + this.perm[jj]];
+            int gi1 = this.permMod12[ii + i1 + this.perm[jj + j1]];
+            int gi2 = this.permMod12[ii + 1 + this.perm[jj + 1]];
             // Calculate the contribution from the three corners
             double t0 = 0.5 - x0 * x0 - y0 * y0;
             if (t0 < 0) n0 = 0.0;
@@ -293,10 +296,10 @@ public class SimplexNoise {
             int ii = i & 255;
             int jj = j & 255;
             int kk = k & 255;
-            int gi0 = permMod12[ii + perm[jj + perm[kk]]];
-            int gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]];
-            int gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]];
-            int gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]];
+            int gi0 = this.permMod12[ii + this.perm[jj + this.perm[kk]]];
+            int gi1 = this.permMod12[ii + i1 + this.perm[jj + j1 + this.perm[kk + k1]]];
+            int gi2 = this.permMod12[ii + i2 + this.perm[jj + j2 + this.perm[kk + k2]]];
+            int gi3 = this.permMod12[ii + 1 + this.perm[jj + 1 + this.perm[kk + 1]]];
             // Calculate the contribution from the four corners
             double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
             if (t0 < 0) n0 = 0.0;
@@ -412,11 +415,11 @@ public class SimplexNoise {
             int jj = j & 255;
             int kk = k & 255;
             int ll = l & 255;
-            int gi0 = perm[ii + perm[jj + perm[kk + perm[ll]]]] % 32;
-            int gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1 + perm[ll + l1]]]] % 32;
-            int gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2 + perm[ll + l2]]]] % 32;
-            int gi3 = perm[ii + i3 + perm[jj + j3 + perm[kk + k3 + perm[ll + l3]]]] % 32;
-            int gi4 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1 + perm[ll + 1]]]] % 32;
+            int gi0 = this.perm[ii + this.perm[jj + this.perm[kk + this.perm[ll]]]] % 32;
+            int gi1 = this.perm[ii + i1 + this.perm[jj + j1 + this.perm[kk + k1 + this.perm[ll + l1]]]] % 32;
+            int gi2 = this.perm[ii + i2 + this.perm[jj + j2 + this.perm[kk + k2 + this.perm[ll + l2]]]] % 32;
+            int gi3 = this.perm[ii + i3 + this.perm[jj + j3 + this.perm[kk + k3 + this.perm[ll + l3]]]] % 32;
+            int gi4 = this.perm[ii + 1 + this.perm[jj + 1 + this.perm[kk + 1 + this.perm[ll + 1]]]] % 32;
             // Calculate the contribution from the five corners
             double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
             if (t0 < 0) n0 = 0.0;

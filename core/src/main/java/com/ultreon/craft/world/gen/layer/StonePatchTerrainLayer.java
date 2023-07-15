@@ -1,13 +1,16 @@
 package com.ultreon.craft.world.gen.layer;
 
-import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
+
 
 public class StonePatchTerrainLayer extends TerrainLayer {
-    private final float stoneThreshold;
+    private float stoneThreshold;
     private final NoiseSettings noiseSettings;
 
     public DomainWarping domainWarping;
@@ -36,7 +39,7 @@ public class StonePatchTerrainLayer extends TerrainLayer {
 
         if (stoneNoise > stoneThreshold) {
             for (int i = chunk.offset.y; i <= endPosition; i++) {
-                GridPoint3 pos = new GridPoint3(x, i, z);
+                Vec3i pos = new Vec3i(x, i, z);
                 try {
                     chunk.set(pos, Blocks.STONE);
                 } catch (Exception e) {

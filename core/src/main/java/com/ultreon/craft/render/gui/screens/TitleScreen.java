@@ -1,24 +1,27 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.math.Matrix4;
+import com.ultreon.craft.GameFlags;
+import com.ultreon.craft.GamePlatform;
+import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.init.Fonts;
-import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.widget.Button;
-import com.ultreon.libs.translations.v0.Language;
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.libs.translations.v1.Language;
 
-import java.awt.*;
+import java.util.concurrent.TimeUnit;
 
 public class TitleScreen extends Screen {
     private Button startButton;
+    private Button resetWorldButton;
+    private Button modListButton;
     private Button optionsButton;
     private Button quitButton;
     private final GlyphLayout layout = new GlyphLayout();
+    private static int hiddenClicks = 0;
 
     public TitleScreen() {
         super("Title Screen");
@@ -28,9 +31,16 @@ public class TitleScreen extends Screen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        startButton.setPos(width / 2 - 100, height - height / 3 + 5);
-        optionsButton.setPos(width / 2 - 100, height - height / 3 - 25);
-        quitButton.setPos(width / 2 + 5, height - height / 3 - 25);
+        int y = height - height / 2 + 5;
+        this.startButton.setPos(width / 2 - 100, y);
+        if (this.resetWorldButton != null) {
+            this.resetWorldButton.setPos(width / 2 - 100, y -= 25);
+        }
+        if (this.modListButton != null) {
+            this.modListButton.setPos(width / 2 - 100, y -= 25);
+        }
+        this.optionsButton.setPos(width / 2 - 100, y -= 25);
+        this.quitButton.setPos(width / 2 + 5, y);
     }
 
     @Override
@@ -39,30 +49,63 @@ public class TitleScreen extends Screen {
 
         super.show();
 
-        startButton = add(new Button(width / 2 - 100, height - height / 3 + 5, 200, Language.translate("craft/screen/title/start_world"), caller -> {
+        int y = height - height / 2 + 5;
+
+        startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
             UltreonCraft.get().startWorld();
         }));
 
-        optionsButton = add(new Button(width / 2 - 100, height - height / 3 - 25, 95, Language.translate("craft/screen/title/options"), caller -> {
+        if ((GamePlatform.instance.isMobile() && GameFlags.ENABLE_RESET_WORLD_IN_MOBILE) ||
+                (GamePlatform.instance.isDesktop() && GameFlags.ENABLE_RESET_WORLD_IN_DESKTOP) ||
+                (GamePlatform.instance.isWeb() && GameFlags.ENABLE_RESET_WORLD_IN_WEB) ||
+                GameFlags.ALWAYS_ENABLE_RESET_WORLD) {
+            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> UltreonCraft.getSavedWorld().delete()));
+        }
+
+        if (GamePlatform.instance.isModsSupported()) {
+            this.modListButton = this.add(new Button(this.width / 2 - 100, y -= 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
+                GamePlatform.instance.openModList();
+            }));
+        }
+        optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
-        quitButton = add(new Button(width / 2 + 5, height - height / 3 - 25, 95, Language.translate("craft/screen/title/quit"), caller -> {
-            Gdx.app.exit();
-        }));
-        quitButton.setColor(Color.red);
-        quitButton.setTextColor(Color.white);
+        this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
+            if (GamePlatform.instance.supportsQuit()) {
+                Gdx.app.exit();
+            }
+        });
+        if (GamePlatform.instance.supportsQuit()) {
+            this.add(this.quitButton);
+        } else {
+            this.optionsButton.setWidth(200);
+        }
     }
 
     @Override
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        Batch batch = renderer.getBatch();
-        layout.setText(xlFont, "Ultreon Craft");
-        xlFont.setColor(Color.white.darker().darker().toGdx());
-        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40 - 3)));
-        xlFont.setColor(Color.white.toGdx());
-        xlFont.draw(batch, "Ultreon Craft", (int)((float) width / 2 - layout.width / 2), (int)((float) (height - 40)));
+        renderer.drawCenteredTextScaled("UltraCraft", 3, (int)((float) this.width / 2), (int)((float) (this.height - 40)));
+    }
+
+    @Override
+    public boolean mouseClick(int x, int y, int button, int count) {
+        if (!GamePlatform.instance.supportsQuit() && this.quitButton.isWithinBounds(x, y)) {
+            hiddenClicks++;
+            if (hiddenClicks == 1) {
+                this.game.schedule(new Task(new Identifier("button_crash"), () -> {
+                    hiddenClicks = 0;
+                }), 2, TimeUnit.MINUTES);
+            }
+
+            UltreonCraft.LOGGER.warn("Clicks: " + hiddenClicks);
+            if (hiddenClicks == 16) {
+                CrashLog crashLog = new CrashLog("Hidden quit button", new Exception("Funny"));
+                this.game.delayCrash(crashLog);
+            }
+        }
+        return super.mouseClick(x, y, button, count);
     }
 
     public Button getStartButton() {
@@ -78,7 +121,7 @@ public class TitleScreen extends Screen {
     }
 
     @Override
-    public boolean canCloseOnEsc() {
+    public boolean canClose() {
         return false;
     }
 }

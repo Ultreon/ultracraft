@@ -1,9 +1,8 @@
 package com.ultreon.craft;
 
-import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.ApplicationLogger;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -17,802 +16,896 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.config.GameSettings;
 import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.LifecycleEvents;
 import com.ultreon.craft.events.ScreenEvents;
-import com.ultreon.craft.events.WindowCloseEvent;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.font.Font;
 import com.ultreon.craft.init.Fonts;
 import com.ultreon.craft.init.Sounds;
-import com.ultreon.craft.input.GameCamera;
-import com.ultreon.craft.input.InputManager;
-import com.ultreon.craft.input.PlayerInput;
-import com.ultreon.craft.options.GameSettings;
+import com.ultreon.craft.input.*;
+import com.ultreon.craft.platform.PlatformType;
+import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.Color;
+import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
 import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.gui.GuiComponent;
-import com.ultreon.craft.render.gui.screens.PauseScreen;
-import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.render.gui.screens.TitleScreen;
-import com.ultreon.craft.render.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
-import com.ultreon.craft.util.ImGuiEx;
+import com.ultreon.craft.resources.ResourceFileHandle;
+import com.ultreon.craft.text.LanguageData;
+import com.ultreon.craft.util.GG;
+import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.events.v1.EventResult;
+import com.ultreon.libs.events.v1.ValueEventResult;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
-import com.ultreon.libs.translations.v0.LanguageManager;
-import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.type.ImBoolean;
-import imgui.type.ImFloat;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
+import com.ultreon.libs.translations.v1.Language;
+import com.ultreon.libs.translations.v1.LanguageManager;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
-public class UltreonCraft extends ApplicationAdapter {
-	public static final String NAMESPACE = "craft";
-	private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
-	private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
-	private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
-	private static final Logger LOGGER = LoggerFactory.getLogger("UltreonCraft");
-	private boolean booted = false;
-	private final ImGuiImplGlfw imGuiGlfw;
-	private final ImGuiImplGl3 imGuiGl3;
-	public static final int TPS = 20;
-	public BitmapFont font;
-	public BitmapFont largeFont;
-	public BitmapFont xlFont;
-	public InputManager input;
-	public World world;
-	private static UltreonCraft instance;
-	public Player player;
-	public int renderDistance = 8;
-	private SpriteBatch spriteBatch;
-	private ModelBatch batch;
-	private GameCamera camera;
-	private Environment env;
-	private float timeUntilNextTick;
-	public final PlayerInput playerInput = new PlayerInput();
-	private final boolean isDevMode;
-	private final ImBoolean showImGui = new ImBoolean(false);
-	private long windowHandle;
-	private final ImFloat imGuiPosX = new ImFloat();
-	private final ImFloat imGuiPosY = new ImFloat();
-	private final ImFloat imGuiPosZ = new ImFloat();
-	public Screen currentScreen;
-	public final GameSettings settings = new GameSettings();
-	private ShapeDrawer shapes;
-	private TextureRegion white;
-	private TextureManager textureManager;
-	private ResourceManager resourceManager;
-	@Deprecated
-	private Texture tilesTex;
-	private float guiScale = 2;
-	private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
-	private Hud hud;
-	private int chunkRefresh;
-	private ScheduledExecutorService gcExecutor;
-	public boolean showDebugHud = false;
-
-	// Public Flags
-	public boolean renderWorld = false;
-	public boolean advancedShadows = true;
-
-	// Startup time
-	public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
-
-	// Texture Atlases
-	public TextureAtlas blocksTextureAtlas;
-	private BakedModelRegistry bakedBlockModels;
-
-	// Advanced Shadows
-	private DirectionalShadowLight shadowLight;
-	private ModelBatch shadowBatch;
-
-	public UltreonCraft(String[] args) {
-		LOGGER.info("Booting game!");
-
-		Identifier.setDefaultNamespace(NAMESPACE);
-		imGuiGlfw = new ImGuiImplGlfw();
-		imGuiGl3 = new ImGuiImplGl3();
-
-		List<String> argList = List.of(args);
-		isDevMode = argList.contains("--dev");
-
-		if (isDevMode) {
-			LOGGER.debug("Developer mode is enabled");
-		}
-
-		instance = this;
-
-		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-			CrashLog crashLog = new CrashLog("Exception in thread", e);
-			CrashCategory cat = new CrashCategory("Thread");
-			crashLog.addCategory(cat);
-			delayCrash(crashLog);
-		});
-	}
-
-	private void delayCrash(CrashLog crashLog) {
-		Gdx.app.postRunnable(() -> {
-			CrashLog finalCrash = new CrashLog("An error occurred", crashLog, new RuntimeException("Delayed crash"));
-			crash(finalCrash);
-		});
-	}
-
-	public static UltreonCraft get() {
-		return instance;
-	}
-
-	public static Identifier id(String path) {
-		return new Identifier(path);
-	}
-
-	@Override
-	public void create() {
-		try {
-			LOGGER.info("Initializing game");
-			this.textureManager = new TextureManager();
-			this.spriteBatch = new SpriteBatch();
-
-			gcExecutor = Executors.newScheduledThreadPool(1, r -> new Thread(r, "GC Executor"));
-			gcExecutor.scheduleAtFixedRate(System::gc, 5, 5, TimeUnit.SECONDS);
-
-			createDir("screenshots/");
-			createDir("game-crashes/");
-			createDir("logs/");
-
-			this.resourceManager = new ResourceManager("assets");
-			try {
-				LOGGER.info("Importing resources");
-				this.resourceManager.importPackage(getClass().getProtectionDomain().getCodeSource().getLocation());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-
-			LOGGER.info("Generating bitmap fonts");
-			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.ttf"));
-			FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
-			fontParameter.size = 8;
-			fontParameter.minFilter = Texture.TextureFilter.Nearest;
-			fontParameter.magFilter = Texture.TextureFilter.Nearest;
-			fontParameter.mono = true;
-			this.font = generator.generateFont(fontParameter);
-			FreeTypeFontParameter largeFontParameter = new FreeTypeFontParameter();
-			largeFontParameter.size = 16;
-			largeFontParameter.minFilter = Texture.TextureFilter.Nearest;
-			largeFontParameter.magFilter = Texture.TextureFilter.Nearest;
-			largeFontParameter.mono = true;
-			this.largeFont = generator.generateFont(largeFontParameter);
-			FreeTypeFontParameter xlFontParameter = new FreeTypeFontParameter();
-			xlFontParameter.size = 24;
-			xlFontParameter.minFilter = Texture.TextureFilter.Nearest;
-			xlFontParameter.magFilter = Texture.TextureFilter.Nearest;
-			xlFontParameter.mono = true;
-			this.xlFont = generator.generateFont(xlFontParameter);
-
-			LOGGER.info("Initializing rendering stuffs");
-			DefaultShader.Config config = new DefaultShader.Config();
-			config.defaultCullFace = GL20.GL_FRONT;
-			this.batch = new ModelBatch(new DefaultShaderProvider(config));
-			this.shadowBatch = new ModelBatch(new DefaultShaderProvider(config));
-			this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-			this.camera.near = 0.01f;
-			this.camera.far = 1000;
-			this.input = new InputManager(this, this.camera);
-			Gdx.input.setInputProcessor(this.input);
-
-			Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-			pixmap.setColor(1F, 1F, 1F, 1F);
-			pixmap.drawPixel(0, 0);
-			this.white = new TextureRegion(new Texture(pixmap));
-
-			this.shapes = new ShapeDrawer(this.spriteBatch, this.white);
-
-			LOGGER.info("Setting up environment");
-			this.env = new Environment();
-			this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-			this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
-			this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
-			this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
-
-			LOGGER.info("Loading languages");
-			LanguageManager.INSTANCE.load(new Locale("en"), id("english"), resourceManager);
-			LanguageManager.INSTANCE.load(new Locale("nl"), id("dutch"), resourceManager);
-			LanguageManager.INSTANCE.load(new Locale("de"), id("german"), resourceManager);
-
-			LOGGER.info("Registering stuff");
-			Registries.nopInit();
-
-			Blocks.nopInit();
-			NoiseSettingsInit.nopInit();
-			Entities.nopInit();
-			Fonts.nopInit();
-			Sounds.nopInit();
-
-			for (var registry : Registry.getRegistries()) {
-				RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
-			}
-			Registry.freeze();
-
-			LOGGER.info("Registering models");
-			registerModels();
-
-			LOGGER.info("Stitching textures");
-			this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
-
-			LOGGER.info("Initializing sounds");
-			for (SoundEvent sound : Registries.SOUNDS.values()) {
-				if (sound == null) {
-					continue;
-				}
-				sound.register();
-			}
-
-			LOGGER.info("Baking models");
-			this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
-
-			LOGGER.info("Setting up HUD");
-			this.hud = new Hud(this);
-
-			LOGGER.info("Opening title screen");
-			showScreen(new TitleScreen());
-
-			LOGGER.info("Setting up ImGui");
-			GLFWErrorCallback.createPrint(System.err).set();
-			if (!GLFW.glfwInit()) {
-				throw new IllegalStateException("Unable to initialize GLFW");
-			}
-			ImGui.createContext();
-			final ImGuiIO io = ImGui.getIO();
-			io.setIniFilename(null);
-			io.getFonts().addFontDefault();
-
-			windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
-
-			imGuiGlfw.init(windowHandle, true);
-			imGuiGl3.init("#version 150");
-
-		} catch (Exception e) {
-			crash(e);
-		}
-
-		booted = true;
-		LOGGER.info("Game booted in " + (System.currentTimeMillis() - BOOT_TIMESTAMP) + "ms");
-	}
-
-	private void registerModels() {
-		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
-		BlockModelRegistry.registerDefault(Blocks.DIRT);
-		BlockModelRegistry.registerDefault(Blocks.SAND);
-		BlockModelRegistry.registerDefault(Blocks.WATER);
-		BlockModelRegistry.registerDefault(Blocks.STONE);
-	}
-
-	private static void createDir(String dirName) {
-		FileHandle directory = Gdx.files.local(dirName);
-		if (!directory.exists()) {
-			directory.mkdirs();
-		}
-	}
-
-	@Override
-	public void pause() {
-		super.pause();
-
-		if (this.currentScreen == null && this.world != null) {
-			showScreen(new PauseScreen());
-		}
-	}
-
-	@Override
-	public void resume() {
-		super.resume();
-
-		if (this.world != null) {
-			showScreen(null);
-		}
-	}
-
-	@CanIgnoreReturnValue
-	public boolean showScreen(Screen open) {
-		Screen cur = this.currentScreen;
-		if (open == null && world == null) {
-			open = new TitleScreen();
-		}
-
-		if (open == null) {
-			if (cur == null) return false;
-
-			EventResult result = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
-			if (result.isCanceled()) return false;
-
-			LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
-
-			cur.hide();
-			this.currentScreen = null;
-			Gdx.input.setCursorCatched(true);
-
-			return true;
-		}
-		var openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
-		if (openResult.isCanceled()) {
-			return false;
-		}
-
-		if (openResult.isInterrupted()) {
-			open = openResult.getValue();
-		}
-
-		if (cur != null) {
-			EventResult closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
-			if (closeResult.isCanceled()) return false;
-
-			cur.hide();
-			if (open != null) {
-				LOGGER.debug("Changing screen to: " + open.getClass());
-			} else {
-				LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
-			}
-		} else {
-			if (open != null) {
-				Gdx.input.setCursorCatched(false);
-				LOGGER.debug("Opening screen: " + open.getClass());
-			} else {
-				return false;
-			}
-		}
-
-		this.currentScreen = open;
-		if (this.currentScreen != null) {
-			this.currentScreen.show();
-		}
-
-		return true;
-	}
-
-    @Override
-    public void render() {
-		try {
-			final var tickTime = 1f / TPS;
-
-			float deltaTime = Gdx.graphics.getDeltaTime();
-			this.timeUntilNextTick -= deltaTime;
-			if (this.timeUntilNextTick < 0) {
-				this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
-
-				tick();
-			}
-
-			this.tasks.forEach(runnable -> {
-				runnable.run();
-				this.tasks.remove(runnable);
-			});
-
-			this.input.update();
-
-			ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
-			World world = this.world;
-			Gdx.graphics.setTitle("Ultreon Craft - " + Gdx.graphics.getFramesPerSecond() + " fps");
-
-			if (this.renderWorld && world != null) {
-				this.batch.begin(this.camera);
-				this.batch.render(world, this.env);
-				this.batch.end();
-
-				if (InputManager.isKeyDown(Input.Keys.F9)) {
-					world.regen();
-				}
-			}
-
-			this.spriteBatch.begin();
-
-			Screen screen = this.currentScreen;
-			Renderer renderer = new Renderer(this.shapes);
-			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(this.guiScale, this.guiScale, 1));
-			renderGame(renderer, screen, world, deltaTime);
-			this.spriteBatch.setTransformMatrix(this.spriteBatch.getTransformMatrix().scale(1F / this.guiScale, 1F / this.guiScale, 1));
-
-			renderImGui();
-
-			this.spriteBatch.end();
-		} catch (Exception e) {
-			crash(e);
-		}
+public class UltreonCraft {
+    public static final String NAMESPACE = "craft";
+    public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
+    public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
+    private static final int CULL_FACE = GL20.GL_FRONT;
+    private final Instant bootTime;
+    private final String allUnicode;
+    public FileHandle configDir;
+
+    private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
+    @UnknownNullability
+    private static SavedWorld savedWorld;
+    public boolean forceUnicode = false;
+    @SuppressWarnings("FieldMayBeFinal")
+    private boolean booted;
+    public static final int TPS = 20;
+    public Font font;
+    public BitmapFont unifont;
+    public GameInput input;
+    @Nullable public World world;
+    @Nullable public WorldRenderer worldRenderer;
+    @UnknownNullability
+    private static UltreonCraft instance;
+    @Nullable public Player player;
+    private final SpriteBatch spriteBatch;
+    private final ModelBatch batch;
+    GameCamera camera;
+    private final Environment env;
+    private float timeUntilNextTick;
+    public final PlayerInput playerInput = new PlayerInput(this);
+    private final boolean isDevMode;
+    @Nullable
+    public Screen currentScreen;
+    public GameSettings settings;
+    ShapeDrawer shapes;
+    private final TextureManager textureManager;
+    private final ResourceManager resourceManager;
+    private final float guiScale = this.calculateGuiScale();
+
+    private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
+    public Hud hud;
+    private int chunkRefresh;
+    private ScheduledExecutorService gcExecutor;
+	public boolean showDebugHud = true;
+
+    // Public Flags
+    public boolean renderWorld = false;
+
+    // Startup time
+    public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
+
+    // Texture Atlases
+    public TextureAtlas blocksTextureAtlas;
+    private final BakedModelRegistry bakedBlockModels;
+
+    // Advanced Shadows
+    private final List<CompletableFuture<?>> futures = new CopyOnWriteArrayList<>();
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    @Nullable
+    private Integer deferredWidth;
+    @Nullable
+    private Integer deferredHeight;
+    private final Texture windowTex;
+    private final DebugRenderer debugRenderer;
+    private boolean closingWorld;
+
+    public UltreonCraft(String[] args) throws Throwable {
+        LOGGER.info("Booting game!");
+
+        Identifier.setDefaultNamespace(NAMESPACE);
+        GamePlatform.instance.preInitImGui();
+
+        List<String> argList = Arrays.asList(args);
+        this.isDevMode = argList.contains("--dev");
+
+        if (this.isDevMode) {
+            LOGGER.debug("Developer mode is enabled");
+        }
+
+        UltreonCraft.instance = this;
+
+        Thread.setDefaultUncaughtExceptionHandler(UltreonCraft::uncaughtException);
+
+        LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
+
+        Gdx.app.setApplicationLogger(new ApplicationLogger() {
+            private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+
+            @Override
+            public void log(String tag, String message) {
+                this.LOGGER.info(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void log(String tag, String message, Throwable exception) {
+                this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
+            }
+
+            @Override
+            public void error(String tag, String message) {
+                this.LOGGER.error(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void error(String tag, String message, Throwable exception) {
+                this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
+            }
+
+            @Override
+            public void debug(String tag, String message) {
+                this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
+            }
+
+            @Override
+            public void debug(String tag, String message, Throwable exception) {
+                this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
+            }
+        });
+
+        this.configDir = createDir("config/");
+
+        gcExecutor = Executors.newScheduledThreadPool(1, r -> new Thread(r, "GC Executor"));
+		gcExecutor.scheduleAtFixedRate(System::gc, 5, 5, TimeUnit.SECONDS);
+
+		createDir("screenshots/");
+		createDir("game-crashes/");
+		createDir("logs/");
+
+        GamePlatform.instance.setupMods();
+
+        this.settings = new GameSettings();
+        this.settings.reload();
+        this.settings.reloadLanguage();
+
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
+
+        LOGGER.info("Initializing game");
+        this.textureManager = new TextureManager();
+        this.spriteBatch = new SpriteBatch();
+
+        this.resourceManager = new ResourceManager("assets");
+        LOGGER.info("Importing resources");
+        this.resourceManager.importDeferredPackage(this.getClass());
+        GamePlatform.instance.importModResources(this.resourceManager);
+
+        Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
+        if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
+        this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
+
+        LOGGER.info("Generating bitmap fonts");
+        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
+        FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
+        fontParameter.size = 8;
+        fontParameter.characters = this.allUnicode;
+        fontParameter.minFilter = Texture.TextureFilter.Nearest;
+        fontParameter.magFilter = Texture.TextureFilter.Nearest;
+        fontParameter.mono = true;
+
+        this.font = new Font(generator.generateFont(fontParameter));
+
+        //**********************//
+        // Setting up rendering //
+        //**********************//
+        LOGGER.info("Initializing rendering stuffs");
+        DefaultShader.Config config = new DefaultShader.Config();
+        config.defaultCullFace = GL20.GL_FRONT;
+        this.batch = new ModelBatch(new DefaultShaderProvider(config));
+        this.batch.getRenderContext().setCullFace(CULL_FACE);
+        this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        this.camera.near = 0.01f;
+        this.camera.far = 1000;
+        this.input = this.createInput();
+        Gdx.input.setInputProcessor(this.input);
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(1F, 1F, 1F, 1F);
+        pixmap.drawPixel(0, 0);
+        TextureRegion white = new TextureRegion(new Texture(pixmap));
+
+        this.shapes = new ShapeDrawer(this.spriteBatch, white);
+
+        LOGGER.info("Setting up world environment");
+        this.env = new Environment();
+        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
+        this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
+        this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
+
+        LOGGER.info("Setting up HUD");
+        this.hud = new Hud(this);
+
+        LOGGER.info("Setting up Debug Renderer");
+        this.debugRenderer = new DebugRenderer(this);
+
+        //**************************//
+        // Registering game content //
+        //**************************//
+        LOGGER.info("Loading languages");
+        this.loadLanguages();
+
+        LOGGER.info("Registering stuff");
+        Registries.init();
+
+        Blocks.nopInit();
+        NoiseSettingsInit.nopInit();
+        Entities.nopInit();
+        Fonts.nopInit();
+        Sounds.nopInit();
+
+        for (Registry<?> registry : Registry.getRegistries()) {
+            RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
+        }
+        Registry.freeze();
+
+        LOGGER.info("Registering models");
+        this.registerModels();
+
+        //********************************************//
+        // Post-initialize game content               //
+        // Such as model baking and texture stitching //
+        //********************************************//
+        LOGGER.info("Stitching textures");
+        this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
+
+        LOGGER.info("Initializing sounds");
+        for (SoundEvent sound : Registries.SOUNDS.values()) {
+            sound.register();
+        }
+
+        LOGGER.info("Baking models");
+        this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
+
+        if (this.deferredWidth != null && this.deferredHeight != null) {
+            this.camera.viewportWidth = this.deferredWidth;
+            this.camera.viewportHeight = this.deferredHeight;
+            this.camera.update();
+        }
+
+        this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
+
+        LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
+
+        //*************//
+        // Final stuff //
+        //*************//
+        LOGGER.info("Opening title screen");
+        this.showScreen(new TitleScreen());
+
+        savedWorld = new SavedWorld(GamePlatform.data("world"));
+
+        GamePlatform.instance.setupImGui();
+
+        this.booted = true;
+
+        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
+        LOGGER.info("Game booted in " + this.bootTime + "ms");
     }
 
-	private void renderImGui() {
-		if (this.showImGui.get()) {
-			// render 3D scene
-			this.imGuiGlfw.newFrame();
+    private static void uncaughtException(Thread t, Throwable e) {
+        LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
+    }
 
-			ImGui.newFrame();
-			ImGui.setNextWindowPos(0, 0);
-			ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
-			ImGui.setNextWindowCollapsed(true);
+    public Instant getBootTime() {
+        return this.bootTime;
+    }
 
-			if (Gdx.input.isCursorCatched()) {
-				ImGui.getIO().setMouseDown(new boolean[5]);
-				ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    public void delayCrash(CrashLog crashLog) {
+        Gdx.app.postRunnable(() -> {
+            CrashLog finalCrash = new CrashLog("An error occurred", crashLog, new RuntimeException("Delayed crash"));
+            crash(finalCrash);
+        });
+    }
+
+    public static UltreonCraft get() {
+        return instance;
+    }
+
+    public static Identifier id(String path) {
+        return new Identifier(path);
+    }
+
+    public static GG ggBro() {
+        return new GG();
+    }
+
+    private void loadLanguages() {
+        FileHandle internal = Gdx.files.internal("assets/craft/languages.json");
+        List<String> languages;
+        try (Reader reader = internal.reader()) {
+            languages = GSON.fromJson(reader, LanguageData.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to load languages register", e);
+        }
+
+        for (String language : languages) {
+            this.registerLanguage(id(language));
+        }
+
+        LanguageRegistry.doRegistration(this::registerLanguage);
+    }
+
+    private void registerLanguage(Identifier id) {
+        String[] s = id.path().split("_", 2);
+        Locale locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
+        LanguageManager.INSTANCE.register(locale, id);
+        LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
+    }
+
+    private GameInput createInput() {
+        return GamePlatform.instance.isMobile() ? new MobileInput(this, this.camera) : new DesktopInput(this, this.camera);
+    }
+
+    private void registerModels() {
+        BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
+        BlockModelRegistry.registerDefault(Blocks.DIRT);
+        BlockModelRegistry.registerDefault(Blocks.SAND);
+        BlockModelRegistry.registerDefault(Blocks.WATER);
+        BlockModelRegistry.registerDefault(Blocks.STONE);
+    }
+
+    private static FileHandle createDir(String dirName) {
+        FileHandle directory = GamePlatform.data(dirName);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        } else if (!directory.isDirectory()) {
+            directory.delete();
+            directory.mkdirs();
+        }
+        return directory;
+    }
+
+    public void pause() {
+        if (this.currentScreen == null && this.world != null) {
+            this.showScreen(new PauseScreen());
+        }
+    }
+
+    public void resume() {
+        if (this.currentScreen instanceof PauseScreen && this.world != null) {
+            this.showScreen(null);
+        }
+    }
+
+    @CanIgnoreReturnValue
+    public boolean showScreen(@Nullable Screen open) {
+        Screen cur = this.currentScreen;
+        if (open == null && this.world == null) {
+            open = new TitleScreen();
+        }
+
+        if (open == null) {
+            if (cur == null) return false;
+
+            EventResult result = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
+            if (result.isCanceled()) return false;
+
+            LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
+
+            cur.hide();
+            this.currentScreen = null;
+            Gdx.input.setCursorCatched(true);
+
+            return true;
+        }
+        ValueEventResult<Screen> openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
+        if (openResult.isCanceled()) {
+            return false;
+        }
+
+        if (openResult.isInterrupted()) {
+            open = openResult.getValue();
+        }
+
+        if (cur != null) {
+            EventResult closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(cur);
+            if (closeResult.isCanceled()) return false;
+
+            cur.hide();
+            if (open != null) {
+                LOGGER.debug("Changing screen to: " + open.getClass());
+            } else {
+                LOGGER.debug("Closing screen: " + cur.getClass());
+            }
+        } else {
+            if (open != null) {
+                Gdx.input.setCursorCatched(false);
+                LOGGER.debug("Opening screen: " + open.getClass());
+            } else {
+                return false;
+            }
+        }
+
+        this.currentScreen = open;
+        if (this.currentScreen != null) {
+            this.currentScreen.show();
+        }
+
+        return true;
+    }
+
+    public void render() {
+        if (!this.booted) {
+            return;
+        }
+
+        try {
+            final float tickTime = 1f / TPS;
+
+            float deltaTime = Gdx.graphics.getDeltaTime();
+            this.timeUntilNextTick -= deltaTime;
+            if (this.timeUntilNextTick < 0) {
+                this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
+
+                this.tick();
+            }
+
+            this.tasks.forEach(runnable -> {
+                runnable.run();
+                this.tasks.remove(runnable);
+            });
+
+            this.input.update();
+
+            if (Gdx.graphics.getFrameId() == 2) {
+                GamePlatform.instance.firstRender();
+                Gdx.graphics.setTitle("UltraCraft v" + Metadata.INSTANCE.version);
+            }
+
+            ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
+            World world = this.world;
+            WorldRenderer worldRenderer = this.worldRenderer;
+
+            if (this.renderWorld && world != null && worldRenderer != null) {
+                this.batch.begin(this.camera);
+                this.batch.getRenderContext().setCullFace(CULL_FACE);
+                this.batch.render(worldRenderer, this.env);
+                this.batch.end();
+            }
+
+            this.spriteBatch.begin();
+
+            Screen screen = this.currentScreen;
+            Renderer renderer = new Renderer(this.shapes);
+            renderer.pushMatrix();
+            renderer.translate(this.getDrawOffset().x, this.getDrawOffset().y);
+            renderer.scale(this.guiScale, this.guiScale);
+            this.renderGame(renderer, screen, world, deltaTime);
+            renderer.popMatrix();
+
+            if (GamePlatform.instance.getPlatformType() == PlatformType.DESKTOP && this.isCustomBorderShown()) {
+                renderer.pushMatrix();
+                renderer.scale(2, 2);
+                this.renderWindow(renderer, Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+                renderer.popMatrix();
+            }
+
+            GamePlatform.instance.renderImGui(this);
+
+            this.spriteBatch.end();
+        } catch (Throwable t) {
+            crash(t);
+        }
+
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE);
+    }
+
+    private void renderWindow(Renderer renderer, int width, int height) {
+        renderer.draw9PatchTexture(this.windowTex, 0, 0, width, height, 0, 0, 18, 22, 256, 256);
+    }
+
+    private void renderGame(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
+        if (world != null) {
+            if (this.showDebugHud) {
+                this.debugRenderer.render(renderer);
+            }
+
+            this.hud.render(renderer, deltaTime);
+        }
+
+        if (screen != null) {
+            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((this.getHeight() - Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
+        }
+    }
+
+    public static void crash(Throwable throwable) {
+        throwable.printStackTrace();
+        try {
+            CrashLog crashLog = new CrashLog("An error occurred", throwable);
+            crash(crashLog);
+        } catch (Throwable t) {
+            LOGGER.error(FATAL_ERROR_MSG, t);
+            Gdx.app.exit();
+        }
+    }
+
+    public static void crash(CrashLog crashLog) {
+        try {
+            UltreonCraft.instance.fillGameInfo(crashLog);
+            ApplicationCrash crash = crashLog.createCrash();
+            crash(crash);
+        } catch (Throwable t) {
+            LOGGER.error(FATAL_ERROR_MSG, t);
+            Gdx.app.exit();
+        }
+    }
+
+    private void fillGameInfo(CrashLog crashLog) {
+        if (this.world != null) {
+            this.world.fillCrashInfo(crashLog);
+        }
+
+        CrashCategory game = new CrashCategory("Game Details");
+        game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
+        game.add("Game booted", this.booted); // Could be that the game isn't booted yet.
+        game.add("LibGDX Platform", GamePlatform.instance.getGdxPlatform().getDisplayName());
+        game.add("Can Access Data", GamePlatform.instance.canAccessData());
+        game.add("Supports Mods", GamePlatform.instance.isModsSupported());
+        game.add("Supports Quit", GamePlatform.instance.supportsQuit());
+        crashLog.addCategory(game);
+    }
+
+    private static void crash(ApplicationCrash crash) {
+        try {
+            crash.printCrash();
+
+            CrashLog crashLog = crash.getCrashLog();
+            GamePlatform.instance.handleCrash(crashLog);
+            if (GamePlatform.instance.isDesktop()) Gdx.app.exit();
+        } catch (Throwable t) {
+            LOGGER.error(FATAL_ERROR_MSG, t);
+            Gdx.app.exit();
+        }
+    }
+
+    public void tick() {
+        World world = this.world;
+        if (world != null) {
+            WorldEvents.PRE_TICK.factory().onPreTick(world);
+            world.tick();
+            WorldEvents.POST_TICK.factory().onPostTick(world);
+        }
+
+        Player player = this.player;
+        if (player != null) {
+            this.camera.update(player);
+
+            if (world != null && this.chunkRefresh-- == 0) {
+                this.chunkRefresh = 20;
+                world.updateChunksForPlayerAsync(player);
+            }
+        }
+        this.input.update();
+    }
+
+    public CompletableFuture<Void> respawnAsync() {
+        assert this.world != null;
+        if (this.player != null && this.world.getEntity(this.player.getId()) == this.player) {
+            this.world.despawn(this.player);
+        }
+
+        Vec3i spawnPoint = this.world.getSpawnPoint();
+
+        return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
+            this.player = Entities.PLAYER.create(this.world);
+            this.player.setHealth(this.player.getMaxHeath());
+            this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+            this.world.spawn(this.player);
+        });
+    }
+
+    public void respawn() {
+        assert this.world != null;
+        if (this.player != null && this.world.getEntity(this.player.getId()) == this.player) {
+            this.world.despawn(this.player);
+        }
+
+        Vec3i spawnPoint = this.world.getSpawnPoint();
+
+        this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
+        this.player = Entities.PLAYER.create(this.world);
+        LOGGER.debug("Player created, setting health now.");
+        this.player.setHealth(this.player.getMaxHeath());
+        LOGGER.debug("Health set, setting position now.");
+        this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+        LOGGER.debug("Position set, spawning in world now..");
+        this.world.spawn(this.player);
+    }
+
+    public void resize(int width, int height) {
+        this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+        this.deferredWidth = width;
+        this.deferredHeight = height;
+
+        //noinspection ConstantValue
+        if (this.camera != null) {
+            this.camera.viewportWidth = width;
+            this.camera.viewportHeight = height;
+            this.camera.update();
+        }
+
+        Screen cur = this.currentScreen;
+        if (cur != null) {
+            cur.resize(ceil(width / this.getGuiScale()), ceil(height / this.getGuiScale()));
+        }
+    }
+
+    public void dispose() {
+        try {
+            while (!this.futures.isEmpty()) {
+                this.futures.removeIf(CompletableFuture::isDone);
+            }
+
+            this.scheduler.shutdownNow();
+
+            if (this.world != null) {
+                this.world.dispose();
+            }
+
+            this.blocksTextureAtlas.dispose();
+
+            GamePlatform.instance.dispose();
+
+            this.batch.dispose();
+            this.spriteBatch.dispose();
+            this.unifont.dispose();
+
+            for (Font font : Registries.FONTS.values()) {
+				font.dispose();
 			}
 
-			if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-					ImGuiWindowFlags.NoCollapse |
-					ImGuiWindowFlags.AlwaysAutoResize |
-					ImGuiWindowFlags.NoTitleBar |
-					ImGuiWindowFlags.MenuBar |
-					ImGuiInputTextFlags.AllowTabInput)) {
-				if (ImGui.beginMenuBar()) {
-					if (ImGui.beginMenu("View")) {
-						ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, player != null);
-						ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, currentScreen != null);
-						ImGui.endMenu();
-					}
-					if (ImGui.beginMenu("Debug")) {
-						ImGui.menuItem("Utils", null, SHOW_UTILS);
-						ImGui.endMenu();
-					}
+			this.gcExecutor.shutdownNow();
 
-					ImGui.text(" Frames Per Second: " + Gdx.graphics.getFramesPerSecond() + "   Frames ID: " + Gdx.graphics.getFrameId());
-					ImGui.endMenuBar();
-				}
-				ImGui.end();
-			}
+            LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
 
-			if (SHOW_PLAYER_UTILS.get()) showPlayerUtilsWindow();
-			if (SHOW_GUI_UTILS.get()) showGuiUtilsWindow();
-			if (SHOW_UTILS.get()) showUtils();
+    public boolean isDevMode() {
+        return this.isDevMode;
+    }
 
-			ImGui.render();
-			this.imGuiGl3.renderDrawData(ImGui.getDrawData());
-		}
-	}
+    public boolean isShowingImGui() {
+        return GamePlatform.instance.isShowingImGui();
+    }
 
-	private void renderGame(Renderer renderer, Screen screen, World world, float deltaTime) {
-		if (world != null) {
-			if (this.showDebugHud) {
-				this.font.setColor(Color.rgb(0xffffff).toGdx());
-				this.font.draw(this.spriteBatch, "fps: " + Gdx.graphics.getFramesPerSecond() + ", #visible chunks: " + world.getRenderedChunks() + "/"
-						+ world.getTotalChunks(), 20, getScaledHeight() - 20);
-				if (this.player != null) {
-					this.font.draw(this.spriteBatch, "xyz: " + this.player.blockPosition(), 20, getScaledHeight() - 30);
-					this.font.draw(this.spriteBatch, "chunk shown: " + (world.getChunkAt(this.player.blockPosition()) != null), 20, getScaledHeight() - 40);
-				}
-			}
+    public void setShowingImGui(boolean value) {
+        GamePlatform.instance.setShowingImGui(value);
+    }
 
-			this.hud.render(renderer, deltaTime);
-		}
-		if (screen != null) {
-			screen.render(renderer, (int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()), deltaTime);
-		}
-	}
+    public int getWidth() {
+        return Gdx.graphics.getWidth() - this.getDrawOffset().x * 2;
+    }
 
-	public static void crash(Exception e) {
-		try {
-			CrashLog crashLog = new CrashLog("An error occurred", e);
-			crash(crashLog);
-		} catch (Throwable t) {
-			LOGGER.error("Fatal error occurred when handling crash:", t);
-			Gdx.app.exit();
-		}
-	}
+    public int getHeight() {
+        return Gdx.graphics.getHeight() - this.getDrawOffset().y * 2;
+    }
 
-	public static void crash(CrashLog crashLog) {
-		try {
-			UltreonCraft.instance.fillGameInfo(crashLog);
-			ApplicationCrash crash = crashLog.createCrash();
-			crash(crash);
-		} catch (Throwable t) {
-			LOGGER.error("Fatal error occurred when handling crash:", t);
-			Gdx.app.exit();
-		}
-	}
+    public TextureManager getTextureManager() {
+        return this.textureManager;
+    }
 
-	private void fillGameInfo(CrashLog crashLog) {
-		if (this.world != null) {
-			this.world.fillCrashInfo(crashLog);
-		}
+    public void startWorld() {
+        this.showScreen(new WorldLoadScreen(getSavedWorld()));
+    }
 
-		CrashCategory game = new CrashCategory("Game Details");
-		game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
-		game.add("Game booted", this.booted); // Could be the game isn't booted yet.
-		crashLog.addCategory(game);
-	}
+    public static SavedWorld getSavedWorld() {
+        return savedWorld;
+    }
 
-	private static void crash(ApplicationCrash crash) {
-		try {
-			crash.printCrash();
-			crash.getCrashLog().defaultSave();
-			Gdx.app.exit();
-		} catch (Throwable t) {
-			LOGGER.error("Fatal error occurred when handling crash:", t);
-			Gdx.app.exit();
-		}
-	}
+    public float getGuiScale() {
+        return this.guiScale;
+    }
 
-	public void tick() {
-		World world = this.world;
-		if (world != null) {
-			WorldEvents.PRE_TICK.factory().onPreTick(world);
-			world.tick();
-			WorldEvents.POST_TICK.factory().onPostTick(world);
-		}
+    public int getScaledWidth() {
+        return ceil(this.getWidth() / this.getGuiScale());
+    }
 
-		Player player = this.player;
-		if (player != null) {
-			this.camera.update(player);
+    public int getScaledHeight() {
+        return ceil(this.getHeight() / this.getGuiScale());
+    }
 
-			if (world != null && this.chunkRefresh-- == 0) {
-				this.chunkRefresh = 20;
-				world.updateChunksForPlayerAsync(player);
-			}
-		}
-		this.input.update();
-	}
+    public void exitWorldToTitle() {
+        this.exitWorldAndThen(() -> this.showScreen(new TitleScreen()));
+    }
 
-	private void showPlayerUtilsWindow() {
-//		Screen currentScreen = getCurrentScreen();
-		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-		if (this.player != null && ImGui.begin("Player Utils", getDefaultFlags())) {
-			ImGuiEx.text("Id:", () -> this.player.getId());
-//			ImGuiEx.text("'Direction':", () -> this.player.getFacing());
-			ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", this.player.getWalkingSpeed(), v -> this.player.setWalkingSpeed(v));
-			ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", this.player.getFlyingSpeed(), v -> this.player.setFlyingSpeed(v));
-			ImGuiEx.editFloat("Gravity:", "PlayerGravity", this.player.gravity, v -> this.player.gravity = v);
-			ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", this.player.jumpVel, v -> this.player.jumpVel = v);
-			ImGuiEx.editFloat("Health:", "PlayerHealth", this.player.getHealth(), v -> this.player.setHealth(v));
-			ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", this.player.getMaxHeath(), v -> this.player.setMaxHeath(v));
-			ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", this.player.noGravity, v -> this.player.noGravity = v);
-			ImGuiEx.editBool("Flying:", "PlayerFlying", this.player.isFlying(), v -> this.player.setFlying(v));
-			ImGuiEx.editBool("Spectating:", "PlayerSpectating", this.player.isSpectating(), v -> this.player.setSpectating(v));
-			ImGuiEx.bool("On Ground:", () -> this.player.onGround);
-			ImGuiEx.bool("Colliding:", () -> this.player.isColliding);
-			ImGuiEx.bool("Colliding X:", () -> this.player.isCollidingX);
-			ImGuiEx.bool("Colliding Y:", () -> this.player.isCollidingY);
-			ImGuiEx.bool("Colliding Z:", () -> this.player.isCollidingZ);
+    public synchronized void exitWorldAndThen(Runnable runnable) {
+        this.closingWorld = true;
+        final World world = this.world;
+        if (world == null) return;
+        this.showScreen(new MessageScreen(Language.translate("Saving world...")));
+        this.worldRenderer = null;
+        this.world = null;
+        CompletableFuture.runAsync(() -> {
+            world.dispose();
+            System.gc();
+            this.runLater(new Task(id("post_world_exit"), runnable));
+            this.closingWorld = false;
+        });
+    }
 
-			if (ImGui.collapsingHeader("Position")) {
-				ImGui.treePush();
-				ImGuiEx.editFloat("X:", "PlayerX", this.player.getX(), v -> this.player.setX(v));
-				ImGuiEx.editFloat("Y:", "PlayerY", this.player.getY(), v -> this.player.setY(v));
-				ImGuiEx.editFloat("Z:", "PlayerZ", this.player.getZ(), v -> this.player.setZ(v));
-				ImGui.treePop();
-			}
-			if (ImGui.collapsingHeader("Velocity")) {
-				ImGui.treePush();
-				ImGuiEx.editFloat("X:", "PlayerVelocityX", this.player.velocityX, v -> this.player.velocityX = v);
-				ImGuiEx.editFloat("Y:", "PlayerVelocityY", this.player.velocityY, v -> this.player.velocityY = v);
-				ImGuiEx.editFloat("Z:", "PlayerVelocityZ", this.player.velocityZ, v -> this.player.velocityZ = v);
-				ImGui.treePop();
-			}
-			if (ImGui.collapsingHeader("Rotation")) {
-				ImGui.treePush();
-				ImGuiEx.editFloat("X:", "PlayerXRot", this.player.getXRot(), v -> this.player.setXRot(v));
-				ImGuiEx.editFloat("Y:", "PlayerYRot", this.player.getYRot(), v -> this.player.setYRot(v));
-				ImGui.treePop();
-			}
-			if (ImGui.collapsingHeader("Player Input")) {
-				ImGui.treePush();
-				ImGuiEx.bool("Forward", () -> this.playerInput.forward);
-				ImGuiEx.bool("Backward", () -> this.playerInput.backward);
-				ImGuiEx.bool("Left", () -> this.playerInput.strafeLeft);
-				ImGuiEx.bool("Right", () -> this.playerInput.strafeRight);
-				ImGuiEx.bool("Up", () -> this.playerInput.up);
-				ImGuiEx.bool("Down", () -> this.playerInput.down);
-				ImGui.treePop();
-			}
-		}
-		ImGui.end();
-	}
+    public boolean isClosingWorld() {
+        return this.closingWorld;
+    }
 
-	private void showGuiUtilsWindow() {
-//		Screen currentScreen = getCurrentScreen();
-		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-		if (ImGui.begin("Player Utils", getDefaultFlags())) {
-			Screen currentScreen = this.currentScreen;
-			ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
-			if (currentScreen != null) {
-				GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / getGuiScale()), (int) (Gdx.input.getY() / getGuiScale()));
-				if (exactWidgetAt != null) {
-					this.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
-					this.shapes.rectangle(
-							exactWidgetAt.getX() * getGuiScale(), exactWidgetAt.getY() * getGuiScale(),
-							exactWidgetAt.getWidth() * getGuiScale(), exactWidgetAt.getHeight() * getGuiScale()
-					);
-				}
-				ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
-			}
-		}
-		ImGui.end();
-	}
+    /**
+     * @deprecated use {@link #runLater(Task)} instead.
+     */
+    @Deprecated
+    public void runLater(Runnable task) {
+        Gdx.app.postRunnable(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.warn("Error occurred in task:", e);
+            }
+        });
+    }
 
-	private void showUtils() {
-//		Screen currentScreen = getCurrentScreen();
-		ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
-		ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-		if (ImGui.begin("Utils", getDefaultFlags())) {
-			ImGui.button("Respawn");
-			if (ImGui.isItemClicked()) {
-				respawn();
-			}
-			ImGuiEx.slider("FOV", "GameFOV", (int) camera.fieldOfView, 10, 150, i -> camera.fieldOfView = i);
-		}
-		ImGui.end();
-	}
+    public void runLater(Task task) {
+        Gdx.app.postRunnable(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+            }
+        });
+    }
 
-	private int getDefaultFlags() {
-		boolean cursorCaught = Gdx.input.isCursorCatched();
-		var flags = ImGuiWindowFlags.None;
-		if (cursorCaught) flags |= ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoInputs;
-		return flags;
-	}
+    public ScheduledFuture<?> schedule(Task task, long timeMillis) {
+        return this.scheduler.schedule(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+            }
+        }, timeMillis, TimeUnit.MILLISECONDS);
+    }
 
-	public void respawn() {
-		if (this.player != null && this.world.getEntity(this.player.getId()) == player) {
-			this.world.despawn(player);
-		}
+    public ScheduledFuture<?> schedule(Task task, long time, TimeUnit unit) {
+        return this.scheduler.schedule(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+            }
+        }, time, unit);
+    }
 
-		int spawnX = 0;
-		int spawnZ = 0;
+    public ResourceManager getResourceManager() {
+        return this.resourceManager;
+    }
 
-		this.world.updateChunksForPlayer(spawnX, spawnZ);
+    public void playSound(SoundEvent event) {
+        event.getSound().play();
+    }
 
-		float spawnY = this.world.getHighest(spawnX, spawnZ) + 1;
+    public boolean closeRequested() {
+        EventResult eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
+        if (!eventResult.isCanceled()) {
+            if (this.world != null) {
+                this.exitWorldAndThen(() -> Gdx.app.exit());
+                return false;
+            }
+        }
+        return !eventResult.isCanceled();
+    }
 
-		this.player = Entities.PLAYER.create(this.world);
-		this.player.setHealth(this.player.getMaxHeath());
-		this.player.setPosition(spawnX + 0.5f, spawnY, spawnZ + 0.5f);
-		this.world.spawn(this.player);
-	}
+    public void filesDropped(String[] files) {
+        Screen currentScreen = this.currentScreen;
+        List<FileHandle> handles = Arrays.stream(files).map(FileHandle::new).collect(Collectors.toList());
 
-	@Override
-	public void resize(int width, int height) {
-		this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		this.camera.viewportWidth = width;
-		this.camera.viewportHeight = height;
-		this.camera.update();
+        if (currentScreen != null) {
+            currentScreen.filesDropped(handles);
+        }
+    }
 
-		Screen cur = this.currentScreen;
-		if (cur != null) {
-			cur.resize(ceil(width / getGuiScale()), ceil(height / getGuiScale()));
-		}
-	}
+    public void addFuture(CompletableFuture<?> future) {
+        this.futures.add(future);
+    }
 
-	@Override
-	public void dispose() {
-		this.imGuiGl3.dispose();
-		this.imGuiGlfw.dispose();
-		ImGui.destroyContext();
+    public @Nullable BakedCubeModel getBakedBlockModel(Block block) {
+        return this.bakedBlockModels.bakedModels().get(block);
+    }
 
-		this.blocksTextureAtlas.dispose();
+    private float calculateGuiScale() {
+        switch (GamePlatform.instance.getPlatformType()) {
+            case MOBILE:
+                return 4.0F;
+            case DESKTOP:
+            case WEB:
+                return 2.0F;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
 
-		this.batch.dispose();
-		this.spriteBatch.dispose();
-		this.font.dispose();
+    public boolean isPlaying() {
+        return this.world != null && this.currentScreen == null;
+    }
 
-		this.gcExecutor.shutdownNow();
-	}
+    public static FileHandle getConfigDir() {
+        return instance.configDir;
+    }
 
-	public long getWindowHandle() {
-		return windowHandle;
-	}
+    public GridPoint2 getDrawOffset() {
+        return this.isCustomBorderShown() ? new GridPoint2(18 * 2, 22 * 2) : new GridPoint2();
+    }
 
-	public boolean isDevMode() {
-		return isDevMode;
-	}
+    public boolean isCustomBorderShown() {
+//        return !Gdx.graphics.isFullscreen();
+        return false;
+    }
 
-	public boolean isShowingImGui() {
-		return showImGui.get();
-	}
-
-	public void setShowingImGui(boolean value) {
-		showImGui.set(value);
-	}
-
-	public BitmapFont getBitmapFont() {
-		return font;
-	}
-
-	public int getWidth() {
-		return Gdx.graphics.getWidth();
-	}
-
-	public int getHeight() {
-		return Gdx.graphics.getHeight();
-	}
-
-	public TextureManager getTextureManager() {
-		return textureManager;
-	}
-
-	@Deprecated
-	public Texture getTilesTex() {
-		return tilesTex;
-	}
-
-	public void startWorld() {
-		this.showScreen(new WorldLoadScreen());
-	}
-
-	public float getGuiScale() {
-		return guiScale;
-	}
-
-	public int getScaledWidth() {
-		return ceil(getWidth() / getGuiScale());
-	}
-
-	public int getScaledHeight() {
-		return ceil(getHeight() / getGuiScale());
-	}
-
-	public void exitWorld() {
-		world.dispose();
-		world = null;
-		System.gc();
-		showScreen(new TitleScreen());
-	}
-
-	public void runLater(Runnable task) {
-		tasks.add(task);
-	}
-
-	public ResourceManager getResourceManager() {
-		return resourceManager;
-	}
-
-	public void playSound(SoundEvent event) {
-		event.getSound().play();
-	}
-
-	public boolean closeRequested() {
-		EventResult eventResult = WindowCloseEvent.EVENT.factory().onWindowClose();
-		return !eventResult.isCanceled();
-	}
-
-	public void filesDropped(String[] files) {
-
-	}
-
-	public BakedCubeModel getBakedBlockModel(Block block) {
-		return bakedBlockModels.bakedModels().get(block);
-	}
+    public String getAllUnicode() {
+        return this.allUnicode;
+    }
 }
