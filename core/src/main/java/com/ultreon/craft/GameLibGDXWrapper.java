@@ -1,11 +1,12 @@
 package com.ultreon.craft;
 
 import com.badlogic.gdx.ApplicationListener;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
 public class GameLibGDXWrapper implements ApplicationListener {
     private final String[] argv;
-    @UnknownNullability
+    @Nullable
     private UltreonCraft game;
 
     public GameLibGDXWrapper(String[] argv) {
@@ -23,26 +24,26 @@ public class GameLibGDXWrapper implements ApplicationListener {
 
     @Override
     public void resize(int width, int height) {
-        this.game.resize(width, height);
+        if (this.game != null) this.game.resize(width, height);
     }
 
     @Override
     public void render() {
-        this.game.render();
+        if (this.game != null) this.game.render();
     }
 
     @Override
     public void pause() {
-        this.game.pause();
+        if (this.game != null) this.game.pause();
     }
 
     @Override
     public void resume() {
-        this.game.resume();
+        if (this.game != null) this.game.resume();
     }
 
     @Override
     public void dispose() {
-        this.game.dispose();
+        if (this.game != null) this.game.dispose();
     }
 }
