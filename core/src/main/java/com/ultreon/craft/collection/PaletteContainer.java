@@ -58,7 +58,7 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
         this.references.items = data.getShortArray("Data");
     }
 
-    public synchronized void set(int index, D value) {
+    public void set(int index, D value) {
         short old = this.references.get(index);
 
         int i = this.palette.indexOf(value, true);
@@ -76,7 +76,7 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
     }
 
     @Nullable
-    public synchronized D get(int index) {
+    public D get(int index) {
         short paletteIndex = this.references.get(index);
         return this.palette.get(paletteIndex);
     }

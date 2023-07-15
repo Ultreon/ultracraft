@@ -1,14 +1,13 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Null;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.data.Types;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
 public class Section implements Disposable {
     private final int size;
@@ -17,6 +16,7 @@ public class Section implements Disposable {
     public final Object lock = new Object();
     private final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
+    private boolean updateNeighbours;
 
     public Section(Vec3i offset) {
         this.offset = offset;
@@ -49,8 +49,10 @@ public class Section implements Disposable {
     }
 
     public Block getFast(int x, int y, int z) {
-        Block block = this.paletteContainer.get(this.toIndex(x, y, z));
-        return block == null ? Blocks.AIR : block;
+        synchronized (this.lock) {
+            Block block = this.paletteContainer.get(this.toIndex(x, y, z));
+            return block == null ? Blocks.AIR : block;
+        }
     }
 
     public void set(Vec3i pos, Block block) {
@@ -67,8 +69,10 @@ public class Section implements Disposable {
     }
 
     public void setFast(int x, int y, int z, Block block) {
-        this.paletteContainer.set(this.toIndex(x, y, z), block);
-        this.dirty = true;
+        synchronized (this.lock) {
+            this.paletteContainer.set(this.toIndex(x, y, z), block);
+            this.dirty = true;
+        }
     }
 
     private boolean isOutOfBounds(int x, int y, int z) {
@@ -102,5 +106,22 @@ public class Section implements Disposable {
 
     public boolean isReady() {
         return this.ready;
+    }
+
+    public Vec3i getPos() {
+        return this.offset.cpy().div(this.size);
+    }
+
+    public boolean isMarkedToUpdateNeighbours() {
+        return this.updateNeighbours;
+    }
+
+    public void updateNeighbours() {
+        this.updateNeighbours = true;
+    }
+
+    @ApiStatus.Internal
+    public void clearUpdateNeighboursFlag() {
+        this.updateNeighbours = false;
     }
 }
