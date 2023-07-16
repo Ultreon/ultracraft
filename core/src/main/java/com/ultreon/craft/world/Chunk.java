@@ -8,7 +8,6 @@ import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -31,7 +30,7 @@ public class Chunk implements Disposable {
 	public TreeData treeData;
 	protected boolean dirty;
 
-	public Chunk(int size, int height, ChunkPos pos) {
+	public Chunk(World world, int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
 
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
@@ -47,8 +46,8 @@ public class Chunk implements Disposable {
 		}
 	}
 
-	public static Chunk load(ChunkPos pos, MapType mapType) {
-		Chunk chunk = new Chunk(CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
 		chunk.load(mapType);
 		return chunk;
 	}

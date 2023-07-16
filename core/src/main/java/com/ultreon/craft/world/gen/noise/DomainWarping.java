@@ -1,8 +1,7 @@
 package com.ultreon.craft.world.gen.noise;
 
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.util.MathHelper;
+import com.ultreon.libs.commons.v0.vector.Vec2d;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 
 public class DomainWarping {
     public final NoiseInstance domainX;
@@ -14,18 +13,23 @@ public class DomainWarping {
         this.domainY = domainY;
     }
 
-    public float generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
-        Vector2 domainOffset = this.generateDomainOffset(x, z);
+    public double generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
+        Vec2d domainOffset = this.generateDomainOffset(x, z);
         return MyNoise.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
     }
 
-    public Vector2 generateDomainOffset(int x, int z) {
-        float noiseX = MyNoise.octavePerlin(x, z, this.domainX) * this.amplitudeX;
-        float noiseY = MyNoise.octavePerlin(x, z, this.domainY) * this.amplitudeY;
-        return new Vector2(noiseX, noiseY);
+    public Vec2d generateDomainOffset(int x, int z) {
+        double noiseX = MyNoise.octavePerlin(x, z, this.domainX) * this.amplitudeX;
+        double noiseY = MyNoise.octavePerlin(x, z, this.domainY) * this.amplitudeY;
+        return new Vec2d(noiseX, noiseY);
     }
 
-    public GridPoint2 generateDomainOffsetInt(int x, int z) {
-        return MathHelper.round(this.generateDomainOffset(x, z));
+    public Vec2i generateDomainOffsetInt(int x, int z) {
+        return this.generateDomainOffset(x, z).i();
+    }
+
+    public void dispose() {
+        this.domainX.dispose();
+        this.domainY.dispose();
     }
 }
