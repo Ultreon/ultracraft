@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
@@ -39,10 +40,7 @@ import com.ultreon.craft.input.*;
 import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.DebugRenderer;
-import com.ultreon.craft.render.Hud;
-import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.*;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
@@ -87,7 +85,7 @@ import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
-public class UltreonCraft {
+public class UltreonCraft implements DeferredDisposable {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
@@ -100,6 +98,7 @@ public class UltreonCraft {
     @UnknownNullability
     private static SavedWorld savedWorld;
     public boolean forceUnicode = false;
+    public ItemRenderer itemRenderer;
     @SuppressWarnings("FieldMayBeFinal")
     private boolean booted;
     public static final int TPS = 20;
@@ -152,6 +151,7 @@ public class UltreonCraft {
     private final Texture windowTex;
     private final DebugRenderer debugRenderer;
     private boolean closingWorld;
+    private final List<Disposable> disposables = new CopyOnWriteArrayList<>();
 
     public UltreonCraft(String[] args) throws Throwable {
         LOGGER.info("Booting game!");
@@ -172,39 +172,7 @@ public class UltreonCraft {
 
         LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
 
-        Gdx.app.setApplicationLogger(new ApplicationLogger() {
-            private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
-
-            @Override
-            public void log(String tag, String message) {
-                this.LOGGER.info(MarkerFactory.getMarker(tag), message);
-            }
-
-            @Override
-            public void log(String tag, String message, Throwable exception) {
-                this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
-            }
-
-            @Override
-            public void error(String tag, String message) {
-                this.LOGGER.error(MarkerFactory.getMarker(tag), message);
-            }
-
-            @Override
-            public void error(String tag, String message, Throwable exception) {
-                this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
-            }
-
-            @Override
-            public void debug(String tag, String message) {
-                this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
-            }
-
-            @Override
-            public void debug(String tag, String message, Throwable exception) {
-                this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
-            }
-        });
+        Gdx.app.setApplicationLogger(new LibGDXLogger());
 
         this.configDir = createDir("config/");
 
@@ -311,6 +279,8 @@ public class UltreonCraft {
         LOGGER.info("Stitching textures");
         this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
+        this.itemRenderer = new ItemRenderer(this);
+
         LOGGER.info("Initializing sounds");
         for (SoundEvent sound : Registries.SOUNDS.values()) {
             sound.register();
@@ -347,6 +317,11 @@ public class UltreonCraft {
 
     private static void uncaughtException(Thread t, Throwable e) {
         LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
+    }
+
+    @Override
+    public void deferDispose(Disposable disposable) {
+        instance.disposables.add(disposable);
     }
 
     public Instant getBootTime() {
@@ -717,6 +692,9 @@ public class UltreonCraft {
                 font.dispose();
             }
 
+            this.disposables.forEach(Disposable::dispose);
+            this.disposables.clear();
+
             LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
         } catch (Throwable t) {
             t.printStackTrace();
@@ -901,5 +879,39 @@ public class UltreonCraft {
 
     public String getAllUnicode() {
         return this.allUnicode;
+    }
+
+    private static class LibGDXLogger implements ApplicationLogger {
+        private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+
+        @Override
+        public void log(String tag, String message) {
+            this.LOGGER.info(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void log(String tag, String message, Throwable exception) {
+            this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
+        }
+
+        @Override
+        public void error(String tag, String message) {
+            this.LOGGER.error(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void error(String tag, String message, Throwable exception) {
+            this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
+        }
+
+        @Override
+        public void debug(String tag, String message) {
+            this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void debug(String tag, String message, Throwable exception) {
+            this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
+        }
     }
 }

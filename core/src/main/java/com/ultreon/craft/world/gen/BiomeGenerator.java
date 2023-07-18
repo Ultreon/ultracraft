@@ -28,7 +28,6 @@ public class BiomeGenerator implements Disposable {
         this.biomeNoise = noise;
         this.domainWarping = domainWarping;
         this.layers = layers;
-        System.out.println("layers = " + layers);
         this.extraLayers = extraLayers;
     }
 

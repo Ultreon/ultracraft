@@ -935,4 +935,12 @@ public class Renderer {
     public void unsetShader() {
         this.batch.setShader(null);
     }
+
+    public void end() {
+        this.batch.end();
+    }
+
+    public void begin() {
+        this.batch.begin();
+    }
 }
