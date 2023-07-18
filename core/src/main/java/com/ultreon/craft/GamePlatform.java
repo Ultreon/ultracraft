@@ -135,11 +135,11 @@ public abstract class GamePlatform {
 
     }
 
-    public boolean isDevelopmentEnvironment() {
-        return false;
-    }
-
     public void handleCrash(CrashLog crashLog) {
 
+    }
+
+    public boolean isDevelopmentEnvironment() {
+        return false;
     }
 }

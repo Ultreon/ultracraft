@@ -175,10 +175,6 @@ public class Chunk implements Disposable {
 		return this.offset.cpy();
 	}
 
-	public World getWorld() {
-		return world;
-	}
-
 	public void startBreaking(int x, int y, int z) {
 		Section sectionAt = this.getSectionAt(y);
 		if (sectionAt == null) return;

@@ -133,8 +133,11 @@ public class UltreonCraft {
     private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
     private int chunkRefresh;
+    @Nullable
     public HitResult hitResult;
+    @Nullable
 	private Vec3i breaking;
+    @Nullable
 	private Block breakingBlock;
 	public boolean showDebugHud = true;
 
@@ -145,7 +148,9 @@ public class UltreonCraft {
     public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
 
     // Texture Atlases
+    @UnknownNullability
     public TextureAtlas blocksTextureAtlas;
+    @UnknownNullability
     public TextureAtlas itemTextureAtlas;
 	private final BakedModelRegistry bakedBlockModels;
 
@@ -240,7 +245,7 @@ public class UltreonCraft {
 
         Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
         if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
-        String allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
+        this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
         LOGGER.info("Generating bitmap fonts");
         this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
@@ -248,7 +253,7 @@ public class UltreonCraft {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
         FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
         fontParameter.size = 8;
-        fontParameter.characters = allUnicode;
+        fontParameter.characters = this.allUnicode;
         fontParameter.minFilter = Texture.TextureFilter.Nearest;
         fontParameter.magFilter = Texture.TextureFilter.Nearest;
         fontParameter.mono = true;
@@ -662,25 +667,9 @@ public class UltreonCraft {
         if (this.world != null && breaking != null) {
 			HitResult hitResult = this.hitResult;
 
-			if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
-                this.resetBreaking(hitResult);
-			} else {
-				float efficiency = 1.0F;
-				if (this.player.getSelectedItem() instanceof ToolItem &&
-						this.breakingBlock.getEffectiveTool() == ((ToolItem) this.player.getSelectedItem()).getToolType()) {
-                    ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
-                    efficiency = toolItem.getEfficiency();
-				}
-
-				if (!this.world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
-                    this.stopBreaking();
-				} else {
-                    if (this.oldSelected != this.player.selected) {
-                        this.resetBreaking();
-                    }
-                    this.oldSelected = this.player.selected;
-                }
-			}
+            if (hitResult != null) {
+                this.handleBlockBreaking(breaking, hitResult);
+            }
         }
 
 		Player player = this.player;
@@ -694,8 +683,33 @@ public class UltreonCraft {
 		}
 	}
 
-	private void resetBreaking(HitResult hitResult) {
+    private void handleBlockBreaking(Vec3i breaking, HitResult hitResult) {
+        World world = this.world;
+        if (world == null) return;
+        if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
+            this.resetBreaking(hitResult);
+        } else {
+            float efficiency = 1.0F;
+            if (this.player.getSelectedItem() instanceof ToolItem &&
+                    this.breakingBlock.getEffectiveTool() == ((ToolItem) this.player.getSelectedItem()).getToolType()) {
+                ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
+                efficiency = toolItem.getEfficiency();
+            }
+
+            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
+                this.stopBreaking();
+            } else {
+                if (this.oldSelected != this.player.selected) {
+                    this.resetBreaking();
+                }
+                this.oldSelected = this.player.selected;
+            }
+        }
+    }
+
+    private void resetBreaking(HitResult hitResult) {
         if (this.world == null) return;
+        if (this.breaking == null) return;
         this.world.stopBreaking(this.breaking);
 		Block block = hitResult.getBlock();
 		if (block == null || block.isAir()) {
