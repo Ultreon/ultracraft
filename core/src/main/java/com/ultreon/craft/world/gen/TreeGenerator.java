@@ -5,9 +5,12 @@ import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import com.ultreon.craft.world.gen.trees.DataProcessing;
+import org.jetbrains.annotations.UnknownNullability;
 
 public class TreeGenerator {
+    @UnknownNullability
     public NoiseSettings treeNoiseSettings;
+    @UnknownNullability
     public DomainWarping domainWrapping;
 
     public TreeData generateTreeData(Chunk chunkData, long seed) {

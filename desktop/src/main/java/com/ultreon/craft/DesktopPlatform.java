@@ -11,6 +11,7 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
+import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -337,5 +338,15 @@ public class DesktopPlatform extends GamePlatform {
                 }
             }
         }
+    }
+
+    @Override
+    public void handleCrash(CrashLog crashLog) {
+        crashLog.writeToFile(new File(GamePlatform.data("game-crashes").file(), crashLog.getDefaultFileName()));
+    }
+
+    @Override
+    public boolean isDevelopmentEnvironment() {
+        return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 }

@@ -1,7 +1,7 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -15,16 +15,16 @@ public final class ChunkPos {
     }
 
     public int x() {
-        return x;
+        return this.x;
     }
 
     public int z() {
-        return z;
+        return this.z;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, z);
+        return Objects.hash(this.x, this.z);
     }
 
     @Override
@@ -40,6 +40,7 @@ public final class ChunkPos {
         return this.x + "," + this.z;
     }
 
+    @Nullable
     public static RegionPos parse(String s) {
         String[] split = s.split(",", 2);
         Integer x = parseInt(split[0]);
@@ -49,6 +50,7 @@ public final class ChunkPos {
         return new RegionPos(x, z);
     }
 
+    @Nullable
     private static Integer parseInt(String s) {
         try {
             return Integer.parseInt(s);

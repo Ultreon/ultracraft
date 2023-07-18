@@ -12,11 +12,11 @@ public final class EntitySize {
     }
 
     public float width() {
-        return width;
+        return this.width;
     }
 
     public float height() {
-        return height;
+        return this.height;
     }
 
     @Override
@@ -30,14 +30,14 @@ public final class EntitySize {
 
     @Override
     public int hashCode() {
-        return Objects.hash(width, height);
+        return Objects.hash(this.width, this.height);
     }
 
     @Override
     public String toString() {
         return "EntitySize{" +
-                "width=" + width +
-                ", height=" + height +
+                "width=" + this.width +
+                ", height=" + this.height +
                 '}';
     }
 }
