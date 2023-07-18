@@ -120,14 +120,11 @@ public class Entity {
     }
 
     public void tick() {
-        EntitySize size = getSize();
-        BoundingBox boundingBox = this.getBoundingBox(size);
-
-        if (!noGravity) {
+        if (!this.noGravity) {
             this.velocityY -= this.gravity;
         }
 
-        move(velocityX, velocityY, velocityZ);
+        this.move(this.velocityX, this.velocityY, this.velocityZ);
 
         this.velocityX *= 0.6F;
         this.velocityY *= 0.98F;
@@ -152,38 +149,38 @@ public class Entity {
         else ext.max.z += dz;
         ext.update();
         if (this.noClip) {
-            x += dx;
-            y += dy;
-            z += dz;
+            this.x += dx;
+            this.y += dy;
+            this.z += dz;
         } else {
-            List<BoundingBox> boxes = world.collide(ext, false);
-            BoundingBox pBox = getBoundingBox();
-            isColliding = false;
-            isCollidingY = false;
+            List<BoundingBox> boxes = this.world.collide(ext, false);
+            BoundingBox pBox = this.getBoundingBox();
+            this.isColliding = false;
+            this.isCollidingY = false;
             for (BoundingBox box : boxes) {
                 double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
-                isColliding |= dy != dy2;
-                isCollidingY |= dy != dy2;
+                this.isColliding |= dy != dy2;
+                this.isCollidingY |= dy != dy2;
                 dy = dy2;
             }
             pBox.min.add(0.0f, dy, 0.0f);
             pBox.max.add(0.0f, dy, 0.0f);
             pBox.update();
-            isCollidingX = false;
+            this.isCollidingX = false;
             for (BoundingBox box : boxes) {
                 double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
-                isColliding |= dx != dx2;
-                isCollidingX |= dx != dx2;
+                this.isColliding |= dx != dx2;
+                this.isCollidingX |= dx != dx2;
                 dx = dx2;
             }
             pBox.min.add(dx, 0.0f, 0.0f);
             pBox.max.add(dx, 0.0f, 0.0f);
             pBox.update();
-            isCollidingZ = false;
+            this.isCollidingZ = false;
             for (BoundingBox box : boxes) {
                 double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
-                isColliding |= dz != dz2;
-                isCollidingZ |= dz != dz2;
+                this.isColliding |= dz != dz2;
+                this.isCollidingZ |= dz != dz2;
                 dz = dz2;
             }
             pBox.min.add(0.0f, 0.0f, dz);
@@ -194,11 +191,11 @@ public class Entity {
                 this.velocityX = 0.0f;
             }
             if (oDy != dy) {
-                hitGround();
+                this.hitGround();
                 this.fallDistance = 0.0F;
                 this.velocityY = 0.0f;
             } else if (this.velocityY < 0) {
-                this.fallDistance += -this.velocityY;
+                this.fallDistance -= this.velocityY;
             }
             if (oDz != dz) {
                 this.velocityZ = 0.0f;
@@ -218,9 +215,10 @@ public class Entity {
     }
 
     public BoundingBox getBoundingBox() {
-        return getBoundingBox(getSize());
+        return this.getBoundingBox(this.getSize());
     }
 
+    @ApiStatus.OverrideOnly
     public BoundingBox getBoundingBox(EntitySize size) {
         double x1 = this.x - size.width() / 2;
         double y1 = this.y;
@@ -232,7 +230,7 @@ public class Entity {
     }
 
     public double getX() {
-        return x;
+        return this.x;
     }
 
     public void setX(double x) {
@@ -240,7 +238,7 @@ public class Entity {
     }
 
     public double getY() {
-        return y;
+        return this.y;
     }
 
     public void setY(double y) {
@@ -248,7 +246,7 @@ public class Entity {
     }
 
     public double getZ() {
-        return z;
+        return this.z;
     }
 
     public void setZ(double z) {
@@ -256,7 +254,7 @@ public class Entity {
     }
 
     public float getXRot() {
-        return xRot;
+        return this.xRot;
     }
 
     public void setXRot(float xRot) {
@@ -264,7 +262,7 @@ public class Entity {
     }
 
     public float getYRot() {
-        return yRot;
+        return this.yRot;
     }
 
     public void setYRot(float yRot) {
@@ -272,7 +270,7 @@ public class Entity {
     }
 
     public Vec3d getPosition() {
-        return new Vec3d(x, y, z);
+        return new Vec3d(this.x, this.y, this.z);
     }
 
     public void setPosition(Vector3 position) {
@@ -323,16 +321,17 @@ public class Entity {
         this.velocityZ = velocity.z;
     }
 
+    @ApiStatus.OverrideOnly
     public void onPrepareSpawn(MapType spawnData) {
 
     }
 
     public World getWorld() {
-        return world;
+        return this.world;
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     @ApiStatus.Internal
@@ -341,7 +340,7 @@ public class Entity {
     }
 
     public float getGravity() {
-        return gravity;
+        return this.gravity;
     }
 
     public void setGravity(float gravity) {

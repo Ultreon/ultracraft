@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Ultreon Craft</string>
+    <string name="app_name">UltraCraft</string>
+    <string name="action_settings">Settings</string>
+    <string name="crash_log">Crash Log</string>
+    <string name="ellipse">…</string>
+    <string name="copy">Copy</string>
+    <string name="search">Search</string>
 
 </resources>

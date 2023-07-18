@@ -7,6 +7,7 @@ import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class DebugRenderer {
     private static final int OFFSET = 20;
@@ -21,11 +22,14 @@ public class DebugRenderer {
         this.y = OFFSET;
 
         World world = this.game.world;
+        @Nullable WorldRenderer worldRenderer = this.game.worldRenderer;
 
         // World
         if (world != null) {
             this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
-            this.drawLine(renderer, "visible chunks", world.getRenderedChunks() + "/" + world.getTotalChunks());
+            if (worldRenderer != null) {
+                this.drawLine(renderer, "visible chunks", worldRenderer.getRenderedChunks() + "/" + worldRenderer.getTotalChunks());
+            }
 
             // Player
             Player player = this.game.player;

@@ -1,13 +1,14 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.craft.debug.Debugger;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -25,18 +26,16 @@ public class Chunk implements Disposable {
 	public final int height;
 	private final Vec3i offset;
 	private final int sizeTimesHeight;
+	@Nullable
 	public TreeData treeData;
 	protected boolean dirty;
 	protected boolean updateNeighbours;
 
-	private final World world;
-
-	public Chunk(World world, int size, int height, ChunkPos pos) {
+	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
 
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
-		this.world = world;
 		this.pos = pos;
 		this.sections = new Section[sectionCount];
 		this.size = size;
@@ -48,8 +47,8 @@ public class Chunk implements Disposable {
 		}
 	}
 
-	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
-		Chunk chunk = new Chunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+	public static Chunk load(ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
 		chunk.load(mapType);
 		return chunk;
 	}
@@ -62,6 +61,11 @@ public class Chunk implements Disposable {
 			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
 		}
+
+		MapType extra = chunkData.getMap("Extra");
+		if (extra != null) {
+			WorldEvents.LOAD_CHUNK.factory().onLoadChunk(this, extra);
+		}
 	}
 
 	public MapType save() {
@@ -71,22 +75,26 @@ public class Chunk implements Disposable {
 			sectionsData.add(section.save());
 		}
 		chunkData.put("Sections", sectionsData);
+
+		MapType extra = new MapType();
+		WorldEvents.SAVE_CHUNK.factory().onSaveChunk(this, extra);
+		if (!extra.getValue().isEmpty()) {
+			chunkData.put("Extra", extra);
+		}
 		return chunkData;
 	}
 
 	public Block get(Vec3i pos) {
-		return get(pos.x, pos.y, pos.z);
+		return this.get(pos.x, pos.y, pos.z);
 	}
 
 	public Block get(int x, int y, int z) {
-		if (x < 0 || x >= size) return Blocks.AIR;
-		if (y < 0 || y >= height) return Blocks.AIR;
-		if (z < 0 || z >= size) return Blocks.AIR;
-		return getFast(x, y, z);
+		if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+		return this.getFast(x, y, z);
 	}
 
 	public Block getFast(Vec3i pos) {
-		return getFast(pos.x, pos.y, pos.z);
+		return this.getFast(pos.x, pos.y, pos.z);
 	}
 
 	public Block getFast(int x, int y, int z) {
@@ -96,18 +104,16 @@ public class Chunk implements Disposable {
 	}
 
 	public void set(Vec3i pos, Block block) {
-		set(pos.x, pos.y, pos.z, block);
+		this.set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		if (x < 0 || x >= size) return;
-		if (y < 0 || y >= height) return;
-		if (z < 0 || z >= size) return;
-		setFast(x, y, z, block);
+		if (this.isOutOfBounds(x, y, z)) return;
+		this.setFast(x, y, z, block);
 	}
 
 	public void setFast(Vec3i pos, Block block) {
-		set(pos.x, pos.y, pos.z, block);
+		this.set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
@@ -118,6 +124,11 @@ public class Chunk implements Disposable {
 		this.updateNeighbours = true;
 	}
 
+	private boolean isOutOfBounds(int x, int y, int z) {
+		return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
+	}
+
+	@Nullable
 	public Section getSection(int sectionY) {
 		synchronized (this.lock) {
 			if (sectionY < 0 || sectionY > this.sections.length) return null;
@@ -125,18 +136,20 @@ public class Chunk implements Disposable {
 		}
 	}
 
+	@Nullable
 	public Section getSectionAt(int chunkY) {
 		return this.getSection(chunkY / this.size);
 	}
 
 	private Vec3i reverse(int index) {
-		int y = index / sizeTimesHeight;
-		int z = (index - y * sizeTimesHeight) / size;
-		int x = index - y * sizeTimesHeight - z * size;
+		int y = index / this.sizeTimesHeight;
+		int z = (index - y * this.sizeTimesHeight) / this.size;
+		int x = index - y * this.sizeTimesHeight - z * this.size;
 		return new Vec3i(x, y, z);
 	}
 
 	@Override
+	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
 		synchronized (this.lock) {
 			this.ready = false;

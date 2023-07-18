@@ -3,7 +3,7 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
-import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.data.types.MapType;
 
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +46,7 @@ public class WorldRegion implements Disposable {
                     try {
                         this.load(onLoad);
                     } catch (IOException e) {
-                        LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
+                        LOGGER.error(World.MARKER, "Failed to load region file: " +  pos, e);
                         this.corrupt = true;
                         this.loading = false;
                         return;
@@ -59,7 +59,7 @@ public class WorldRegion implements Disposable {
                 try {
                     this.load(onLoad);
                 } catch (IOException e) {
-                    LOGGER.error(World.MARKER, "Failed to load region file: {}", pos, e);
+                    LOGGER.error(World.MARKER, "Failed to load region file: " +  pos, e);
                     this.corrupt = true;
                     this.loading = false;
                     break load;
@@ -82,6 +82,8 @@ public class WorldRegion implements Disposable {
                 }
 
                 savedWorld.writeRegion(this.pos.x(), this.pos.z(), this.data);
+
+                WorldEvents.SAVE_REGION.factory().onSaveRegion(this.world, this);
             }
         } catch (Exception e) {
             LOGGER.error(World.MARKER, String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
@@ -121,7 +123,7 @@ public class WorldRegion implements Disposable {
         MapType mapType = this.get(chunkPos);
         if (mapType == null) return null;
 
-        Chunk chunk = Chunk.load(this.world, worldChunkPos, mapType);
+        Chunk chunk = Chunk.load(worldChunkPos, mapType);
 
         synchronized (this.lock) {
             this.chunks.put(chunkPos, chunk);
@@ -162,10 +164,10 @@ public class WorldRegion implements Disposable {
             if (save) this.save();
         } catch (IOException e) {
             if (!force) {
-                LOGGER.error(World.MARKER, "Failed to save when unloading region {}", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region " + this.pos, e);
                 return false;
             } else {
-                LOGGER.error(World.MARKER, "Failed to save when unloading region {} (unloading anyways)", this.pos, e);
+                LOGGER.error(World.MARKER, "Failed to save when unloading region " + this.pos + " (unloading anyways)", e);
             }
         }
 
@@ -218,6 +220,8 @@ public class WorldRegion implements Disposable {
         this.data = this.world.getSavedWorld().readRegion(this.pos.x(), this.pos.z());
         this.ready = true;
         onLoad.accept(this);
+
+        WorldEvents.LOAD_REGION.factory().onLoadRegion(this.world, this);
     }
 
     public boolean putChunk(ChunkPos chunkPos, Chunk chunk, boolean overwrite) {
@@ -242,6 +246,10 @@ public class WorldRegion implements Disposable {
 
     public boolean isInitialized() {
         return this.initialized;
+    }
+
+    public boolean isLoading() {
+        return this.loading;
     }
 
     public RegionPos getPosition() {

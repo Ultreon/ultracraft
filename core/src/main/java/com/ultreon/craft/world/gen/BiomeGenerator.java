@@ -9,6 +9,7 @@ import com.ultreon.craft.world.gen.noise.MyNoise;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class BiomeGenerator implements Disposable {
     private final List<TerrainLayer> layers;
     private final List<TerrainLayer> extraLayers;
     public static final boolean USE_DOMAIN_WARPING = true;
+    @UnknownNullability
     public TreeGenerator treeGenerator;
 
     public BiomeGenerator(World world, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {

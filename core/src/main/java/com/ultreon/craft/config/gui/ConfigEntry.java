@@ -2,14 +2,14 @@ package com.ultreon.craft.config.gui;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.config.Configuration;
-import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class ConfigEntry<T> {
     private final String key;
     private T value;
+    @Nullable
     private String comment;
     private final Configuration config;
 
@@ -23,12 +23,13 @@ public abstract class ConfigEntry<T> {
         return this.value;
     }
 
-    public void set(@NotNull T value) {
-        Preconditions.checkNotNull(value, "Entry value shouldn't be null.");
+    public void set(T value) {
+        Preconditions.checkNotNull(value, "Cannot set config value to null");
         this.value = value;
     }
 
     public ConfigEntry<T> comment(String comment) {
+        Preconditions.checkNotNull(comment, "Cannot add null comment");
         this.comment = comment;
         return this;
     }
@@ -43,6 +44,7 @@ public abstract class ConfigEntry<T> {
         }
     }
 
+    @Nullable
     public String getComment() {
         return this.comment;
     }

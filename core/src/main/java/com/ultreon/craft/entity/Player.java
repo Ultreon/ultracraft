@@ -10,8 +10,6 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.input.util.ControllerButton;
-import com.ultreon.craft.item.Item;
-import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
@@ -21,7 +19,6 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
-    private final PlayerInput input = UltreonCraft.get().playerInput;
     public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE};
     public int selected;
     private boolean running;
@@ -79,7 +76,7 @@ public class Player extends LivingEntity {
     }
 
     public boolean isInWater() {
-        return world.get(blockPosition()) == Blocks.WATER;
+        return this.world.get(this.blockPosition()) == Blocks.WATER;
     }
 
     public ChunkPos getChunkPos() {
@@ -87,11 +84,11 @@ public class Player extends LivingEntity {
     }
 
     public float getEyeHeight() {
-        return crouching ? 1.15F : 1.63F;
+        return this.crouching ? 1.15F : 1.63F;
     }
 
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
     public void setRunning(boolean running) {
@@ -99,7 +96,7 @@ public class Player extends LivingEntity {
     }
 
     public float getWalkingSpeed() {
-        return walkingSpeed;
+        return this.walkingSpeed;
     }
 
     public void setWalkingSpeed(float walkingSpeed) {
@@ -107,7 +104,7 @@ public class Player extends LivingEntity {
     }
 
     public float getFlyingSpeed() {
-        return flyingSpeed;
+        return this.flyingSpeed;
     }
 
     public void setFlyingSpeed(float flyingSpeed) {
@@ -115,7 +112,7 @@ public class Player extends LivingEntity {
     }
 
     public boolean isFlying() {
-        return flying;
+        return this.flying;
     }
 
     public void setFlying(boolean flying) {
@@ -123,7 +120,7 @@ public class Player extends LivingEntity {
     }
 
     public boolean isCrouching() {
-        return crouching;
+        return this.crouching;
     }
 
     public void setCrouching(boolean crouching) {
@@ -131,7 +128,7 @@ public class Player extends LivingEntity {
     }
 
     public boolean isSpectating() {
-        return spectating;
+        return this.spectating;
     }
 
     public void setSpectating(boolean spectating) {

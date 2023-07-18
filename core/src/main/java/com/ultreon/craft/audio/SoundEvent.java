@@ -12,15 +12,15 @@ public final class SoundEvent {
     private Sound sound;
 
     public void register() {
-        this.id = Objects.requireNonNull(Registries.SOUNDS.getKey(this), "Sound not registered: " + getClass().getName());
+        this.id = Objects.requireNonNull(Registries.SOUNDS.getKey(this), "Sound not registered: " + this.getClass().getName());
         this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.id.location(), this.id.path())));
     }
 
     public Identifier getId() {
-        return id;
+        return this.id;
     }
 
     public Sound getSound() {
-        return sound;
+        return this.sound;
     }
 }

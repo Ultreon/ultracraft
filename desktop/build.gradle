@@ -142,13 +142,13 @@ dependencies {
 }
 
 compileJava {
-    dependsOn ":core:jar"
-    dependsOn ":gameprovider:jar"
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
 }
 
 processResources {
-    dependsOn ":core:jar"
-    dependsOn ":gameprovider:jar"
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
