@@ -141,7 +141,14 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:$fabric_version")
 }
 
+compileJava {
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
+}
+
 processResources {
+    dependsOn ":gameprovider:build"
+    dependsOn ":core:build"
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
