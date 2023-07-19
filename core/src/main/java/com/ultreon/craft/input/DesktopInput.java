@@ -181,7 +181,7 @@ public class DesktopInput extends GameInput {
                         if (button == Input.Buttons.LEFT) {
                             world.set(pos, Blocks.AIR);
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersects(this.game.player.getBoundingBox())) {
+                                && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
                             world.set(posNext, selectedBlock);
                         }
                     }

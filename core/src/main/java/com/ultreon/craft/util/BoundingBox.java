@@ -25,10 +25,9 @@ import java.util.List;
  * bounding box's center, dimensions and corner points.
  *
  * @author badlogicgames@gmail.com, Xoppa */
+@SuppressWarnings({"ManualMinMaxCalculation", "UnusedReturnValue", "GrazieInspection", "SpellCheckingInspection"})
 public class BoundingBox implements Serializable {
 	private static final long serialVersionUID = -1286036817192127343L;
-
-	private final static Vec3d tmpVector = new Vec3d();
 
 	/** Minimum vector. All XYZ components should be inferior to corresponding {@link #max} components. Call {@link #update()} if
 	 * you manually change this vector. */
@@ -43,86 +42,86 @@ public class BoundingBox implements Serializable {
 	/** @param out The {@link Vec3d} to receive the center of the bounding box.
 	 * @return The vector specified with the out argument. */
 	public Vec3d getCenter (Vec3d out) {
-		return out.set(cnt);
+		return out.set(this.cnt);
 	}
 
 	public double getCenterX () {
-		return cnt.x;
+		return this.cnt.x;
 	}
 
 	public double getCenterY () {
-		return cnt.y;
+		return this.cnt.y;
 	}
 
 	public double getCenterZ () {
-		return cnt.z;
+		return this.cnt.z;
 	}
 
 	public Vec3d getCorner000 (final Vec3d out) {
-		return out.set(min.x, min.y, min.z);
+		return out.set(this.min.x, this.min.y, this.min.z);
 	}
 
 	public Vec3d getCorner001 (final Vec3d out) {
-		return out.set(min.x, min.y, max.z);
+		return out.set(this.min.x, this.min.y, this.max.z);
 	}
 
 	public Vec3d getCorner010 (final Vec3d out) {
-		return out.set(min.x, max.y, min.z);
+		return out.set(this.min.x, this.max.y, this.min.z);
 	}
 
 	public Vec3d getCorner011 (final Vec3d out) {
-		return out.set(min.x, max.y, max.z);
+		return out.set(this.min.x, this.max.y, this.max.z);
 	}
 
 	public Vec3d getCorner100 (final Vec3d out) {
-		return out.set(max.x, min.y, min.z);
+		return out.set(this.max.x, this.min.y, this.min.z);
 	}
 
 	public Vec3d getCorner101 (final Vec3d out) {
-		return out.set(max.x, min.y, max.z);
+		return out.set(this.max.x, this.min.y, this.max.z);
 	}
 
 	public Vec3d getCorner110 (final Vec3d out) {
-		return out.set(max.x, max.y, min.z);
+		return out.set(this.max.x, this.max.y, this.min.z);
 	}
 
 	public Vec3d getCorner111 (final Vec3d out) {
-		return out.set(max.x, max.y, max.z);
+		return out.set(this.max.x, this.max.y, this.max.z);
 	}
 
 	/** @param out The {@link Vec3d} to receive the dimensions of this bounding box on all three axis.
 	 * @return The vector specified with the out argument */
 	public Vec3d getDimensions (final Vec3d out) {
-		return out.set(dim);
+		return out.set(this.dim);
 	}
 
 	public double getWidth () {
-		return dim.x;
+		return this.dim.x;
 	}
 
 	public double getHeight () {
-		return dim.y;
+		return this.dim.y;
 	}
 
 	public double getDepth () {
-		return dim.z;
+		return this.dim.z;
 	}
 
 	/** @param out The {@link Vec3d} to receive the minimum values.
 	 * @return The vector specified with the out argument */
 	public Vec3d getMin (final Vec3d out) {
-		return out.set(min);
+		return out.set(this.min);
 	}
 
 	/** @param out The {@link Vec3d} to receive the maximum values.
 	 * @return The vector specified with the out argument */
 	public Vec3d getMax (final Vec3d out) {
-		return out.set(max);
+		return out.set(this.max);
 	}
 
 	/** Constructs a new bounding box with the minimum and maximum vector set to zeros. */
 	public BoundingBox () {
-		clr();
+		this.clr();
 	}
 
 	/** Constructs a new bounding box from the given bounding box.
@@ -154,18 +153,16 @@ public class BoundingBox implements Serializable {
 	 * @param maximum The maximum vector
 	 * @return This bounding box for chaining. */
 	public BoundingBox set (Vec3d minimum, Vec3d maximum) {
-		min.set(minimum.x < maximum.x ? minimum.x : maximum.x, minimum.y < maximum.y ? minimum.y : maximum.y,
-			minimum.z < maximum.z ? minimum.z : maximum.z);
-		max.set(minimum.x > maximum.x ? minimum.x : maximum.x, minimum.y > maximum.y ? minimum.y : maximum.y,
-			minimum.z > maximum.z ? minimum.z : maximum.z);
-		update();
+		this.min.set(minimum.x < maximum.x ? minimum.x : maximum.x, minimum.y < maximum.y ? minimum.y : maximum.y, minimum.z < maximum.z ? minimum.z : maximum.z);
+		this.max.set(minimum.x > maximum.x ? minimum.x : maximum.x, minimum.y > maximum.y ? minimum.y : maximum.y, minimum.z > maximum.z ? minimum.z : maximum.z);
+		this.update();
 		return this;
 	}
 
 	/** Should be called if you modify {@link #min} and/or {@link #max} vectors manually. */
 	public void update () {
-		cnt.set(min).add(max).mul(0.5);
-		dim.set(max).sub(min);
+		this.cnt.set(this.min).add(this.max).mul(0.5);
+		this.dim.set(this.max).sub(this.min);
 	}
 
 	/** Sets the bounding box minimum and maximum vector from the given points.
@@ -194,10 +191,10 @@ public class BoundingBox implements Serializable {
 	 *
 	 * @return This bounding box for chaining. */
 	public BoundingBox inf () {
-		min.set(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
-		max.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
-		cnt.set(0, 0, 0);
-		dim.set(0, 0, 0);
+		this.min.set(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+		this.max.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+		this.cnt.set(0, 0, 0);
+		this.dim.set(0, 0, 0);
 		return this;
 	}
 
@@ -205,20 +202,19 @@ public class BoundingBox implements Serializable {
 	 * @param point The vector
 	 * @return This bounding box for chaining. */
 	public BoundingBox ext (Vec3d point) {
-		return this.set(min.set(min(min.x, point.x), min(min.y, point.y), min(min.z, point.z)),
-			max.set(Math.max(max.x, point.x), Math.max(max.y, point.y), Math.max(max.z, point.z)));
+		return this.set(this.min.set(min(this.min.x, point.x), min(this.min.y, point.y), min(this.min.z, point.z)), this.max.set(Math.max(this.max.x, point.x), Math.max(this.max.y, point.y), Math.max(this.max.z, point.z)));
 	}
 
 	/** Sets the minimum and maximum vector to zeros.
 	 * @return This bounding box for chaining. */
 	public BoundingBox clr () {
-		return this.set(min.set(0, 0, 0), max.set(0, 0, 0));
+		return this.set(this.min.set(0, 0, 0), this.max.set(0, 0, 0));
 	}
 
 	/** Returns whether this bounding box is valid. This means that {@link #max} is greater than or equal to {@link #min}.
 	 * @return True in case the bounding box is valid, false otherwise */
 	public boolean isValid () {
-		return min.x <= max.x && min.y <= max.y && min.z <= max.z;
+		return this.min.x <= this.max.x && this.min.y <= this.max.y && this.min.z <= this.max.z;
 	}
 
 	/** Extends this bounding box by the given bounding box.
@@ -226,8 +222,7 @@ public class BoundingBox implements Serializable {
 	 * @param a_bounds The bounding box
 	 * @return This bounding box for chaining. */
 	public BoundingBox ext (BoundingBox a_bounds) {
-		return this.set(min.set(min(min.x, a_bounds.min.x), min(min.y, a_bounds.min.y), min(min.z, a_bounds.min.z)),
-			max.set(max(max.x, a_bounds.max.x), max(max.y, a_bounds.max.y), max(max.z, a_bounds.max.z)));
+		return this.set(this.min.set(min(this.min.x, a_bounds.min.x), min(this.min.y, a_bounds.min.y), min(this.min.z, a_bounds.min.z)), this.max.set(max(this.max.x, a_bounds.max.x), max(this.max.y, a_bounds.max.y), max(this.max.z, a_bounds.max.z)));
 	}
 
 	/** Extends this bounding box by the given sphere.
@@ -236,23 +231,21 @@ public class BoundingBox implements Serializable {
 	 * @param radius Sphere radius
 	 * @return This bounding box for chaining. */
 	public BoundingBox ext (Vec3d center, double radius) {
-		return this.set(min.set(min(min.x, center.x - radius), min(min.y, center.y - radius), min(min.z, center.z - radius)),
-			max.set(max(max.x, center.x + radius), max(max.y, center.y + radius), max(max.z, center.z + radius)));
+		return this.set(this.min.set(min(this.min.x, center.x - radius), min(this.min.y, center.y - radius), min(this.min.z, center.z - radius)), this.max.set(max(this.max.x, center.x + radius), max(this.max.y, center.y + radius), max(this.max.z, center.z + radius)));
 	}
 
 	/** Returns whether the given bounding box is contained in this bounding box.
 	 * @param b The bounding box
 	 * @return Whether the given bounding box is contained */
 	public boolean contains (BoundingBox b) {
-		return !isValid() || (min.x <= b.min.x && min.y <= b.min.y && min.z <= b.min.z && max.x >= b.max.x && max.y >= b.max.y
-			&& max.z >= b.max.z);
+		return !this.isValid() || (this.min.x <= b.min.x && this.min.y <= b.min.y && this.min.z <= b.min.z && this.max.x >= b.max.x && this.max.y >= b.max.y && this.max.z >= b.max.z);
 	}
 
 	/** Returns whether the given bounding box is intersecting this bounding box (at least one point in).
 	 * @param b The bounding box
 	 * @return Whether the given bounding box is intersected */
 	public boolean intersects (BoundingBox b) {
-		if (!isValid()) return false;
+		if (!this.isValid()) return false;
 
 		// test using SAT (separating axis theorem)
 
@@ -269,33 +262,62 @@ public class BoundingBox implements Serializable {
 
 	}
 
-	/** Returns whether the given vector is contained in this bounding box.
+	/**
+	 * Returns whether the given bounding box is intersecting this bounding box (at least one point in).
+	 *
+	 * @param b The bounding box
+	 * @return Whether the given bounding box is intersected
+	 */
+	public boolean intersectsExclusive(BoundingBox b) {
+		if (!this.isValid()) return false;
+
+		// test using SAT (separating axis theorem)
+
+		double lx = Math.abs(this.cnt.x - b.cnt.x);
+		double sumx = (this.dim.x / 2.0) + (b.dim.x / 2.0);
+
+		double ly = Math.abs(this.cnt.y - b.cnt.y);
+		double sumy = (this.dim.y / 2.0) + (b.dim.y / 2.0);
+
+		double lz = Math.abs(this.cnt.z - b.cnt.z);
+		double sumz = (this.dim.z / 2.0) + (b.dim.z / 2.0);
+
+		return (lx < sumx && ly < sumy && lz < sumz);
+
+	}
+
+	/**
+	 * Returns whether the given vector is contained in this bounding box.
+	 *
 	 * @param v The vector
-	 * @return Whether the vector is contained or not. */
-	public boolean contains (Vec3d v) {
-		return min.x <= v.x && max.x >= v.x && min.y <= v.y && max.y >= v.y && min.z <= v.z && max.z >= v.z;
+	 * @return Whether the vector is contained or not.
+	 */
+	public boolean contains(Vec3d v) {
+		return this.min.x <= v.x && this.max.x >= v.x && this.min.y <= v.y && this.max.y >= v.y && this.min.z <= v.z && this.max.z >= v.z;
 	}
 
 	@Override
-	public String toString () {
-		return "[" + min + "|" + max + "]";
+	public String toString() {
+		return "[" + this.min + "|" + this.max + "]";
 	}
 
-	/** Extends the bounding box by the given vector.
+	/**
+	 * Extends the bounding box by the given vector.
 	 *
 	 * @param x The x-coordinate
 	 * @param y The y-coordinate
 	 * @param z The z-coordinate
-	 * @return This bounding box for chaining. */
-	public BoundingBox ext (double x, double y, double z) {
-		return this.set(min.set(min(min.x, x), min(min.y, y), min(min.z, z)), max.set(max(max.x, x), max(max.y, y), max(max.z, z)));
+	 * @return This bounding box for chaining.
+	 */
+	public BoundingBox ext(double x, double y, double z) {
+		return this.set(this.min.set(min(this.min.x, x), min(this.min.y, y), min(this.min.z, z)), this.max.set(max(this.max.x, x), max(this.max.y, y), max(this.max.z, z)));
 	}
 
-	static final double min (final double a, final double b) {
+	static double min (final double a, final double b) {
 		return a > b ? b : a;
 	}
 
-	static final double max (final double a, final double b) {
+	static double max (final double a, final double b) {
 		return a > b ? a : b;
 	}
 }

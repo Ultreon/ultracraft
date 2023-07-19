@@ -185,7 +185,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                             this.nextBreak = System.currentTimeMillis() + 500;
                         } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis()
                                 && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersects(this.game.player.getBoundingBox())) {
+                                && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
                             world.set(posNext, selectedBlock);
                             System.out.println("Place Block");
                             this.nextPlace = System.currentTimeMillis() + 500;
