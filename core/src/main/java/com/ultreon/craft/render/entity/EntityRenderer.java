@@ -33,8 +33,6 @@ public abstract class EntityRenderer<T extends Entity> {
     public void getRenderables(Array<Renderable> renderables, T entity, Pool<Renderable> pool, Vec3f offsetPos, int light) {
         this.setAngles(entity);
 
-        System.out.println("offsetPos = " + offsetPos);
-
         Map<String, Mesh> meshes = this.context.meshes;
 
         float brightness = LightUtils.getBrightness(light);
