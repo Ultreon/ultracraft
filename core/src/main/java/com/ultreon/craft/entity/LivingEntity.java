@@ -92,8 +92,8 @@ public class LivingEntity extends Entity {
 
     @Override
     protected void hitGround() {
-        if (!this.noGravity && this.fallDistance > 4.5F) {
-            float damage = this.fallDistance - 4.5F;
+        if (!this.noGravity) {
+            int damage = (int) (this.fallDistance - 2.2F);
             if (damage > 0) {
                 this.hurt(damage, DamageSource.FALLING);
             }

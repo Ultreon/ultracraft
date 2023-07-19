@@ -935,4 +935,11 @@ public class Renderer {
     public void unsetShader() {
         this.batch.setShader(null);
     }
+
+    public void model(Runnable block) {
+        boolean drawing = this.batch.isDrawing();
+        if (drawing) this.batch.end();
+        block.run();
+        if (drawing) this.batch.begin();
+    }
 }
