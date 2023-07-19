@@ -50,7 +50,7 @@ public class Player extends LivingEntity {
     public void tick() {
         super.tick();
 
-        this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
+        this.jumping = !this.isInWater() && !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         if (this.topView) {
             this.noGravity = true;
@@ -71,14 +71,6 @@ public class Player extends LivingEntity {
         }
 
         return false;
-    }
-
-    public boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
-    }
-
-    public ChunkPos getChunkPos() {
-        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 
     public float getEyeHeight() {
