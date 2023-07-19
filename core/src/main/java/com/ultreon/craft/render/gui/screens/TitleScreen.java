@@ -76,12 +76,6 @@ public class TitleScreen extends Screen {
             }
         });
 
-        if (GamePlatform.instance.isDevelopmentEnvironment()) {
-            add(new Button(0, 0, 30, 30, "IRTS", caller -> {
-                UltreonCraft.get().showScreen(new ItemRenderTestScreen());
-            }));
-        }
-
         if (GamePlatform.instance.supportsQuit()) {
             this.add(this.quitButton);
         } else {
