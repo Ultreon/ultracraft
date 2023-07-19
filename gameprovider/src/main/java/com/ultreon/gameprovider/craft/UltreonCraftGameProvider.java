@@ -74,7 +74,7 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public String getGameName() {
-        return "Ultreon Craft";
+        return "Ultracraft";
     }
 
     @Override
@@ -96,7 +96,7 @@ public class UltreonCraftGameProvider implements GameProvider {
                         .addAuthor("Mario Zechner", Map.of("github", "https://github.com/badlogic", "email", "badlogicgames@gmail.com"))
                         .addAuthor("Nathan Sweet", Map.of("github", "https://github.com/NathanSweet", "email", "nathan.sweet@gmail.com"))
                         .addIcon(200, "assets/libgdx/icon.png")
-                        .setDescription("The game engine needed by Ultreon Craft.")
+                        .setDescription("The game engine needed by Ultracraft.")
                         .setContact(new ContactInformationImpl(Map.of("homepage", "http://www.libgdx.com/", "patreon", "https://patreon.com/libgdx", "github", "https://github.com/libgdx", "sources", "https://github.com/libgdx/libgdx")))
                         .setName("LibGDX")
                         .build()),
@@ -109,7 +109,7 @@ public class UltreonCraftGameProvider implements GameProvider {
                         .setEnvironment(ModEnvironment.UNIVERSAL)
                         .setContact(new ContactInformationImpl(Map.of("sources", "https://github.con/Ultreon/ultreon-craft", "email", "contact.ultreon@gmail.com", "discord", "https://discord.gg/sQsU7sE2Sx")))
                         .setDescription("The base game. Made with love <3")
-                        .setName("Ultreon Craft")
+                        .setName("Ultracraft")
                         .build())
         );
     }
@@ -316,13 +316,13 @@ public class UltreonCraftGameProvider implements GameProvider {
             var c = loader.loadClass(targetClass);
             invoker = MethodHandles.lookup().findStatic(c, "main", MethodType.methodType(void.class, String[].class));
         } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
-            throw new FormattedException("Failed to start Bubble Blaster", e);
+            throw new FormattedException("Failed to start Ultracraft", e);
         }
 
         try {
             invoker.invokeExact(this.arguments.toArray());
         } catch (Throwable t) {
-            throw new FormattedException("Bubble Blaster has crashed", t);
+            throw new FormattedException("Ultracraft has crashed", t);
         }
     }
 

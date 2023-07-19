@@ -39,7 +39,7 @@ public class DesktopLauncher {
 		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
 		config.setInitialVisible(false);
 //		config.setDecorated(false);
-		config.setTitle("Ultreon Craft");
+		config.setTitle("Ultracraft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);
 		config.setWindowListener(new Lwjgl3WindowListener() {
