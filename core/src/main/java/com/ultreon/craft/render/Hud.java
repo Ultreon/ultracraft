@@ -101,12 +101,13 @@ public class Hud implements GameRenderable {
             this.game.itemRenderer.render(block, renderer, ix + 8, 6);
         }
 
-//        if (key != null && !selectedBlock.isAir()) {
-//            ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
-//            String name = Language.translate(key.location() + "/block/" + key.path() + "/name");
-//            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 37);
-//            ScissorStack.popScissors();
-//        }
+        if (key != null && !selectedBlock.isAir()) {
+            renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, 30, 168, 10);
+            String name = Language.translate(key.location() + ".block." + key.path() + ".name");
+            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 39);
+            renderer.popScissors();
+        }
+
         this.leftHeight += 45;
         this.rightHeight += 45;
     }
