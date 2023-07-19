@@ -250,7 +250,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         return !this.controllers.isEmpty();
     }
 
-    public static Vector2 getJoystick(JoystickType joystick) {
+    public static @Nullable Vector2 getJoystick(JoystickType joystick) {
         return JOYSTICKS.get(joystick).cpy();
     }
 

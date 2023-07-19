@@ -18,6 +18,7 @@ import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.translations.v1.Language;
+import org.jetbrains.annotations.Nullable;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -30,6 +31,7 @@ public class Hud implements GameRenderable {
     private float joyStickX;
     private float joyStickY;
     private int stickPointer;
+    @Nullable
     private Vector2 joyStick;
     public int leftHeight;
     public int rightHeight;
@@ -168,6 +170,7 @@ public class Hud implements GameRenderable {
         return false;
     }
 
+    @Nullable
     public Vector2 getJoyStick() {
         return this.joyStick;
     }
