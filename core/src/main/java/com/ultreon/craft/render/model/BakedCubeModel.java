@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.world.World;
@@ -35,6 +36,7 @@ public final class BakedCubeModel implements Disposable {
         this.front = front;
         this.back = back;
         this.mesh = this.createMesh();
+        this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
 
         UltreonCraft.get().deferDispose(this);
     }

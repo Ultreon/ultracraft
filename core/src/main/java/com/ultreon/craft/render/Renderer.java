@@ -936,15 +936,10 @@ public class Renderer {
         this.batch.setShader(null);
     }
 
-    public void end() {
-        this.batch.end();
-    }
-
-    public void begin() {
-        this.batch.begin();
-    }
-
-    public void flush() {
-        this.batch.flush();
+    public void model(Runnable block) {
+        boolean drawing = this.batch.isDrawing();
+        if (drawing) this.batch.end();
+        block.run();
+        if (drawing) this.batch.begin();
     }
 }

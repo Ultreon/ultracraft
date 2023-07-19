@@ -83,6 +83,7 @@ import java.util.Locale;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_FUNC;
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
 public class UltreonCraft implements DeferredDisposable {
@@ -279,7 +280,7 @@ public class UltreonCraft implements DeferredDisposable {
         LOGGER.info("Stitching textures");
         this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
-        this.itemRenderer = new ItemRenderer(this);
+        this.itemRenderer = new ItemRenderer(this, this.env);
 
         LOGGER.info("Initializing sounds");
         for (SoundEvent sound : Registries.SOUNDS.values()) {
@@ -497,6 +498,7 @@ public class UltreonCraft implements DeferredDisposable {
             if (this.renderWorld && world != null && worldRenderer != null) {
                 this.batch.begin(this.camera);
                 this.batch.getRenderContext().setCullFace(CULL_FACE);
+                this.batch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
                 this.batch.render(worldRenderer, this.env);
                 this.batch.end();
             }

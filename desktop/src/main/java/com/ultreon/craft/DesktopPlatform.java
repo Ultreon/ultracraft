@@ -139,8 +139,8 @@ public class DesktopPlatform extends GamePlatform {
                     ImGuiInputTextFlags.AllowTabInput)) {
                 if (ImGui.beginMenuBar()) {
                     if (ImGui.beginMenu("View")) {
-                        ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS, game.player != null);
-                        ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS, game.currentScreen != null);
+                        ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS);
+                        ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS);
                         ImGui.endMenu();
                     }
                     if (ImGui.beginMenu("Debug")) {
@@ -220,7 +220,7 @@ public class DesktopPlatform extends GamePlatform {
     private void showGuiUtilsWindow(UltreonCraft game) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("Player Utils", this.getDefaultFlags())) {
+        if (ImGui.begin("GUI Utils", this.getDefaultFlags())) {
             Screen currentScreen = game.currentScreen;
             ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
             if (currentScreen != null) {

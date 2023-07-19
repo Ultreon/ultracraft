@@ -197,8 +197,8 @@ public class Entity {
                 this.hitGround();
                 this.fallDistance = 0.0F;
                 this.velocityY = 0.0f;
-            } else if (this.velocityY < 0) {
-                this.fallDistance -= this.velocityY;
+            } else if (dy < 0) {
+                this.fallDistance -= dy;
             }
             if (oDz != dz) {
                 this.velocityZ = 0.0f;
