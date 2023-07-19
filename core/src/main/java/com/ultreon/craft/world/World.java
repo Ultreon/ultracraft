@@ -4,6 +4,8 @@ import static com.ultreon.craft.UltreonCraft.LOGGER;
 import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.entity.EntityType;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector3;
@@ -734,6 +736,11 @@ public class World implements Disposable {
 	public <T extends Entity> T spawn(T entity) {
 		Preconditions.checkNotNull(entity, "Cannot spawn null entity");
 		this.setEntityId(entity);
+		if (this.entities.containsKey(entity.getId())) {
+			EntityType<? extends Entity> type = this.entities.get(entity.getId()).getType();
+			Identifier key = Registries.ENTITIES.getKey(type);
+			throw new IllegalArgumentException("Entity with ID " + entity.getId() + " already exists: " + key);
+		}
 		this.entities.put(entity.getId(), entity);
 		return entity;
 	}
@@ -742,6 +749,11 @@ public class World implements Disposable {
 		Preconditions.checkNotNull(entity, "Cannot spawn null entity");
 		Preconditions.checkNotNull(entity, "Cannot entity with nul spawn data");
 		this.setEntityId(entity);
+		if (this.entities.containsKey(entity.getId())) {
+			EntityType<? extends Entity> type = this.entities.get(entity.getId()).getType();
+			Identifier key = Registries.ENTITIES.getKey(type);
+			throw new IllegalArgumentException("Entity with ID " + entity.getId() + " already exists: " + key);
+		}
 		entity.onPrepareSpawn(spawnData);
 		this.entities.put(entity.getId(), entity);
 		return entity;
@@ -754,6 +766,7 @@ public class World implements Disposable {
 			throw new IllegalStateException("Entity already spawned: " + entity);
 		}
 		int newId = oldId > 0 ? oldId : this.nextId();
+		entity.setId(newId);
 	}
 
 	private int nextId() {
