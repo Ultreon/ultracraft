@@ -48,7 +48,7 @@ public class Player extends LivingEntity {
     public void tick() {
         super.tick();
 
-        this.jumping = !this.isInWater() && !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
+        this.jumping = !this.isInWater() && !this.isDead() && !this.isFlying() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         if (this.topView) {
             this.noGravity = true;

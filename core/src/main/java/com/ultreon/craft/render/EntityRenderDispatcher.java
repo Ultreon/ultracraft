@@ -8,11 +8,15 @@ import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.input.GameCamera;
+import com.ultreon.craft.render.entity.EntityModelContext;
 import com.ultreon.craft.render.entity.EntityRenderer;
+import com.ultreon.libs.commons.v0.size.IntSize;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class EntityRenderDispatcher {
     private static final Map<EntityType<?>, EntityRenderer<?>> ENTITIY_RENDERERS = new HashMap<>();
@@ -22,8 +26,14 @@ public class EntityRenderDispatcher {
         this.camera = camera;
     }
 
-    public static <T extends Entity> void register(EntityType<@NotNull T> entityType, EntityRenderer<T> renderer) {
-        ENTITIY_RENDERERS.put(entityType, renderer);
+    public static <T extends Entity> void register(EntityType<@NotNull T> entityType, IntSize texSize, Function<EntityModelContext, EntityRenderer<T>> factory) {
+        ENTITIY_RENDERERS.put(entityType, factory.apply(new EntityModelContext(texSize)));
+    }
+
+    public void setupRenderers() {
+        for (EntityRenderer<?> renderer : ENTITIY_RENDERERS.values()) {
+            renderer.build();
+        }
     }
 
     @SuppressWarnings("unchecked")

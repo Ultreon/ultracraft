@@ -32,7 +32,7 @@ public class ItemEntity extends Entity {
     }
 
     public float getSpin() {
-        return 16 * this.getAge() / 360.0F;
+        return 2F * this.getAge();
     }
 
     public Block getItem() {

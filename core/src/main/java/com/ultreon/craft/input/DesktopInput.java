@@ -27,6 +27,7 @@ public class DesktopInput extends GameInput {
     public int pauseKey = Input.Keys.ESCAPE;
     public int imGuiKey = Input.Keys.F9;
     public int imGuiFocusKey = Input.Keys.F10;
+    public int hitBoxKey = Input.Keys.F4;
     public int debugHudKey = Input.Keys.F3;
     public int screenshotKey = Input.Keys.F2;
     public int dropKey = Input.Keys.Q;
@@ -97,6 +98,8 @@ public class DesktopInput extends GameInput {
             }
         } else if (keycode == this.debugHudKey) {
             this.game.showDebugHud = !this.game.showDebugHud;
+        } else if (keycode == this.hitBoxKey) {
+            this.game.showHitBoxes = !this.game.showHitBoxes;
         }
 
         Screen currentScreen = this.game.currentScreen;
@@ -185,7 +188,7 @@ public class DesktopInput extends GameInput {
                     Vec3i posNext = hitResult.next;
                     Block blockNext = world.get(posNext);
                     Block selectedBlock = this.game.player.getSelectedBlock();
-                    if (hitResult.collide && block != null && !block.isAir()) {
+                    if (hitResult.collide && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
                             world.set(pos, Blocks.AIR);
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()

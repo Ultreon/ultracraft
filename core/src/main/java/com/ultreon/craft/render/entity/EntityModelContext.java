@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FlushablePool;
-import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.libs.commons.v0.size.IntSize;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
@@ -52,16 +51,18 @@ public class EntityModelContext {
         return this.textureSize;
     }
 
-    public EntityModelContext box(String name, float x, float y, float z, float width, float height, float depth) {
-        this.boxes.put(name, new Box(this, new BoundingBox(new Vec3d(x, y, z), new Vec3d(x + width, y + height, z + depth))));
-        return this;
+    public Box box(String name, float x, float y, float z, float width, float height, float depth) {
+        Box box = new Box(this, new Vec3d(x, y, z), new Vec3d(width, height, depth));
+        this.boxes.put(name, box);
+        return box;
     }
 
     public void build() {
         this.boxes.forEach((name, box) -> {
             MeshBuilder meshBuilder = new MeshBuilder();
-            meshBuilder.begin(new VertexAttributes(VertexAttribute.ColorPacked(), VertexAttribute.Position(), VertexAttribute.TexCoords(0)));
-            build(meshBuilder, (float) box.box.min.x, (float) box.box.min.y, (float) box.box.min.z, (float) (box.box.max.x - box.box.min.x), (float) (box.box.max.y - box.box.min.y), (float) (box.box.max.z - box.box.min.z));
+            meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+            meshBuilder.setUVRange(0, 0, 1, 1);
+            build(meshBuilder, (float) box.position.x, (float) box.position.y, (float) box.position.z, (float) box.size.x, (float) box.size.y, (float) box.size.z);
             Mesh mesh = meshBuilder.end();
             mesh.transform(new Matrix4(box.rotation));
             this.meshes.put(name, mesh);
@@ -69,6 +70,7 @@ public class EntityModelContext {
     }
 
     public void setRotation(String name, Quaternion quaternion) {
+        if (!this.meshes.containsKey(name)) throw new IllegalArgumentException("Box not included in model: " + name);
         this.rotations.put(name, quaternion);
     }
 
@@ -77,6 +79,7 @@ public class EntityModelContext {
     }
 
     public void setOffset(String name, Vector3 quaternion) {
+        if (!this.boxes.containsKey(name)) throw new IllegalArgumentException("Box not included in model: " + name);
         this.offsets.put(name, quaternion);
     }
 
