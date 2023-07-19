@@ -15,6 +15,7 @@ public class ItemEntity extends Entity {
     public ItemEntity(EntityType<? extends ItemEntity> entityType, World world, Block item, Vec3d velocity) {
         super(entityType, world);
         this.item = item;
+        this.setVelocity(velocity);
     }
 
     public ItemEntity(EntityType<? extends ItemEntity> entityType, World world) {

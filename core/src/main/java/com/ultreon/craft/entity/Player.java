@@ -170,8 +170,8 @@ public class Player extends LivingEntity {
     }
 
     public void drop() {
-        ItemEntity droppedItem = new ItemEntity(Entities.ITEM, this.world, this.getSelectedBlock());
-        droppedItem.setPosition(this.x, this.y, this.z);
+        ItemEntity droppedItem = new ItemEntity(Entities.ITEM, this.world, this.getSelectedBlock(), this.getLookVector());
+        droppedItem.setPosition(this.x, this.y + this.getEyeHeight(), this.z);
         this.world.spawn(droppedItem);
     }
 }
