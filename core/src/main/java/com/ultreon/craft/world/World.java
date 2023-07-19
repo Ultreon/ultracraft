@@ -551,7 +551,11 @@ public class World implements Disposable {
 	public void tick() {
 		this.playTime++;
 
-		for (Entity entity : this.entities.values()) {
+		for (Entity entity : new ArrayList<>(this.entities.values())) {
+			if (entity.isDeletionPending()) {
+				this.entities.remove(entity.getId());
+				continue;
+			}
 			entity.tick();
 		}
 	}
@@ -726,7 +730,7 @@ public class World implements Disposable {
 	/**
 	 * <b>NOTE:</b> This method is obsolete, {@link #spawn(Entity, MapType)} exists with more functionality.
 	 */
-	@ApiStatus.Obsolete
+	@ApiStatus.NonExtendable
 	public <T extends Entity> T spawn(T entity) {
 		Preconditions.checkNotNull(entity, "Cannot spawn null entity");
 		this.setEntityId(entity);
@@ -873,5 +877,9 @@ public class World implements Disposable {
 
 	public int getChunksLoaded() {
 		return this.chunksLoaded;
+	}
+
+	public Collection<Entity> getEntities() {
+		return Collections.unmodifiableCollection(this.entities.values());
 	}
 }

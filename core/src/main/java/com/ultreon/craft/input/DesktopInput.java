@@ -29,6 +29,7 @@ public class DesktopInput extends GameInput {
     public int imGuiFocusKey = Input.Keys.F10;
     public int debugHudKey = Input.Keys.F3;
     public int screenshotKey = Input.Keys.F2;
+    public int dropKey = Input.Keys.Q;
     private int xPos;
     private int yPos;
     private int deltaX;
@@ -54,6 +55,13 @@ public class DesktopInput extends GameInput {
             Pixmap pixmap = Pixmap.createFromFrameBuffer(this.game.getDrawOffset().x, this.game.getDrawOffset().y, this.game.getWidth(), this.game.getHeight());
             PixmapIO.writePNG(GamePlatform.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
+        }
+
+        if (keycode == this.dropKey && this.game.isPlaying()) {
+            Player player = this.game.player;
+            if (player != null) {
+                player.drop();
+            }
         }
 
         if (Gdx.input.isCursorCatched()) {

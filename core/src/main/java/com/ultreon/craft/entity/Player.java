@@ -11,8 +11,6 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
-import com.ultreon.craft.util.Utils;
-import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
@@ -169,5 +167,11 @@ public class Player extends LivingEntity {
         data.putFloat("runModifier", this.runModifier);
 
         return data;
+    }
+
+    public void drop() {
+        ItemEntity droppedItem = new ItemEntity(Entities.ITEM, this.world, this.getSelectedBlock());
+        droppedItem.setPosition(this.x, this.y, this.z);
+        this.world.spawn(droppedItem);
     }
 }

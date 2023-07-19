@@ -114,7 +114,8 @@ public class UltreonCraft implements DeferredDisposable {
     private final SpriteBatch spriteBatch;
     private final ModelBatch batch;
     GameCamera camera;
-    private final Environment env;
+    public final EntityRenderDispatcher entityRenderDispatcher;
+    public final Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
     private final boolean isDevMode;
@@ -228,6 +229,8 @@ public class UltreonCraft implements DeferredDisposable {
         this.camera.far = 1000;
         this.input = this.createInput();
         Gdx.input.setInputProcessor(this.input);
+
+        this.entityRenderDispatcher = new EntityRenderDispatcher(this.camera);
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1F, 1F, 1F, 1F);
