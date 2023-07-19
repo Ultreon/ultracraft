@@ -31,7 +31,7 @@ public class ItemRenderer {
     }
 
     public void render(Block block, Renderer renderer, int x, int y) {
-        renderer.end();
+        renderer.flush();
         this.batch.begin(this.orthoCam);
         BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
         if (bakedBlockModel == null) return;
@@ -46,6 +46,5 @@ public class ItemRenderer {
         renderable.worldTransform.scale(8, 8, 8);
         this.batch.render(renderable);
         this.batch.end();
-        renderer.begin();
     }
 }

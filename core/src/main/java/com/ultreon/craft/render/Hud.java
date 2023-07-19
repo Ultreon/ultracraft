@@ -98,15 +98,15 @@ public class Hud implements GameRenderable {
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Block block = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 90 + i * 20 + 2;
-//            this.game.itemRenderer.render(block, renderer, ix, 16);
-            BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
-            TextureRegion front = bakedBlockModel.front();
-            TextureRegion top = bakedBlockModel.top();
-//            this.cubeMesh.render(renderer.getBatch().getShader(), GL30.GL_TRIANGLES);
-            renderer.setTextureColor(Color.WHITE.darker());
-            renderer.texture(front, ix, 5, 16, 6);
-            renderer.setTextureColor(Color.WHITE);
-            renderer.texture(top, ix, 11, 16, 16);
+            this.game.itemRenderer.render(block, renderer, ix, 16);
+//            BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
+//            TextureRegion front = bakedBlockModel.front();
+//            TextureRegion top = bakedBlockModel.top();
+////            this.cubeMesh.render(renderer.getBatch().getShader(), GL30.GL_TRIANGLES);
+//            renderer.setTextureColor(Color.WHITE.darker());
+//            renderer.texture(front, ix, 5, 16, 6);
+//            renderer.setTextureColor(Color.WHITE);
+//            renderer.texture(top, ix, 11, 16, 16);
         }
 
 //        if (key != null && !selectedBlock.isAir()) {

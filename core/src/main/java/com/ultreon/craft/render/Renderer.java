@@ -943,4 +943,8 @@ public class Renderer {
     public void begin() {
         this.batch.begin();
     }
+
+    public void flush() {
+        this.batch.flush();
+    }
 }
