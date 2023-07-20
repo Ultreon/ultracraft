@@ -41,6 +41,7 @@ import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.*;
+import com.ultreon.craft.render.entity.ItemEntityRenderer;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
@@ -53,6 +54,7 @@ import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.size.IntSize;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
@@ -114,7 +116,8 @@ public class UltreonCraft implements DeferredDisposable {
     private final SpriteBatch spriteBatch;
     private final ModelBatch batch;
     GameCamera camera;
-    private final Environment env;
+    public final EntityRenderDispatcher entityRenderDispatcher;
+    public final Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
     private final boolean isDevMode;
@@ -130,6 +133,7 @@ public class UltreonCraft implements DeferredDisposable {
     public Hud hud;
     private int chunkRefresh;
     public boolean showDebugHud = true;
+    public boolean showHitBoxes = false;
 
     // Public Flags
     public boolean renderWorld = false;
@@ -175,36 +179,61 @@ public class UltreonCraft implements DeferredDisposable {
 
         Gdx.app.setApplicationLogger(new LibGDXLogger());
 
+        //*************************//
+        // Set up game directories //
+        //*************************//
+        LOGGER.info("Setting up game directories");
         this.configDir = createDir("config/");
 
         createDir("screenshots/");
         createDir("game-crashes/");
         createDir("logs/");
 
+        //***************************//
+        // Set up game modifications //
+        //***************************//
+        LOGGER.info("Setting up mods (if platform support mods)");
         GamePlatform.instance.setupMods();
 
+        //************************//
+        // Load the game settings //
+        //************************//
+        LOGGER.info("Loading game settings");
         this.settings = new GameSettings();
         this.settings.reload();
         this.settings.reloadLanguage();
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
-        LOGGER.info("Initializing game");
+        //*****************************************//
+        // Set up texture manager and sprite batch //
+        //*****************************************//
+        LOGGER.info("Setting up texture manager and sprite batch");
         this.textureManager = new TextureManager();
         this.spriteBatch = new SpriteBatch();
 
+        //*****************************//
+        // Set up and import resources //
+        //*****************************//
+        LOGGER.info("Setting up resource manager and importing resources");
         this.resourceManager = new ResourceManager("assets");
-        LOGGER.info("Importing resources");
         this.resourceManager.importDeferredPackage(this.getClass());
         GamePlatform.instance.importModResources(this.resourceManager);
 
+        //*********************//
+        // Set up unicode font //
+        //*********************//
+        LOGGER.info("Generating unicode game font");
         Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
         if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
         this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
-        LOGGER.info("Generating bitmap fonts");
         this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
 
+        //*******************//
+        // Set up game fonts //
+        //*******************//
+        LOGGER.info("Generating game fonts");
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
         FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
         fontParameter.size = 8;
@@ -229,6 +258,18 @@ public class UltreonCraft implements DeferredDisposable {
         this.input = this.createInput();
         Gdx.input.setInputProcessor(this.input);
 
+        //***************************//
+        // Register entity renderers //
+        //***************************//
+        LOGGER.info("Setting up entity renderers");
+        this.entityRenderDispatcher = new EntityRenderDispatcher(this.camera);
+        this.registerEntityRenderers();
+        this.entityRenderDispatcher.setupRenderers();
+
+        //********************//
+        // Setup shape drawer //
+        //********************//
+        LOGGER.info("Setting up shape drawer");
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1F, 1F, 1F, 1F);
         pixmap.drawPixel(0, 0);
@@ -236,6 +277,9 @@ public class UltreonCraft implements DeferredDisposable {
 
         this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
+        //**************************//
+        // Set up world environment //
+        //**************************//
         LOGGER.info("Setting up world environment");
         this.env = new Environment();
         this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
@@ -244,9 +288,15 @@ public class UltreonCraft implements DeferredDisposable {
         this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
         this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
+        //*************************//
+        // Set up heads-up-display //
+        //*************************//
         LOGGER.info("Setting up HUD");
         this.hud = new Hud(this);
 
+        //***********************//
+        // Set up debug renderer //
+        //***********************//
         LOGGER.info("Setting up Debug Renderer");
         this.debugRenderer = new DebugRenderer(this);
 
@@ -256,6 +306,10 @@ public class UltreonCraft implements DeferredDisposable {
         LOGGER.info("Loading languages");
         this.loadLanguages();
 
+        //***************************//
+        // Registering game content  //
+        // Such as blocks and sounds //
+        //***************************//
         LOGGER.info("Registering stuff");
         Registries.init();
 
@@ -270,6 +324,9 @@ public class UltreonCraft implements DeferredDisposable {
         }
         Registry.freeze();
 
+        //****************************//
+        // Register block/item models //
+        //****************************//
         LOGGER.info("Registering models");
         this.registerModels();
 
@@ -282,14 +339,24 @@ public class UltreonCraft implements DeferredDisposable {
 
         this.itemRenderer = new ItemRenderer(this, this.env);
 
+        //***************************//
+        // Initializing sound events //
+        //***************************//
         LOGGER.info("Initializing sounds");
         for (SoundEvent sound : Registries.SOUNDS.values()) {
             sound.register();
         }
 
+        //************************//
+        // Bake block/item models //
+        //************************//
         LOGGER.info("Baking models");
         this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
+        //********************//
+        // Set up game camera //
+        //********************//
+        LOGGER.info("Setting up game camera");
         if (this.deferredWidth != null && this.deferredHeight != null) {
             this.camera.viewportWidth = this.deferredWidth;
             this.camera.viewportHeight = this.deferredHeight;
@@ -303,7 +370,7 @@ public class UltreonCraft implements DeferredDisposable {
         //*************//
         // Final stuff //
         //*************//
-        LOGGER.info("Opening title screen");
+        LOGGER.info("Setting up final stuff");
         this.showScreen(new TitleScreen());
 
         savedWorld = new SavedWorld(GamePlatform.data("world"));
@@ -314,6 +381,10 @@ public class UltreonCraft implements DeferredDisposable {
 
         this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
         LOGGER.info("Game booted in " + this.bootTime + "ms");
+    }
+
+    private void registerEntityRenderers() {
+        EntityRenderDispatcher.register(Entities.ITEM, new IntSize(16, 16), ItemEntityRenderer::new);
     }
 
     private static void uncaughtException(Thread t, Throwable e) {

@@ -220,14 +220,16 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                         vel.add(tmp);
                     }
                     if (player.isFlying()) {
+                        Vec3d position = player.getPosition();
                         if (this.game.playerInput.up) {
-                            tmp.set(0, 1, 0).nor().mul(speed);
-                            vel.add(tmp);
+                            tmp.set(0, 1, 0).nor().mul(speed).mul(0.6F);
+                            position.add(tmp);
                         }
                         if (this.game.playerInput.down) {
-                            tmp.set(0, 1, 0).nor().mul(-speed);
-                            vel.add(tmp);
+                            tmp.set(0, 1, 0).nor().mul(-speed).mul(0.6F);
+                            position.add(tmp);
                         }
+                        player.setPosition(position);
                     }
 
                     vel.x *= deltaTime * UltreonCraft.TPS;
@@ -250,7 +252,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         return !this.controllers.isEmpty();
     }
 
-    public static Vector2 getJoystick(JoystickType joystick) {
+    public static @Nullable Vector2 getJoystick(JoystickType joystick) {
         return JOYSTICKS.get(joystick).cpy();
     }
 

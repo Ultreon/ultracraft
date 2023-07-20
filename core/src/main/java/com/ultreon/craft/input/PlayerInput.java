@@ -79,7 +79,7 @@ public class PlayerInput {
         this.vel.set(this.tmp);
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
     private void setVel(Vector3 vel) {
         this.vel.set(vel);
     }

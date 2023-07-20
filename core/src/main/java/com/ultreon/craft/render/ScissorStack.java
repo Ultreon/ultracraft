@@ -3,6 +3,7 @@ package com.ultreon.craft.render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Rectangle;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Stack;
 
@@ -37,6 +38,7 @@ public class ScissorStack {
 		restoreScissors();
 	}
 
+	@Nullable
 	public static Rectangle peekScissors() {
 		return !scissorStack.isEmpty() ? scissorStack.peek() : null;
 	}

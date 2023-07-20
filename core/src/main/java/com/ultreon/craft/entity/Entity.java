@@ -43,6 +43,8 @@ public class Entity {
 
     public boolean noClip;
     protected float fallDistance = 0;
+    private int age;
+    private boolean deletionPending = false;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -81,6 +83,7 @@ public class Entity {
 
         this.fallDistance = data.getFloat("fallDistance", this.fallDistance);
         this.gravity = data.getFloat("gravity", this.gravity);
+        this.age = data.getInt("age", this.age);
         this.noGravity = data.getBoolean("noGravity", this.noGravity);
         this.noClip = data.getBoolean("noClip", this.noClip);
     }
@@ -109,6 +112,7 @@ public class Entity {
 
         data.putFloat("fallDistance", this.fallDistance);
         data.putFloat("gravity", this.gravity);
+        data.putInt("age", this.age);
         data.putBoolean("noGravity", this.noGravity);
         data.putBoolean("noClip", this.noClip);
 
@@ -134,6 +138,8 @@ public class Entity {
             this.velocityX *= 0.9f;
             this.velocityZ *= 0.9f;
         }
+
+        this.age++;
     }
 
     public void move(double dx, double dy, double dz) {
@@ -276,13 +282,20 @@ public class Entity {
         return new Vec3d(this.x, this.y, this.z);
     }
 
+    @Deprecated
     public void setPosition(Vector3 position) {
         this.x = position.x;
         this.y = position.y;
         this.z = position.z;
     }
 
-    public void setPosition(float x, float y, float z) {
+    public void setPosition(Vec3d position) {
+        this.x = position.x;
+        this.y = position.y;
+        this.z = position.z;
+    }
+
+    public void setPosition(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -350,8 +363,24 @@ public class Entity {
         this.gravity = gravity;
     }
 
+    public int getAge() {
+        return this.age;
+    }
+
     public void rotate(GridPoint2 rotation) {
         this.xRot = this.xRot + rotation.x;
         this.yRot = Mth.clamp(this.yRot + rotation.y, -90, 90);
+    }
+
+    public void deferDeletion() {
+        this.deletionPending = true;
+    }
+
+    public boolean isDeletionPending() {
+        return this.deletionPending;
+    }
+
+    public EntityType<? extends Entity> getType() {
+        return this.type;
     }
 }
