@@ -93,25 +93,25 @@ public class Hud implements GameRenderable {
         Block selectedBlock = player.getSelectedBlock();
         Identifier key = Registries.BLOCK.getKey(selectedBlock);
 
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, 0, 180, 41, 0, 42);
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, 0, 20, 24, 0, 83);
+        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, 2, 180, 41, 0, 42);
+        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, 2, 20, 24, 0, 83);
 
         Block[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Block block = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 90 + i * 20 + 2;
-            this.game.itemRenderer.render(block, renderer, ix + 8, 6);
+            this.game.itemRenderer.render(block, renderer, ix + 8, 8);
         }
 
         if (key != null && !selectedBlock.isAir()) {
-            renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, 30, 168, 10);
+            renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, 32, 168, 12);
             String name = Language.translate(key.location() + ".block." + key.path() + ".name");
-            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 39);
+            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 41);
             renderer.popScissors();
         }
 
-        this.leftHeight += 45;
-        this.rightHeight += 45;
+        this.leftHeight += 47;
+        this.rightHeight += 47;
     }
 
     private void renderHealth(Renderer renderer, Player player) {
