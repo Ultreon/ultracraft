@@ -13,6 +13,7 @@ import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 public class Player extends LivingEntity {
     public static Block[] allowed = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
@@ -170,7 +171,9 @@ public class Player extends LivingEntity {
     }
 
     public void drop() {
-        ItemEntity droppedItem = new ItemEntity(Entities.ITEM, this.world, this.getSelectedBlock(), this.getLookVector());
+        Vec3d lookVector = this.getLookVector();
+        lookVector.mul(this.isCrouching() ? 2.2 : 1.1);
+        ItemEntity droppedItem = new ItemEntity(Entities.ITEM, this.world, this.getSelectedBlock(), lookVector);
         droppedItem.setPosition(this.x, this.y + this.getEyeHeight(), this.z);
         this.world.spawn(droppedItem);
     }
