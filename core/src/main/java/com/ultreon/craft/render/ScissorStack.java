@@ -38,10 +38,7 @@ public class ScissorStack {
 	}
 
 	public static Rectangle peekScissors() {
-		if (!scissorStack.isEmpty()) {
-			return scissorStack.peek();
-		}
-		return null;
+		return !scissorStack.isEmpty() ? scissorStack.peek() : null;
 	}
 
 	private static void restoreScissors() {
