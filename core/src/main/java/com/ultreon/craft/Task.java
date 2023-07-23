@@ -1,19 +1,32 @@
 package com.ultreon.craft;
 
 import com.ultreon.libs.commons.v0.Identifier;
+import org.jetbrains.annotations.Nullable;
 
-public class Task implements Runnable {
-    private static final Runnable EMPTY = () -> {};
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+public class Task <T> implements Runnable {
     private final Identifier id;
-    private Runnable block = EMPTY;
+    private Supplier<@Nullable T> block = () -> null;
+    @Nullable
+    CompletableFuture<T> future;
 
     public Task(Identifier id) {
         this.id = id;
     }
 
-    public Task(Identifier id, Runnable block) {
+    public Task(Identifier id, Supplier<T> block) {
         this.id = id;
         this.block = block;
+    }
+
+    public Task(Identifier id, Runnable block) {
+        this.id = id;
+        this.block = () -> {
+            block.run();
+            return null;
+        };
     }
 
     public Identifier id() {
@@ -21,7 +34,11 @@ public class Task implements Runnable {
     }
 
     @Override
+    @SuppressWarnings("DataFlowIssue")
     public void run() {
-        this.block.run();
+        @Nullable T obj = this.block.get();
+        if (this.future != null) {
+            this.future.complete(obj);
+        }
     }
 }

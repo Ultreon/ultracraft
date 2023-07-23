@@ -170,22 +170,10 @@ public class DesktopInput extends GameInput {
                 }
 
                 Player player = this.game.player;
-                if (player != null) {
-                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    Vec3i pos = hitResult.pos;
-                    Block block = world.get(pos);
-                    Vec3i posNext = hitResult.next;
-                    Block blockNext = world.get(posNext);
-                    Block selectedBlock = this.game.player.getSelectedBlock();
-                    if (hitResult.collide && block != null && !block.isAir()) {
-                        if (button == Input.Buttons.LEFT) {
-                            world.set(pos, Blocks.AIR);
-                        } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
-                            world.set(posNext, selectedBlock);
-                        }
-                    }
-                }
+                HitResult hitResult = this.hitResult;
+                boolean destroy = button == Input.Buttons.LEFT;
+                boolean use = button == Input.Buttons.RIGHT;
+                this.onWorldHit(world, player, hitResult, destroy, use);
             }
         } else {
             screenY = this.game.getHeight() - screenY;

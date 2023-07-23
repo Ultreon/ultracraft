@@ -142,6 +142,14 @@ allprojects {
             name "Maven Central"
             url "https://repo1.maven.org/maven2/"
         }
+        maven {
+            name "SonaType Releases"
+            url "https://oss.sonatype.org/content/repositories/releases"
+        }
+        maven {
+            name "SonaType Snapshots"
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
         flatDir {
             name "Project Libraries"
             dirs "${projectDir}/libs"

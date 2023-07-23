@@ -86,7 +86,7 @@ public class WorldRegion implements Disposable {
                 WorldEvents.SAVE_REGION.factory().onSaveRegion(this.world, this);
             }
         } catch (Exception e) {
-            LOGGER.error(World.MARKER, String.format(Locale.ROOT, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
+            LOGGER.error(World.MARKER, String.format(Locale.ENGLISH, "Failed to save region file r%d.%d.ubo:", this.pos.x(), this.pos.z()), e);
         }
     }
 
@@ -132,6 +132,7 @@ public class WorldRegion implements Disposable {
         return chunk;
     }
 
+    @Nullable
     @CheckReturnValue
     private MapType get(ChunkPos chunkPos) {
         return this.data.getMap(chunkPos.toString());

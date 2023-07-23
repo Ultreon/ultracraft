@@ -21,6 +21,17 @@ public class ModListScreen extends Screen {
 
     public ModListScreen(Screen back) {
         super(back, Language.translate("craft.screen.mod_list"));
+
+        if (!TEXTURES.containsKey("java")) {
+            Texture texture = new Texture("assets/craft/textures/java_icon.png");
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            TEXTURES.put("java", texture);
+        }
+    }
+
+    private static int compareMods(ModContainer modA, ModContainer modB) {
+        int comparison = modA.getMetadata().getName().compareToIgnoreCase(modB.getMetadata().getName());
+        return comparison == 0 ? modA.getMetadata().getId().compareToIgnoreCase(modB.getMetadata().getId()) : comparison;
     }
 
     @Override
@@ -31,24 +42,29 @@ public class ModListScreen extends Screen {
         this.list = this.add(new SelectionList<>(0, 0, 200, this.height, 48));
         this.list.setItemRenderer(this::renderItem);
         this.list.setSelectable(true);
-        FabricLoader.getInstance().getAllMods().forEach(this.list::addEntry);
+        FabricLoader.getInstance().getAllMods().stream().filter(modContainer -> modContainer.getContainingMod().isEmpty()).sorted(ModListScreen::compareMods).forEach(this.list::addEntry);
     }
 
     private void renderItem(Renderer renderer, ModContainer modContainer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
         ModMetadata metadata = modContainer.getMetadata();
         renderer.drawText(metadata.getName(), 50, this.list.getItemHeight() - 12);
         renderer.drawText(metadata.getId(), 50, this.list.getItemHeight() - 12 - 12, Color.rgb(0x808080));
-        metadata.getIconPath(128).ifPresent(iconPath -> {
-            FileHandle iconFileHandle = Gdx.files.internal(iconPath);
-            if (!iconFileHandle.exists()) return;
-            if (!TEXTURES.containsKey(metadata.getId())) {
-                Texture texture = new Texture(iconFileHandle);
-                texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-                TEXTURES.put(metadata.getId(), texture);
-            }
+        if (metadata.getId().equals("java")) {
             Texture texture = TEXTURES.get(metadata.getId());
             renderer.texture(texture, 3, 3, 42, 42, 0, 0, texture.getWidth(), texture.getHeight(), texture.getWidth(), texture.getHeight());
-        });
+        } else {
+            metadata.getIconPath(128).ifPresent(iconPath -> {
+                FileHandle iconFileHandle = Gdx.files.internal(iconPath);
+                if (!iconFileHandle.exists()) return;
+                if (!TEXTURES.containsKey(metadata.getId())) {
+                    Texture texture = new Texture(iconFileHandle);
+                    texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+                    TEXTURES.put(metadata.getId(), texture);
+                }
+                Texture texture = TEXTURES.get(metadata.getId());
+                renderer.texture(texture, 3, 3, 42, 42, 0, 0, texture.getWidth(), texture.getHeight(), texture.getWidth(), texture.getHeight());
+            });
+        }
     }
 
     @Override

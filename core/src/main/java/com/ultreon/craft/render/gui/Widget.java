@@ -1,8 +1,7 @@
 package com.ultreon.craft.render.gui;
 
-import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.math.Rectangle;
-import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.Drawable;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 
 /**
@@ -12,7 +11,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2i;
  * @author Qboi123
  * @see GuiComponent
  */
-public interface Widget extends GuiStateListener {
+public interface Widget extends GuiStateListener, Drawable {
     /**
      * @return the x position create the widget.
      */
@@ -32,16 +31,6 @@ public interface Widget extends GuiStateListener {
      * @return the height create the widget.
      */
     int getHeight();
-
-    /**
-     * Rendering method, should not be called if you don't know what you are doing.
-     *
-     * @param renderer  renderer to draw/render with.
-     * @param mouseX
-     * @param mouseY
-     * @param deltaTime value of {@link Graphics#getDeltaTime()}
-     */
-    void render(Renderer renderer, int mouseX, int mouseY, float deltaTime);
 
     /**
      * @return the position create the widget.

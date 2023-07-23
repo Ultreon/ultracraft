@@ -127,6 +127,9 @@ public class WorldRenderer implements RenderableProvider {
 
                     Renderable piece = pool.obtain();
 
+                    Mesh oldMesh = piece.meshPart.mesh;
+                    if (oldMesh != null) oldMesh.dispose();
+
                     piece.material = this.material;
                     piece.meshPart.mesh = mesh;
                     piece.meshPart.offset = 0;

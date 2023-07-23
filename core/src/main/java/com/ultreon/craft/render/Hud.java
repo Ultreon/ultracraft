@@ -1,22 +1,17 @@
 package com.ultreon.craft.render;
 
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.init.Shaders;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.translations.v1.Language;
 
 public class Hud implements GameRenderable {
@@ -53,22 +48,19 @@ public class Hud implements GameRenderable {
 
         this.renderHotbar(renderer, player);
         this.renderHealth(renderer, player);
-        this.renderCrosshair(renderer, player);
 
         GameInput input = this.game.input;
         if (input instanceof MobileInput) {
             this.renderMobileHud(renderer, player, (MobileInput) input);
+        } else {
+            this.renderCrosshair(renderer, player);
         }
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-        renderer.setShader(Shaders.XOR);
-
         int x = this.game.getScaledWidth() / 2;
         int y = this.game.getScaledHeight() / 2;
-        renderer.texture(this.crosshairTex, x - 7, y - 7, 14, 14);
-
-        renderer.unsetShader();
+        renderer.texture(this.crosshairTex, x - 8, y - 8, 16, 16);
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
@@ -82,8 +74,13 @@ public class Hud implements GameRenderable {
         }
 
         renderer.texture(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
-
         renderer.texture(this.mobileTex, 20, 20, 50, 5, 0, 45);
+
+        Vec2i touchPos = input.getTouchPos();
+        renderer.setColor(Color.argb(0x7fffffff));
+        renderer.circle(touchPos.x, touchPos.y, 30);
+        renderer.setColor(Color.argb(0xffffffff));
+        renderer.circle(touchPos.x, touchPos.y, 30 * this.game.getBreakProgress());
     }
 
     private void renderHotbar(Renderer renderer, Player player) {

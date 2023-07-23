@@ -8,11 +8,7 @@ import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.ultreon.craft.util.Ray;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
@@ -20,28 +16,23 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.input.util.ControllerButton;
-import com.ultreon.craft.input.util.Joystick;
-import com.ultreon.craft.input.util.JoystickType;
-import com.ultreon.craft.input.util.Trigger;
-import com.ultreon.craft.input.util.TriggerType;
+import com.ultreon.craft.input.util.*;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
-
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class GameInput implements InputProcessor, ControllerListener {
     protected static final float DEG_PER_PIXEL = 0.6384300433839F;
@@ -64,6 +55,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     private long nextBreak;
     private long nextPlace;
+    @Nullable
+    protected HitResult hitResult;
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
@@ -152,7 +145,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     public static boolean isKeyDown(int keycode) {
         return keys.contains(keycode);
     }
-    
+
+    @ApiStatus.NonExtendable
     public void update() {
         this.update(Gdx.graphics.getDeltaTime());
     }
@@ -172,25 +166,13 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
                 @Nullable World world = this.game.world;
                 if (world != null) {
-                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    Vec3i pos = hitResult.pos;
-                    Block block = world.get(pos);
-                    Vec3i posNext = hitResult.next;
-                    Block blockNext = world.get(posNext);
-                    Block selectedBlock = this.game.player.getSelectedBlock();
-                    if (hitResult.collide && block != null && !block.isAir()) {
-                        if (TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
-                            world.set(pos, Blocks.AIR);
-                            System.out.println("Break Block");
-                            this.nextBreak = System.currentTimeMillis() + 500;
-                        } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis()
-                                && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
-                            world.set(posNext, selectedBlock);
-                            System.out.println("Place Block");
-                            this.nextPlace = System.currentTimeMillis() + 500;
-                        }
-                    }
+                    this.hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                    boolean destroy = TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis();
+                    boolean use = TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis();
+                    if (destroy) this.nextBreak = System.currentTimeMillis() + 500;
+                    if (use) this.nextPlace = System.currentTimeMillis() + 500;
+
+                    this.onWorldHit(world, player, this.hitResult, destroy, use);
                 }
 
                 player.setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
@@ -275,5 +257,23 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         if (current == null) return false;
         current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));
         return true;
+    }
+
+    protected void onWorldHit(@NotNull World world, @Nullable Player player, @Nullable HitResult hitResult, boolean destroy, boolean use) {
+        if (player != null && hitResult != null) {
+            Vec3i pos = hitResult.pos;
+            Block block = world.get(pos);
+            Vec3i posNext = hitResult.next;
+            Block blockNext = world.get(posNext);
+            Block selectedBlock = player.getSelectedBlock();
+            if (hitResult.collide && !block.isAir()) {
+                if (destroy) {
+                    world.set(pos, Blocks.AIR);
+                } else if (use && blockNext.isAir()
+                        && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(player.getBoundingBox())) {
+                    world.set(posNext, selectedBlock);
+                }
+            }
+        }
     }
 }
