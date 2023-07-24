@@ -683,17 +683,15 @@ public class UltreonCraft implements DeferredDisposable {
 
             this.scheduler.shutdownNow();
 
-            if (this.world != null) {
-                this.world.dispose();
-            }
+            if (this.world != null) this.world.dispose();
 
-            this.blocksTextureAtlas.dispose();
+            if (this.blocksTextureAtlas != null) this.blocksTextureAtlas.dispose();
 
             GamePlatform.instance.dispose();
 
             this.batch.dispose();
             this.spriteBatch.dispose();
-            this.unifont.dispose();
+            if (this.unifont != null) this.unifont.dispose();
 
             for (Font font : Registries.FONTS.values()) {
                 font.dispose();
