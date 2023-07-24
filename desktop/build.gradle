@@ -32,13 +32,10 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
-//    id 'maven-publish'
-//    id "org.panteleyev.jpackageplugin"
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
