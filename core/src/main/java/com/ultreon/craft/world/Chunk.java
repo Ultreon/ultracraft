@@ -12,8 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-import static com.ultreon.craft.world.World.CHUNK_SIZE;
-import static com.ultreon.craft.world.World.WORLD_DEPTH;
+import static com.ultreon.craft.world.World.*;
 
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
@@ -88,7 +87,7 @@ public class Chunk implements Disposable {
 	}
 
 	public Block get(int x, int y, int z) {
-		if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+		if (this.isOutOfBounds(x, y, z)) throw new IllegalArgumentException("Block position is out of bounds: " + x + "," + y + "," + z);
 		return this.getFast(x, y, z);
 	}
 
@@ -97,8 +96,11 @@ public class Chunk implements Disposable {
 	}
 
 	public Block getFast(int x, int y, int z) {
+		int sy = y % this.size;
+		if (sy < 0) sy += this.size;
+
 		synchronized (this.lock) {
-			return this.sections[y / this.size].getFast(x, y % this.size, z);
+			return this.sections[(y - WORLD_DEPTH) / this.size].getFast(x, sy, z);
 		}
 	}
 
@@ -107,7 +109,7 @@ public class Chunk implements Disposable {
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		if (this.isOutOfBounds(x, y, z)) return;
+		if (this.isOutOfBounds(x, y, z)) throw new IllegalArgumentException("Block position is out of bounds: " + x + "," + y + "," + z);
 		this.setFast(x, y, z, block);
 	}
 
@@ -116,14 +118,17 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
+		int sy = y % this.size;
+		if (sy < 0) sy += this.size;
+
 		synchronized (this.lock) {
-			this.sections[y / this.size].setFast(x, y % this.size, z, block);
+			this.sections[(y - WORLD_DEPTH) / this.size].setFast(x, sy, z, block);
 			this.dirty = true;
 		}
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {
-		return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
+		return x < 0 || x >= this.size || y < WORLD_DEPTH || y >= WORLD_HEIGHT || z < 0 || z >= this.size;
 	}
 
 	@Nullable

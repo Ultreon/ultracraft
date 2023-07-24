@@ -24,6 +24,7 @@ public class WorldRegion implements Disposable {
     private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
     private final World world;
     private final RegionPos pos;
+    @Nullable
     private MapType data = new MapType();
     private boolean ready = false;
     private boolean corrupt;
@@ -121,6 +122,7 @@ public class WorldRegion implements Disposable {
 
         ChunkPos worldChunkPos = new ChunkPos(chunkPos.x() + this.pos.x() * REGION_SIZE, chunkPos.z() + this.pos.z() * REGION_SIZE);
         MapType mapType = this.get(chunkPos);
+
         if (mapType == null) return null;
 
         Chunk chunk = Chunk.load(worldChunkPos, mapType);
@@ -132,6 +134,7 @@ public class WorldRegion implements Disposable {
         return chunk;
     }
 
+    @Nullable
     @CheckReturnValue
     private MapType get(ChunkPos chunkPos) {
         return this.data.getMap(chunkPos.toString());

@@ -66,10 +66,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @ParametersAreNonnullByDefault
 public class World implements Disposable {
+	public static final int WORLD_HEIGHT = 320;
+	public static final int WORLD_DEPTH = -64;
 	public static final int CHUNK_SIZE = 16;
-	public static final int CHUNK_HEIGHT = 256;
-	public static final int WORLD_HEIGHT = 256;
-	public static final int WORLD_DEPTH = 0;
+	public static final int CHUNK_HEIGHT = WORLD_HEIGHT - WORLD_DEPTH;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
 	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
@@ -468,8 +468,8 @@ public class World implements Disposable {
 				return oldChunk;
 			}
 
-			this.renderChunk(x, z, chunk);
 			loadingChunk.complete(chunk);
+			this.renderChunk(x, z, chunk);
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
 			return chunk;
 		} catch (RuntimeException e) {
@@ -524,7 +524,8 @@ public class World implements Disposable {
 	}
 
 	private void renderChunk(int x, int z, Chunk chunk) {
-		chunk.dirty = false;
+		chunk.ready = true;
+		chunk.dirty = true;
 		for (Section section : chunk.getSections()) {
 			this.game.runLater(new Task(new Identifier("post_section_render"), () -> {
 				section.ready = true;
@@ -669,8 +670,8 @@ public class World implements Disposable {
 		if (chunkAt == null) return 0;
 
 		// FIXME: Optimize by using a heightmap.
-		for (int y = CHUNK_HEIGHT - 1; y > 0; y--) {
-			if (this.get(x, y, z) != Blocks.AIR) return y + 1;
+		for (int y = WORLD_HEIGHT - 1; y > WORLD_DEPTH; y--) {
+			if (this.get(x, y, z) != Blocks.AIR) return y;
 		}
 		return 0;
 	}
@@ -863,7 +864,7 @@ public class World implements Disposable {
 	}
 
 	public Vec3i getSpawnPoint() {
-		this.spawnPoint.y = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
+		this.spawnPoint.y = Math.max(this.getHighest(this.spawnPoint.x, this.spawnPoint.z) + 1, 64);
 		return this.spawnPoint;
 	}
 

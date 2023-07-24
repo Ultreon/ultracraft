@@ -1,14 +1,12 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Null;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.data.Types;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import org.jetbrains.annotations.Nullable;
 
 public class Section implements Disposable {
     private final int size;
@@ -40,8 +38,12 @@ public class Section implements Disposable {
     }
 
     public Block get(int x, int y, int z) {
-        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
-        return this.getFast(x, y, z);
+        try {
+            if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+            return this.getFast(x, y, z);
+        } catch (Throwable t) {
+            throw new RuntimeException("x = " + (offset.x+x) + ", y = " + (offset.y+y) + ", z = " + (offset.z+z), t);
+        }
     }
 
     public Block getFast(Vec3i pos) {
