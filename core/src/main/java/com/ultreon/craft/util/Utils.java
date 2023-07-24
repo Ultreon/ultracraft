@@ -1,6 +1,7 @@
 package com.ultreon.craft.util;
 
-import com.badlogic.gdx.math.GridPoint3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -22,7 +23,19 @@ public class Utils {
         return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
-    public static ChunkPos chunkPosFromBlockCoords(GridPoint3 pos) {
+    public static ChunkPos chunkPosFromBlockCoords(Vec3d pos) {
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
+    }
+
+    public static ChunkPos chunkPosFromBlockCoords(Vec3i pos) {
         return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
+    }
+
+    public static int normalizeToInt(byte b) {
+        return b < 0 ? (int)b + 128 : b;
+    }
+
+    public static Vec3d toCoreLibs(Vector3 vector) {
+        return new Vec3d(vector.x, vector.y, vector.z);
     }
 }

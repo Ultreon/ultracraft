@@ -19,8 +19,6 @@ package com.ultreon.craft.world.gen;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.math.MathUtils;
-import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.world.World;
 
 /** Adapted from <a href="http://devmag.org.za/2009/04/25/perlin-noise/">http://devmag.org.za/2009/04/25/perlin-noise/</a>
  * @author badlogic */

@@ -20,8 +20,8 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
-        classpath "com.google.code.gson:gson:2.8.9"
+        classpath group: 'commons-io', name: 'commons-io', version: '2.11.0'
+        classpath "com.google.code.gson:gson:2.10.1"
     }
 }
 
@@ -29,15 +29,15 @@ buildscript {
 //     Plugins     //
 //*****************//
 plugins {
-    id 'java'
-    id 'java-library'
-    id 'maven-publish'
-    id "org.panteleyev.jpackageplugin"
+//    id 'java'
+//    id 'java-library'
+//    id 'maven-publish'
+//    id "org.panteleyev.jpackageplugin"
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
@@ -50,72 +50,59 @@ group project_group
 java {
     withSourcesJar()
     withJavadocJar()
+    
+    sourceCompatibility("1.8")
+    targetCompatibility("11")
 }
 
 dependencies {
     // CoreLibs
-    implementation "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
-    implementation "com.github.Ultreon.corelibs:corelibs-translations-v0:$corelibs_version"
-    implementation "com.github.Ultreon:ultreon-data:$ultreon_data_version"
+    api "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-translations-v1:$corelibs_version"
+    api "com.github.Ultreon:ultreon-data:$ultreon_data_version"
 
     // LibGDX
-    implementation "com.badlogicgames.gdx:gdx:$gdx_version"
-    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
-    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
-    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
-    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
-    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
-    implementation "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
-    implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
-
-    // LibGDX Natives
-    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
-    implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
-    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
-
-    // Apache Log4J
-    implementation "org.apache.logging.log4j:log4j:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+    api "com.badlogicgames.gdx:gdx:$gdx_version"
+    api "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    api "com.badlogicgames.ashley:ashley:$ashley_version"
+    api "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+    api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    api "com.badlogicgames.gdx:gdx-tools:$gdx_version"
+    api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
 
     // SLF4J
-    implementation "org.slf4j:slf4j-api:$slf4j_version"
+    api "org.slf4j:slf4j-api:$slf4j_version"
+
+    // Google
+    api "com.google.code.gson:gson:2.10.1"
+    api 'com.google.guava:guava:32.0.0-jre'
 
     // Misc. Libraries
-    implementation 'it.unimi.dsi:fastutil:8.5.11'
-    implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'com.raylabz:opensimplex:1.0.3'
-    implementation 'de.articdive:jnoise-modules:4.0.0'
-    implementation 'de.articdive:jnoise-generators:4.0.0'
-    implementation 'de.articdive:jnoise-modifiers:4.0.0'
-    implementation 'org.jetbrains:annotations:24.0.0'
+    api 'it.unimi.dsi:fastutil:8.5.12'
+    api 'com.raylabz:opensimplex:1.0.3'
+    api 'org.jetbrains:annotations:24.0.1'
 
-    implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
-
-    // ImGui
-    implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+    api "space.earlygrey:shapedrawer:$shapedrawer_version"
 }
 
 processResources {
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
+    inputs.property "version", rootProject.version
+
+    filesMatching("metadata.json") {
+        expand(["version": rootProject.version])
+    }
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
@@ -156,4 +143,26 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+task("copyDependencies", type: Copy) {
+    from(configurations.runtimeClasspath)
+    into("$buildDir/jars")
+}
+
+task("copyJar", type: Copy) {
+    from(tasks.jar)
+    into("$buildDir/jars")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
 }

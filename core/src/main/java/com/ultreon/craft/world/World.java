@@ -1,102 +1,212 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
-import com.google.common.collect.Range;
+import com.badlogic.gdx.utils.Disposable;
+import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.Constants;
+import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.Entities;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.HitResult;
-import com.ultreon.craft.util.Utils;
-import com.ultreon.craft.util.WorldRayCaster;
+import com.ultreon.craft.events.BlockEvents;
+import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.input.GameInput;
+import com.ultreon.craft.util.*;
+import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
-import com.ultreon.craft.world.gen.GenerationStage;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.feature.TreeFeature;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+import static com.ultreon.craft.UltreonCraft.LOGGER;
+import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-public class World implements RenderableProvider {
+@ParametersAreNonnullByDefault
+public class World implements Disposable {
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 256;
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
-	private static final Logger LOGGER = LoggerFactory.getLogger("World");
-	private final short[] indices;
-	private float[] vertices;
-
-	private final BiomeGenerator biome = BiomeGenerator.builder()
+	public static final Marker MARKER = MarkerFactory.getMarker("World");
+	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
-			.domainWarping(new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y))
+			.domainWarping((seed) -> new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(seed), NoiseSettingsInit.DOMAIN_Y.create(seed)))
 			.layer(new WaterTerrainLayer(64))
 			.layer(new AirTerrainLayer())
 			.layer(new SurfaceTerrainLayer())
 			.layer(new StoneTerrainLayer())
 			.layer(new UndergroundTerrainLayer())
-			.feature(new TreeFeature(GenerationStage.TREES, Range.open(3, 5)))
-			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH, new DomainWarping(NoiseSettingsInit.DOMAIN_X, NoiseSettingsInit.DOMAIN_Y)))
+//			.feature(new TreeFeature(GenerationStage.TREES, Range.open(3, 5)))
+			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
 			.build();
+
+	private final BiomeGenerator generator;
+	private final SavedWorld savedWorld;
+	private final Vec3i spawnPoint = new Vec3i();
 	private final long seed = 512;
 	private int renderedChunks;
 
-	private final Map<ChunkPos, RawChunk> chunks = new ConcurrentHashMap<>();
+	private final Map<RegionPos, WorldRegion> regions = new ConcurrentHashMap<>();
+	@Nullable
 	private TerrainGenerator terrainGen;
 	private final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
+	private final Map<ChunkPos, CompletableFuture<Chunk>> loadingChunks = new ConcurrentHashMap<>();
 	private int playTime;
 	private int curId;
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
 
-	public World(int chunksX, int chunksZ) {
-		this.vertices = new float[Chunk.VERTEX_SIZE * 6 * CHUNK_SIZE * WORLD_HEIGHT * CHUNK_SIZE];
-
-		int len = World.CHUNK_SIZE * World.CHUNK_HEIGHT * World.CHUNK_SIZE * 6 * 6 / 3;
-
-		indices = new short[len];
-		short j = 0;
-		for (int i = 0; i < len; i += 6, j += 4) {
-			indices[i] = j;
-			indices[i + 1] = (short) (j + 1);
-			indices[i + 2] = (short) (j + 2);
-			indices[i + 3] = (short) (j + 2);
-			indices[i + 4] = (short) (j + 3);
-			indices[i + 5] = j;
-		}
+	static {
+		// TODO: Use biome registry
+		DEFAULT_BIOME.buildLayers();
 	}
 
-	private WorldGenInfo getWorldGenInfo(Vector3 pos) {
+	@Nullable
+	private CompletableFuture<Boolean> saveFuture;
+	@Nullable
+	private ScheduledFuture<?> saveSchedule;
+	private int chunksToLoad;
+	private int chunksLoaded;
+	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
+	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
+
+	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
+		this.savedWorld = savedWorld;
+
+		this.generator = DEFAULT_BIOME.create(this, this.seed);
+	}
+
+	@ApiStatus.Internal
+	public void load() throws IOException {
+		this.savedWorld.createDir("data/");
+		this.savedWorld.createDir("regions/");
+
+		if (this.savedWorld.exists("data/entities.ubo")) {
+			ListType<MapType> entitiesData = this.savedWorld.read("data/entities.ubo");
+			for (MapType entityData : entitiesData) {
+				Entity entity = Entity.loadFrom(this, entityData);
+				this.entities.put(entity.getId(), entity);
+			}
+		}
+
+		if (this.savedWorld.exists("player.ubo")) {
+			MapType playerData = this.savedWorld.read("player.ubo");
+			Player player = Entities.PLAYER.create(this);
+			player.loadWithPos(playerData);
+			UltreonCraft.get().player = player;
+		}
+
+		if (this.savedWorld.exists("data/player.ubo")) {
+			MapType playerData = this.savedWorld.read("data/player.ubo");
+			Player player = Entities.PLAYER.create(this);
+			player.loadWithPos(playerData);
+			UltreonCraft.get().player = player;
+		}
+
+		WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.savedWorld);
+
+		this.saveSchedule = this.game.schedule(new Task(new Identifier("auto_save")) {
+			@Override
+			public void run() {
+				try {
+					World.this.save(true);
+				} catch (Exception e) {
+					LOGGER.error(MARKER, "Failed to save world", e);
+				}
+				World.this.saveSchedule = World.this.game.schedule(this, Constants.AUTO_SAVE_DELAY, Constants.AUTO_SAVE_DELAY_UNIT);
+			}
+		}, Constants.INITIAL_AUTO_SAVE_DELAY, Constants.AUTO_SAVE_DELAY_UNIT);
+	}
+
+	@ApiStatus.Internal
+	public void save(boolean silent) throws IOException {
+		if (!silent) LOGGER.info(MARKER, "Saving world: " + this.savedWorld.getDirectory().name());
+
+		ListType<MapType> entitiesData = new ListType<>();
+		for (Entity entity : this.entities.values()) {
+			if (entity instanceof Player) continue;
+
+			MapType entityData = entity.save(new MapType());
+			entitiesData.add(entityData);
+		}
+		this.savedWorld.write(entitiesData, "data/entities.ubo");
+
+		Player player = UltreonCraft.get().player;
+		MapType playerData = player == null ? new MapType() : player.save(new MapType());
+		this.savedWorld.write(playerData, "data/player.ubo");
+
+		for (Map.Entry<RegionPos, WorldRegion> entry : this.regions.entrySet()) {
+			try {
+				WorldRegion region = entry.getValue();
+				RegionPos pos = entry.getKey();
+				region.save();
+				if (region.isEmpty()) {
+					region.dispose(true);
+					this.regions.remove(pos);
+				}
+			} catch (IOException e) {
+				LOGGER.error(MARKER, "Failed to save region:", e);
+				return;
+			}
+		}
+
+		WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.savedWorld);
+
+		if (!silent) LOGGER.info(MARKER, "Saved world: " + this.savedWorld.getDirectory().name());
+	}
+
+	@ApiStatus.Internal
+	public CompletableFuture<Boolean> saveAsync(boolean silent) {
+		ScheduledFuture<?> saveSchedule = this.saveSchedule;
+		if (saveSchedule != null && !saveSchedule.isDone()) {
+			return this.saveFuture != null ? this.saveFuture : CompletableFuture.completedFuture(true);
+		}
+		if (saveSchedule != null) {
+			saveSchedule.cancel(false);
+		}
+		return this.saveFuture = CompletableFuture.supplyAsync(() -> {
+			try {
+				this.save(silent);
+				return true;
+			} catch (Exception e) {
+				LOGGER.error(MARKER, "Failed to save world", e);
+				return false;
+			}
+		}, this.saveExecutor);
+	}
+
+	private WorldGenInfo getWorldGenInfo(Vec3d pos) {
 		List<ChunkPos> needed = getChunksAround(this, pos);
-		List<ChunkPos> chunkPositionsToCreate = getChunksToLoad(needed, pos);
-		List<ChunkPos> chunkPositionsToRemove = getChunksToUnload(needed);
+		List<ChunkPos> chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
+		List<ChunkPos> chunkPositionsToRemove = this.getChunksToUnload(needed);
 
 		WorldGenInfo data = new WorldGenInfo();
 		data.toCreate = chunkPositionsToCreate;
@@ -106,7 +216,7 @@ public class World implements RenderableProvider {
 
 	}
 
-	static List<ChunkPos> getChunksAround(World world, Vector3 pos) {
+	static List<ChunkPos> getChunksAround(World world, Vec3d pos) {
 		int startX = (int) (pos.x - (world.getRenderDistance()) * World.CHUNK_SIZE);
 		int startZ = (int) (pos.z - (world.getRenderDistance()) * World.CHUNK_SIZE);
 		int endX = (int) (pos.x + (world.getRenderDistance()) * World.CHUNK_SIZE);
@@ -133,12 +243,15 @@ public class World implements RenderableProvider {
 	}
 
 	private int getRenderDistance() {
-		return game.settings.getRenderDistance();
+		return this.game.settings.renderDistance.get();
 	}
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
-		for (var pos : chunks.keySet().stream().filter(pos -> !needed.contains(pos) && !getChunk(pos).modifiedByPlayer).toList()) {
+		for (ChunkPos pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
+			Chunk chunk = this.getChunk(pos);
+			return chunk != null && !needed.contains(pos);
+		}).collect(Collectors.toList())) {
 			if (this.getChunk(pos) != null) {
 				toRemove.add(pos);
 			}
@@ -147,128 +260,327 @@ public class World implements RenderableProvider {
 		return toRemove;
 	}
 
-	 private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vector3 pos) {
+	private boolean shouldStayLoaded(ChunkPos pos) {
+		return this.isSpawnChunk(pos) || this.isAlwaysLoaded(pos);
+	}
+
+	public boolean isAlwaysLoaded(ChunkPos pos) {
+		return this.alwaysLoaded.contains(pos);
+	}
+
+	private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
 		return needed.stream()
 				.filter(chunkPos -> this.getChunk(chunkPos) == null)
-				.sorted((o1, o2) -> Float.compare(o1.toVector3().dst(pos), o2.toVector3().dst(pos)))
-				.toList();
+				.sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos)))
+				.collect(Collectors.toList());
 	}
 
-	public void updateChunksForPlayerAsync(Player player) {
-		CompletableFuture.runAsync(() -> updateChunksForPlayer(player.getPosition()));
+	public CompletableFuture<Void> updateChunksForPlayerAsync(Player player) {
+		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(player.getPosition()));
 	}
 
-	private void updateChunksForPlayer(Vector3 player) {
-		WorldGenInfo worldGenInfo = getWorldGenInfo(player);
-		worldGenInfo.toRemove.forEach(this::unloadChunk);
-		worldGenInfo.toCreate.forEach(this::generateChunk);
-		worldGenInfo.toCreate = null;
-		worldGenInfo.toRemove = null;
+	private CompletableFuture<Void> updateChunksForPlayerAsync(Vec3d position) {
+		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(position));
 	}
 
-	private void unloadChunk(ChunkPos chunkPos) {
-		unloadChunk(getChunk(chunkPos));
+	public void updateChunksForPlayer(Player player) {
+		this.updateChunksForPlayerAsync(player.getPosition());
 	}
 
-	private void unloadChunk(RawChunk rawChunk) {
-		synchronized (rawChunk.lock) {
-			if (rawChunk instanceof Chunk chunk1) {
-				chunk1.ready = false;
-			}
-			chunks.remove(rawChunk.pos);
-			rawChunk.dispose();
+	public void updateChunksForPlayer(float x, float z) {
+		this.updateChunksForPlayer(new Vec3d(x, WORLD_DEPTH, z));
+	}
+
+	public void updateChunksForPlayer(Vec3d player) {
+		WorldGenInfo worldGenInfo = this.getWorldGenInfo(player);
+		List<ChunkPos> toCreate = worldGenInfo.toCreate;
+		this.chunksToLoad = toCreate.size();
+		this.chunksLoaded = 0;
+//		System.out.println("worldGenInfo.toRemove = " + worldGenInfo.toRemove);
+		for (ChunkPos chunkPos : worldGenInfo.toRemove) {
+			this.unloadChunk(chunkPos);
 		}
+		for (ChunkPos chunkPos : toCreate) {
+			this.loadChunk(chunkPos);
+			this.chunksLoaded++;
+		}
+		worldGenInfo.toCreate.clear();
+		worldGenInfo.toRemove.clear();
+	}
+
+	private CompletableFuture<Boolean> unloadChunkAsync(ChunkPos chunkPos) {
+		return this.unloadChunkAsync(Objects.requireNonNull(this.getChunk(chunkPos), "Chunk not loaded: " + chunkPos));
+	}
+
+	@CanIgnoreReturnValue
+	private CompletableFuture<Boolean> unloadChunkAsync(@NotNull Chunk chunk) {
+		synchronized (chunk.lock) {
+            LOGGER.debug(MARKER, "UNLOAD:: chunk.pos = " + chunk.pos, new RuntimeException());
+            return CompletableFuture.supplyAsync(() -> this.unloadChunk(chunk));
+		}
+	}
+
+	private boolean unloadChunk(@NotNull ChunkPos chunkPos) {
+		Chunk chunk = this.getChunk(chunkPos);
+		if (chunk == null) return true;
+		return this.unloadChunk(chunk);
+	}
+
+	@CanIgnoreReturnValue
+	private boolean unloadChunk(@NotNull Chunk chunk) {
+		synchronized (chunk.lock) {
+			WorldRegion region = this.getRegionFor(chunk.pos);
+			if (region == null) {
+				return false;
+			}
+			synchronized (region.lock) {
+				region.unloadChunk(this.toLocalChunkPos(chunk.pos.x(), chunk.pos.z()), true, false);
+				WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.pos, chunk);
+				return true;
+			}
+		}
+	}
+
+	@Nullable
+	private WorldRegion getRegionFor(ChunkPos chunkPos) {
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
+		return this.getRegion(regionPos);
+	}
+
+	@Nullable
+	private WorldRegion getRegion(RegionPos regionPos) {
+		WorldRegion region = this.regions.get(regionPos);
+		if (region != null && !region.getPosition().equals(regionPos)) {
+			throw new ValueMismatchException("Position of region received (" + region.getPosition() + ") doesn't match the requested position (" + regionPos + ")");
+		}
+		return region;
+	}
+
+	private WorldRegion getOrOpenRegionFor(ChunkPos chunkPos, boolean loadAsync) {
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
+		ChunkPos localChunkPos = this.toLocalChunkPos(chunkPos.x(), chunkPos.z());
+		return this.getOrOpenRegion(regionPos, loadAsync);
+	}
+
+	private CompletableFuture<WorldRegion> getOrOpenRegionForAsync(ChunkPos chunkPos) {
+		RegionPos regionPos = new RegionPos(Math.floorDiv(chunkPos.x(), REGION_SIZE), Math.floorDiv(chunkPos.z(), REGION_SIZE));
+		ChunkPos localChunkPos = this.toLocalChunkPos(chunkPos.x(), chunkPos.z());
+		return this.getOrOpenRegionAsync(regionPos);
+	}
+
+	private WorldRegion getOrOpenRegion(RegionPos regionPos, boolean loadAsync) {
+		WorldRegion oldRegion = this.regions.get(regionPos);
+		if (oldRegion != null) {
+			return oldRegion;
+		}
+		WorldRegion region = new WorldRegion(this, regionPos, loadAsync);
+		if (region.isCorrupt()) {
+			LOGGER.warn(MARKER, "Corrupted region: " + regionPos);
+		}
+		return this.regions.computeIfAbsent(regionPos, pos -> region);
+	}
+
+	private CompletableFuture<WorldRegion> getOrOpenRegionAsync(RegionPos regionPos) {
+		WorldRegion oldRegion = this.regions.get(regionPos);
+		if (oldRegion != null) {
+			return CompletableFuture.completedFuture(oldRegion);
+		}
+		return CompletableFuture.supplyAsync(() -> {
+			WorldRegion region = new WorldRegion(this, regionPos, false);
+			if (region.isCorrupt()) {
+				LOGGER.warn(MARKER, "Corrupted region: " + regionPos);
+			}
+			return this.regions.computeIfAbsent(regionPos, pos -> region);
+		});
 	}
 
 	public HitResult rayCast(Ray ray) {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
-	protected void generateChunk(ChunkPos pos) {
-		generateChunk(pos.x, pos.z);
+	protected CompletableFuture<Chunk> loadChunkAsync(ChunkPos pos) {
+		return this.loadChunkAsync(pos.x(), pos.z());
 	}
 
-	protected void generateChunk(int x, int z) {
+	public CompletableFuture<Chunk> loadChunkAsync(int x, int z) {
+		return this.loadChunkAsync(x, z, false);
+	}
+
+	public CompletableFuture<Chunk> loadChunkAsync(int x, int z, boolean overwrite) {
+		return CompletableFuture.supplyAsync(() -> this.loadChunk(x, z, overwrite));
+	}
+
+	protected Chunk loadChunk(ChunkPos pos) {
+		return this.loadChunk(pos.x(), pos.z());
+	}
+
+	public Chunk loadChunk(int x, int z) {
+		return this.loadChunk(x, z, false);
+	}
+
+	public synchronized Chunk loadChunk(int x, int z, boolean overwrite) {
 		ChunkPos pos = new ChunkPos(x, z);
-		RawChunk oldChunk = getChunk(x, z);
-		BuilderChunk chunk;
+		CompletableFuture<Chunk> loadingChunk = this.loadingChunks.get(pos);
+		if (loadingChunk != null) {
+			if (loadingChunk.isDone()) this.loadingChunks.remove(pos);
+			return loadingChunk.join();
+		}
+		loadingChunk = new CompletableFuture<>();
 
-		if (oldChunk == null) chunk = new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
-		else if (oldChunk instanceof BuilderChunk oldBuilderChunk) chunk = oldBuilderChunk;
-		else return;
+		ChunkPos localPos = this.toLocalChunkPos(x, z);
+		int regionX = Math.floorDiv(x, REGION_SIZE);
+		int regionZ = Math.floorDiv(z, REGION_SIZE);
 
-		for (int dx = x - 1; dx <= x + 1; dx++) {
-			for (int dz = z - 1; dz <= z + 1; dz++) {
-				if (dx == x && dz == z) continue;
+		WorldRegion region = this.getOrOpenRegion(new RegionPos(regionX, regionZ), false);
+		try {
+			Chunk oldChunk = region.getChunk(localPos);
 
-				RawChunk at = getChunk(dx, dz);
-				if (at == null) {
-					putChunk(pos, new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, new ChunkPos(dx, dz)));
+			if (oldChunk != null && !overwrite) {
+				loadingChunk.complete(oldChunk);
+				return oldChunk;
+			}
+
+			Chunk loadedChunk = region.loadChunk(localPos);
+			Chunk chunk;
+			if (loadedChunk == null) {
+				chunk = this.generateChunk(x, z);
+			} else {
+				chunk = loadedChunk;
+			}
+			if (chunk == null) {
+				LOGGER.warn(MARKER, "Tried to load chunk at " + pos + " but it still wasn't loaded:");
+				if (oldChunk != null) loadingChunk.complete(oldChunk);
+				else throw new IllegalStateException("Chunk loading failed: chunk wasn't loaded while requested to load");
+				return oldChunk;
+			}
+
+			this.renderChunk(x, z, chunk);
+			loadingChunk.complete(chunk);
+			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
+			return chunk;
+		} catch (RuntimeException e) {
+			LOGGER.error(MARKER, "Failed to load chunk " + pos + ":", e);
+			throw e;
+		}
+	}
+
+	protected CompletableFuture<@Nullable Chunk> generateChunkAsync(ChunkPos pos) {
+		return this.generateChunkAsync(pos.x(), pos.z());
+	}
+
+	protected CompletableFuture<@Nullable Chunk> generateChunkAsync(int x, int z) {
+		return CompletableFuture.supplyAsync(() -> this.generateChunk(x, z));
+	}
+
+	protected @Nullable Chunk generateChunk(ChunkPos pos) {
+		return this.generateChunk(pos.x(), pos.z());
+	}
+
+	@Nullable
+	protected Chunk generateChunk(int x, int z) {
+		ChunkPos pos = new ChunkPos(x, z);
+		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+
+		WorldRegion region = this.getRegionFor(pos);
+
+		if (region == null) return null;
+
+		try {
+			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
+				for (int by = 0; by < CHUNK_SIZE; by++) {
+					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
 				}
 			}
-		}
 
-		for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-			for (int by = 0; by < CHUNK_SIZE; by++) {
-				biome.processColumn(this, chunk, bx, by, seed);
+			if (!this.putChunk(region, pos, chunk)) {
+				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
+				chunk.dispose();
+				return null;
 			}
-		}
 
-		Chunk build = chunk.build();
-		putChunk(pos, build);
+			region.initialized = true;
+
+			WorldEvents.CHUNK_GENERATED.factory().onChunkGenerated(this, pos, chunk);
+
+			return chunk;
+		} catch (Exception e) {
+			LOGGER.error(MARKER, "Failed to generate chunk " + pos + ":", e);
+			return null;
+		}
 	}
 
-	private void putChunk(ChunkPos chunkPos, RawChunk chunk) {
-		RawChunk oldChunk = chunks.get(chunkPos);
-		if (oldChunk != null) {
-			oldChunk.dispose();
+	private void renderChunk(int x, int z, Chunk chunk) {
+		chunk.dirty = false;
+		for (Section section : chunk.getSections()) {
+			this.game.runLater(new Task(new Identifier("post_section_render"), () -> {
+				section.ready = true;
+				section.dirty = true;
+			}));
 		}
-		chunks.put(chunkPos, chunk);
+
+		this.game.runLater(new Task(new Identifier("post_chunk_render"), () -> {
+			chunk.ready = true;
+			chunk.dirty = true;
+		}));
+	}
+
+	@CanIgnoreReturnValue
+	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull Chunk chunk) {
+		return this.putChunk(region, chunkPos, chunk, false);
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull Chunk chunk, boolean overwrite) {
+		return region.putChunk(this.toLocalChunkPos(chunk.pos.x(), chunk.pos.z()), chunk, overwrite);
 	}
 
 	public void tick() {
-		playTime++;
+		this.playTime++;
 
-		for (var entity : entities.values()) {
+		for (Entity entity : this.entities.values()) {
 			entity.tick();
 		}
 	}
 
-	@SuppressWarnings("BlockingMethodInNonBlockingContext")
 	public CompletableFuture<ConcurrentMap<Vector3, RawChunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
 		ConcurrentMap<Vector3, RawChunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
-			for (var pos : toCreate) {
+			for (ChunkPos pos : toCreate) {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 
-				RawChunk chunk = new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
-				RawChunk newChunk = terrainGen.generateChunkData(this, chunk, seed);
+				RawChunk chunk = new BuilderChunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				assert this.terrainGen != null;
+				RawChunk newChunk = this.terrainGen.generateChunkData(this, chunk, this.seed);
 			}
 			return map;
 		});
 	}
 
-	public void set(GridPoint3 blockPos, Block block) {
-		set(blockPos.x, blockPos.y, blockPos.z, block);
+	public void set(Vec3i blockPos, Block block) {
+		this.set(blockPos.x, blockPos.y, blockPos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
-		RawChunk chunk = getChunkAt(x, y, z);
-		GridPoint3 cp = toChunkCoords(x, y, z);
+		BlockEvents.SET_BLOCK.factory().onSetBlock(this, new Vec3i(x, y, z), block);
+
+		Chunk chunk = this.getChunkAt(x, y, z);
+		if (chunk == null) return;
+
+		Vec3i cp = this.toLocalBlockPos(x, y, z);
 		chunk.set(cp.x, cp.y, cp.z, block);
 	}
 
-	public Block get(GridPoint3 pos) {
-		return get(pos.x, pos.y, pos.z);
+	public Block get(Vec3i pos) {
+		return this.get(pos.x, pos.y, pos.z);
 	}
 
 	@NotNull
 	public Block getRaw(int x, int y, int z) {
-		RawChunk chunkAt = getChunkAt(x, y, z);
+		RawChunk chunkAt = this.getChunkAt(x, y, z);
 		if (chunkAt == null) {
 			return Blocks.AIR;
 		}
@@ -279,21 +591,25 @@ public class World implements RenderableProvider {
 
 	@NotNull
 	public Block get(int x, int y, int z) {
-		RawChunk chunkAt = getChunkAt(x, y, z);
+		RawChunk chunkAt = this.getChunkAt(x, y, z);
 		if (!(chunkAt instanceof Chunk chunk)) return Blocks.AIR;
 		if (!chunk.ready) {
 			return Blocks.AIR;
 		}
 
-		GridPoint3 cp = toChunkCoords(x, y, z);
-		return chunkAt.get(cp.x, cp.y, cp.z);
+		synchronized (chunkAt.lock) {
+			if (!chunkAt.ready) return Blocks.AIR;
+
+			Vec3i cp = this.toLocalBlockPos(x, y, z);
+			return chunkAt.getFast(cp.x, cp.y, cp.z);
+		}
 	}
 
-	private GridPoint3 toChunkCoords(GridPoint3 worldCoords) {
-		return toChunkCoords(worldCoords.x, worldCoords.y, worldCoords.z);
+	private Vec3i toLocalBlockPos(Vec3i worldCoords) {
+		return this.toLocalBlockPos(worldCoords.x, worldCoords.y, worldCoords.z);
 	}
 
-	private GridPoint3 toChunkCoords(int x, int y, int z) {
+	private Vec3i toLocalBlockPos(int x, int y, int z) {
 		int cx = x % CHUNK_SIZE;
 		int cy = y % CHUNK_HEIGHT;
 		int cz = z % CHUNK_SIZE;
@@ -301,50 +617,77 @@ public class World implements RenderableProvider {
 		if (cx < 0) cx += CHUNK_SIZE;
 		if (cz < 0) cz += CHUNK_SIZE;
 
-		return new GridPoint3(cx, cy, cz);
+		return new Vec3i(cx, cy, cz);
 	}
 
+	private ChunkPos toLocalChunkPos(int x, int z) {
+		int cx = x % REGION_SIZE;
+		int cz = z % REGION_SIZE;
+
+		if (cx < 0) cx += REGION_SIZE;
+		if (cz < 0) cz += REGION_SIZE;
+
+		return new ChunkPos(cx, cz);
+	}
+
+	@Nullable
 	public RawChunk getChunk(ChunkPos chunkPos) {
-		return chunks.get(chunkPos);
+		WorldRegion region = this.getRegionFor(chunkPos);
+		if (region == null) {
+			return null;
+		}
+		Chunk chunk = region.getChunk(this.toLocalChunkPos(chunkPos.x(), chunkPos.z()));
+		if (chunk != null && !chunk.pos.equals(chunkPos)) {
+			throw new ValueMismatchException("Position of chunk received (" + chunk.pos + ") doesn't match the requested position (" + chunkPos + ")");
+		}
+		return chunk;
 	}
 
+	@Nullable
 	public RawChunk getChunk(int x, int z) {
-		return getChunk(new ChunkPos(x, z));
+		return this.getChunk(new ChunkPos(x, z));
 	}
 
 	public RawChunk getChunkAt(int x, int y, int z) {
-		return getChunkAt(new GridPoint3(x, y, z));
+		return this.getChunkAt(new Vec3i(x, y, z));
 	}
 
-	public RawChunk getChunkAt(GridPoint3 pos) {
+	@Nullable
+	public RawChunk getChunkAt(Vec3i pos) {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
+		if (this.isOutOfWorldBounds(pos)) return null;
+
 		ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-		return getChunk(chunkPos);
+		return this.getChunk(chunkPos);
+	}
+
+	private boolean isOutOfWorldBounds(Vec3i pos) {
+		return pos.y < WORLD_DEPTH || pos.y > WORLD_HEIGHT;
 	}
 
 	public int getHighest(int x, int z) {
-		RawChunk chunkAt = getChunkAt(x, 0, z);
+		RawChunk chunkAt = this.getChunkAt(x, 0, z);
 		if (chunkAt == null) return 0;
 
 		// FIXME: Optimize by using a heightmap.
 		for (int y = CHUNK_HEIGHT - 1; y > 0; y--) {
-			if (get(x, y, z) != Blocks.AIR) return y + 1;
+			if (this.get(x, y, z) != Blocks.AIR) return y + 1;
 		}
 		return 0;
 	}
 
 	public void setColumn(int x, int z, Block block) {
-		setColumn(x, z, CHUNK_HEIGHT, block);
+		this.setColumn(x, z, CHUNK_HEIGHT, block);
 	}
 
 	public void setColumn(int x, int z, int maxY, Block block) {
-		if (getChunkAt(x, maxY, z) == null) return;
+		if (this.getChunkAt(x, maxY, z) == null) return;
 
 		// FIXME optimize
 		for (; maxY > 0; maxY--) {
-			set(x, maxY, z, block);
+			this.set(x, maxY, z, block);
 		}
 	}
 
@@ -370,104 +713,80 @@ public class World implements RenderableProvider {
 //		}
 	}
 
-	@Override
-	public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-		renderedChunks = 0;
-		totalChunks = chunks.size();
-		List<RawChunk> toSort = new ArrayList<>(chunks.values());
-		toSort.sort((o1, o2) -> {
-			Vector3 mid1 = new Vector3(o1.offset.x + (float) CHUNK_SIZE / 2, o1.offset.y + (float) CHUNK_HEIGHT / 2, o1.offset.z + (float) CHUNK_SIZE / 2);
-			Vector3 mid2 = new Vector3(o2.offset.x + (float) CHUNK_SIZE / 2, o2.offset.y + (float) CHUNK_HEIGHT / 2, o2.offset.z + (float) CHUNK_SIZE / 2);
-			return Float.compare(mid2.dst(this.game.player.getPosition()), mid1.dst(this.game.player.getPosition()));
-		});
-		for (RawChunk rawChunk : toSort) {
-			if (!(rawChunk instanceof Chunk chunk)) continue;
-			synchronized (chunk.lock) {
-				if (!chunk.ready) {
-					continue;
-				}
-
-				Mesh opaqueMesh = chunk.mesh;
-				if (chunk.dirty) {
-					int numVertices = chunk.calculateVertices(this.vertices);
-					chunk.numVertices = numVertices / 4 * 6;
-					opaqueMesh.setVertices(this.vertices, 0, numVertices * Chunk.VERTEX_SIZE);
-					chunk.dirty = false;
-				}
-				if (chunk.numVertices == 0) {
-					continue;
-				}
-				Renderable piece = pool.obtain();
-
-				piece.material = chunk.material;
-				piece.meshPart.mesh = opaqueMesh;
-				piece.meshPart.offset = 0;
-				piece.meshPart.size = chunk.numVertices;
-				piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
-
-				renderables.add(piece);
-				renderedChunks = renderedChunks + 1;
-			}
+	public List<Chunk> getChunks() {
+		List<Chunk> chunks = new ArrayList<>();
+		for (WorldRegion region : this.regions.values()) {
+			Collection<Chunk> regionChunks = region.getChunks();
+			chunks.addAll(regionChunks);
 		}
+		return chunks;
 	}
 
 	public int getPlayTime() {
-		return playTime;
+		return this.playTime;
 	}
 
+	/**
+	 * <b>NOTE:</b> This method is obsolete, {@link #spawn(Entity, MapType)} exists with more functionality.
+	 */
+	@ApiStatus.Obsolete
 	public <T extends Entity> T spawn(T entity) {
-		setEntityId(entity);
-		entities.put(entity.getId(), entity);
+		Preconditions.checkNotNull(entity, "Cannot spawn null entity");
+		this.setEntityId(entity);
+		this.entities.put(entity.getId(), entity);
 		return entity;
 	}
 
 	public <T extends Entity> T spawn(T entity, MapType spawnData) {
-		setEntityId(entity);
+		Preconditions.checkNotNull(entity, "Cannot spawn null entity");
+		Preconditions.checkNotNull(entity, "Cannot entity with nul spawn data");
+		this.setEntityId(entity);
 		entity.onPrepareSpawn(spawnData);
-		entities.put(entity.getId(), entity);
+		this.entities.put(entity.getId(), entity);
 		return entity;
 	}
 
 	private <T extends Entity> void setEntityId(T entity) {
+		Preconditions.checkNotNull(entity, "Cannot set entity id for null entity");
 		int oldId = entity.getId();
-		if (oldId > 0 && entities.containsKey(oldId)) {
+		if (oldId > 0 && this.entities.containsKey(oldId)) {
 			throw new IllegalStateException("Entity already spawned: " + entity);
 		}
-		int newId = oldId > 0 ? oldId : nextId();
+		int newId = oldId > 0 ? oldId : this.nextId();
 	}
 
 	private int nextId() {
-		return curId++;
+		return this.curId++;
 	}
 
 	public void despawn(Entity entity) {
-		entities.remove(entity.getId());
+		this.entities.remove(entity.getId());
 	}
 
 	public void despawn(int id) {
-		entities.remove(id);
+		this.entities.remove(id);
 	}
 
 	public Entity getEntity(int id) {
-		return entities.get(id);
+		return this.entities.get(id);
 	}
 
 	public List<BoundingBox> collide(BoundingBox box) {
 		List<BoundingBox> boxes = new ArrayList<>();
-		int xMin = MathUtils.floor(box.min.x);
-		int xMax = MathUtils.floor(box.max.x);
-		int yMin = MathUtils.floor(box.min.y);
-		int yMax = MathUtils.floor(box.max.y);
-		int zMin = MathUtils.floor(box.min.z);
-		int zMax = MathUtils.floor(box.max.z);
+		int xMin = (int) Math.floor(box.min.x);
+		int xMax = (int) Math.floor(box.max.x);
+		int yMin = (int) Math.floor(box.min.y);
+		int yMax = (int) Math.floor(box.max.y);
+		int zMin = (int) Math.floor(box.min.z);
+		int zMax = (int) Math.floor(box.max.z);
 
 		for (int x = xMin; x <= xMax; x++) {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
-					if (block != null && block.isSolid()) {
+					if (block.isSolid()) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
-						if (blockBox != null && blockBox.intersects(box)) {
+						if (blockBox.intersects(box)) {
 							boxes.add(blockBox);
 						}
 					}
@@ -478,23 +797,37 @@ public class World implements RenderableProvider {
 		return boxes;
 	}
 
+	@Override
 	public void dispose() {
-		for (RawChunk chunk : chunks.values()) {
-			chunk.dispose();
+		GameInput.cancelVibration();
+
+		ScheduledFuture<?> saveSchedule = this.saveSchedule;
+		if (saveSchedule != null) saveSchedule.cancel(true);
+		this.saveExecutor.shutdownNow();
+
+		try {
+			this.save(true);
+		} catch (IOException e) {
+			LOGGER.warn(MARKER, "Saving failed:", e);
 		}
-		vertices = null;
+
+		for (WorldRegion chunk : this.regions.values()) {
+			chunk.dispose(true);
+		}
+		this.generator.dispose();
 	}
 
-	public void updateChunksForPlayer(float spawnX, float spawnZ) {
-		this.updateChunksForPlayer(new Vector3(spawnX, 0, spawnZ));
+	public CompletableFuture<Void> updateChunksForPlayerAsync(float spawnX, float spawnZ) {
+		return this.updateChunksForPlayerAsync(new Vec3d(spawnX, 0, spawnZ));
 	}
 
+	@Deprecated
 	public int getRenderedChunks() {
-		return renderedChunks;
+		return this.renderedChunks;
 	}
 
 	public int getTotalChunks() {
-		return totalChunks;
+		return this.totalChunks;
 	}
 
 	public void fillCrashInfo(CrashLog crashLog) {
@@ -506,7 +839,42 @@ public class World implements RenderableProvider {
 		crashLog.addCategory(cat);
 	}
 
+	public SavedWorld getSavedWorld() {
+		return this.savedWorld;
+	}
+
+	@Nullable
+	public WorldRegion getRegionAt(Vec3i blockPos) {
+		RegionPos regionPos = new RegionPos(Math.floorDiv(Math.floorDiv(blockPos.x, CHUNK_SIZE), REGION_SIZE), Math.floorDiv(Math.floorDiv(blockPos.z, CHUNK_SIZE), REGION_SIZE));
+		return this.getRegion(regionPos);
+	}
+
 	public long getSeed() {
-		return seed;
+		return this.seed;
+	}
+
+	public void setSpawnPoint(int spawnX, int spawnZ) {
+		this.spawnPoint.set(spawnX, this.getHighest(spawnX, spawnZ), spawnZ);
+	}
+
+	public boolean isSpawnChunk(ChunkPos pos) {
+		int x = pos.x();
+		int z = pos.z();
+
+		return this.spawnPoint.x - 1 <= x && this.spawnPoint.x + 1 >= x &&
+				this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
+	}
+
+	public Vec3i getSpawnPoint() {
+		this.spawnPoint.y = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
+		return this.spawnPoint;
+	}
+
+	public int getChunksToLoad() {
+		return this.chunksToLoad;
+	}
+
+	public int getChunksLoaded() {
+		return this.chunksLoaded;
 	}
 }

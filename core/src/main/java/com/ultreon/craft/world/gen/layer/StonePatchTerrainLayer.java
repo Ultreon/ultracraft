@@ -3,26 +3,25 @@ package com.ultreon.craft.world.gen.layer;
 import com.badlogic.gdx.math.GridPoint3;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.RawChunk;
+import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 
 public class StonePatchTerrainLayer extends TerrainLayer {
     public float stoneThreshold = 0.5f;
-    private final NoiseSettings noiseSettings;
 
     public DomainWarping domainWarping;
 
-    public StonePatchTerrainLayer(NoiseSettings noiseSettings, DomainWarping domainWarping) {
-        this.noiseSettings = noiseSettings;
-        this.domainWarping = domainWarping;
+    public StonePatchTerrainLayer(NoiseSettings noiseSettings) {
+
     }
 
     @Override
-    public boolean handle(RawChunk chunk, int x, int y, int z, int height, long seed) {
+    public boolean handle(World world, RawChunk chunk, int x, int y, int z, int height, long seed) {
         if (chunk.offset.y > height)
             return false;
 
-        noiseSettings.setSeed(seed);
+        noise.setSeed(seed);
         //float stoneNoise = MyNoise.OctavePerlin(chunkData.worldPosition.x + x, chunkData.worldPosition.z + z, stoneNoiseSettings);
         float stoneNoise = domainWarping.generateDomainNoise(chunk.offset.x + x, chunk.offset.z + z, noiseSettings);
 

@@ -1,22 +1,21 @@
 package com.ultreon.craft.util;
 
-import com.badlogic.gdx.math.GridPoint3;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.ultreon.craft.block.Block;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public class HitResult {
     // input
     public Ray ray;
     public float distanceMax = 5.0F;
     // output
-    public Vector3 position = new Vector3();
-    public Vector3 normal = new Vector3();
-    public GridPoint3 pos = new GridPoint3();
-    public GridPoint3 next = new GridPoint3();
+    public Vec3d position = new Vec3d();
+    public Vec3d normal = new Vec3d();
+    public Vec3i pos = new Vec3i();
+    public Vec3i next = new Vec3i();
     public Block block;
     public boolean collide;
-    public float distance;
+    public double distance;
 
     public HitResult() {
 

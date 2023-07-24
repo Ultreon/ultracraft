@@ -1,0 +1,120 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url = "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "sonatype"
+        }
+        maven {
+            url = "https://maven.atlassian.com/3rdparty/"
+        }
+        google()
+    }
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
+        classpath "com.google.code.gson:gson:2.8.+"
+    }
+}
+
+plugins {
+    id "groovy"
+    id "eclipse"
+}
+
+version project_version
+group project_group // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '11' // Need this here so eclipse task generates correctly.
+
+//GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), this.binding);
+//shell.run(file, arguments);
+
+println("Current version: $project_version")
+println("Project: $group:$archivesBaseName")
+println("Bulding a Java $compileJava.targetCompatibility project...")
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    // configuration that holds jars to include in the jar
+    implementation
+    addToJar {
+        canBeResolved true
+    }
+}
+
+dependencies {
+    compileOnly "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+
+    compileOnly "it.unimi.dsi:fastutil-core:8.5.9"
+    compileOnly "com.google.code.findbugs:jsr305:$jsr_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+
+    compileOnly "org.xbib.elasticsearch:joptsimple:6.3.2.1"
+    compileOnly "org.apache.logging.log4j:log4j:$log4j_version"
+    compileOnly "org.apache.logging.log4j:log4j-core:$log4j_version"
+    compileOnly "org.apache.logging.log4j:log4j-api:$log4j_version"
+
+    compileOnly("net.fabricmc:fabric-loader:$fabric_version") {
+        exclude group: "org.ow2.asm"
+        exclude group: "org.ow2.sat4j"
+    }
+}
+
+processResources {
+    inputs.property "version", version
+    inputs.property "ulreoncraft_version", project(":core").version
+    inputs.property "libgdx_version", gdx_version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": version
+    }
+
+    filesMatching("versions.properties") {
+        expand "ulreoncraft_version": project(":core").version, "libgdx_version": gdx_version
+    }
+
+    exclude "*.pdn", "*.xcf", "*.ps"
+}
+
+repositories {
+    maven {
+        url = "https://maven.fabricmc.net"
+        name = "FabricMC"
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'QBubbles',
+                'Implementation-Vendor': 'Ultreon Team',
+                project_version: "1.0-indev1",
+                'Main-Class': 'net.fabricmc.impl.launch.knot.KnotClient',
+                'Multi-Release': 'true'
+    }
+    from(configurations.addToJar.collect {
+        zipTree(it).matching {
+            exclude "*.RSA", "*.SF", "*.MF"
+        }
+    })
+    exclude "*.RSA", "*.SF", "*.MF"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

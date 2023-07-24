@@ -2,37 +2,37 @@ package com.ultreon.craft.world.gen;
 
 import com.ultreon.craft.world.RawChunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import com.ultreon.craft.world.gen.trees.DataProcessing;
+import org.jetbrains.annotations.UnknownNullability;
 
 public class TreeGenerator {
+    @UnknownNullability
     public NoiseSettings treeNoiseSettings;
+    @UnknownNullability
     public DomainWarping domainWrapping;
 
-    public TreeData generateTreeData(RawChunk chunkData, long seed)
-    {
-        treeNoiseSettings.setSeed(seed);
+    public TreeData generateTreeData(RawChunk chunkData, long seed) {
+        NoiseInstance noise = this.treeNoiseSettings.create(seed);
         TreeData treeData = new TreeData();
-        float[][] noiseData = generateTreeNoise(chunkData, treeNoiseSettings);
-        treeData.treePositions = DataProcessing.findLocalMaxima(noiseData, (int)chunkData.offset.x, (int)chunkData.offset.z);
+        float[][] noiseData = this.generateTreeNoise(chunkData, noise);
+        treeData.treePositions = DataProcessing.findLocalMaxima(noiseData, chunkData.getOffset().x, chunkData.getOffset().z);
 
         return treeData;
     }
 
-    private float[][] generateTreeNoise(RawChunk chunkData, NoiseSettings treeNoiseSettings)
-    {
+    private float[][] generateTreeNoise(RawChunk chunkData, NoiseInstance noise) {
         float[][] noiseMax = new float[chunkData.size][chunkData.size];
-        int xMax = (int) (chunkData.offset.x + chunkData.size);
-        int xMin = (int) chunkData.offset.x;
-        int zMax = (int) (chunkData.offset.z + chunkData.size);
-        int zMin = (int) chunkData.offset.z;
+        int xMax = chunkData.getOffset().x + chunkData.size;
+        int xMin = chunkData.getOffset().x;
+        int zMax = chunkData.getOffset().z + chunkData.size;
+        int zMin = chunkData.getOffset().z;
         int xIndex = 0, zIndex = 0;
 
-        for (int x = xMin; x < xMax; x++)
-        {
-            for (int z = zMin; z < zMax; z++)
-            {
-                noiseMax[xIndex][zIndex] = domainWrapping.generateDomainNoise(x, z, treeNoiseSettings);
+        for (int x = xMin; x < xMax; x++) {
+            for (int z = zMin; z < zMax; z++) {
+                noiseMax[xIndex][zIndex] = this.domainWrapping.generateDomainNoise(x, z, noise);
                 zIndex++;
             }
 

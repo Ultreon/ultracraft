@@ -1,9 +1,12 @@
 package com.ultreon.craft.entity;
 
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class EntityType<T extends Entity> {
     private final EntitySize size;
@@ -27,12 +30,13 @@ public abstract class EntityType<T extends Entity> {
     }
 
     public EntitySize getSize() {
-        return size;
+        return this.size;
     }
 
     public static class Builder<T extends Entity> {
         private float width = 0.8f;
         private float height = 1.9f;
+        @Nullable
         private EntityFactory<T> factory;
 
         public Builder() {
@@ -53,7 +57,9 @@ public abstract class EntityType<T extends Entity> {
         }
 
         public EntityType<T> build() {
-            return new EntityType<>(this) {
+            Preconditions.checkNotNull(this.factory, "Entity factory is not set");
+
+            return new EntityType<T>(this) {
                 @Override
                 public T create(World world) {
                     return Builder.this.factory.create(this, world);

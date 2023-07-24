@@ -2,6 +2,7 @@ package com.ultreon.craft.world.gen.layer;
 
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.RawChunk;
+import com.ultreon.craft.world.World;
 
 public class WaterTerrainLayer extends TerrainLayer {
     private final int waterLevel;
@@ -15,7 +16,7 @@ public class WaterTerrainLayer extends TerrainLayer {
     }
 
     @Override
-    public boolean handle(RawChunk chunk, int x, int y, int z, int height, long seed) {
+    public boolean handle(World world, RawChunk chunk, int x, int y, int z, int height, long seed) {
         if (y > height && y <= waterLevel) {
             chunk.set(x, y, z, Blocks.WATER);
             if (y == height + 1) {
