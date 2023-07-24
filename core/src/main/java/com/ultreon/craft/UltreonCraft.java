@@ -627,9 +627,11 @@ public class UltreonCraft implements DeferredDisposable {
         Vec3i spawnPoint = this.world.getSpawnPoint();
 
         return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
+            int spawnPointY = this.world.getSpawnPoint().y;
+
             this.player = Entities.PLAYER.create(this.world);
             this.player.setHealth(this.player.getMaxHeath());
-            this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+            this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
             this.world.spawn(this.player);
         });
     }
@@ -643,11 +645,14 @@ public class UltreonCraft implements DeferredDisposable {
         Vec3i spawnPoint = this.world.getSpawnPoint();
 
         this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
+
+        int spawnPointY = this.world.getSpawnPoint().y;
+
         this.player = Entities.PLAYER.create(this.world);
         LOGGER.debug("Player created, setting health now.");
         this.player.setHealth(this.player.getMaxHeath());
         LOGGER.debug("Health set, setting position now.");
-        this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+        this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
         LOGGER.debug("Position set, spawning in world now..");
         this.world.spawn(this.player);
     }
