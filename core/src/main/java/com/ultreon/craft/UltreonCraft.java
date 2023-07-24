@@ -129,7 +129,8 @@ public class UltreonCraft implements DeferredDisposable {
     private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
     private int chunkRefresh;
-    public boolean showDebugHud = true;
+    private ScheduledExecutorService gcExecutor;
+	public boolean showDebugHud = true;
 
     // Public Flags
     public boolean renderWorld = false;
@@ -177,9 +178,12 @@ public class UltreonCraft implements DeferredDisposable {
 
         this.configDir = createDir("config/");
 
-        createDir("screenshots/");
-        createDir("game-crashes/");
-        createDir("logs/");
+        gcExecutor = Executors.newScheduledThreadPool(1, r -> new Thread(r, "GC Executor"));
+		gcExecutor.scheduleAtFixedRate(System::gc, 5, 5, TimeUnit.SECONDS);
+
+		createDir("screenshots/");
+		createDir("game-crashes/");
+		createDir("logs/");
 
         GamePlatform.instance.setupMods();
 
@@ -691,8 +695,10 @@ public class UltreonCraft implements DeferredDisposable {
             this.unifont.dispose();
 
             for (Font font : Registries.FONTS.values()) {
-                font.dispose();
-            }
+				font.dispose();
+			}
+
+			this.gcExecutor.shutdownNow();
 
             this.disposables.forEach(Disposable::dispose);
             this.disposables.clear();

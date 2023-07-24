@@ -1,15 +1,8 @@
 package com.ultreon.craft.world;
 
-import static com.ultreon.craft.UltreonCraft.LOGGER;
-import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
-
-import com.google.common.base.Preconditions;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector3;
-import com.ultreon.craft.util.BoundingBox;
-import com.ultreon.craft.util.Ray;
 import com.badlogic.gdx.utils.Disposable;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.Task;
@@ -22,46 +15,39 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.input.GameInput;
-import com.ultreon.craft.util.HitResult;
-import com.ultreon.craft.util.Utils;
-import com.ultreon.craft.util.WorldRayCaster;
+import com.ultreon.craft.util.*;
 import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.layer.AirTerrainLayer;
-import com.ultreon.craft.world.gen.layer.StoneTerrainLayer;
-import com.ultreon.craft.world.gen.layer.SurfaceTerrainLayer;
-import com.ultreon.craft.world.gen.layer.UndergroundTerrainLayer;
-import com.ultreon.craft.world.gen.layer.WaterTerrainLayer;
+import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseInstance;
+import com.ultreon.craft.world.gen.noise.NoiseSettings;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
-
+import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.stream.Collectors;
-
-import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+import static com.ultreon.craft.UltreonCraft.LOGGER;
+import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @ParametersAreNonnullByDefault
@@ -71,37 +57,22 @@ public class World implements Disposable {
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
-	private static final Biome DEFAULT_BIOME = Biome.builder()
-			.noise(NoiseSettingsInit.DEFAULT)
-			.domainWarping((seed) -> new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(seed), NoiseSettingsInit.DOMAIN_Y.create(seed)))
-			.layer(new WaterTerrainLayer(64))
-			.layer(new AirTerrainLayer())
-			.layer(new SurfaceTerrainLayer())
-			.layer(new StoneTerrainLayer())
-			.layer(new UndergroundTerrainLayer())
-//			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
-			.build();
-
-	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
 	private final Vec3i spawnPoint = new Vec3i();
 	private final long seed = 512;
+	private final DomainWarping domainWarping;
+	private final DomainWarping biomeDomain;
+	private final NoiseInstance stonePatchNoise;
 	private int renderedChunks;
 
 	private final Map<RegionPos, WorldRegion> regions = new ConcurrentHashMap<>();
-	@Nullable
-	private TerrainGenerator terrainGen;
+	private final TerrainGenerator terrainGen;
 	private final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
 	private final Map<ChunkPos, CompletableFuture<Chunk>> loadingChunks = new ConcurrentHashMap<>();
 	private int playTime;
 	private int curId;
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
-
-	static {
-		// TODO: Use biome registry
-		DEFAULT_BIOME.buildLayers();
-	}
 
 	@Nullable
 	private CompletableFuture<Boolean> saveFuture;
@@ -115,7 +86,51 @@ public class World implements Disposable {
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
 
-		this.generator = DEFAULT_BIOME.create(this, this.seed);
+		this.domainWarping = new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(this.seed), NoiseSettingsInit.DOMAIN_Y.create(this.seed));
+		this.biomeDomain = new DomainWarping(NoiseSettingsInit.BIOME_DOMAIN_X.create(this.seed), NoiseSettingsInit.BIOME_DOMAIN_Y.create(this.seed));
+		NoiseSettings terrainNoise = NoiseSettingsInit.TERRAIN;
+		this.stonePatchNoise = NoiseSettingsInit.STONE_PATCH.create(this.seed);
+		this.terrainGen = TerrainGenerator.builder(this.biomeDomain, terrainNoise.create(this.seed))
+				.biome(0.0F, 0.2F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_DEEP_SEA.create(this.seed))
+						.domainWarping(this.domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.DIRT))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.5F, this.stonePatchNoise, this.domainWarping))
+						.build())
+				.biome(0.2F, 0.5F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_SEA.create(this.seed))
+						.domainWarping(this.domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.DIRT))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.6F, this.stonePatchNoise, this.domainWarping))
+						.build())
+				.biome(0.5F, 0.8F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_PLAINS.create(this.seed))
+						.domainWarping(this.domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.extraLayer(new StonePatchTerrainLayer(0.7F, this.stonePatchNoise, this.domainWarping))
+						.build())
+				.biome(0.8F, 1.0F, BiomeGenerator.builder()
+						.noise(NoiseSettingsInit.BIOME_DESERT.create(this.seed))
+						.domainWarping(this.domainWarping)
+						.layer(new WaterTerrainLayer(64))
+						.layer(new AirTerrainLayer())
+						.layer(new SurfaceTerrainLayer(Blocks.SAND))
+						.layer(new StoneTerrainLayer())
+						.layer(new UndergroundTerrainLayer())
+						.build())
+				.build();
 	}
 
 	@ApiStatus.Internal
@@ -493,18 +508,16 @@ public class World implements Disposable {
 	@Nullable
 	protected Chunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		WorldRegion region = this.getRegionFor(pos);
 
 		if (region == null) return null;
 
 		try {
-			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-				for (int by = 0; by < CHUNK_SIZE; by++) {
-					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
-				}
-			}
+			this.terrainGen.generateBiomePoints(new Vec3d(chunk.getOffset().x, chunk.getOffset().y, chunk.getOffset().z), this.getRenderDistance(), CHUNK_SIZE);
+
+			chunk = this.terrainGen.generateChunkData(this, chunk, this.seed);
 
 			if (!this.putChunk(region, pos, chunk)) {
 				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
@@ -566,9 +579,8 @@ public class World implements Disposable {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
-				assert this.terrainGen != null;
-				Chunk newChunk = this.terrainGen.generateChunkData(chunk, this.seed);
+				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk newChunk = this.terrainGen.generateChunkData(this, chunk, this.seed);
 			}
 			return map;
 		});
@@ -811,7 +823,10 @@ public class World implements Disposable {
 		for (WorldRegion chunk : this.regions.values()) {
 			chunk.dispose(true);
 		}
-		this.generator.dispose();
+		this.domainWarping.dispose();
+		this.biomeDomain.dispose();
+		this.stonePatchNoise.dispose();
+		this.terrainGen.dispose();
 	}
 
 	public CompletableFuture<Void> updateChunksForPlayerAsync(float spawnX, float spawnZ) {

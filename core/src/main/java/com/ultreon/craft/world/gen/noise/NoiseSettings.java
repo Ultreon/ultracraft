@@ -89,5 +89,4 @@ public final class NoiseSettings {
                 "redistributionModifier=" + this.redistributionModifier + ", " +
                 "exponent=" + this.exponent + ']';
     }
-
 }

@@ -3,24 +3,24 @@ package com.ultreon.craft.world.gen.noise;
 import com.badlogic.gdx.math.Vector2;
 
 public class MyNoise {
-    public static float remapValue(float value, float initialMin, float initialMax, float outputMin, float outputMax) {
+    public static double remapValue(double value, double initialMin, double initialMax, double outputMin, double outputMax) {
         return outputMin + (value - initialMin) * (outputMax - outputMin) / (initialMax - initialMin);
     }
 
-    public static float remapValue01(float value, float outputMin, float outputMax) {
+    public static double remapValue01(double value, double outputMin, double outputMax) {
         return outputMin + (value - 0) * (outputMax - outputMin);
     }
 
-    public static int remapValue01ToInt(float value, float outputMin, float outputMax) {
+    public static int remapValue01ToInt(double value, double outputMin, double outputMax) {
         return (int) remapValue01(value, outputMin, outputMax);
     }
 
-    public static float redistribution(float noise, NoiseInstance settings) {
-        return (float) Math.pow(noise * settings.redistributionModifier(), settings.exponent());
+    public static double redistribution(double noise, NoiseInstance settings) {
+        return (double) Math.pow(noise * settings.redistributionModifier(), settings.exponent());
     }
 
-    public static float octavePerlin(float x, float z, NoiseInstance settings) {
-        float zoom = settings.noiseZoom();
+    public static double octavePerlin(double x, double z, NoiseInstance settings) {
+        double zoom = settings.noiseZoom();
         x *= zoom;
         z *= zoom;
         x += zoom;
@@ -28,10 +28,10 @@ public class MyNoise {
 
         Vector2 offset = settings.offset();
 
-        float total = 0.0F;
-        float frequency = 1.0F;
-        float amplitude = 1.0F;
-        float amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
+        double total = 0.0F;
+        double frequency = 1.0F;
+        double amplitude = 1.0F;
+        double amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
 
         for (int i = 0; i < settings.octaves(); i++) {
             total += settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude;

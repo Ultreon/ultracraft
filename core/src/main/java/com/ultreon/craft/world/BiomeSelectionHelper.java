@@ -4,19 +4,19 @@ import java.util.Objects;
 
 public final class BiomeSelectionHelper {
     private final int index;
-    private final float distance;
+    private final double distance;
 
-    public BiomeSelectionHelper(int index, float distance) {
+    public BiomeSelectionHelper(int index, double distance) {
         this.index = index;
         this.distance = distance;
     }
 
     public int index() {
-        return index;
+        return this.index;
     }
 
-    public float distance() {
-        return distance;
+    public double distance() {
+        return this.distance;
     }
 
     @Override
@@ -25,19 +25,19 @@ public final class BiomeSelectionHelper {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         BiomeSelectionHelper that = (BiomeSelectionHelper) obj;
         return this.index == that.index &&
-                Float.floatToIntBits(this.distance) == Float.floatToIntBits(that.distance);
+                Double.doubleToLongBits(this.distance) == Double.doubleToLongBits(that.distance);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(index, distance);
+        return Objects.hash(this.index, this.distance);
     }
 
     @Override
     public String toString() {
         return "BiomeSelectionHelper[" +
-                "index=" + index + ", " +
-                "distance=" + distance + ']';
+                "index=" + this.index + ", " +
+                "distance=" + this.distance + ']';
     }
 
 }
