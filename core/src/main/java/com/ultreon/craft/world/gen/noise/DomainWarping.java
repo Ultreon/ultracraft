@@ -16,12 +16,12 @@ public class DomainWarping {
 
     public float generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
         Vector2 domainOffset = this.generateDomainOffset(x, z);
-        return MyNoise.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
+        return NoiseUtils.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
     }
 
     public Vector2 generateDomainOffset(int x, int z) {
-        float noiseX = MyNoise.octavePerlin(x, z, this.domainX) * this.amplitudeX;
-        float noiseY = MyNoise.octavePerlin(x, z, this.domainY) * this.amplitudeY;
+        float noiseX = NoiseUtils.octavePerlin(x, z, this.domainX) * this.amplitudeX;
+        float noiseY = NoiseUtils.octavePerlin(x, z, this.domainY) * this.amplitudeY;
         return new Vector2(noiseX, noiseY);
     }
 
