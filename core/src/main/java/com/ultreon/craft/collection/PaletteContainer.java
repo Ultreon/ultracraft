@@ -14,8 +14,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> implements DataHolder<MapType> {
-    private List<@Nullable D> palette;
-    private ShortArray references;
+    private List<@Nullable D> values;
+    private ShortArray mapping;
     private final Function<T, D> deserializer;
     private final int dataId;
     public final int maxSize;
@@ -29,22 +29,22 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
     public PaletteContainer(int size, int dataId, Function<T, D> deserializer, D... type) {
         if (size > 65536) throw new PaletteSizeException("Size exceeds maximum value of 65536");
         this.maxSize = size;
-        this.palette = new CopyOnWriteArrayList<>();
-        this.references = new ShortArray(size);
+        this.values = new CopyOnWriteArrayList<>();
+        this.mapping = new ShortArray(size);
         this.dataId = dataId;
         this.deserializer = deserializer;
 
-        this.references.size = size;
+        this.mapping.size = size;
     }
 
     public MapType save() {
         MapType data = new MapType();
 
         ListType<T> paletteData = new ListType<>(this.dataId);
-        for (@Nullable D t : this.palette) if (t != null) paletteData.add(t.save());
+        for (@Nullable D t : this.values) if (t != null) paletteData.add(t.save());
         data.put("Palette", paletteData);
 
-        data.putShortArray("Data", this.references.items);
+        data.putShortArray("Data", this.mapping.items);
 
         return data;
     }
@@ -53,38 +53,40 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
     public void load(MapType data) {
         ListType<T> paletteData = data.getList("Palette", new ListType<>(this.dataId));
         for (T t : paletteData) {
-            this.palette.add(this.deserializer.apply(t));
+            this.values.add(this.deserializer.apply(t));
         }
 
-        this.references.items = data.getShortArray("Data");
+        this.mapping.items = data.getShortArray("Data");
     }
 
     public void set(int index, D value) {
         synchronized (this.lock) {
-            short old = this.references.get(index);
+            short oPaletteIndex = this.mapping.get(index);
 
-            int i = this.palette.indexOf(value);
+            int i = this.values.indexOf(value);
             if (i == -1) {
-                i = this.palette.size();
-                this.palette.add(value);
+                i = this.values.size();
+                this.values.add(value);
             }
-            this.references.set(index, (short) i);
+            this.mapping.set(index, (short) i);
 
-            if (!this.references.contains(old)) {
-                this.palette.remove(old);
+            if (!this.mapping.contains(oPaletteIndex)) {
+                this.values.remove(oPaletteIndex);
             }
         }
     }
 
     @Nullable
     public D get(int index) {
-        short paletteIndex = this.references.get(index);
-        return this.palette.get(paletteIndex);
+        synchronized (this.lock) {
+            short paletteIndex = this.mapping.get(index);
+            return this.values.get(paletteIndex);
+        }
     }
 
     @SuppressWarnings("DataFlowIssue")
     public void dispose() {
-        this.palette = null;
-        this.references = null;
+        this.values = null;
+        this.mapping = null;
     }
 }

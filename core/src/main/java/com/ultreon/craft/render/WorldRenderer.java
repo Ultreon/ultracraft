@@ -15,10 +15,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -34,7 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
-import static com.ultreon.craft.world.World.*;
+import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
+import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public class WorldRenderer implements RenderableProvider {
     protected Material material;
@@ -93,10 +94,12 @@ public class WorldRenderer implements RenderableProvider {
             removed.dispose();
         }
         
-        for (Chunk chunk1 : toSort) {
-            if (!chunk1.isReady()) continue;
+        for (Chunk chunk : toSort) {
+            if (!chunk.isReady()) continue;
 
-            for (Section section : chunk1.getSections()) {
+            if (!this.shouldRendeer(chunk)) continue;
+
+            for (Section section : chunk.getSections()) {
                 Vec3i sectionOffset = section.getOffset();
                 Vec3f offset = sectionOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
 
@@ -110,7 +113,7 @@ public class WorldRenderer implements RenderableProvider {
                     }
 
                     Mesh mesh = info.mesh;
-                    if (section.isDirty() || mesh == null) {
+                    if (section.isDirty() || mesh == null || this.shouldUpdate(section)) {
                         if (info.mesh != null) info.mesh.dispose();
                         FloatList vertices = new FloatArrayList();
                         int numVertices = this.buildVertices(section, vertices);
@@ -139,6 +142,36 @@ public class WorldRenderer implements RenderableProvider {
                 }
             }
         }
+
+        for (Chunk chunk : chunks) {
+            chunk.getSections().forEach(Section::clearUpdateNeighboursFlag);
+        }
+    }
+
+    private boolean shouldRendeer(Chunk chunk) {
+        ChunkPos pos = chunk.pos;
+        for (int x = pos.x() - 1; x <= pos.x() + 1; x++) {
+            for (int z = pos.z() - 1; z <= pos.z() + 1; z++) {
+                if (!this.world.isChunkLoaded(pos)) return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean shouldUpdate(Section section) {
+        Vec3i pos = section.getPos();
+        for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+            for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+                for (int z = pos.z - 1; z <= pos.z + 1; z++) {
+                    Section current = this.world.getSection(pos);
+                    if (current != null && current.isMarkedToUpdateNeighbours()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /** Creates a mesh out of the chunk, returning the number of indices produced
@@ -151,52 +184,38 @@ public class WorldRenderer implements RenderableProvider {
             for (int z = 0; z < CHUNK_SIZE; z++) {
                 for (int x = 0; x < CHUNK_SIZE; x++, i++) {
                     Block block = section.get(x, y, z);
-
-                    if (block == null || block == Blocks.AIR) continue;
+                    if (block.isAir()) continue;
 
                     BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
-
                     if (model == null) continue;
 
-                    if (y < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y + 1, z) == null || this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x, y + 1, z, 0, 1, 0))
                         createTop(offset, x, y, z, model.top(), vertices);
-                    }
-                    if (y > 0) {
-                        if (this.getB(section, x, y - 1, z) == null || this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x, y - 1, z, 0, -1, 0))
                         createBottom(offset, x, y, z, model.bottom(), vertices);
-                    }
-                    if (x > 0) {
-                        if (this.getB(section, x - 1, y, z) == null || this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x - 1, y, z, -1, 0, 0))
                         createLeft(offset, x, y, z, model.left(), vertices);
-                    }
-                    if (x < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x + 1, y, z) == null || this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x + 1, y, z, 1, 0, 0))
                         createRight(offset, x, y, z, model.right(), vertices);
-                    }
-                    if (z > 0) {
-                        if (this.getB(section, x, y, z - 1) == null || this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x, y, z - 1, 0, 0, -1))
                         createFront(offset, x, y, z, model.front(), vertices);
-                    }
-                    if (z < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y, z + 1) == null || this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
-                    } else {
+                    if (this.areFacesVisible(section, x, y, z + 1, 0, 0, 1))
                         createBack(offset, x, y, z, model.back(), vertices);
-                    }
                 }
             }
         }
         return vertices.size() / VERTEX_SIZE + 1;
     }
 
-    private Block getB(Section section, int x, int y, int z) {
-//		return world.get(new Vec3i(pos.x * size + x, y, pos.z * size + z));
-        return section.get(new Vec3i(x, y, z));
+    private boolean areFacesVisible(Section section, int x, int y, int z, int offX, int offY, int offZ) {
+        Block block = this.get(section, x, y, z);
+        Block off = this.get(section, x + offX, y + offY, z + offZ);
+        return (off.isTransparent() && (!block.isTransparent() || block.isAir()));
+    }
+
+    private Block get(Section section, int x, int y, int z) {
+        Vec3i offset = section.getOffset();
+        return this.world.get(offset.x + x, offset.y + y, offset.z + z);
     }
 
     protected static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {

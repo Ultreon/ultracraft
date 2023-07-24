@@ -8,7 +8,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 
 public final class NoiseSettingsInit extends UtilityClass {
     public static final NoiseSettings DEFAULT = register("default",
-            new NoiseSettings(0.01f, 6, new Vector2(200, 740), 128436, .35f, .001f, .16f));
+            new NoiseSettings(0.02f, 6, new Vector2(200, 740), 128436, .5f, 1.2f, 5f));
 
     public static final NoiseSettings TREE = register("tree",
             new NoiseSettings(0.01f, 1, new Vector2(300, 5000), 497395, 0.01f, 1.2f, 4f));

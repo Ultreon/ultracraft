@@ -469,6 +469,7 @@ public class World implements Disposable {
 			}
 
 			this.renderChunk(x, z, chunk);
+			chunk.getSections().forEach(Section::updateNeighbours);
 			loadingChunk.complete(chunk);
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
 			return chunk;
@@ -583,9 +584,12 @@ public class World implements Disposable {
 
 		Chunk chunk = this.getChunkAt(x, y, z);
 		if (chunk == null) return;
+		Section section = chunk.getSectionAt(y);
+		if (section == null) return;
 
 		Vec3i cp = this.toLocalBlockPos(x, y, z);
 		chunk.set(cp.x, cp.y, cp.z, block);
+		if (section.isReady()) section.updateNeighbours();
 	}
 
 	public Block get(Vec3i pos) {
@@ -873,5 +877,21 @@ public class World implements Disposable {
 
 	public int getChunksLoaded() {
 		return this.chunksLoaded;
+	}
+
+	public @Nullable Section getSection(Vec3i pos) {
+		Chunk chunk = this.getChunk(new ChunkPos(pos.x, pos.z));
+		if (chunk == null) return null;
+		return chunk.getSection(pos.y);
+	}
+
+	public @Nullable Section getSectionAt(Vec3i pos) {
+		Chunk chunk = this.getChunkAt(pos);
+		if (chunk == null) return null;
+		return chunk.getSectionAt(pos.y);
+	}
+
+	public boolean isChunkLoaded(ChunkPos pos) {
+		return this.getChunk(pos) != null;
 	}
 }

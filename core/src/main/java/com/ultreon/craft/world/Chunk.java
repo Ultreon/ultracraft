@@ -1,6 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.google.common.collect.Iterables;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.events.WorldEvents;
@@ -25,7 +26,6 @@ public class Chunk implements Disposable {
 	public final int size;
 	public final int height;
 	private final Vec3i offset;
-	private final int sizeTimesHeight;
 	@Nullable
 	public TreeData treeData;
 	protected boolean dirty;
@@ -39,7 +39,6 @@ public class Chunk implements Disposable {
 		this.sections = new Section[sectionCount];
 		this.size = size;
 		this.height = height;
-		this.sizeTimesHeight = size * size;
 
 		for (int i = 0; i < this.sections.length; i++) {
 			this.sections[i] = new Section(new Vec3i(this.offset.x, this.offset.y + i * size, this.offset.z));
@@ -139,13 +138,6 @@ public class Chunk implements Disposable {
 		return this.getSection(chunkY / this.size);
 	}
 
-	private Vec3i reverse(int index) {
-		int y = index / this.sizeTimesHeight;
-		int z = (index - y * this.sizeTimesHeight) / this.size;
-		int x = index - y * this.sizeTimesHeight - z * this.size;
-		return new Vec3i(x, y, z);
-	}
-
 	@Override
 	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
@@ -165,8 +157,11 @@ public class Chunk implements Disposable {
 		return "Chunk[x=" + this.pos.x() + ", z=" + this.pos.z() + "]";
 	}
 
+	@SuppressWarnings("ConstantValue")
 	public Iterable<Section> getSections() {
-		return Arrays.asList(this.sections);
+		Section[] sections = this.sections;
+		if (sections == null) return Iterables.cycle();
+		return Arrays.asList(sections);
 	}
 
 	public Vec3i getOffset() {
