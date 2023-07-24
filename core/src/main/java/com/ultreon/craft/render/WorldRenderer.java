@@ -17,6 +17,7 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.render.gui.GuiContainer;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
@@ -30,8 +31,7 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 
 import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
 import static com.ultreon.craft.world.World.*;
@@ -46,6 +46,8 @@ public class WorldRenderer implements RenderableProvider {
     private final short[] indices;
     private final World world;
     private final UltreonCraft game = UltreonCraft.get();
+    private final Executor renderExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1));
+    private List<Section> renderSchedule = new ArrayList<>();
 
     public WorldRenderer(World world) {
         this.world = world;
@@ -92,11 +94,13 @@ public class WorldRenderer implements RenderableProvider {
             SectionRenderInfo removed = this.renderInfoMap.remove(section);
             removed.dispose();
         }
-        
-        for (Chunk chunk1 : toSort) {
-            if (!chunk1.isReady()) continue;
 
-            for (Section section : chunk1.getSections()) {
+        boolean renderedNewChunk = false;
+        for (Chunk chunk : toSort) {
+            if (!chunk.isReady()) continue;
+
+            for (Section section : chunk.getSections()) {
+                if (section.scheduledRender) continue;
                 Vec3i sectionOffset = section.getOffset();
                 Vec3f offset = sectionOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
 
@@ -111,16 +115,10 @@ public class WorldRenderer implements RenderableProvider {
 
                     Mesh mesh = info.mesh;
                     if (section.isDirty() || mesh == null) {
-                        if (info.mesh != null) info.mesh.dispose();
-                        FloatList vertices = new FloatArrayList();
-                        int numVertices = this.buildVertices(section, vertices);
-                        mesh = info.mesh = new Mesh(false, false, numVertices,
-                                this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-                        info.mesh.setIndices(this.indices);
-                        info.numVertices = numVertices / 4 * 6;
-                        info.mesh.setVertices(vertices.toFloatArray());
-                        vertices.clear();
-                        section.setDirty(false);
+                        if (section.scheduledRender) continue;
+                        section.scheduledRender = true;
+                        this.renderSchedule.add(0, section);
+                        continue;
                     }
 
                     if (info.numVertices == 0) continue;
@@ -139,6 +137,27 @@ public class WorldRenderer implements RenderableProvider {
                 }
             }
         }
+
+        Section section = this.renderSchedule.remove(0);
+        if (section != null) {
+            SectionRenderInfo info = this.renderInfoMap.get(section);
+
+            if (info.mesh != null) info.mesh.dispose();
+
+            SectionRenderInfo finalInfo = info;
+            FloatList vertices = new FloatArrayList();
+            int numVertices = this.buildVertices(section, vertices);
+
+            finalInfo.mesh = new Mesh(false, false, numVertices,
+                    this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
+            finalInfo.mesh.setIndices(this.indices);
+            finalInfo.numVertices = numVertices / 4 * 6;
+            finalInfo.mesh.setVertices(vertices.toFloatArray());
+            vertices.clear();
+            section.setDirty(false);
+
+            section.scheduledRender = false;
+        }
     }
 
     /** Creates a mesh out of the chunk, returning the number of indices produced
@@ -152,39 +171,39 @@ public class WorldRenderer implements RenderableProvider {
                 for (int x = 0; x < CHUNK_SIZE; x++, i++) {
                     Block block = section.get(x, y, z);
 
-                    if (block == null || block == Blocks.AIR) continue;
+                    if (block == Blocks.AIR) continue;
 
                     BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
                     if (model == null) continue;
 
                     if (y < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y + 1, z) == null || this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
+                        if (this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
                     } else {
                         createTop(offset, x, y, z, model.top(), vertices);
                     }
                     if (y > 0) {
-                        if (this.getB(section, x, y - 1, z) == null || this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
+                        if (this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
                     } else {
                         createBottom(offset, x, y, z, model.bottom(), vertices);
                     }
                     if (x > 0) {
-                        if (this.getB(section, x - 1, y, z) == null || this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
+                        if (this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
                     } else {
                         createLeft(offset, x, y, z, model.left(), vertices);
                     }
                     if (x < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x + 1, y, z) == null || this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
+                        if (this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
                     } else {
                         createRight(offset, x, y, z, model.right(), vertices);
                     }
                     if (z > 0) {
-                        if (this.getB(section, x, y, z - 1) == null || this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
+                        if (this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
                     } else {
                         createFront(offset, x, y, z, model.front(), vertices);
                     }
                     if (z < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y, z + 1) == null || this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
+                        if (this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
                     } else {
                         createBack(offset, x, y, z, model.back(), vertices);
                     }

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Section implements Disposable {
     private final int size;
+    public volatile boolean scheduledRender;
     protected boolean ready;
     protected boolean dirty;
     public final Object lock = new Object();
