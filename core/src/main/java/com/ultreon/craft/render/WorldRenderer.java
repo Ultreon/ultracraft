@@ -138,21 +138,20 @@ public class WorldRenderer implements RenderableProvider {
             }
         }
 
-        Section section = this.renderSchedule.remove(0);
-        if (section != null) {
+        if (!this.renderSchedule.isEmpty()) {
+            Section section = this.renderSchedule.remove(0);
             SectionRenderInfo info = this.renderInfoMap.get(section);
 
             if (info.mesh != null) info.mesh.dispose();
 
-            SectionRenderInfo finalInfo = info;
             FloatList vertices = new FloatArrayList();
             int numVertices = this.buildVertices(section, vertices);
 
-            finalInfo.mesh = new Mesh(false, false, numVertices,
+            info.mesh = new Mesh(false, false, numVertices,
                     this.indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-            finalInfo.mesh.setIndices(this.indices);
-            finalInfo.numVertices = numVertices / 4 * 6;
-            finalInfo.mesh.setVertices(vertices.toFloatArray());
+            info.mesh.setIndices(this.indices);
+            info.numVertices = numVertices / 4 * 6;
+            info.mesh.setVertices(vertices.toFloatArray());
             vertices.clear();
             section.setDirty(false);
 
