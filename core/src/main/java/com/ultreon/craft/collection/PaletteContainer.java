@@ -81,10 +81,4 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
         short paletteIndex = this.references.get(index);
         return this.palette.get(paletteIndex);
     }
-
-    @SuppressWarnings("DataFlowIssue")
-    public void dispose() {
-        this.palette = null;
-        this.references = null;
-    }
 }

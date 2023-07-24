@@ -91,8 +91,6 @@ public class Section implements Disposable {
     public void dispose() {
         synchronized (this.lock) {
             this.ready = false;
-
-            this.paletteContainer.dispose();
         }
     }
 
