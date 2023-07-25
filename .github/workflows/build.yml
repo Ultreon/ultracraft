@@ -43,8 +43,9 @@ jobs:
         java: [
           17    # Minimum supported
         ]
-        os: [buildjet-8vcpu-ubuntu-2204-arm]
+        os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
+    container: arm64v8/openjdk:17
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
