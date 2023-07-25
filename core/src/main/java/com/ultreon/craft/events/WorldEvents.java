@@ -35,7 +35,7 @@ public class WorldEvents {
 
     @FunctionalInterface
     public interface ChunkGenerated {
-        void onChunkGenerated(World world, ChunkPos pos, Chunk chunk);
+        void onChunkGenerated(World world, ChunkPos pos, CompletedChunk chunk);
     }
 
     @FunctionalInterface

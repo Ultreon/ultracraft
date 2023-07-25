@@ -2,7 +2,9 @@ package com.ultreon.craft.world;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.render.gui.GuiContainer;
 import com.ultreon.craft.world.gen.BiomeGenerator;
+import com.ultreon.craft.world.gen.feature.Feature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
@@ -19,6 +21,7 @@ public abstract class Biome {
     private final Long2ReferenceFunction<DomainWarping> domainWarping;
     private final List<TerrainLayer> layers = new ArrayList<>();
     private final List<TerrainLayer> extraLayers = new ArrayList<>();
+    private final List<Feature> features = new ArrayList<>();
 
     public Biome(NoiseSettings settings, Long2ReferenceFunction<DomainWarping> domainWarping) {
         this.settings = settings;
@@ -31,14 +34,17 @@ public abstract class Biome {
 
     public final void buildLayers() {
         this.onBuildLayers(this.layers, this.extraLayers);
+        this.onBuildFeatures(this.features);
     }
 
     protected abstract void onBuildLayers(List<TerrainLayer> layers, List<TerrainLayer> extraLayers);
 
+    protected abstract void onBuildFeatures(List<Feature> layers);
+
     public BiomeGenerator create(World world, long seed) {
         NoiseInstance noiseInstance = this.settings.create(seed);
         WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, this.domainWarping.get(seed), this.layers, this.extraLayers);
-        return new BiomeGenerator(world, noiseInstance, this.domainWarping.get(seed), this.layers, this.extraLayers);
+        return new BiomeGenerator(world, noiseInstance, this.domainWarping.get(seed), this.layers, this.extraLayers, this.features);
     }
 
     public NoiseSettings getSettings() {
@@ -52,6 +58,7 @@ public abstract class Biome {
         private Long2ReferenceFunction<DomainWarping> domainWarping;
         private final List<TerrainLayer> layers = new ArrayList<>();
         private final List<TerrainLayer> extraLayers = new ArrayList<>();
+        private final List<Feature> features = new ArrayList<>();
 
         public Builder noise(NoiseSettings biomeNoise) {
             this.biomeNoise = biomeNoise;
@@ -73,6 +80,11 @@ public abstract class Biome {
             return this;
         }
 
+        public Builder feature(Feature feature) {
+            this.features.add(feature);
+            return this;
+        }
+
         public Biome build() {
             Preconditions.checkNotNull(this.biomeNoise, "Biome noise not set.");
             Preconditions.checkNotNull(this.domainWarping, "Domain warping not set.");
@@ -80,8 +92,13 @@ public abstract class Biome {
             return new Biome(this.biomeNoise, this.domainWarping) {
                 @Override
                 protected void onBuildLayers(List<TerrainLayer> layerList, List<TerrainLayer> extraLayerList) {
-                    layerList.addAll(Biome.Builder.this.layers);
-                    extraLayerList.addAll(Biome.Builder.this.extraLayers);
+                    layerList.addAll(Builder.this.layers);
+                    extraLayerList.addAll(Builder.this.extraLayers);
+                }
+
+                @Override
+                protected void onBuildFeatures(List<Feature> features) {
+                    features.addAll(Builder.this.features);
                 }
             };
         }

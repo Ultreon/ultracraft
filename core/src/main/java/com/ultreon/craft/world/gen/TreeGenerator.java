@@ -1,6 +1,6 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.world.RawChunk;
+import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseSettings;
@@ -13,7 +13,7 @@ public class TreeGenerator {
     @UnknownNullability
     public DomainWarping domainWrapping;
 
-    public TreeData generateTreeData(RawChunk chunkData, long seed) {
+    public TreeData generateTreeData(Chunk chunkData, long seed) {
         NoiseInstance noise = this.treeNoiseSettings.create(seed);
         TreeData treeData = new TreeData();
         float[][] noiseData = this.generateTreeNoise(chunkData, noise);
@@ -22,7 +22,7 @@ public class TreeGenerator {
         return treeData;
     }
 
-    private float[][] generateTreeNoise(RawChunk chunkData, NoiseInstance noise) {
+    private float[][] generateTreeNoise(Chunk chunkData, NoiseInstance noise) {
         float[][] noiseMax = new float[chunkData.size][chunkData.size];
         int xMax = chunkData.getOffset().x + chunkData.size;
         int xMin = chunkData.getOffset().x;

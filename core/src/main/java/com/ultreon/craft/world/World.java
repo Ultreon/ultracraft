@@ -1,6 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.common.base.Preconditions;
@@ -21,9 +20,6 @@ import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.layer.*;
-import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -56,22 +52,11 @@ public class World implements Disposable {
 	public static final int WORLD_HEIGHT = 256;
 	public static final int WORLD_DEPTH = 0;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
-	private static final Biome DEFAULT_BIOME = Biome.builder()
-			.noise(NoiseSettingsInit.DEFAULT)
-			.domainWarping((seed) -> new DomainWarping(NoiseSettingsInit.DOMAIN_X.create(seed), NoiseSettingsInit.DOMAIN_Y.create(seed)))
-			.layer(new WaterTerrainLayer(64))
-			.layer(new AirTerrainLayer())
-			.layer(new SurfaceTerrainLayer())
-			.layer(new StoneTerrainLayer())
-			.layer(new UndergroundTerrainLayer())
-//			.feature(new TreeFeature(GenerationStage.TREES, Range.open(3, 5)))
-			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
-			.build();
-
-	private final BiomeGenerator generator;
 	private final SavedWorld savedWorld;
 	private final Vec3i spawnPoint = new Vec3i();
 	private final long seed = 512;
+	private final List<BiomeGenerator> biomes;
+	private final BiomeGenerator biome;
 	private int renderedChunks;
 
 	private final Map<RegionPos, WorldRegion> regions = new ConcurrentHashMap<>();
@@ -83,11 +68,6 @@ public class World implements Disposable {
 	private int curId;
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
-
-	static {
-		// TODO: Use biome registry
-		DEFAULT_BIOME.buildLayers();
-	}
 
 	@Nullable
 	private CompletableFuture<Boolean> saveFuture;
@@ -101,7 +81,8 @@ public class World implements Disposable {
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
 
-		this.generator = DEFAULT_BIOME.create(this, this.seed);
+		this.biomes = Biomes.buildBiomes(this.seed).stream().map(biome -> biome.create(this, this.seed)).collect(Collectors.toList());
+		this.biome = this.biomes.get(0);
 	}
 
 	@ApiStatus.Internal
@@ -249,7 +230,7 @@ public class World implements Disposable {
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
 		for (ChunkPos pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
-			Chunk chunk = this.getChunk(pos);
+			@Nullable Chunk chunk = this.getChunk(pos);
 			return chunk != null && !needed.contains(pos);
 		}).collect(Collectors.toList())) {
 			if (this.getChunk(pos) != null) {
@@ -321,7 +302,7 @@ public class World implements Disposable {
 	}
 
 	private boolean unloadChunk(@NotNull ChunkPos chunkPos) {
-		Chunk chunk = this.getChunk(chunkPos);
+		@Nullable Chunk chunk = this.getChunk(chunkPos);
 		if (chunk == null) return true;
 		return this.unloadChunk(chunk);
 	}
@@ -454,7 +435,11 @@ public class World implements Disposable {
 				return oldChunk;
 			}
 
-			this.renderChunk(x, z, chunk);
+			if (chunk instanceof CompletedChunk) {
+				CompletedChunk completedChunk = (CompletedChunk) chunk;
+				LOGGER.warn("Need to add chunk completion");
+				this.renderChunk(x, z, completedChunk);
+			}
 			loadingChunk.complete(chunk);
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
 			return chunk;
@@ -464,22 +449,22 @@ public class World implements Disposable {
 		}
 	}
 
-	protected CompletableFuture<@Nullable Chunk> generateChunkAsync(ChunkPos pos) {
+	protected CompletableFuture<@Nullable CompletedChunk> generateChunkAsync(ChunkPos pos) {
 		return this.generateChunkAsync(pos.x(), pos.z());
 	}
 
-	protected CompletableFuture<@Nullable Chunk> generateChunkAsync(int x, int z) {
+	protected CompletableFuture<@Nullable CompletedChunk> generateChunkAsync(int x, int z) {
 		return CompletableFuture.supplyAsync(() -> this.generateChunk(x, z));
 	}
 
-	protected @Nullable Chunk generateChunk(ChunkPos pos) {
+	protected @Nullable CompletedChunk generateChunk(ChunkPos pos) {
 		return this.generateChunk(pos.x(), pos.z());
 	}
 
 	@Nullable
-	protected Chunk generateChunk(int x, int z) {
+	protected CompletedChunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		CompletedChunk chunk = new CompletedChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		WorldRegion region = this.getRegionFor(pos);
 
@@ -488,7 +473,7 @@ public class World implements Disposable {
 		try {
 			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
 				for (int by = 0; by < CHUNK_SIZE; by++) {
-					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
+					this.biome.processColumn(this, chunk, bx, by, CHUNK_HEIGHT);
 				}
 			}
 
@@ -509,7 +494,7 @@ public class World implements Disposable {
 		}
 	}
 
-	private void renderChunk(int x, int z, Chunk chunk) {
+	private void renderChunk(int x, int z, CompletedChunk chunk) {
 		chunk.dirty = false;
 		for (Section section : chunk.getSections()) {
 			this.game.runLater(new Task(new Identifier("post_section_render"), () -> {
@@ -525,12 +510,12 @@ public class World implements Disposable {
 	}
 
 	@CanIgnoreReturnValue
-	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull Chunk chunk) {
+	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull CompletedChunk chunk) {
 		return this.putChunk(region, chunkPos, chunk, false);
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull Chunk chunk, boolean overwrite) {
+	private boolean putChunk(@NotNull WorldRegion region, @NotNull ChunkPos chunkPos, @NotNull CompletedChunk chunk, boolean overwrite) {
 		return region.putChunk(this.toLocalChunkPos(chunk.pos.x(), chunk.pos.z()), chunk, overwrite);
 	}
 
@@ -542,8 +527,8 @@ public class World implements Disposable {
 		}
 	}
 
-	public CompletableFuture<ConcurrentMap<Vector3, RawChunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
-		ConcurrentMap<Vector3, RawChunk> map = new ConcurrentHashMap<>();
+	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
+		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
 			for (ChunkPos pos : toCreate) {
 				try {
@@ -552,9 +537,9 @@ public class World implements Disposable {
 					throw new RuntimeException(e);
 				}
 
-				RawChunk chunk = new BuilderChunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk chunk = new BuilderChunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				assert this.terrainGen != null;
-				RawChunk newChunk = this.terrainGen.generateChunkData(this, chunk, this.seed);
+				Chunk newChunk = this.terrainGen.generateChunkData(this, chunk, this.seed);
 			}
 			return map;
 		});
@@ -579,26 +564,16 @@ public class World implements Disposable {
 	}
 
 	@NotNull
-	public Block getRaw(int x, int y, int z) {
-		RawChunk chunkAt = this.getChunkAt(x, y, z);
-		if (chunkAt == null) {
-			return Blocks.AIR;
-		}
-
-		GridPoint3 cp = toChunkCoords(x, y, z);
-		return chunkAt.get(cp.x, cp.y, cp.z);
-	}
-
-	@NotNull
 	public Block get(int x, int y, int z) {
-		RawChunk chunkAt = this.getChunkAt(x, y, z);
-		if (!(chunkAt instanceof Chunk chunk)) return Blocks.AIR;
+		Chunk chunkAt = this.getChunkAt(x, y, z);
+		if (!(chunkAt instanceof CompletedChunk)) return Blocks.AIR;
+		CompletedChunk chunk = (CompletedChunk) chunkAt;
 		if (!chunk.ready) {
 			return Blocks.AIR;
 		}
 
 		synchronized (chunkAt.lock) {
-			if (!chunkAt.ready) return Blocks.AIR;
+			if (!chunk.ready) return Blocks.AIR;
 
 			Vec3i cp = this.toLocalBlockPos(x, y, z);
 			return chunkAt.getFast(cp.x, cp.y, cp.z);
@@ -631,7 +606,7 @@ public class World implements Disposable {
 	}
 
 	@Nullable
-	public RawChunk getChunk(ChunkPos chunkPos) {
+	public Chunk getChunk(ChunkPos chunkPos) {
 		WorldRegion region = this.getRegionFor(chunkPos);
 		if (region == null) {
 			return null;
@@ -644,16 +619,16 @@ public class World implements Disposable {
 	}
 
 	@Nullable
-	public RawChunk getChunk(int x, int z) {
+	public Chunk getChunk(int x, int z) {
 		return this.getChunk(new ChunkPos(x, z));
 	}
 
-	public RawChunk getChunkAt(int x, int y, int z) {
+	public Chunk getChunkAt(int x, int y, int z) {
 		return this.getChunkAt(new Vec3i(x, y, z));
 	}
 
 	@Nullable
-	public RawChunk getChunkAt(Vec3i pos) {
+	public Chunk getChunkAt(Vec3i pos) {
 		int chunkX = Math.floorDiv(pos.x, CHUNK_SIZE);
 		int chunkZ = Math.floorDiv(pos.z, CHUNK_SIZE);
 
@@ -668,7 +643,7 @@ public class World implements Disposable {
 	}
 
 	public int getHighest(int x, int z) {
-		RawChunk chunkAt = this.getChunkAt(x, 0, z);
+		Chunk chunkAt = this.getChunkAt(x, 0, z);
 		if (chunkAt == null) return 0;
 
 		// FIXME: Optimize by using a heightmap.
@@ -814,7 +789,9 @@ public class World implements Disposable {
 		for (WorldRegion chunk : this.regions.values()) {
 			chunk.dispose(true);
 		}
-		this.generator.dispose();
+		for (BiomeGenerator generator : this.biomes) {
+			generator.dispose();
+		}
 	}
 
 	public CompletableFuture<Void> updateChunksForPlayerAsync(float spawnX, float spawnZ) {

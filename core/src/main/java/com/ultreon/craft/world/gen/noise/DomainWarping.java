@@ -2,9 +2,10 @@ package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.util.MathHelper;
 
-public class DomainWarping {
+public class DomainWarping implements Disposable {
     public final NoiseInstance domainX;
     public final NoiseInstance domainY;
     public int amplitudeX = 20, amplitudeY = 20;
@@ -27,5 +28,11 @@ public class DomainWarping {
 
     public GridPoint2 generateDomainOffsetInt(int x, int z) {
         return MathHelper.round(this.generateDomainOffset(x, z));
+    }
+
+    @Override
+    public void dispose() {
+        this.domainX.dispose();
+        this.domainY.dispose();
     }
 }

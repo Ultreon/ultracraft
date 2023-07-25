@@ -15,7 +15,7 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.Objects;
 
-import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
+import static com.ultreon.craft.world.CompletedChunk.VERTEX_SIZE;
 
 public final class BakedCubeModel implements Disposable {
     public static final BakedCubeModel DEFAULT;

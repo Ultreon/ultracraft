@@ -18,6 +18,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.model.BakedCubeModel;
+import com.ultreon.craft.world.CompletedChunk;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
@@ -33,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
+import static com.ultreon.craft.world.CompletedChunk.VERTEX_SIZE;
 import static com.ultreon.craft.world.World.*;
 
 public class WorldRenderer implements RenderableProvider {
@@ -68,7 +69,7 @@ public class WorldRenderer implements RenderableProvider {
         this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
     }
 
-    public void unloadChunk(Chunk chunk) {
+    public void unloadChunk(CompletedChunk chunk) {
         for (Section section : chunk.getSections()) {
             this.toRemove.add(section);
         }
@@ -152,41 +153,58 @@ public class WorldRenderer implements RenderableProvider {
                 for (int x = 0; x < CHUNK_SIZE; x++, i++) {
                     Block block = section.get(x, y, z);
 
-                    if (block == null || block == Blocks.AIR) continue;
+                    if (block == Blocks.AIR) continue;
 
                     BakedCubeModel model = UltreonCraft.get().getBakedBlockModel(block);
 
                     if (model == null) continue;
+                    model = BakedCubeModel.DEFAULT;
 
-                    if (y < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y + 1, z) == null || this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent()) createTop(offset, x, y, z, model.top(), vertices);
-                    } else {
+                    boolean alwaysRenderFaces = block.getAlwaysRenderFaces();
+                    if (alwaysRenderFaces) {
                         createTop(offset, x, y, z, model.top(), vertices);
-                    }
-                    if (y > 0) {
-                        if (this.getB(section, x, y - 1, z) == null || this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent()) createBottom(offset, x, y, z, model.bottom(), vertices);
+                        createBottom(offset, x, y, z, model.top(), vertices);
+                        createLeft(offset, x, y, z, model.top(), vertices);
+                        createRight(offset, x, y, z, model.top(), vertices);
+                        createFront(offset, x, y, z, model.top(), vertices);
+                        createBack(offset, x, y, z, model.top(), vertices);
                     } else {
-                        createBottom(offset, x, y, z, model.bottom(), vertices);
-                    }
-                    if (x > 0) {
-                        if (this.getB(section, x - 1, y, z) == null || this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent()) createLeft(offset, x, y, z, model.left(), vertices);
-                    } else {
-                        createLeft(offset, x, y, z, model.left(), vertices);
-                    }
-                    if (x < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x + 1, y, z) == null || this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent()) createRight(offset, x, y, z, model.right(), vertices);
-                    } else {
-                        createRight(offset, x, y, z, model.right(), vertices);
-                    }
-                    if (z > 0) {
-                        if (this.getB(section, x, y, z - 1) == null || this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent()) createFront(offset, x, y, z, model.front(), vertices);
-                    } else {
-                        createFront(offset, x, y, z, model.front(), vertices);
-                    }
-                    if (z < CHUNK_SIZE - 1) {
-                        if (this.getB(section, x, y, z + 1) == null || this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent()) createBack(offset, x, y, z, model.back(), vertices);
-                    } else {
-                        createBack(offset, x, y, z, model.back(), vertices);
+                        if (y < CHUNK_SIZE - 1) {
+                            if (this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent())
+                                createTop(offset, x, y, z, model.top(), vertices);
+                        } else {
+                            createTop(offset, x, y, z, model.top(), vertices);
+                        }
+                        if (y > 0) {
+                            if (this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent())
+                                createBottom(offset, x, y, z, model.bottom(), vertices);
+                        } else {
+                            createBottom(offset, x, y, z, model.bottom(), vertices);
+                        }
+                        if (x > 0) {
+                            if (this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent())
+                                createLeft(offset, x, y, z, model.left(), vertices);
+                        } else {
+                            createLeft(offset, x, y, z, model.left(), vertices);
+                        }
+                        if (x < CHUNK_SIZE - 1) {
+                            if (this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent())
+                                createRight(offset, x, y, z, model.right(), vertices);
+                        } else {
+                            createRight(offset, x, y, z, model.right(), vertices);
+                        }
+                        if (z > 0) {
+                            if (this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent())
+                                createFront(offset, x, y, z, model.front(), vertices);
+                        } else {
+                            createFront(offset, x, y, z, model.front(), vertices);
+                        }
+                        if (z < CHUNK_SIZE - 1) {
+                            if (this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent())
+                                createBack(offset, x, y, z, model.back(), vertices);
+                        } else {
+                            createBack(offset, x, y, z, model.back(), vertices);
+                        }
                     }
                 }
             }

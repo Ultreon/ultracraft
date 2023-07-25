@@ -2,20 +2,18 @@ package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BiomeData;
 import com.ultreon.craft.world.BiomeSelectionHelper;
 import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.util.Mth;
-import com.ultreon.craft.world.*;
+import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TerrainGenerator {
     private final DomainWarping biomeDomainWarping;
@@ -27,25 +25,25 @@ public class TerrainGenerator {
         this.biomeDomainWarping = biomeDomainWarping;
     }
 
-    public RawChunk generateChunkData(World world, RawChunk chunk, long seed) {
+    public Chunk generateChunkData(World world, Chunk chunk, long seed) {
         BiomeGeneratorSelection biomeSelection = selectBiomeGenerator(chunk.getOffset(), chunk, false);
         //TreeData treeData = biomeGenerator.GetTreeData(chunk, seed);
         chunk.treeData = biomeSelection.biomeGenerator.getTreeData(chunk, seed);
 
         for (int x = 0; x < chunk.size; x++) {
             for (int z = 0; z < chunk.size; z++) {
-                biomeSelection = selectBiomeGenerator(new GridPoint3(chunk.offset.x + x, 0, chunk.offset.z + z), chunk);
+                biomeSelection = selectBiomeGenerator(new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z), chunk);
                 chunk = biomeSelection.biomeGenerator.processColumn(world, chunk, x, z, seed);
             }
         }
         return chunk;
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, RawChunk chunk) {
+    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, Chunk chunk) {
         return selectBiomeGenerator(worldPosition, chunk, true);
     }
 
-    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, RawChunk chunk, boolean useDomainWarping) {
+    private BiomeGeneratorSelection selectBiomeGenerator(Vec3i worldPosition, Chunk chunk, boolean useDomainWarping) {
         if (useDomainWarping) {
             GridPoint2 domainOffset = MathHelper.round(biomeDomainWarping.generateDomainOffset(worldPosition.x, worldPosition.z));
             worldPosition.add(domainOffset.x, 0, domainOffset.y);

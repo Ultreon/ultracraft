@@ -5,7 +5,6 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.data.types.MapType;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -111,6 +110,7 @@ public class WorldRegion implements Disposable {
 
     /**
      * Loads the chunk. Will return null if out of bounds or if the chunk isn't saved.
+     *
      * @param chunkPos this is the local chunk pos. Needs to be between 0,0 and 31,31.
      */
     @Nullable
@@ -123,7 +123,7 @@ public class WorldRegion implements Disposable {
         MapType mapType = this.get(chunkPos);
         if (mapType == null) return null;
 
-        Chunk chunk = Chunk.load(worldChunkPos, mapType);
+        Chunk chunk = CompletedChunk.load(this.world, worldChunkPos, mapType);
 
         synchronized (this.lock) {
             this.chunks.put(chunkPos, chunk);
@@ -132,6 +132,7 @@ public class WorldRegion implements Disposable {
         return chunk;
     }
 
+    @Nullable
     @CheckReturnValue
     private MapType get(ChunkPos chunkPos) {
         return this.data.getMap(chunkPos.toString());
@@ -224,7 +225,7 @@ public class WorldRegion implements Disposable {
         WorldEvents.LOAD_REGION.factory().onLoadRegion(this.world, this);
     }
 
-    public boolean putChunk(ChunkPos chunkPos, Chunk chunk, boolean overwrite) {
+    public boolean putChunk(ChunkPos chunkPos, CompletedChunk chunk, boolean overwrite) {
         synchronized (this.lock) {
             Chunk oldChunk = this.chunks.get(chunkPos);
             if (oldChunk != null) {

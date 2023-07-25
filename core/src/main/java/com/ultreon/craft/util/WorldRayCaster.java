@@ -2,6 +2,7 @@ package com.ultreon.craft.util;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.world.CompletedChunk;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -35,7 +36,7 @@ public class WorldRayCaster {
 				ray.direction.y > 0 ? 1 : 0,
 				ray.direction.z > 0 ? 1 : 0);
 
-		Chunk chunk = null;
+		CompletedChunk chunk = null;
 
 		origin.set((int) Math.floor(ray.origin.x), (int) Math.floor(ray.origin.y), (int) Math.floor(ray.origin.z));
 		abs.set(origin);
@@ -58,8 +59,11 @@ public class WorldRayCaster {
 			if(abs.dst(origin) > result.distanceMax) return result;
 
 			if(chunk == null){
-				var rawChunk = map.getChunkAt(abs.x, abs.y, abs.z);
-				if (rawChunk instanceof Chunk chunk1) chunk = chunk1;
+				Chunk rawChunk = map.getChunkAt(abs.x, abs.y, abs.z);
+				if (rawChunk instanceof CompletedChunk) {
+					CompletedChunk chunk1 = (CompletedChunk) rawChunk;
+					chunk = chunk1;
+				}
 				if(chunk == null) return result;
 			}
 			loc.set(abs).sub((int) chunk.getOffset().x, (int) chunk.getOffset().y, (int) chunk.getOffset().z);

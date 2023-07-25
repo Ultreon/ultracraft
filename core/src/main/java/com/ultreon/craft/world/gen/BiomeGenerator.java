@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.world.RawChunk;
+import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.feature.Feature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
@@ -10,7 +10,6 @@ import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseUtils;
 import org.jetbrains.annotations.UnknownNullability;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,12 +26,7 @@ public class BiomeGenerator implements Disposable {
     public TreeGenerator treeGenerator;
     public FeatureGenData featureGenData = new FeatureGenData();
 
-    @Deprecated
-    public BiomeGenerator(World world, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
-        this(biomeNoise, domainWarping, layers, extraLayers, new ArrayList<>());
-    }
-
-    public BiomeGenerator(NoiseSettings biomeNoise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers, List<Feature> features) {
+    public BiomeGenerator(World world, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers, List<Feature> features) {
         this.world = world;
         this.biomeNoise = noise;
         this.domainWarping = domainWarping;
@@ -42,14 +36,10 @@ public class BiomeGenerator implements Disposable {
         this.extraLayers = extraLayers;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public RawChunk processColumn(World world, RawChunk chunk, int x, int z, long seed) {
-        this.biomeNoise.setSeed(seed);
-        this.domainWarping.noiseDomainX.setSeed(seed);
-        this.domainWarping.noiseDomainY.setSeed(seed);
+    public Chunk processColumn(World world, Chunk chunk, int x, int z, long seed) {
+//        this.biomeNoise.setSeed(seed);
+//        this.domainWarping.noiseDomainX.setSeed(seed);
+//        this.domainWarping.noiseDomainY.setSeed(seed);
 
         final int chunkAmplitude = 1;
 
@@ -57,24 +47,24 @@ public class BiomeGenerator implements Disposable {
 
         for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
             for (TerrainLayer layer : this.layers) {
-                if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
+                if (layer.handle(this.world, chunk, x, y, z, groundPos, seed)) {
                     break;
                 }
             }
         }
 
         for (TerrainLayer layer : this.extraLayers) {
-            layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
+            layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos, seed);
         }
 
-        Map<Integer, List<Feature>> map = features.stream().collect(Collectors.groupingBy((p_211653_) -> p_211653_.stage().ordinal()));
+        Map<Integer, List<Feature>> map = this.features.stream().collect(Collectors.groupingBy((p_211653_) -> p_211653_.stage().ordinal()));
 
         WorldGenRandom random = new WorldGenRandom(seed);
         long decoStageSeed = random.setDecoStageSeed(seed, x, z);
         int i = 0;
         for (int stage = 0; stage < GenerationStage.values().length; stage++) {
-            for (int y = chunk.offset.y; y < chunk.offset.y + chunk.height; y++) {
-                for (var feature : this.features) {
+            for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
+                for (Feature feature : this.features) {
                     random.setFeatureSeed(decoStageSeed, i, stage);
                     if (feature.canGenerate(world, chunk, x, y, z, random)) {
                         feature.generate(world, chunk, x, y, z, random);
@@ -100,7 +90,7 @@ public class BiomeGenerator implements Disposable {
     }
 
     @Deprecated
-    public TreeData getTreeData(RawChunk chunk, long seed) {
+    public TreeData getTreeData(Chunk chunk, long seed) {
         if (treeGenerator == null)
             return new TreeData();
 
