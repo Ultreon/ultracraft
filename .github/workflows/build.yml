@@ -22,6 +22,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Validate gradle wrapper
         uses: gradle/wrapper-validation-action@v1
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
       - name: Make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Build
@@ -34,30 +38,39 @@ jobs:
           name: Ultreon Craft Linux Build ${{ github.run_number }}
           path: desktop-merge/build/dist
   build-linux-arm:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Use these Java versions
-        java: [
-          17    # Minimum supported
-        ]
-        os: [ubuntu-22.04]
-    runs-on: ${{ matrix.os }}
-    container: arm64v8/openjdk:17
+        arch: [armv6l, armv7l, aarch64]
+        include:
+          - arch: armv6l
+            cpu: arm1176
+            base_image: raspios_lite:latest
+            cpu_info: raspberrypi_zero_w
+          - arch: armv7l
+            cpu: cortex-a7
+            base_image: raspios_lite:latest
+            cpu_info: raspberrypi_3b
+          - arch: aarch64
+            cpu: cortex-a53
+            base_image: raspios_lite_arm64:latest
+            cpu_info: raspberrypi_zero2_w_arm64_w
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Validate gradle wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Setup JDK ${{ matrix.java }}
-        uses: actions/setup-java@v1
+      - uses: pguyot/arm-runner-action@v2
         with:
-          java-version: ${{ matrix.java }}
-      - name: Make gradle wrapper executable
-        run: chmod +x ./gradlew
-      - name: Build
-        run: ./gradlew :desktop-merge:jpackage --info
-        env:
-          GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+          base_image: ${{ matrix.base_image }}
+          cpu: ${{ matrix.cpu }}
+          cpu_info: ${{ matrix.cpu_info }}
+          copy_artifact_path: build/dist/
+          copy_artifact_dest: build/dist/
+          commands: |
+              sudo apt install openjdk-17
+              chmod +x ./gradlew
+              ./gradlew :desktop-merge:jpackage --info
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
