@@ -111,6 +111,8 @@ jobs:
 
           # Produce a binary artifact and place it in the mounted volume
           run: |
+            export JAVA_HOME=/usr/lib/jvm/jdk-17.0.8+7
+            export PATH=/usr/lib/jvm/jdk-17.0.8+7/bin
             chmod +x ./gradlew
             ./gradlew :desktop-merge:jpackage --info
             cp $(which git)/desktop-merge/build/dist "/artifacts/${artifact_name}"
