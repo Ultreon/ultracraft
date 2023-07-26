@@ -236,11 +236,18 @@ tasks.register('copyJar', Copy) {
     into("$buildDir/jars")
 }
 
+tasks.register('package', Zip) {
+    dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
+
+    from fileTree(dir: "$buildDir/jars", include: "*.jar")
+    into file("$rootProject.buildDir/dist/package.zip")
+}
+
 jpackage {
     dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
 
     input  = "$buildDir/jars"
-    destination = "$buildDir/dist"
+    destination = "$buildDir/bin"
 
     appName = project.property("app_name").toString()
     appVersion = project.version.toString()
