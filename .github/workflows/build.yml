@@ -113,6 +113,7 @@ jobs:
           run: |
             export JAVA_HOME=/usr/lib/jvm/jdk-17.0.8+7
             export PATH=/usr/lib/jvm/jdk-17.0.8+7/bin
+            chmod +x ./gradlew
             ./gradlew :desktop-merge:jpackage --info
             cp $(which git)/desktop-merge/build/dist "/artifacts/${artifact_name}"
             echo "Produced artifact at /artifacts/${artifact_name}"
