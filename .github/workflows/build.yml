@@ -96,7 +96,7 @@ jobs:
                 tar -xf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.8_7.tar.gz
                 mkdir /usr/lib/jvm && mv jdk-17.0.8+7 /usr/lib/jvm/jdk-17.0.8+7
                 export JAVA_HOME=/usr/lib/jvm/jdk-17.0.8+7
-                export PATH=/usr/lib/jvm/jdk-17.0.8+7-b11/bin
+                export PATH=/usr/lib/jvm/jdk-17.0.8+7/bin
                 java -version
                 ;;
               fedora*)
