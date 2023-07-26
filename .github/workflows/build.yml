@@ -48,8 +48,8 @@ jobs:
         include:
           - arch: aarch64
             distro: ubuntu22.04
-          - arch: armv7
-            distro: ubuntu22.04
+#           - arch: armv7
+#             distro: ubuntu22.04
 #           - arch: ppc64le
 #             distro: ubuntu22.04
 #           - arch: s390x
