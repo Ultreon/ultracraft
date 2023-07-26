@@ -40,7 +40,7 @@ jobs:
           path: desktop-merge/build/dist
   build-linux-other-archs:
     # The host should always be linux
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
 
     # Run steps on a matrix of 4 arch/distro combinations
@@ -107,7 +107,7 @@ jobs:
           # Produce a binary artifact and place it in the mounted volume
           run: |
             chmod +x ./gradlew
-            cp $(which git)/build/dist "/artifacts/${artifact_name}"
+            cp $(which git)/desktop-merge/build/dist "/artifacts/${artifact_name}"
             echo "Produced artifact at /artifacts/${artifact_name}"
 
       - name: Show the artifact
@@ -119,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Ultreon Craft Linux ${{ matrix.arch }} Build ${{ github.run_number }}
-          path: desktop-merge/build/dist
+          path: artifacts/
   build-macos:
     strategy:
       matrix:
