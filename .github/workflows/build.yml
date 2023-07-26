@@ -91,7 +91,13 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y git openjdk-17
+                wget -q https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8%2B7/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.8_7.tar.gz
+                tar -xf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.8_7.tar.gz
+                sudo mkdir /usr/lib/jvm && mv jdk-17.0.8+7 /usr/lib/jvm/jdk-17.0.8+7
+                export JAVA_HOME=/usr/lib/jvm/jdk-17.0.8+7
+                export PATH=/usr/lib/jvm/jdk-17.0.8+7-b11/bin
+                java -version
+                apt-get install -q -y git
                 ;;
               fedora*)
                 dnf -y update
@@ -106,6 +112,7 @@ jobs:
           # Produce a binary artifact and place it in the mounted volume
           run: |
             chmod +x ./gradlew
+            ./gradlew :desktop-merge:jpackage --info
             cp $(which git)/desktop-merge/build/dist "/artifacts/${artifact_name}"
             echo "Produced artifact at /artifacts/${artifact_name}"
 
