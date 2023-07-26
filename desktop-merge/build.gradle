@@ -51,7 +51,7 @@ apply plugin: 'java-library'
 version project_version
 group project_group
 
-archivesBaseName = archives_base_name + "-premain"
+archivesBaseName = archives_base_name + "-gameprovider"
 
 def packageVersion = "1.0.0"
 
@@ -240,7 +240,8 @@ tasks.register('package', Zip) {
     dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
 
     from fileTree(dir: "$buildDir/jars", include: "*.jar")
-    into file("$rootProject.buildDir/dist/package.zip")
+    archiveName 'package.zip'
+    destinationDir(file("$rootProject.buildDir/dist/"))
 }
 
 jpackage {
