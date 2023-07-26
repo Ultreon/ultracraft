@@ -94,7 +94,7 @@ jobs:
                 apt-get install -q -y git wget
                 wget -q https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.8%2B7/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.8_7.tar.gz
                 tar -xf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.8_7.tar.gz
-                sudo mkdir /usr/lib/jvm && mv jdk-17.0.8+7 /usr/lib/jvm/jdk-17.0.8+7
+                mkdir /usr/lib/jvm && mv jdk-17.0.8+7 /usr/lib/jvm/jdk-17.0.8+7
                 export JAVA_HOME=/usr/lib/jvm/jdk-17.0.8+7
                 export PATH=/usr/lib/jvm/jdk-17.0.8+7-b11/bin
                 java -version
