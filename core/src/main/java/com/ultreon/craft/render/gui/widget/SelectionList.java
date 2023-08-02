@@ -193,7 +193,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public boolean mouseWheel(int x, int y, double rotation) {
-        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 3), 0, this.getContentHeight() - this.height) : 0;
+        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 10), 0, this.getContentHeight() - this.height) : 0;
 
         return true;
     }
