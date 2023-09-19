@@ -11,6 +11,7 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
 
+import com.ultreon.craft.render.gui.widget.EditBox;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -220,7 +221,7 @@ public class DesktopPlatform extends GamePlatform {
     private void showGuiUtilsWindow(UltreonCraft game) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("Player Utils", this.getDefaultFlags())) {
+        if (ImGui.begin("GUI Utils", this.getDefaultFlags())) {
             Screen currentScreen = game.currentScreen;
             ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
             if (currentScreen != null) {
@@ -233,6 +234,11 @@ public class DesktopPlatform extends GamePlatform {
                     );
                 }
                 ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
+                if (exactWidgetAt instanceof EditBox) {
+                    EditBox editBox = (EditBox) exactWidgetAt;
+                    ImGuiEx.editString("Text", "EditBox.Text", editBox.getText(), editBox::setText);
+                    ImGuiEx.editInt("Cursor", "EditBox.Cursor", editBox.getCursor(), editBox::setCursor);
+                }
             }
         }
         ImGui.end();

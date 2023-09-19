@@ -12,7 +12,7 @@ public class EditBox extends GuiComponent {
     @Nullable
     private String hint;
     private String text = "";
-    private int maxLength;
+    private int maxLength = 128;
     private int cursor;
     private boolean error;
     private Validator validator = query -> true;
@@ -86,6 +86,7 @@ public class EditBox extends GuiComponent {
         String first = this.text.substring(0, this.cursor);
         String last = this.text.substring(this.cursor);
         this.text = first + character + last;
+        this.cursor++;
         this.revalidate();
 
         return true;
@@ -93,9 +94,10 @@ public class EditBox extends GuiComponent {
 
     @Override
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.BACKSPACE && this.text.length() > 0 && this.cursor > 0) {
+        if (keyCode == Input.Keys.BACKSPACE && !this.text.isEmpty() && this.cursor > 0) {
             String first = this.text.substring(0, this.cursor - 1);
             String last = this.text.substring(this.cursor);
+            this.cursor--;
             this.text = first + last;
             this.revalidate();
         }
@@ -107,12 +109,20 @@ public class EditBox extends GuiComponent {
         }
 
         if (keyCode == Input.Keys.RIGHT && this.cursor < this.text.length()) this.cursor++;
-        if (keyCode == Input.Keys.RIGHT && this.cursor > 0) this.cursor--;
+        if (keyCode == Input.Keys.LEFT && this.cursor > 0) this.cursor--;
 
         return super.keyPress(keyCode);
     }
 
     public boolean isError() {
         return this.error;
+    }
+
+    public int getCursor() {
+        return this.cursor;
+    }
+
+    public void setCursor(int cursor) {
+        this.cursor = cursor;
     }
 }
