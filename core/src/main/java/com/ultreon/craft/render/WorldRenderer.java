@@ -83,8 +83,8 @@ public class WorldRenderer implements RenderableProvider {
         Player player = this.game.player;
         if (player == null) return;
         toSort.sort((o1, o2) -> {
-            Vec3d mid1 = new Vec3d(o1.getOffset().x + (float) CHUNK_SIZE / 2, o1.getOffset().y + (float) CHUNK_HEIGHT / 2, o1.getOffset().z + (float) CHUNK_SIZE / 2);
-            Vec3d mid2 = new Vec3d(o2.getOffset().x + (float) CHUNK_SIZE / 2, o2.getOffset().y + (float) CHUNK_HEIGHT / 2, o2.getOffset().z + (float) CHUNK_SIZE / 2);
+            Vec3d mid1 = new Vec3d(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
+            Vec3d mid2 = new Vec3d(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
             return Double.compare(mid2.dst(player.getPosition()), mid1.dst(player.getPosition()));
         });
 

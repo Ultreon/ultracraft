@@ -812,7 +812,6 @@ public class Renderer {
     //     Miscellaneous     //
     ///////////////////////////
     public void drawRegion(int x, int y, int width, int height, Consumer<Renderer> consumer) {
-        boolean doPop = false;
         this.pushMatrix();
         this.translate(x, y);
         this.pushScissors(x, y, width, height);
