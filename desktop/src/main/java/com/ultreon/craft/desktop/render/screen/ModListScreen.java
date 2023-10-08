@@ -36,8 +36,11 @@ public class ModListScreen extends Screen {
 
     private void renderItem(Renderer renderer, ModContainer modContainer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
         ModMetadata metadata = modContainer.getMetadata();
-        renderer.drawText(metadata.getName(), 50, this.list.getItemHeight() - 12);
-        renderer.drawText(metadata.getId(), 50, this.list.getItemHeight() - 12 - 12, Color.rgb(0x808080));
+        var x = this.list.getX();
+
+        renderer.drawText(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
+        renderer.drawText(metadata.getId(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
+
         metadata.getIconPath(128).ifPresent(iconPath -> {
             FileHandle iconFileHandle = Gdx.files.internal(iconPath);
             if (!iconFileHandle.exists()) return;
@@ -47,7 +50,7 @@ public class ModListScreen extends Screen {
                 TEXTURES.put(metadata.getId(), texture);
             }
             Texture texture = TEXTURES.get(metadata.getId());
-            renderer.texture(texture, 3, 3, 42, 42, 0, 0, texture.getWidth(), texture.getHeight(), texture.getWidth(), texture.getHeight());
+            renderer.texture(texture, x + 2 , y + 2, 42, 42, 0, 0, texture.getWidth(), texture.getHeight(), texture.getWidth(), texture.getHeight());
         });
     }
 

@@ -64,7 +64,7 @@ public class Font {
         renderer.scale(scale, scale);
         if (shadow) {
             font.setColor(color.darker().darker().toGdx());
-            font.draw(batch, text, x / scale, y / scale - 1);
+            font.draw(batch, text, x / scale, y / scale + 1);
         }
         font.setColor(color.toGdx());
         font.draw(batch, text, x / scale, y / scale);

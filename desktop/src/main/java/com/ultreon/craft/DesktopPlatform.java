@@ -52,24 +52,8 @@ public class DesktopPlatform extends GamePlatform {
 
     public DesktopPlatform(ArgParser argParser, boolean packaged) {
         this.argParser = argParser;
-
-        if (packaged) {
-            switch (this.getOperatingSystem()) {
-                case WINDOWS:
-                    this.gameDir = System.getProperty("user.home") + "\\AppData\\Roaming\\.ultreon-craft\\";
-                    break;
-                case LINUX:
-                case UNIX:
-                case MAC_OS:
-                    this.gameDir = System.getProperty("user.home") + "/.ultreon-craft/";
-                    break;
-                default:
-                    this.gameDir = System.getProperty("user.home") + "/Games/ultreon-craft/";
-            }
-        } else {
-            String gameDir = this.argParser.getKeywordArgs().get("gamedir");
-            this.gameDir = gameDir == null ? new File(".").getAbsolutePath() : gameDir;
-        }
+        this.gameDir = FabricLoader.getInstance().getGameDir().toAbsolutePath().toString();
+        System.out.println("this.gameDir = " + this.gameDir);
     }
 
     @Override

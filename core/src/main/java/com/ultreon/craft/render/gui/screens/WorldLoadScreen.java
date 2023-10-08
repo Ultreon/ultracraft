@@ -58,7 +58,7 @@ public class WorldLoadScreen extends Screen {
         this.game.worldRenderer = new WorldRenderer(this.game.world);
         this.game.renderWorld = true;
         UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
-        this.game.runLater(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
+        this.game.submit(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
     }
 
     @Override
@@ -66,14 +66,14 @@ public class WorldLoadScreen extends Screen {
         fill(renderer, 0, 0, this.width, this.height, 0xff202020);
 
         renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawCenteredText(this.title, this.width / 2, this.height - this.height / 3);
+        renderer.drawCenteredText(this.title, this.width / 2, this.height / 3);
 
         World world = this.game.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                renderer.drawCenteredText(s, this.width / 2, this.height - this.height / 3 - 20);
+                renderer.drawCenteredText(s, this.width / 2, this.height / 3 - 20);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -15,10 +16,12 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
+import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -41,6 +44,7 @@ import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.*;
+import com.ultreon.craft.render.gui.Notifications;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
@@ -57,6 +61,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.libs.datetime.v0.Duration;
 import com.ultreon.libs.events.v1.EventResult;
 import com.ultreon.libs.events.v1.ValueEventResult;
 import com.ultreon.libs.registries.v0.Registry;
@@ -65,6 +70,7 @@ import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
@@ -75,8 +81,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -86,13 +90,16 @@ import java.util.stream.Collectors;
 import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_FUNC;
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
-public class UltreonCraft implements DeferredDisposable {
+public class UltreonCraft extends PollingExecutorService implements DeferredDisposable {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     private static final int CULL_FACE = GL20.GL_FRONT;
-    private final Instant bootTime;
+    private final Duration bootTime;
     private final String allUnicode;
+    @UnknownNullability
+    private final PerspectiveCamera fakeCamera;
+    private final GarbageCollector garbageCollector;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
@@ -100,20 +107,23 @@ public class UltreonCraft implements DeferredDisposable {
     private static SavedWorld savedWorld;
     public boolean forceUnicode = false;
     public ItemRenderer itemRenderer;
+    public Notifications notifications = new Notifications(this);
     @SuppressWarnings("FieldMayBeFinal")
     private boolean booted;
     public static final int TPS = 20;
     public Font font;
+    @UnknownNullability
     public BitmapFont unifont;
     public GameInput input;
     @Nullable public World world;
     @Nullable public WorldRenderer worldRenderer;
     @UnknownNullability
+    @SuppressWarnings("GDXJavaStaticResource")
     private static UltreonCraft instance;
     @Nullable public Player player;
     private final SpriteBatch spriteBatch;
     private final ModelBatch batch;
-    GameCamera camera;
+    public GameCamera camera;
     private final Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
@@ -126,7 +136,6 @@ public class UltreonCraft implements DeferredDisposable {
     private final ResourceManager resourceManager;
     private final float guiScale = this.calculateGuiScale();
 
-    private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
     private int chunkRefresh;
     public boolean showDebugHud = true;
@@ -138,6 +147,7 @@ public class UltreonCraft implements DeferredDisposable {
     public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
 
     // Texture Atlases
+    @UnknownNullability
     public TextureAtlas blocksTextureAtlas;
     private final BakedModelRegistry bakedBlockModels;
 
@@ -153,9 +163,15 @@ public class UltreonCraft implements DeferredDisposable {
     private final DebugRenderer debugRenderer;
     private boolean closingWorld;
     private final List<Disposable> disposables = new CopyOnWriteArrayList<>();
+    private boolean loading;
+    private final Thread renderingThread;
 
     public UltreonCraft(String[] args) throws Throwable {
         LOGGER.info("Booting game!");
+
+        this.loading = true;
+        instance = this;
+        renderingThread = Thread.currentThread();
 
         Identifier.setDefaultNamespace(NAMESPACE);
         GamePlatform.instance.preInitImGui();
@@ -167,8 +183,6 @@ public class UltreonCraft implements DeferredDisposable {
             LOGGER.debug("Developer mode is enabled");
         }
 
-        UltreonCraft.instance = this;
-
         Thread.setDefaultUncaughtExceptionHandler(UltreonCraft::uncaughtException);
 
         LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
@@ -176,6 +190,7 @@ public class UltreonCraft implements DeferredDisposable {
         Gdx.app.setApplicationLogger(new LibGDXLogger());
 
         this.configDir = createDir("config/");
+        this.garbageCollector = new GarbageCollector();
 
         createDir("screenshots/");
         createDir("game-crashes/");
@@ -203,7 +218,7 @@ public class UltreonCraft implements DeferredDisposable {
         this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
         LOGGER.info("Generating bitmap fonts");
-        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
+        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true);
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
         FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
@@ -211,6 +226,7 @@ public class UltreonCraft implements DeferredDisposable {
         fontParameter.characters = this.allUnicode;
         fontParameter.minFilter = Texture.TextureFilter.Nearest;
         fontParameter.magFilter = Texture.TextureFilter.Nearest;
+        fontParameter.flip = true;
         fontParameter.mono = true;
 
         this.font = new Font(generator.generateFont(fontParameter));
@@ -219,13 +235,16 @@ public class UltreonCraft implements DeferredDisposable {
         // Setting up rendering //
         //**********************//
         LOGGER.info("Initializing rendering stuffs");
-        DefaultShader.Config config = new DefaultShader.Config();
+        DepthShader.Config config = new DepthShader.Config();
         config.defaultCullFace = GL20.GL_FRONT;
         this.batch = new ModelBatch(new DefaultShaderProvider(config));
         this.batch.getRenderContext().setCullFace(CULL_FACE);
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
         this.camera.far = 1000;
+        this.fakeCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        this.fakeCamera.near = 0.01f;
+        this.fakeCamera.far = 1000;
         this.input = this.createInput();
         Gdx.input.setInputProcessor(this.input);
 
@@ -238,11 +257,7 @@ public class UltreonCraft implements DeferredDisposable {
 
         LOGGER.info("Setting up world environment");
         this.env = new Environment();
-        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
-        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
-        this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
-        this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
+        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1));
 
         LOGGER.info("Setting up HUD");
         this.hud = new Hud(this);
@@ -268,6 +283,7 @@ public class UltreonCraft implements DeferredDisposable {
         for (Registry<?> registry : Registry.getRegistries()) {
             RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
         }
+
         Registry.freeze();
 
         LOGGER.info("Registering models");
@@ -300,6 +316,8 @@ public class UltreonCraft implements DeferredDisposable {
 
         LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
 
+        this.loading = false;
+
         //*************//
         // Final stuff //
         //*************//
@@ -312,20 +330,48 @@ public class UltreonCraft implements DeferredDisposable {
 
         this.booted = true;
 
-        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
+        this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - BOOT_TIMESTAMP);
         LOGGER.info("Game booted in " + this.bootTime + "ms");
+    }
+
+    @CanIgnoreReturnValue
+    public static <T> T invokeAndWait(Callable<@NotNull T> func) {
+        return instance.submit(func).join();
+    }
+
+    public static void invokeAndWait(Runnable func) {
+        instance.submit(func).join();
+    }
+
+    @CanIgnoreReturnValue
+    public static @NotNull CompletableFuture<Void> invoke(Runnable func) {
+        return instance.submit(func);
+    }
+
+    @CanIgnoreReturnValue
+    public static <T> @NotNull CompletableFuture<T> invoke(Callable<T> func) {
+        return instance.submit(func);
+    }
+
+    public static FileHandle resource(Identifier id) {
+        return new ResourceFileHandle(id);
     }
 
     private static void uncaughtException(Thread t, Throwable e) {
         LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
     }
 
-    @Override
-    public void deferDispose(Disposable disposable) {
-        instance.disposables.add(disposable);
+    public static boolean isOnRenderingThread() {
+        return Thread.currentThread().getId() == instance.renderingThread.getId();
     }
 
-    public Instant getBootTime() {
+    @Override
+    public <T extends Disposable> T deferDispose(T disposable) {
+        instance.disposables.add(disposable);
+        return disposable;
+    }
+
+    public Duration getBootTime() {
         return this.bootTime;
     }
 
@@ -471,6 +517,8 @@ public class UltreonCraft implements DeferredDisposable {
         try {
             final float tickTime = 1f / TPS;
 
+            this.pollAll();
+
             float deltaTime = Gdx.graphics.getDeltaTime();
             this.timeUntilNextTick -= deltaTime;
             if (this.timeUntilNextTick < 0) {
@@ -478,11 +526,6 @@ public class UltreonCraft implements DeferredDisposable {
 
                 this.tick();
             }
-
-            this.tasks.forEach(runnable -> {
-                runnable.run();
-                this.tasks.remove(runnable);
-            });
 
             this.input.update();
 
@@ -495,16 +538,29 @@ public class UltreonCraft implements DeferredDisposable {
             World world = this.world;
             WorldRenderer worldRenderer = this.worldRenderer;
 
-            if (this.renderWorld && world != null && worldRenderer != null) {
-                this.batch.begin(this.camera);
-                this.batch.getRenderContext().setCullFace(CULL_FACE);
-                this.batch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
-                this.batch.render(worldRenderer, this.env);
-                this.batch.end();
+            if (this.player != null) {
+                if (this.currentScreen == null) {
+                    this.player.rotate(-Gdx.input.getDeltaX(), -Gdx.input.getDeltaY());
+                }
+
+                this.camera.update(this.player);
+                this.fakeCamera.update();
+                Vector2 rotation = this.player != null ? this.player.getRotation() : new Vector2();
+                Quaternion quaternion = new Quaternion();
+                quaternion.setFromAxis(Vector3.Y, rotation.x);
+                quaternion.mul(new Quaternion(Vector3.X, rotation.y));
+                quaternion.conjugate();
+
+                if (this.renderWorld && world != null && worldRenderer != null) {
+                    this.batch.begin(this.fakeCamera);
+                    this.batch.getRenderContext().setCullFace(CULL_FACE);
+                    this.batch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
+                    this.batch.render(worldRenderer, this.env);
+                    this.batch.end();
+                }
             }
 
             this.spriteBatch.begin();
-
             Screen screen = this.currentScreen;
             Renderer renderer = new Renderer(this.shapes);
             renderer.pushMatrix();
@@ -544,14 +600,14 @@ public class UltreonCraft implements DeferredDisposable {
         }
 
         if (screen != null) {
-            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((this.getHeight() - Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
+            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
         }
     }
 
     public static void crash(Throwable throwable) {
-        throwable.printStackTrace();
+        LOGGER.error("Game crash triggered:", throwable);
         try {
-            CrashLog crashLog = new CrashLog("An error occurred", throwable);
+            CrashLog crashLog = new CrashLog("An unexpected error occurred", throwable);
             crash(crashLog);
         } catch (Throwable t) {
             LOGGER.error(FATAL_ERROR_MSG, t);
@@ -570,13 +626,14 @@ public class UltreonCraft implements DeferredDisposable {
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private void fillGameInfo(CrashLog crashLog) {
         if (this.world != null) {
             this.world.fillCrashInfo(crashLog);
         }
 
         CrashCategory game = new CrashCategory("Game Details");
-        game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
+        game.add("Time until crash", Duration.ofMilliseconds(System.currentTimeMillis() - BOOT_TIMESTAMP).toSimpleString()); // Could be the game only crashes after a long time.
         game.add("Game booted", this.booted); // Could be that the game isn't booted yet.
         game.add("LibGDX Platform", GamePlatform.instance.getGdxPlatform().getDisplayName());
         game.add("Can Access Data", GamePlatform.instance.canAccessData());
@@ -658,15 +715,20 @@ public class UltreonCraft implements DeferredDisposable {
     }
 
     public void resize(int width, int height) {
-        this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+        this.spriteBatch.getProjectionMatrix().setToOrtho(0, width, height, 0, 0, 1000000);
         this.deferredWidth = width;
         this.deferredHeight = height;
 
-        //noinspection ConstantValue
         if (this.camera != null) {
             this.camera.viewportWidth = width;
             this.camera.viewportHeight = height;
             this.camera.update();
+        }
+
+        if (this.fakeCamera != null) {
+            this.fakeCamera.viewportWidth = width;
+            this.fakeCamera.viewportHeight = height;
+            this.fakeCamera.update();
         }
 
         Screen cur = this.currentScreen;
@@ -682,6 +744,7 @@ public class UltreonCraft implements DeferredDisposable {
             }
 
             this.scheduler.shutdownNow();
+            this.garbageCollector.shutdown();
 
             if (this.world != null) this.world.dispose();
 
@@ -702,7 +765,7 @@ public class UltreonCraft implements DeferredDisposable {
 
             LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
         } catch (Throwable t) {
-            t.printStackTrace();
+            crash(t);
         }
     }
 
@@ -764,7 +827,7 @@ public class UltreonCraft implements DeferredDisposable {
         CompletableFuture.runAsync(() -> {
             world.dispose();
             System.gc();
-            this.runLater(new Task(id("post_world_exit"), runnable));
+            this.submit(new Task(id("post_world_exit"), runnable));
             this.closingWorld = false;
         });
     }
@@ -774,7 +837,7 @@ public class UltreonCraft implements DeferredDisposable {
     }
 
     /**
-     * @deprecated use {@link #runLater(Task)} instead.
+     * @deprecated use {@link #submit(Runnable)} instead.
      */
     @Deprecated
     public void runLater(Runnable task) {
@@ -787,6 +850,7 @@ public class UltreonCraft implements DeferredDisposable {
         });
     }
 
+    @Deprecated(forRemoval = true)
     public void runLater(Task task) {
         Gdx.app.postRunnable(() -> {
             try {
@@ -884,6 +948,10 @@ public class UltreonCraft implements DeferredDisposable {
 
     public String getAllUnicode() {
         return this.allUnicode;
+    }
+
+    public boolean isLoading() {
+        return this.loading;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

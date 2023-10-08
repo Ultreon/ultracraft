@@ -1,6 +1,8 @@
 package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.Section;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
@@ -35,10 +37,15 @@ public class DebugRenderer {
             Player player = this.game.player;
             if (player != null) {
                 Vec3i blockPosition = player.blockPosition();
+                Vec3i sectionPos = this.block2sectionPos(blockPosition);
+                Chunk chunkAt = world.getChunkAt(blockPosition);
                 this.drawLine(renderer, "block xyz", blockPosition);
-                this.drawLine(renderer, "chunk xyz", this.block2sectionPos(blockPosition));
+                this.drawLine(renderer, "chunk xyz", sectionPos);
+                if (chunkAt != null) {
+                    Section sectionAt = chunkAt.getSectionAt(sectionPos.y);
+                    this.drawLine(renderer, "chunk render xyz", sectionAt == null ? "null" : sectionAt.renderOffset);
+                }
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
-                this.drawLine(renderer, "region open", world.getRegionAt(blockPosition) != null);
             }
         }
 

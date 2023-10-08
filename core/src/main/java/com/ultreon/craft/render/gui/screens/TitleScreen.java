@@ -31,15 +31,15 @@ public class TitleScreen extends Screen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        int y = height - height / 2 + 5;
+        int y = height / 2 + 5;
         this.startButton.setPos(width / 2 - 100, y);
         if (this.resetWorldButton != null) {
-            this.resetWorldButton.setPos(width / 2 - 100, y -= 25);
+            this.resetWorldButton.setPos(width / 2 - 100, y += 25);
         }
         if (this.modListButton != null) {
-            this.modListButton.setPos(width / 2 - 100, y -= 25);
+            this.modListButton.setPos(width / 2 - 100, y += 25);
         }
-        this.optionsButton.setPos(width / 2 - 100, y -= 25);
+        this.optionsButton.setPos(width / 2 - 100, y += 25);
         this.quitButton.setPos(width / 2 + 5, y);
     }
 
@@ -49,25 +49,25 @@ public class TitleScreen extends Screen {
 
         super.show();
 
-        int y = height - height / 2 + 5;
+        int y = height / 2 + 5;
 
         startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
             UltreonCraft.get().startWorld();
         }));
 
-        if ((GamePlatform.instance.isMobile() && GameFlags.ENABLE_RESET_WORLD_IN_MOBILE) ||
-                (GamePlatform.instance.isDesktop() && GameFlags.ENABLE_RESET_WORLD_IN_DESKTOP) ||
-                (GamePlatform.instance.isWeb() && GameFlags.ENABLE_RESET_WORLD_IN_WEB) ||
+        if (GamePlatform.instance.isMobile() && GameFlags.ENABLE_RESET_WORLD_IN_MOBILE ||
+                GamePlatform.instance.isDesktop() && GameFlags.ENABLE_RESET_WORLD_IN_DESKTOP ||
+                GamePlatform.instance.isWeb() && GameFlags.ENABLE_RESET_WORLD_IN_WEB ||
                 GameFlags.ALWAYS_ENABLE_RESET_WORLD) {
-            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y-=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> UltreonCraft.getSavedWorld().delete()));
+            this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y+=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> UltreonCraft.getSavedWorld().delete()));
         }
 
         if (GamePlatform.instance.isModsSupported()) {
-            this.modListButton = this.add(new Button(this.width / 2 - 100, y -= 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
+            this.modListButton = this.add(new Button(this.width / 2 - 100, y += 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
                 GamePlatform.instance.openModList();
             }));
         }
-        optionsButton = add(new Button(width / 2 - 100, y-=25, 95, Language.translate("craft.screen.title.options"), caller -> {
+        optionsButton = add(new Button(width / 2 - 100, y+=25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
         this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
@@ -87,7 +87,7 @@ public class TitleScreen extends Screen {
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        renderer.drawCenteredTextScaled("UltraCraft", 3, (int)((float) this.width / 2), (int)((float) (this.height - 40)));
+        renderer.drawCenteredTextScaled("UltraCraft", 3, (int)((float) this.width / 2), (int) (float) 40);
     }
 
     @Override

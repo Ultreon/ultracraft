@@ -152,8 +152,7 @@ public class Chunk implements Disposable {
 		synchronized (this.lock) {
 			this.ready = false;
 
-			Section[] sections = this.sections;
-			for (Section section : sections) {
+			for (Section section : this.sections) {
 				section.dispose();
 			}
 			this.sections = null;

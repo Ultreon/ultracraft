@@ -3,8 +3,10 @@ package com.ultreon.craft.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
+import com.badlogic.gdx.math.GridPoint2;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.util.Ray;
@@ -19,6 +21,7 @@ import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
 
+import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.zip.Deflater;
@@ -40,6 +43,10 @@ public class DesktopInput extends GameInput {
         super(game, camera);
     }
 
+    public static Vector2 getMouseDelta() {
+        return new Vector2(Gdx.input.getDeltaX(), Gdx.input.getDeltaY());
+    }
+
     @Override
     public boolean keyDown(int keycode) {
         super.keyDown(keycode);
@@ -51,7 +58,12 @@ public class DesktopInput extends GameInput {
         }
 
         if (keycode == this.screenshotKey) {
-            Pixmap pixmap = Pixmap.createFromFrameBuffer(this.game.getDrawOffset().x, this.game.getDrawOffset().y, this.game.getWidth(), this.game.getHeight());
+            Gdx.gl.glPixelStorei(GL20.GL_PACK_ALIGNMENT, 1);
+
+            final Pixmap pixmap = new Pixmap(this.game.getWidth(), this.game.getHeight(), Pixmap.Format.RGB888);
+            ByteBuffer pixels = pixmap.getPixels();
+            Gdx.gl.glReadPixels(this.game.getDrawOffset().x, this.game.getDrawOffset().y, this.game.getWidth(), this.game.getHeight(), GL20.GL_RGB, GL20.GL_UNSIGNED_BYTE, pixels);
+
             PixmapIO.writePNG(GamePlatform.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
         }
@@ -115,9 +127,9 @@ public class DesktopInput extends GameInput {
         this.xPos = screenX;
         this.yPos = screenY;
 
-        Vector2 rotation = this.game.player.getRotation();
-        rotation.add(this.deltaX * DEG_PER_PIXEL, this.deltaY * DEG_PER_PIXEL);
-        this.game.player.setRotation(rotation);
+//        Vector2 rotation = this.game.player.getRotation();
+//        rotation.add(this.deltaX * DEG_PER_PIXEL, this.deltaY * DEG_PER_PIXEL);
+//        this.game.player.setRotation(rotation);
     }
 
     @Override
@@ -149,7 +161,6 @@ public class DesktopInput extends GameInput {
         if (Gdx.input.isCursorCatched()) {
             this.updatePlayerMovement(screenX, screenY);
         } else {
-            screenY = this.game.getHeight() - screenY;
             Screen currentScreen = this.game.currentScreen;
             if (currentScreen != null) currentScreen.mouseMove(screenX, screenY);
         }
@@ -188,7 +199,6 @@ public class DesktopInput extends GameInput {
                 }
             }
         } else {
-            screenY = this.game.getHeight() - screenY;
             Screen currentScreen = this.game.currentScreen;
             if (currentScreen != null) {
                 ScreenEvents.MOUSE_PRESS.factory().onMousePressScreen((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
@@ -205,7 +215,6 @@ public class DesktopInput extends GameInput {
 
         if (!Gdx.input.isCursorCatched()) {
             Screen currentScreen = this.game.currentScreen;
-            screenY = this.game.getHeight() - screenY;
             if (currentScreen != null) {
                 ScreenEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
                 currentScreen.mouseRelease((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);

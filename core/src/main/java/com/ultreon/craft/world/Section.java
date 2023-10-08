@@ -1,5 +1,6 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Null;
 import com.ultreon.craft.block.Block;
@@ -12,11 +13,14 @@ import org.jetbrains.annotations.Nullable;
 
 public class Section implements Disposable {
     private final int size;
+    public final Vector3 renderOffset = new Vector3();
+    public final Vector3 translation = new Vector3();
     protected boolean ready;
     protected boolean dirty;
     public final Object lock = new Object();
     private final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
+    private boolean disposed;
 
     public Section(Vec3i offset) {
         this.offset = offset;
@@ -90,7 +94,9 @@ public class Section implements Disposable {
     @Override
     public void dispose() {
         synchronized (this.lock) {
+            this.disposed = true;
             this.ready = false;
+            this.paletteContainer.dispose();
         }
     }
 
@@ -100,5 +106,9 @@ public class Section implements Disposable {
 
     public boolean isReady() {
         return this.ready;
+    }
+
+    public boolean isDisposed() {
+        return disposed;
     }
 }

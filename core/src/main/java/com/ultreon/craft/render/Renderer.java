@@ -10,25 +10,23 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.font.Font;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import com.ultreon.libs.text.v0.TextObject;
-
 import org.jetbrains.annotations.ApiStatus;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
 import java.util.function.Consumer;
-
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * Renderer class.
@@ -42,8 +40,6 @@ public class Renderer {
     ////////////////////
     private final UltreonCraft game = UltreonCraft.get();
     private final Stack<Vector3> globalTranslation = new Stack<>();
-    private final GL20 gl20;
-    private final GL30 gl30;
     private final Batch batch;
     private final ShapeDrawer shapes;
     private float strokeWidth = 1;
@@ -51,6 +47,8 @@ public class Renderer {
     private Font font;
     private final MatrixStack matrixStack;
     private Color textureColor = Color.rgb(0xffffff);
+    private final Vector2 tmp2A = new Vector2();
+    private final Vector3 tmp3A = new Vector3();
 
     /**
      * @param shapes shape drawer instance from {@link UltreonCraft}
@@ -60,25 +58,19 @@ public class Renderer {
     }
 
     /**
-     * @param shapes shape drawer instance from {@link UltreonCraft}
+     * @param shapes      shape drawer instance from {@link UltreonCraft}
      * @param matrixStack current matrix stack.
      */
     public Renderer(ShapeDrawer shapes, MatrixStack matrixStack) {
         this.globalTranslation.push(new Vector3());
         this.font = this.game.font;
-        this.gl20 = Gdx.gl20;
-        this.gl30 = Gdx.gl30;
+        GL30 gl30 = Gdx.gl30;
         this.batch = shapes.getBatch();
         this.shapes = shapes;
         this.matrixStack = matrixStack;
 
         // Projection matrix.
-        Consumer<Matrix4> projectionMatrixSetter = matrix -> {
-            shapes.getBatch().setTransformMatrix(matrix);
-        };
-//        this.matrixStack.onPush = projectionMatrixSetter;
-//        this.matrixStack.onPop = projectionMatrixSetter;
-        this.matrixStack.onEdit = projectionMatrixSetter;
+        this.matrixStack.onEdit = matrix -> shapes.getBatch().setTransformMatrix(matrix);
     }
 
     public MatrixStack getMatrixStack() {
@@ -132,7 +124,7 @@ public class Renderer {
     }
 
     public void clearColor(Color color) {
-        gl20.glClearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+        Gdx.gl.glClearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
     }
 
     public void clearColor(int red, int green, int blue) {
@@ -172,12 +164,10 @@ public class Renderer {
     }
 
     public void circle(float x, float y, float radius) {
-        y = game.getHeight() + radius - y;
         shapes.filledCircle(x, y, radius);
     }
 
     public void circleLine(float x, float y, float radius) {
-        y = game.getHeight() + radius - y;
         shapes.circle(x, y, radius);
     }
 
@@ -266,17 +256,17 @@ public class Renderer {
     ///////////////////
     public void texture(TextureRegion tex, float x, float y) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
     public void texture(TextureRegion tex, float x, float y, float width, float height) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y, width, height);
+        batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
     public void texture(Texture tex, float x, float y) {
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
 
@@ -284,7 +274,7 @@ public class Renderer {
         setColor(backgroundColor);
         rect(x, y, tex.getWidth(), tex.getHeight());
         batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y);
+        batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
     public void texture(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
@@ -304,7 +294,7 @@ public class Renderer {
         rect(x, y, width, height);
         batch.setColor(textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
-        batch.draw(textureRegion, x, y, width, height);
+        batch.draw(textureRegion, x, y + height, width, -height);
     }
 
     public void texture(Texture tex, float x, float y, float width, float height) {
@@ -322,7 +312,7 @@ public class Renderer {
     public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
         batch.setColor(textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
-        batch.draw(textureRegion, x, y, width, height);
+        batch.draw(textureRegion, x, y + height, width, -height);
     }
 
     //////////////////
@@ -720,7 +710,7 @@ public class Renderer {
         this.multiLineText(text, x, y, color, true);
     }
 
-    public void multiLineText(String text, int x, int y,  boolean shadow) {
+    public void multiLineText(String text, int x, int y, boolean shadow) {
         this.multiLineText(text, x, y, Color.WHITE, shadow);
     }
 
@@ -739,17 +729,18 @@ public class Renderer {
         this.tabString(text, x, y, color, true);
     }
 
-    public void tabString(String text, int x, int y,  boolean shadow) {
+    public void tabString(String text, int x, int y, boolean shadow) {
         this.tabString(text, x, y, Color.WHITE, shadow);
     }
 
     public void tabString(String text, int x, int y, Color color, boolean shadow) {
         for (String line : text.split("\t"))
+            //noinspection SuspiciousNameCombination
             this.drawText(line, x += this.font.lineHeight, y, color, shadow);
     }
 
     public void clear() {
-        gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }
 
     ////////////////////////////
@@ -811,33 +802,83 @@ public class Renderer {
     ///////////////////////////
     //     Miscellaneous     //
     ///////////////////////////
+    @ApiStatus.Experimental
     public void drawRegion(int x, int y, int width, int height, Consumer<Renderer> consumer) {
         this.pushMatrix();
         this.translate(x, y);
-        this.pushScissors(x, y, width, height);
-        consumer.accept(this);
-        this.popScissors();
+        if (this.pushScissors(x, y, width, height)) {
+            consumer.accept(this);
+            this.popScissors();
+        }
         this.popMatrix();
     }
 
-    public void pushScissorsRaw(int x, int y, int width, int height) {
-        ScissorStack.pushScissors(new Rectangle(x, y, width, height));
+    @ApiStatus.Internal
+    public boolean pushScissorsRaw(int x, int y, int width, int height) {
+        return this.pushScissorsInternal(new Rectangle(x, y, width, height));
     }
 
-    public void pushScissors(int x, int y, int width, int height) {
-        ScissorStack.pushScissors(new Rectangle(
+    @CheckReturnValue
+    private boolean pushScissorsInternal(Rectangle rect) {
+        rect.getPosition(this.tmp2A);
+        this.tmp3A.set(this.globalTranslation.peek());
+        rect.setPosition(this.tmp2A.add(this.tmp3A.x, this.tmp3A.y));
+
+        if (rect.x < 0) {
+            rect.width = Math.max(rect.width + rect.x, 0);
+            rect.x = 0;
+        }
+
+        if (rect.y < 0) {
+            rect.height = Math.max(rect.height + rect.y, 0);
+            rect.y = 0;
+        }
+
+        if (rect.width < 1) return false;
+        if (rect.height < 1) return false;
+
+        rect.y = Gdx.graphics.getHeight() - rect.y - rect.height;
+
+        this.flush();
+        return ScissorStack.pushScissors(rect);
+    }
+
+    @CheckReturnValue
+    public boolean pushScissors(int x, int y, int width, int height) {
+        this.flush();
+        return this.pushScissorsInternal(new Rectangle(
                 x * this.game.getGuiScale(), y * this.game.getGuiScale(),
-                width * this.game.getGuiScale(), height * this.game.getGuiScale()));
+                width * this.game.getGuiScale(), height * this.game.getGuiScale())
+        );
     }
 
-    public void pushScissors(float x, float y, float width, float height) {
-        ScissorStack.pushScissors(new Rectangle(
+    @CheckReturnValue
+    public boolean pushScissors(float x, float y, float width, float height) {
+        this.flush();
+        return this.pushScissorsInternal(new Rectangle(
                 x * this.game.getGuiScale(), y * this.game.getGuiScale(),
-                width * this.game.getGuiScale(), height * this.game.getGuiScale()));
+                width * this.game.getGuiScale(), height * this.game.getGuiScale())
+        );
     }
 
-    public void popScissors() {
-        ScissorStack.popScissors();
+    @CheckReturnValue
+    public boolean pushScissors(Rectangle rect) {
+        this.flush();
+        return this.pushScissorsInternal(new Rectangle(
+                rect.x * this.game.getGuiScale(), rect.y * this.game.getGuiScale(),
+                rect.width * this.game.getGuiScale(), rect.height * this.game.getGuiScale())
+        );
+    }
+
+    @CanIgnoreReturnValue
+    public Rectangle popScissors() {
+        this.flush();
+        return ScissorStack.popScissors();
+    }
+
+    private void flush() {
+        this.batch.flush();
+        Gdx.gl.glFlush();
     }
 
     @ApiStatus.Experimental
@@ -907,18 +948,18 @@ public class Renderer {
     }
 
     public void draw9PatchTexture(Texture texture, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
-        this.texture(texture, x + 0,              y + height - vHeight, uWidth, vHeight, u + 0,          v + 0,           uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v + 0,           uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x + 0,              y + 0,                uWidth, vHeight, u + 0,          v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x + width - uWidth, y + 0,                uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
-        
+        this.texture(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        this.texture(texture, x + width - uWidth, y, uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+
         for (int dx = x + uWidth; dx < width - uWidth; dx += uWidth) {
             int maxX = Math.min(dx + uWidth, width - uWidth);
             int uW = maxX - dx;
             this.texture(texture, dx, y + height - vHeight, uW, vHeight, u + uWidth, v, uW, vHeight, texWidth, texHeight);
             this.texture(texture, dx, y, uW, vHeight, u + uWidth, v + vHeight * 2, uW, vHeight, texWidth, texHeight);
         }
-        
+
         for (int dy = y + vHeight; dy < height - vHeight; dy += vHeight) {
             int maxX = Math.min(dy + vHeight, height - vHeight);
             int vH = maxX - dy;

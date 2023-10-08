@@ -23,7 +23,7 @@ public class MessageScreen extends Screen {
         fill(renderer, 0, 0, this.width, this.height, 0xff202020);
 
         renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawCenteredText(this.title, this.width / 2, this.height - this.height / 3);
+        renderer.drawCenteredText(this.title, this.width / 2, this.height / 3);
     }
 
     @Override

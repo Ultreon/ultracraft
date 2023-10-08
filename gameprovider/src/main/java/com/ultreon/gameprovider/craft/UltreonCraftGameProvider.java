@@ -1,6 +1,5 @@
 package com.ultreon.gameprovider.craft;
 
-import com.sun.source.tree.Tree;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.metadata.ModEnvironment;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
@@ -12,33 +11,26 @@ import net.fabricmc.loader.impl.game.patch.GameTransformer;
 import net.fabricmc.loader.impl.launch.FabricLauncher;
 import net.fabricmc.loader.impl.metadata.BuiltinModMetadata;
 import net.fabricmc.loader.impl.metadata.ContactInformationImpl;
-import net.fabricmc.loader.impl.metadata.ModDependencyImpl;
 import net.fabricmc.loader.impl.util.Arguments;
 import net.fabricmc.loader.impl.util.ExceptionUtil;
 import net.fabricmc.loader.impl.util.SystemProperties;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.fabricmc.loader.impl.util.log.LogHandler;
-import org.lwjgl.system.Platform;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.nio.file.Paths;
+import java.util.*;
 
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "unused"})
 public class UltreonCraftGameProvider implements GameProvider {
-    private static final String[] ALLOWED_EARLY_CLASS_PREFIXES = { "org.apache.logging.log4j.", "com.ultreon.gameprovider.bubbles.", "com.ultreon.premain." };
-    private Class<?> clazz;
-    private String[] args;
+    private static final String[] ALLOWED_EARLY_CLASS_PREFIXES = { "org.apache.logging.log4j.", "com.ultreon.gameprovider.craft.", "com.ultreon.premain." };
 
     private final GameTransformer transformer = new GameTransformer();
     private EnvType envType;
@@ -48,9 +40,6 @@ public class UltreonCraftGameProvider implements GameProvider {
     private final List<Path> miscGameLibraries = new ArrayList<>();
     private Collection<Path> validParentClassPath = new ArrayList<>();
     private String entrypoint;
-    private Path preloaderJar;
-    private Path premainJar;
-    private Path devJar;
     private boolean log4jAvailable;
     private boolean slf4jAvailable;
     private Path libGdxJar;
@@ -69,7 +58,7 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public String getGameId() {
-        return "ultreoncraft";
+        return "ultracraft";
     }
 
     @Override
@@ -91,14 +80,13 @@ public class UltreonCraftGameProvider implements GameProvider {
     public Collection<BuiltinMod> getBuiltinMods() {
         return List.of(
                 new BuiltinMod(List.of(this.libGdxJar), new BuiltinModMetadata.Builder("libgdx", this.versions.getProperty("libgdx"))
+                        .setName("LibGDX")
+                        .setDescription("A game framework used by Ultracraft (and various other games).")
                         .addLicense("Apache-2.0")
                         .addAuthor("libGDX", Map.of("homepage", "http://www.libgdx.com/", "patreon", "https://patreon.com/libgdx", "github", "https://github.com/libgdx", "sources", "https://github.com/libgdx/libgdx"))
                         .addAuthor("Mario Zechner", Map.of("github", "https://github.com/badlogic", "email", "badlogicgames@gmail.com"))
                         .addAuthor("Nathan Sweet", Map.of("github", "https://github.com/NathanSweet", "email", "nathan.sweet@gmail.com"))
                         .addIcon(200, "assets/libgdx/icon.png")
-                        .setDescription("The game engine needed by Ultracraft.")
-                        .setContact(new ContactInformationImpl(Map.of("homepage", "http://www.libgdx.com/", "patreon", "https://patreon.com/libgdx", "github", "https://github.com/libgdx", "sources", "https://github.com/libgdx/libgdx")))
-                        .setName("LibGDX")
                         .build()),
                 new BuiltinMod(this.gameJars, new BuiltinModMetadata.Builder("craft", this.versions.getProperty("ultreoncraft"))
                         .addLicense("All-Rights-Reserved")
@@ -121,27 +109,27 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public Path getLaunchDirectory() {
-        if (this.arguments.containsKey("packaged")) {
-            File gameDir;
-            switch (Platform.get()) {
-                case WINDOWS:
-                    gameDir = new File(System.getProperty("user.home"), "AppData\\Roaming\\.ultreon-craft\\");
-                    break;
-                case LINUX:
-                case MACOSX:
-                    gameDir = new File(System.getProperty("user.home"), ".ultreon-craft/");
-                    break;
-                default:
-                    gameDir = new File(System.getProperty("user.home"), "Games/ultreon-craft/");
-            }
+        if (!this.arguments.containsKey("packaged"))
+            return Path.of(".");
 
-            if (!gameDir.exists()) {
-                gameDir.mkdirs();
-            }
+        Path path;
 
-            return gameDir.getAbsoluteFile().toPath();
+        if (OS.isWindows())
+            path = Paths.get(System.getenv("APPDATA"), "Ultracraft");
+        else if (OS.isMac())
+            path = Paths.get(System.getProperty("user.home"), "Library/Application Support/Ultracraft");
+        else if (OS.isLinux())
+            path = Paths.get(System.getProperty("user.home"), ".config/Ultracraft");
+        else
+            throw new FormattedException("Unsupported Platform", "Platform unsupported: " + System.getProperty("os.name"));
+
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return Path.of(".");
+
+        return path;
     }
 
     @Override
@@ -280,7 +268,7 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public boolean hasAwtSupport() {
-        return true;
+        return false;
     }
 
     @Override
@@ -320,6 +308,7 @@ public class UltreonCraftGameProvider implements GameProvider {
         }
 
         try {
+            //noinspection ConfusingArgumentToVarargsMethod
             invoker.invokeExact(this.arguments.toArray());
         } catch (Throwable t) {
             throw new FormattedException("Ultracraft has crashed", t);
@@ -333,12 +322,10 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public boolean canOpenErrorGui() {
-        if (this.arguments == null || this.envType == EnvType.CLIENT) {
-            return true;
-        }
+        if (this.arguments == null || this.envType == EnvType.CLIENT)
+            return !OS.isMobile();
 
-        var extras = this.arguments.getExtraArgs();
-        return !extras.contains("nogui") && !extras.contains("--nogui");
+        return false;
     }
 
     @Override

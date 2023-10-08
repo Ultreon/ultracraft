@@ -1,20 +1,14 @@
 package com.ultreon.craft.render;
 
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.init.Shaders;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.translations.v1.Language;
@@ -31,8 +25,8 @@ public class Hud implements GameRenderable {
     private float joyStickY;
     private int stickPointer;
     private Vector2 joyStick;
-    public int leftHeight;
-    public int rightHeight;
+    public int leftY;
+    public int rightY;
 
 
     public Hud(UltreonCraft game) {
@@ -45,8 +39,8 @@ public class Hud implements GameRenderable {
 
     @Override
     public void render(Renderer renderer, float deltaTime) {
-        this.leftHeight = 0;
-        this.rightHeight = 0;
+        this.leftY = this.game.getScaledHeight();
+        this.rightY = this.game.getScaledHeight();
 
         Player player = this.game.player;
         if (player == null) return;
@@ -62,13 +56,13 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-        renderer.setShader(Shaders.XOR);
+//        renderer.setShader(Shaders.XOR);
 
         int x = this.game.getScaledWidth() / 2;
         int y = this.game.getScaledHeight() / 2;
         renderer.texture(this.crosshairTex, x - 7, y - 7, 14, 14);
 
-        renderer.unsetShader();
+//        renderer.unsetShader();
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
@@ -82,7 +76,6 @@ public class Hud implements GameRenderable {
         }
 
         renderer.texture(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
-
         renderer.texture(this.mobileTex, 20, 20, 50, 5, 0, 45);
     }
 
@@ -91,8 +84,8 @@ public class Hud implements GameRenderable {
         Block selectedBlock = player.getSelectedBlock();
         Identifier key = Registries.BLOCK.getKey(selectedBlock);
 
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, 2, 180, 41, 0, 42);
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, 2, 20, 24, 0, 83);
+        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, leftY - 43, 180, 41, 0, 42);
+        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, leftY - 26, 20, 24, 0, 83);
 
         Block[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
@@ -102,36 +95,36 @@ public class Hud implements GameRenderable {
         }
 
         if (key != null && !selectedBlock.isAir()) {
-            renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, 32, 168, 12);
-            String name = Language.translate(key.location() + ".block." + key.path() + ".name");
-            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 41);
-            renderer.popScissors();
+            if (renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, leftY - 44, 168, 12)) {
+                String name = Language.translate(key.location() + ".block." + key.path() + ".name");
+                renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, leftY - 41);
+                renderer.popScissors();
+            }
         }
 
-        this.leftHeight += 47;
-        this.rightHeight += 47;
+        this.leftY -= 47;
+        this.rightY -= 47;
     }
 
     private void renderHealth(Renderer renderer, Player player) {
         int x = (int) ((float) this.game.getScaledWidth() / 2) - 81;
 
         for (int emptyHeartX = 0; emptyHeartX < 10; emptyHeartX++)
-            renderer.texture(this.iconsTex, x + emptyHeartX * 8, this.leftHeight, 9, 9, 16, 0);
+            renderer.texture(this.iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
 
         int heartX;
         for (heartX = 0; heartX < Math.floor(player.getHealth() / 2); heartX++)
-            renderer.texture(this.iconsTex, x + heartX * 8, this.leftHeight, 9, 9, 25, 0);
+            renderer.texture(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
 
         if ((int) player.getHealth() % 2 == 1)
-            renderer.texture(this.iconsTex, x + heartX * 8, this.leftHeight, 9, 9, 34, 0);
+            renderer.texture(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
 
-        this.leftHeight += 13;
+        this.leftY -= 13;
     }
 
     public boolean touchDown(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
-        screenX /= this.game.getGuiScale();
-        screenY /= this.game.getGuiScale();
+        screenX /= (int) this.game.getGuiScale();
+        screenY /= (int) this.game.getGuiScale();
         if (this.game.input instanceof MobileInput) {
             if (screenX >= 20 && screenX <= 70 &&
                     screenY >= 20 && screenY <= 70) {
@@ -145,7 +138,6 @@ public class Hud implements GameRenderable {
 
     @SuppressWarnings({"UnnecessaryReturnStatement", "unused"})
     public void touchUp(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
         screenX /= this.game.getGuiScale();
         screenY /= this.game.getGuiScale();
         if (this.stickPointer == pointer) {
@@ -156,7 +148,6 @@ public class Hud implements GameRenderable {
     }
 
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
         screenX /= this.game.getGuiScale();
         screenY /= this.game.getGuiScale();
         Vector2 stickTouch = this.joyStick;
