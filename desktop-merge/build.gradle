@@ -261,56 +261,27 @@ jpackage {
 
     destination = "$projectDir/build/dist"
 
-    licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
-
-    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged" ]
     arguments = [ "--packaged" ]
 
-    aboutUrl = "https://github.com/Ultreon/ultreon-craft"
+    icon = "$rootProject.projectDir/icons/icon.png"
+    appVersion = project.version.toString()
+    type = ImageType.APP_IMAGE
+    destination = "$rootProject.projectDir/build/tmp"
 
-    mac {
-        icon = "$rootProject.projectDir/icons/icon.icns"
-        macPackageIdentifier = project_id
-        macPackageName = project_name
-        appVersion = packageVersion
-    }
-
-    linux {
-        icon = "$rootProject.projectDir/icons/icon.png"
-        appVersion = project.version.toString()
-        aboutUrl = null
-        licenseFile = null
-        type = ImageType.APP_IMAGE
-        destination = "$rootProject.projectDir/build/tmp"
-
-        tasks.register("createAppImage", Zip) {
-            from fileTree("$rootProject.projectDir/build/tmp/$app_name")
-            archiveFileName = "${app_name}.zip"
-            destinationDirectory = file("$projectDir/build/dist/")
-            doLast {
-                delete files("$rootProject.projectDir/build/tmp/$app_name/**/*", "$rootProject.projectDir/build/tmp/$app_name")
-            }
-        }
-
-        finalizedBy createAppImage
-
-        if (file("$rootProject.projectDir/build/tmp/$app_name").exists()) {
+    tasks.register("createAppImage", Zip) {
+        from fileTree("$rootProject.projectDir/build/tmp/$app_name")
+        archiveFileName = "${app_name}.zip"
+        destinationDirectory = file("$projectDir/build/dist/")
+        doLast {
             delete files("$rootProject.projectDir/build/tmp/$app_name/**/*", "$rootProject.projectDir/build/tmp/$app_name")
         }
     }
 
-    windows {
-        icon = "$rootProject.projectDir/icons/icon.ico"
-        winMenu = true
-        winDirChooser = true
-        winConsole = false
-        winPerUserInstall = true
-        winShortcutPrompt = true
-        winShortcut = false
-        winUpgradeUuid = "a539b496-ae50-4df2-9a1b-8a089e44f7ce"
-        winMenuGroup = "Ultreon Team"
-        winConsole = true
-        appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
+    finalizedBy createAppImage
+
+    if (file("$rootProject.projectDir/build/tmp/$app_name").exists()) {
+        delete files("$rootProject.projectDir/build/tmp/$app_name/**/*", "$rootProject.projectDir/build/tmp/$app_name")
     }
 }
 
