@@ -29,7 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.1.0'
     }
 }
 
@@ -37,12 +37,8 @@ buildscript {
 //     Plugins     //
 //*****************//
 plugins {
-//    id 'maven-publish'
-//    id 'com.github.johnrengelman.shadow' version '7.+'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
-
-//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
@@ -102,8 +98,6 @@ configurations {
  */
 dependencies {
     // Projects
-//    shadow(project(":core")) { transitive false }
-//    shadow(project(":desktop")) { transitive false }
     implementation(project(":core"))
     implementation(project(":desktop"))
 }
@@ -224,4 +218,4 @@ println("OS: " + System.getProperty("os.name") + " Version: " + System.getProper
 println("Current version: " + version)
 println("Project: " + group + ":" + name)
 
-mkdir("$buildDir/ultreon-craft")
+mkdir("$projectDir/build/ultreon-craft")
