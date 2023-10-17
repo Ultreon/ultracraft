@@ -255,7 +255,6 @@ jpackage {
     copyright = "Copyright (c) 2023 Ultreon Team"
     runtimeImage = System.getProperty("java.home")
 
-//    mainJar = "fabric-loader-${fabric_loader_version}.jar"
     mainJar = jar.archiveFileName.get()
     mainClass = "com.ultreon.craft.premain.PreMain"
 
@@ -263,7 +262,7 @@ jpackage {
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged" ]
     arguments = [ "--packaged" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
