@@ -1,46 +1,56 @@
-# Java Gradle CircleCI 2.0 configuration file
-# See: https://circleci.com/docs/language-java/
-version: 2
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
 
 # Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/configuration-reference/#jobs
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   build:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#docker-machine-macos-windows-executor
+    # Specify the execution environment. You can specify an image from Dockerhub, or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
-      # specify the version you desire here
-      - image: circleci/openjdk:8-jdk
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/circleci-images/
-      # - image: circleci/postgres:9.4
-
-    working_directory: ~/repo
-
-    environment:
-      # Customize the JVM maximum heap limit
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
+      - image: gradle:jdk17
     # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
+      - run:
+            name: "Make gradlew executable"
+            command: "chmod +x gradlew"
+      - run:
+            name: "Build Project"
+            command: "./gradlew jpackage"
+            environment:
+              CIRCLE_CI: true
+      - store_artifacts:
+          name: "Store Artifacts"
+          path: desktop-merge/build/dist
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+  buildAlt:
+    # Specify the execution environment. You can specify an image from Dockerhub, or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: gradle:jdk17
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+            name: "Make gradlew executable"
+            command: "chmod +x gradlew"
+      - run:
+            name: "Build Project"
+            command: "./gradlew jpackageAlt"
+            environment:
+              CIRCLE_CI: true
+      - store_artifacts:
+          name: "Store Alternate Artifacts"
+          path: desktop-merge/build/dist
 
-      - run: gradle dependencies
-
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
-
-      # run build!
-      - run: gradle build
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  build-workflow:
+    jobs:
+      - build
+      - buildAlt
