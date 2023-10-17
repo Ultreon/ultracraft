@@ -19,7 +19,7 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Build Project"
-            command: "./gradlew jpackage"
+            command: "./gradlew jpackage --info"
             environment:
               CIRCLE_CI: true
       - store_artifacts:
