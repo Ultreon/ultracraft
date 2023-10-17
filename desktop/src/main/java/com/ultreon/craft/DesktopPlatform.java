@@ -5,14 +5,21 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.desktop.render.screen.ModListScreen;
+import com.ultreon.craft.desktop.util.util.ArgParser;
+import com.ultreon.craft.desktop.util.util.ImGuiEx;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.desktop.util.util.ArgParser;
-import com.ultreon.craft.desktop.util.util.ImGuiEx;
-
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiWindowFlags;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+import imgui.type.ImBoolean;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -24,20 +31,12 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import imgui.*;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.type.*;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
 public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);

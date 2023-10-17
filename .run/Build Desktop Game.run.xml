@@ -18,9 +18,7 @@
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
-    <ForceTestExec>false</ForceTestExec>
-    <method v="2">
-      <option name="Gradle.BeforeRunTask" enabled="true" tasks=":desktop-merge:build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
-    </method>
+    <RunAsTest>false</RunAsTest>
+    <method v="2" />
   </configuration>
 </component>

@@ -15,8 +15,8 @@ buildscript {
         google()
     }
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.8.0'
-        classpath "com.google.code.gson:gson:2.8.+"
+        classpath group: 'commons-io', name: 'commons-io', version: '2.13.0'
+        classpath "com.google.code.gson:gson:2.10.1"
     }
 }
 
@@ -26,12 +26,9 @@ plugins {
 }
 
 version project_version
-group project_group // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group project_group // https://maven.apache.org/guides/mini/guide-naming-conventions.html
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '11' // Need this here so eclipse task generates correctly.
-
-//GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), this.binding);
-//shell.run(file, arguments);
 
 println("Current version: $project_version")
 println("Project: $group:$archivesBaseName")

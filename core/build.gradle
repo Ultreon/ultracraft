@@ -128,7 +128,7 @@ jar {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
-tasks.create('prepareRun', {
+tasks.register('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
 
@@ -145,14 +145,14 @@ tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
-task("copyDependencies", type: Copy) {
+tasks.register('copyDependencies', Copy) {
     from(configurations.runtimeClasspath)
-    into("$buildDir/jars")
+    into("$projectDir/build/jars")
 }
 
-task("copyJar", type: Copy) {
+tasks.register('copyJar', Copy) {
     from(tasks.jar)
-    into("$buildDir/jars")
+    into("$projectDir/build/jars")
 }
 
 publishing {
