@@ -19,7 +19,7 @@ jobs:
             command: "chmod +x gradlew"
       - run:
             name: "Install APT Packages"
-            command: "apt install fakeroot"
+            command: "apt update && apt install fakeroot"
       - run:
             name: "Build Project"
             command: "./gradlew jpackage --info"
