@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -16,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
@@ -84,6 +84,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -97,9 +98,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private static final int CULL_FACE = GL20.GL_FRONT;
     private final Duration bootTime;
     private final String allUnicode;
-    @UnknownNullability
-    private final PerspectiveCamera fakeCamera;
     private final GarbageCollector garbageCollector;
+    private final GameEnvironment gameEnv;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
@@ -177,7 +177,14 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         GamePlatform.instance.preInitImGui();
 
         List<String> argList = Arrays.asList(args);
-        this.isDevMode = argList.contains("--dev");
+        this.isDevMode = argList.contains("--dev") && GamePlatform.instance.isDevelopmentEnvironment();
+
+        if (GamePlatform.instance.isDevelopmentEnvironment())
+            this.gameEnv = GameEnvironment.DEVELOPMENT;
+        else if (Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
+            this.gameEnv = GameEnvironment.PACKAGED;
+        else
+            this.gameEnv = GameEnvironment.NORMAL;
 
         if (this.isDevMode) {
             LOGGER.debug("Developer mode is enabled");
@@ -241,10 +248,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         this.batch.getRenderContext().setCullFace(CULL_FACE);
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
-        this.camera.far = 1000;
-        this.fakeCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        this.fakeCamera.near = 0.01f;
-        this.fakeCamera.far = 1000;
+        this.camera.far = 2;
         this.input = this.createInput();
         Gdx.input.setInputProcessor(this.input);
 
@@ -257,7 +261,12 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
         LOGGER.info("Setting up world environment");
         this.env = new Environment();
-        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1));
+        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.env.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
+        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
+        this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
+        this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
         LOGGER.info("Setting up HUD");
         this.hud = new Hud(this);
@@ -544,7 +553,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 }
 
                 this.camera.update(this.player);
-                this.fakeCamera.update();
+                this.camera.far = (this.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
+
                 Vector2 rotation = this.player != null ? this.player.getRotation() : new Vector2();
                 Quaternion quaternion = new Quaternion();
                 quaternion.setFromAxis(Vector3.Y, rotation.x);
@@ -552,7 +562,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 quaternion.conjugate();
 
                 if (this.renderWorld && world != null && worldRenderer != null) {
-                    this.batch.begin(this.fakeCamera);
+                    this.batch.begin(this.camera);
                     this.batch.getRenderContext().setCullFace(CULL_FACE);
                     this.batch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
                     this.batch.render(worldRenderer, this.env);
@@ -723,12 +733,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             this.camera.viewportWidth = width;
             this.camera.viewportHeight = height;
             this.camera.update();
-        }
-
-        if (this.fakeCamera != null) {
-            this.fakeCamera.viewportWidth = width;
-            this.fakeCamera.viewportHeight = height;
-            this.fakeCamera.update();
         }
 
         Screen cur = this.currentScreen;
@@ -952,6 +956,11 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
     public boolean isLoading() {
         return this.loading;
+    }
+
+    public static GameEnvironment getGameEnv() {
+        if (instance == null) return GameEnvironment.UNKNOWN;
+        return instance.gameEnv;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

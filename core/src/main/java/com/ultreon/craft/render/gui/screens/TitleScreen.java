@@ -52,6 +52,7 @@ public class TitleScreen extends Screen {
         int y = height / 2 + 5;
 
         startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
+            UltreonCraft.getSavedWorld().delete();
             UltreonCraft.get().startWorld();
         }));
 

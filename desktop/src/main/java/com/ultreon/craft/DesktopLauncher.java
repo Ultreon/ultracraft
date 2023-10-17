@@ -1,16 +1,10 @@
 package com.ultreon.craft;
 
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.*;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Objects;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
@@ -22,9 +16,7 @@ public class DesktopLauncher {
 	public static void main(String[] argv) {
 		ArgParser argParser = new ArgParser(argv);
 
-		packaged = argParser.getFlags().contains("packaged");
-
-		GamePlatform.instance = new DesktopPlatform(argParser, packaged);
+		GamePlatform.instance = new DesktopPlatform(argParser);
 
 		if (packaged) LOGGER.debug("Running in the JPackage environment.");
 		else LOGGER.debug("Local directory: " + System.getProperty("user.dir"));
@@ -38,37 +30,16 @@ public class DesktopLauncher {
 		config.setIdleFPS(10);
 		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
 		config.setInitialVisible(false);
-//		config.setDecorated(false);
 		config.setTitle("Ultracraft");
 		config.setWindowIcon(getIcons());
 		config.setWindowedMode(1280, 720);
-		config.setWindowListener(new Lwjgl3WindowListener() {
-			@Override
-			public void created(Lwjgl3Window window) {
-
-			}
-
-			@Override
-			public void iconified(boolean isIconified) {
-
-			}
-
-			@Override
-			public void maximized(boolean isMaximized) {
-
-			}
-
-			@Override
+		config.setWindowListener(new Lwjgl3WindowAdapter() {
+            @Override
 			public void focusLost() {
 				UltreonCraft.get().pause();
 			}
 
-			@Override
-			public void focusGained() {
-
-			}
-
-			@Override
+            @Override
 			public boolean closeRequested() {
 				return UltreonCraft.get().closeRequested();
 			}
@@ -78,11 +49,7 @@ public class DesktopLauncher {
 				UltreonCraft.get().filesDropped(files);
 			}
 
-			@Override
-			public void refreshRequested() {
-
-			}
-		});
+        });
 		new Lwjgl3Application(new GameLibGDXWrapper(argv), config);
 	}
 

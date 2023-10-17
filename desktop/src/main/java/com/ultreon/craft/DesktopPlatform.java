@@ -31,8 +31,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,17 +40,16 @@ public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
-    private static final Marker MARKER = MarkerFactory.getMarker("Platform");
+    private static final Logger LOGGER = LoggerFactory.getLogger("GamePlatform");
     private final String gameDir;
     private ImGuiImplGlfw imGuiGlfw;
     private ImGuiImplGl3 imGuiGl3;
     private final ImBoolean showImGui = new ImBoolean(false);
     private final ArgParser argParser;
 
-    public DesktopPlatform(ArgParser argParser, boolean packaged) {
+    public DesktopPlatform(ArgParser argParser) {
         this.argParser = argParser;
         this.gameDir = FabricLoader.getInstance().getGameDir().toAbsolutePath().toString();
-        System.out.println("this.gameDir = " + this.gameDir);
     }
 
     @Override
@@ -317,7 +314,7 @@ public class DesktopPlatform extends GamePlatform {
                 try {
                     resourceManager.importPackage(rootPath);
                 } catch (IOException e) {
-                    UltreonCraft.LOGGER.warn(MARKER, "Importing resources failed for path: " + rootPath.toFile(), e);
+                    LOGGER.warn("Importing resources failed for path: " + rootPath.toFile(), e);
                 }
             }
         }

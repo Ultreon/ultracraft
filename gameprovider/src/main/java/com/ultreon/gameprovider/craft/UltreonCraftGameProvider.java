@@ -109,7 +109,7 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public Path getLaunchDirectory() {
-        if (!this.arguments.containsKey("packaged"))
+        if (!Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
             return Path.of(".");
 
         Path path;

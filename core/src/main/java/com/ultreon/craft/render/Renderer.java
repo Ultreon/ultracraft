@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 /**
  * Renderer class.
  *
- * @author Qboi
+ * @author XyperCode
  */
 @SuppressWarnings("unused")
 public class Renderer {

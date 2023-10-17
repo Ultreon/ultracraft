@@ -146,14 +146,7 @@ public class WorldRenderer implements RenderableProvider {
                     piece.meshPart.offset = 0;
                     piece.meshPart.size = info.numVertices;
                     piece.meshPart.primitiveType = GL20.GL_TRIANGLES;
-
-                    Matrix4 transform = this.tmp2.idt();
-                    transform.rotate(this.game.camera.view.getRotation(this.tmp3));
-                    transform.translate(offset.x, offset.y, offset.z);
-
-                    piece.worldTransform.set(transform);
-                    piece.worldTransform.getTranslation(section.translation);
-                    piece.userData = section;
+                    piece.worldTransform.setToTranslation(offset.x, offset.y, offset.z);
 
                     renderables.add(piece);
                     this.renderedChunks = this.renderedChunks + 1;
