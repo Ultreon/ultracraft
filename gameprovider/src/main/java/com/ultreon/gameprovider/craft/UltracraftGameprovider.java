@@ -1,23 +1,29 @@
 package com.ultreon.gameprovider.craft;
 
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.metadata.ModEnvironment;
-import net.fabricmc.loader.impl.FabricLoaderImpl;
-import net.fabricmc.loader.impl.FormattedException;
-import net.fabricmc.loader.impl.game.GameProvider;
-import net.fabricmc.loader.impl.game.GameProviderHelper;
-import net.fabricmc.loader.impl.game.LibClassifier;
-import net.fabricmc.loader.impl.game.patch.GameTransformer;
-import net.fabricmc.loader.impl.launch.FabricLauncher;
-import net.fabricmc.loader.impl.metadata.BuiltinModMetadata;
-import net.fabricmc.loader.impl.metadata.ContactInformationImpl;
-import net.fabricmc.loader.impl.util.Arguments;
-import net.fabricmc.loader.impl.util.ExceptionUtil;
-import net.fabricmc.loader.impl.util.SystemProperties;
-import net.fabricmc.loader.impl.util.log.Log;
-import net.fabricmc.loader.impl.util.log.LogCategory;
-import net.fabricmc.loader.impl.util.log.LogHandler;
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.loader.api.ModDependency;
+import org.quiltmc.loader.api.ModDependencyIdentifier;
+import org.quiltmc.loader.api.Version;
+import org.quiltmc.loader.api.VersionRange;
+import org.quiltmc.loader.api.plugin.ModMetadataExt;
+import org.quiltmc.loader.impl.FormattedException;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.entrypoint.GameTransformer;
+import org.quiltmc.loader.impl.game.GameProvider;
+import org.quiltmc.loader.impl.game.GameProviderHelper;
+import org.quiltmc.loader.impl.game.LibClassifier;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
+import org.quiltmc.loader.impl.metadata.qmj.*;
+import org.quiltmc.loader.impl.util.Arguments;
+import org.quiltmc.loader.impl.util.ExceptionUtil;
+import org.quiltmc.loader.impl.util.SystemProperties;
+import org.quiltmc.loader.impl.util.log.Log;
+import org.quiltmc.loader.impl.util.log.LogCategory;
+import org.quiltmc.loader.impl.util.log.LogHandler;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
@@ -29,8 +35,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "unused"})
-public class UltreonCraftGameProvider implements GameProvider {
+public class UltracraftGameprovider implements GameProvider {
     private static final String[] ALLOWED_EARLY_CLASS_PREFIXES = { "org.apache.logging.log4j.", "com.ultreon.gameprovider.craft.", "com.ultreon.premain." };
+    private static final String MIN_JAVA_VERSION = String.valueOf(17);
+    private static final String MAX_JAVA_VERSION = String.valueOf(20);
 
     private final GameTransformer transformer = new GameTransformer();
     private EnvType envType;
@@ -44,8 +52,16 @@ public class UltreonCraftGameProvider implements GameProvider {
     private boolean slf4jAvailable;
     private Path libGdxJar;
     private final Properties versions;
+    private final List<String> gamePackages = List.of(
+            "com.ultreon.craft.",
+            "com.ultreon.common.",
+            "com.ultreon.corelibs.",
+            "com.ultreon.premain.",
+            "com.ultreon.gameprovider.craft.",
+            "com.ultreon.gameprovider."
+    );
 
-    public UltreonCraftGameProvider() {
+    public UltracraftGameprovider() {
         InputStream stream = this.getClass().getResourceAsStream("/versions.properties");
         Properties properties = new Properties();
         try {
@@ -54,6 +70,10 @@ public class UltreonCraftGameProvider implements GameProvider {
             throw new RuntimeException(e);
         }
         this.versions = properties;
+
+        System.setProperty("swing.systemlaf", FlatMacDarkLaf.class.getName());
+        FlatMacDarkLaf.installLafInfo();
+        FlatMacDarkLaf.setup();
     }
 
     @Override
@@ -76,30 +96,151 @@ public class UltreonCraftGameProvider implements GameProvider {
         return this.versions.getProperty("ultreoncraft");
     }
 
+
     @Override
     public Collection<BuiltinMod> getBuiltinMods() {
-        return List.of(
-                new BuiltinMod(List.of(this.libGdxJar), new BuiltinModMetadata.Builder("libgdx", this.versions.getProperty("libgdx"))
-                        .setName("LibGDX")
-                        .setDescription("A game framework used by Ultracraft (and various other games).")
-                        .addLicense("Apache-2.0")
-                        .addAuthor("libGDX", Map.of("homepage", "http://www.libgdx.com/", "patreon", "https://patreon.com/libgdx", "github", "https://github.com/libgdx", "sources", "https://github.com/libgdx/libgdx"))
-                        .addAuthor("Mario Zechner", Map.of("github", "https://github.com/badlogic", "email", "badlogicgames@gmail.com"))
-                        .addAuthor("Nathan Sweet", Map.of("github", "https://github.com/NathanSweet", "email", "nathan.sweet@gmail.com"))
-                        .addIcon(200, "assets/libgdx/icon.png")
-                        .build()),
-                new BuiltinMod(this.gameJars, new BuiltinModMetadata.Builder("craft", this.versions.getProperty("ultreoncraft"))
-                        .addLicense("All-Rights-Reserved")
-                        .addAuthor("Ultreon Team", Map.of("homepage", "http://ultreon.github.io/", "email", "contact.ultreon@gmail.com", "sources", "https://github.com/Ultreon"))
-                        .addAuthor("Mario Zechner", Map.of("github", "https://github.com/badlogic", "email", "badlogicgames@gmail.com"))
-                        .addAuthor("Nathan Sweet", Map.of("github", "https://github.com/NathanSweet", "email", "nathan.sweet@gmail.com"))
-                        .addIcon(128, "assets/craft/icon.png")
-                        .setEnvironment(ModEnvironment.UNIVERSAL)
-                        .setContact(new ContactInformationImpl(Map.of("sources", "https://github.con/Ultreon/ultreon-craft", "email", "contact.ultreon@gmail.com", "discord", "https://discord.gg/sQsU7sE2Sx")))
-                        .setDescription("The base game. Made with love <3")
-                        .setName("Ultracraft")
-                        .build())
-        );
+        InternalModMetadata built = this.createUltracraftMetadata();
+
+        return Collections.singletonList(new BuiltinMod(this.gameJars, built));
+    }
+
+    private InternalModMetadata createUltracraftMetadata() {
+        V1ModMetadataBuilder metadata = new V1ModMetadataBuilder();
+        metadata.id = "ultracraft";
+        metadata.group = "builtin";
+        metadata.version = Version.of(this.getNormalizedGameVersion());
+        metadata.name = "Ultracraft";
+        metadata.contributors.add(new ModContributorImpl("XyperCode", List.of("Owner", "Head Development", "Development")));
+        metadata.contributors.add(new ModContributorImpl("Creatomat Gaming", List.of("Closed Beta Tester")));
+        metadata.licenses.add(ModLicenseImpl.fromIdentifierOrDefault("Ultreon-Api-1.1"));
+        metadata.repositories.add("https://github.com/Ultreon/ultracraft");
+        metadata.repositories.add("https://github.com/Ultreon/ultracraft");
+        metadata.contactInformation.put("homepage","https://ultreon.github.io");
+        metadata.contactInformation.put("discord","https://discord.gg/WePT9v2CmQ");
+        metadata.contactInformation.put("sources","https://github.com/Ultreon/ultracraft");
+        metadata.contactInformation.put("issues","https://github.com/Ultreon/ultracraft/issues");
+        metadata.loadType = ModMetadataExt.ModLoadType.ALWAYS;
+        metadata.description = "The Ultracraft game. This is the game you are now playing.";
+        metadata.breaks.add(new ModDependency.Only() {
+            @Override
+            public boolean shouldIgnore() {
+                return false;
+            }
+
+            @Override
+            public boolean matches(Version version) {
+                return true;
+            }
+
+            @Override
+            public ModDependencyIdentifier id() {
+                return new ModDependencyIdentifierImpl("minecraft");
+            }
+
+            @Override
+            public VersionRange versionRange() {
+                return VersionRange.ANY;
+            }
+
+            @Override
+            public String reason() {
+                return "Different game.";
+            }
+
+            @Override
+            public @Nullable ModDependency unless() {
+                return null;
+            }
+
+            @Override
+            public boolean optional() {
+                return false;
+            }
+        });
+        metadata.breaks.add(new ModDependency.Only() {
+            @Override
+            public boolean shouldIgnore() {
+                return false;
+            }
+
+            @Override
+            public boolean matches(Version version) {
+                return true;
+            }
+
+            @Override
+            public ModDependencyIdentifier id() {
+                return new ModDependencyIdentifierImpl("bubbleblaster");
+            }
+
+            @Override
+            public VersionRange versionRange() {
+                return VersionRange.ANY;
+            }
+
+            @Override
+            public String reason() {
+                return "Different game.";
+            }
+
+            @Override
+            public @Nullable ModDependency unless() {
+                return null;
+            }
+
+            @Override
+            public boolean optional() {
+                return false;
+            }
+        });
+
+        Version minJava = Version.of(UltracraftGameprovider.MIN_JAVA_VERSION);
+        Version maxJava = Version.of(UltracraftGameprovider.MAX_JAVA_VERSION);
+        VersionRange range = VersionRange.ofInterval(minJava, true, null, true);
+
+        metadata.depends.add(new ModDependency.Only() {
+            @Override
+            public boolean shouldIgnore() {
+                return false;
+            }
+
+            @Override
+            public VersionRange versionRange() {
+                return range;
+            }
+
+            @Override
+            public ModDependency unless() {
+                return null;
+            }
+
+            @Override
+            public String reason() {
+                return "";
+            }
+
+            @Override
+            public boolean optional() {
+                return false;
+            }
+
+            @Override
+            public ModDependencyIdentifier id() {
+                return ModDependencyIdentifier.of("", "java");
+            }
+        });
+
+        return metadata.build();
+    }
+
+    private InternalModMetadata createLibGDXMetadata() {
+        V1ModMetadataBuilder metadata = new V1ModMetadataBuilder();
+        metadata.id = "libgdx";
+        metadata.group = "builtin";
+        metadata.version = Version.of(this.versions.getProperty("libgdx"));
+        metadata.name = "LibGDX";
+        metadata.licenses.add(ModLicenseImpl.fromIdentifierOrDefault("Apache-2.0"));
+        return metadata.build();
     }
 
     @Override
@@ -148,7 +289,7 @@ public class UltreonCraftGameProvider implements GameProvider {
     }
 
     @Override
-    public boolean locateGame(FabricLauncher launcher, String[] args) {
+    public boolean locateGame(QuiltLauncher launcher, String[] args) {
         this.envType = launcher.getEnvironmentType();
         this.arguments = new Arguments();
         this.arguments.parse(args);
@@ -211,7 +352,7 @@ public class UltreonCraftGameProvider implements GameProvider {
         }
 
         // expose obfuscated jar locations for mods to more easily remap code from obfuscated to intermediary
-        var share = FabricLoaderImpl.INSTANCE.getObjectShare();
+        var share = QuiltLoaderImpl.INSTANCE.getObjectShare();
         share.put("fabric-loader:inputGameJar", this.gameJars.get(0)); // deprecated
         share.put("fabric-loader:inputGameJars", this.gameJars);
 
@@ -219,14 +360,20 @@ public class UltreonCraftGameProvider implements GameProvider {
     }
 
     @Override
-    public void initialize(FabricLauncher launcher) {
-        launcher.setValidParentClassPath(this.validParentClassPath);
+    public boolean isGameClass(String name) {
+        for (var pak : this.gamePackages) {
+            if (name.startsWith(pak)) return true;
+        }
+        return false;
+    }
 
+    @Override
+    public void initialize(QuiltLauncher launcher) {
         // Load the logger libraries on the platform CL when in a unit test
         if (!this.logJars.isEmpty() && !Boolean.getBoolean(SystemProperties.UNIT_TEST)) {
             for (var jar : this.logJars) {
                 if (this.gameJars.contains(jar)) {
-                    launcher.addToClassPath(jar, ALLOWED_EARLY_CLASS_PREFIXES);
+                    launcher.addToClassPath(jar, UltracraftGameprovider.ALLOWED_EARLY_CLASS_PREFIXES);
                 } else {
                     launcher.addToClassPath(jar);
                 }
@@ -238,7 +385,7 @@ public class UltreonCraftGameProvider implements GameProvider {
         this.transformer.locateEntrypoints(launcher, new ArrayList<>());
     }
 
-    private void setupLogHandler(FabricLauncher launcher, boolean useTargetCl) {
+    private void setupLogHandler(QuiltLauncher launcher, boolean useTargetCl) {
         System.setProperty("log4j2.formatMsgNoLookups", "true"); // lookups are not used by mc and cause issues with older log4j2 versions
 
         try {
@@ -254,7 +401,7 @@ public class UltreonCraftGameProvider implements GameProvider {
                 logHandlerCls = Class.forName(logHandlerClsName);
             }
 
-            Log.init((LogHandler) logHandlerCls.getConstructor().newInstance());
+            Log.init((LogHandler) logHandlerCls.getConstructor().newInstance(), true);
             Thread.currentThread().setContextClassLoader(prevCl);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -268,11 +415,11 @@ public class UltreonCraftGameProvider implements GameProvider {
 
     @Override
     public boolean hasAwtSupport() {
-        return false;
+        return true;
     }
 
     @Override
-    public void unlockClassPath(FabricLauncher launcher) {
+    public void unlockClassPath(QuiltLauncher launcher) {
         for (var gameJar : this.gameJars) {
             if (this.logJars.contains(gameJar)) {
                 launcher.setAllowedPrefixes(gameJar);
@@ -321,11 +468,8 @@ public class UltreonCraftGameProvider implements GameProvider {
     }
 
     @Override
-    public boolean canOpenErrorGui() {
-        if (this.arguments == null || this.envType == EnvType.CLIENT)
-            return !OS.isMobile();
-
-        return false;
+    public boolean canOpenGui() {
+        return true;
     }
 
     @Override

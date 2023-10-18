@@ -66,6 +66,10 @@ public class World implements Disposable {
 	public static final int WORLD_DEPTH = 0;
 	public static final Marker MARKER = MarkerFactory.getMarker("World");
 	private static final int REGION_SIZE = 32;
+	private static long chunkUnloads;
+	private static long chunkLoads;
+	private static long chunkSaves;
+
 	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
 	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
@@ -93,11 +97,11 @@ public class World implements Disposable {
 	private final UltreonCraft game = UltreonCraft.get();
 	private int totalChunks;
 
+
 	static {
 		// TODO: Use biome registry
 		DEFAULT_BIOME.buildLayers();
 	}
-
 	@Nullable
 	private CompletableFuture<Boolean> saveFuture;
 	@Nullable
@@ -112,6 +116,18 @@ public class World implements Disposable {
 		this.savedWorld = savedWorld;
 
 		this.generator = DEFAULT_BIOME.create(this, this.seed);
+	}
+
+	public static long getChunkUnloads() {
+		return chunkUnloads;
+	}
+
+	public static long getChunkLoads() {
+		return World.chunkLoads;
+	}
+
+	public static long getChunkSaves() {
+		return World.chunkSaves;
 	}
 
 	@ApiStatus.Internal
@@ -261,7 +277,7 @@ public class World implements Disposable {
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
 		List<ChunkPos> toRemove = new ArrayList<>();
-		for (ChunkPos pos : this.getChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
+		for (ChunkPos pos : this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
 			Chunk chunk = this.getChunk(pos);
 			return chunk != null && !needed.contains(pos);
 		}).collect(Collectors.toList())) {
@@ -372,6 +388,7 @@ public class World implements Disposable {
 			return false;
 		}
 
+		World.chunkUnloads++;
 		chunk.dispose();
 		return flag;
 	}
@@ -382,6 +399,8 @@ public class World implements Disposable {
 
 		if (chunk == null) return false;
 		MapType data = chunk.save();
+
+		World.chunkSaves++;
 
 		// TODO add saving back
 //		this.data.put(chunkPos.toString(), data);
@@ -511,6 +530,8 @@ public class World implements Disposable {
 			this.renderChunk(x, z, chunk);
 			loadingChunk.complete(chunk);
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
+            World.chunkLoads++;
+
 			return chunk;
 		} catch (RuntimeException e) {
 			LOGGER.error(MARKER, "Failed to load chunk " + pos + ":", e);
@@ -762,7 +783,7 @@ public class World implements Disposable {
 //		}
 	}
 
-	public Collection<Chunk> getChunks() {
+	public Collection<Chunk> getLoadedChunks() {
 		return Collections.unmodifiableCollection(this.chunks.values());
 	}
 

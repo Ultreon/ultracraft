@@ -92,6 +92,8 @@ dependencies {
     api 'org.jetbrains:annotations:24.0.1'
 
     api "space.earlygrey:shapedrawer:$shapedrawer_version"
+
+    api "org.quiltmc:quilt-loader:$quilt_version"
 }
 
 processResources {

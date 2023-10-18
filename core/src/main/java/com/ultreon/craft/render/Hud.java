@@ -60,13 +60,13 @@ public class Hud implements GameRenderable {
 
         int x = this.game.getScaledWidth() / 2;
         int y = this.game.getScaledHeight() / 2;
-        renderer.texture(this.crosshairTex, x - 7, y - 7, 14, 14);
+        renderer.blit(this.crosshairTex, x - 7, y - 7, 14, 14);
 
 //        renderer.unsetShader();
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
-        renderer.texture(this.mobileTex, 20, 25, 50, 45, 0, 0);
+        renderer.blit(this.mobileTex, 20, 25, 50, 45, 0, 0);
 
         int joyStickX = 24 - 7 + 21;
         int joyStickY = 24 - 7 + 21;
@@ -75,8 +75,8 @@ public class Hud implements GameRenderable {
             joyStickY = (int) (((this.joyStick.y + 1) / 2) * (48 - 14) + 21F);
         }
 
-        renderer.texture(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
-        renderer.texture(this.mobileTex, 20, 20, 50, 5, 0, 45);
+        renderer.blit(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
+        renderer.blit(this.mobileTex, 20, 20, 50, 5, 0, 45);
     }
 
     private void renderHotbar(Renderer renderer, Player player) {
@@ -84,8 +84,8 @@ public class Hud implements GameRenderable {
         Block selectedBlock = player.getSelectedBlock();
         Identifier key = Registries.BLOCK.getKey(selectedBlock);
 
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, leftY - 43, 180, 41, 0, 42);
-        renderer.texture(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, leftY - 26, 20, 24, 0, 83);
+        renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, leftY - 43, 180, 41, 0, 42);
+        renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, leftY - 26, 20, 24, 0, 83);
 
         Block[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
@@ -110,14 +110,14 @@ public class Hud implements GameRenderable {
         int x = (int) ((float) this.game.getScaledWidth() / 2) - 81;
 
         for (int emptyHeartX = 0; emptyHeartX < 10; emptyHeartX++)
-            renderer.texture(this.iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
+            renderer.blit(this.iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
 
         int heartX;
         for (heartX = 0; heartX < Math.floor(player.getHealth() / 2); heartX++)
-            renderer.texture(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
+            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
 
         if ((int) player.getHealth() % 2 == 1)
-            renderer.texture(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
+            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
 
         this.leftY -= 13;
     }

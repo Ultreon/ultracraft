@@ -12,8 +12,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.font.Font;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -42,6 +44,7 @@ public class Renderer {
     private final Stack<Vector3> globalTranslation = new Stack<>();
     private final Batch batch;
     private final ShapeDrawer shapes;
+    private final TextureManager textureManager;
     private float strokeWidth = 1;
     private Texture curTexture;
     private Font font;
@@ -68,13 +71,15 @@ public class Renderer {
         this.batch = shapes.getBatch();
         this.shapes = shapes;
         this.matrixStack = matrixStack;
+        this.textureManager = this.game.getTextureManager();
+        if (this.textureManager == null) throw new IllegalArgumentException("Texture manager isn't initialized yet!");
 
         // Projection matrix.
         this.matrixStack.onEdit = matrix -> shapes.getBatch().setTransformMatrix(matrix);
     }
 
     public MatrixStack getMatrixStack() {
-        return matrixStack;
+        return this.matrixStack;
     }
 
     public void setStrokeWidth(float strokeWidth) {
@@ -88,23 +93,23 @@ public class Renderer {
     }
 
     public void setColor(int r, int g, int b) {
-        setColor(Color.rgb(r, g, b));
+        this.setColor(Color.rgb(r, g, b));
     }
 
     public void setColor(float r, float g, float b) {
-        setColor(Color.rgb(r, g, b));
+        this.setColor(Color.rgb(r, g, b));
     }
 
     public void setColor(int r, int g, int b, int a) {
-        setColor(Color.rgba(r, g, b, a));
+        this.setColor(Color.rgba(r, g, b, a));
     }
 
     public void setColor(float r, float g, float b, float a) {
-        setColor(Color.rgba(r, g, b, a));
+        this.setColor(Color.rgba(r, g, b, a));
     }
 
     public void setColor(int argb) {
-        setColor(Color.argb(argb));
+        this.setColor(Color.argb(argb));
     }
 
     /**
@@ -120,7 +125,7 @@ public class Renderer {
      * @param hex a color hex.
      */
     public void setColor(String hex) {
-        setColor(Color.hex(hex));
+        this.setColor(Color.hex(hex));
     }
 
     public void clearColor(Color color) {
@@ -128,195 +133,273 @@ public class Renderer {
     }
 
     public void clearColor(int red, int green, int blue) {
-        clearColor(Color.rgb(red, green, blue));
+        this.clearColor(Color.rgb(red, green, blue));
     }
 
     public void clearColor(float red, float green, float blue) {
-        clearColor(Color.rgb(red, green, blue));
+        this.clearColor(Color.rgb(red, green, blue));
     }
 
     public void clearColor(int red, int green, int blue, int alpha) {
-        clearColor(Color.rgba(red, green, blue, alpha));
+        this.clearColor(Color.rgba(red, green, blue, alpha));
     }
 
     public void clearColor(float red, float green, float blue, float alpha) {
-        clearColor(Color.rgba(red, green, blue, alpha));
+        this.clearColor(Color.rgba(red, green, blue, alpha));
     }
 
     public void clearColor(int argb) {
-        clearColor(Color.argb(argb));
+        this.clearColor(Color.argb(argb));
     }
 
     public void clearColor(String hex) {
-        clearColor(Color.hex(hex));
+        this.clearColor(Color.hex(hex));
     }
 
     public void outline(Rectangle2D rect) {
-        rectLine((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
+        this.rectLine((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
     }
 
     public void outline(Ellipse2D ellipse) {
-        ovalLine((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
+        this.ovalLine((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
     }
 
     public void outline(Line2D s) {
-        line((float) s.getX1(), (float) s.getY1(), (float) s.getX2(), (float) s.getY2());
+        this.line((float) s.getX1(), (float) s.getY1(), (float) s.getX2(), (float) s.getY2());
     }
 
     public void circle(float x, float y, float radius) {
-        shapes.filledCircle(x, y, radius);
+        this.shapes.filledCircle(x, y, radius);
     }
 
     public void circleLine(float x, float y, float radius) {
-        shapes.circle(x, y, radius);
+        this.shapes.circle(x, y, radius);
     }
 
     public void fill(Rectangle2D rect) {
-        rect((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
+        this.rect((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
     }
 
     public void fill(Ellipse2D ellipse) {
-        oval((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
+        this.oval((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
     }
 
     public void fill(Line2D line) {
-        line((float) line.getX1(), (float) line.getY1(), (float) line.getX2(), (float) line.getY2());
+        this.line((float) line.getX1(), (float) line.getY1(), (float) line.getX2(), (float) line.getY2());
     }
 
     public void fill(Vec4i r) {
-        rect(r.x, r.y, r.z, r.w);
+        this.rect(r.x, r.y, r.z, r.w);
     }
 
     public void line(int x1, int y1, int x2, int y2) {
-        shapes.line(x1, y1, x2, y2);
+        this.shapes.line(x1, y1, x2, y2);
     }
 
     public void line(float x1, float y1, float x2, float y2) {
-        shapes.line(x1, y1, x2, y2);
+        this.shapes.line(x1, y1, x2, y2);
     }
 
     public void rectLine(int x, int y, int width, int height) {
-        shapes.rectangle(x, y, width, height, strokeWidth);
+        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
     }
 
     public void rectLine(float x, float y, float width, float height) {
-        shapes.rectangle(x, y, width, height, strokeWidth);
+        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
     }
 
     public void rect(int x, int y, int width, int height) {
-        shapes.filledRectangle(x, y, width, height);
+        this.shapes.filledRectangle(x, y, width, height);
     }
 
     public void rect(float x, float y, float width, float height) {
-        shapes.filledRectangle(x, y, width, height);
+        this.shapes.filledRectangle(x, y, width, height);
     }
 
     public void roundRectLine(int x, int y, int width, int height, int arcWidth, int arcHeight) {
-        shapes.rectangle(x, y, width, height, strokeWidth);
+        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
     }
 
     public void roundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
-        shapes.rectangle(x, y, width, height);
+        this.shapes.rectangle(x, y, width, height);
     }
 
     public void rect3DLine(int x, int y, int width, int height, boolean raised) {
-        shapes.rectangle(x, y, width, height, strokeWidth);
+        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
     }
 
     public void rect3D(int x, int y, int width, int height, boolean raised) {
-        shapes.filledRectangle(x, y, width, height);
+        this.shapes.filledRectangle(x, y, width, height);
     }
 
     public void ovalLine(int x, int y, int width, int height) {
-        shapes.ellipse(x, y, width, height);
+        this.shapes.ellipse(x, y, width, height);
     }
 
     public void oval(int x, int y, int width, int height) {
-        shapes.filledEllipse(x, y, width, height);
+        this.shapes.filledEllipse(x, y, width, height);
     }
 
     public void ovalLine(float x, float y, float width, float height) {
-        shapes.ellipse(x, y, width, height);
+        this.shapes.ellipse(x, y, width, height);
     }
 
     public void oval(float x, float y, float width, float height) {
-        shapes.filledEllipse(x, y, width, height);
+        this.shapes.filledEllipse(x, y, width, height);
     }
 
     public void arcLine(int x, int y, int width, int height, int startAngle, int arcAngle) {
-        shapes.arc(x, y, width, startAngle, arcAngle);
+        this.shapes.arc(x, y, width, startAngle, arcAngle);
     }
 
     public void arc(int x, int y, int width, int height, int startAngle, int arcAngle) {
-        shapes.arc(x, y, width, startAngle, arcAngle);
+        this.shapes.arc(x, y, width, startAngle, arcAngle);
     }
 
     ///////////////////
     //     Image     //
     ///////////////////
-    public void texture(TextureRegion tex, float x, float y) {
-        batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
+    @Deprecated(forRemoval = true)
+    public void blit(TextureRegion tex, float x, float y) {
+        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
-    public void texture(TextureRegion tex, float x, float y, float width, float height) {
-        batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
+    @Deprecated(forRemoval = true)
+    public void blit(TextureRegion tex, float x, float y, float width, float height) {
+        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
-    public void texture(Texture tex, float x, float y) {
-        batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+    @Deprecated
+    public void blit(Texture tex, float x, float y) {
+        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
 
-    public void texture(Texture tex, float x, float y, Color backgroundColor) {
-        setColor(backgroundColor);
-        rect(x, y, tex.getWidth(), tex.getHeight());
-        batch.setColor(textureColor.toGdx());
-        batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+    @Deprecated
+    public void blit(Texture tex, float x, float y, Color backgroundColor) {
+        this.setColor(backgroundColor);
+        this.rect(x, y, tex.getWidth(), tex.getHeight());
+        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
-        texture(tex, x, y, width, height, 0.0F, 0.0F, backgroundColor);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
+        this.blit(tex, x, y, width, height, 0.0F, 0.0F, backgroundColor);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
-        texture(tex, x, y, width, height, u, v, width, height, backgroundColor);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
+        this.blit(tex, x, y, width, height, u, v, width, height, backgroundColor);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
-        texture(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
+        this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
-        setColor(backgroundColor);
-        rect(x, y, width, height);
-        batch.setColor(textureColor.toGdx());
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
+        this.setColor(backgroundColor);
+        this.rect(x, y, width, height);
+        this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
-        batch.draw(textureRegion, x, y + height, width, -height);
+        this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height) {
-        texture(tex, x, y, width, height, 0.0F, 0.0F);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height) {
+        this.blit(tex, x, y, width, height, 0.0F, 0.0F);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v) {
-        texture(tex, x, y, width, height, u, v, width, height);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v) {
+        this.blit(tex, x, y, width, height, u, v, width, height);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
-        texture(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
+        this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
     }
 
-    public void texture(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        batch.setColor(textureColor.toGdx());
+    @Deprecated
+    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
+        this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
-        batch.draw(textureRegion, x, y + height, width, -height);
+        this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y) {
+        this.batch.setColor(this.textureColor.toGdx());
+        Texture tex = this.textureManager.getTexture(id);
+        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+    }
+
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, Color backgroundColor) {
+        this.setColor(backgroundColor);
+        Texture tex = this.textureManager.getTexture(id);
+        this.rect(x, y, tex.getWidth(), tex.getHeight());
+        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
+        this.blit(id, x, y, width, height, 0.0F, 0.0F, backgroundColor);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
+        this.blit(id, x, y, width, height, u, v, width, height, backgroundColor);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height) {
+        this.blit(id, x, y, width, height, 0.0F, 0.0F);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v) {
+        this.blit(id, x, y, width, height, u, v, width, height);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
+        this.batch.setColor(this.textureColor.toGdx());
+        Texture tex = this.textureManager.getTexture(id);
+        TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
+        this.batch.draw(textureRegion, x, y + height, width, -height);
+    }
+
+    @Deprecated(forRemoval = true)
+    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
+        this.setColor(backgroundColor);
+        this.rect(x, y, width, height);
+        Texture tex = this.textureManager.getTexture(id);
+        this.batch.setColor(this.textureColor.toGdx());
+        TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
+        this.batch.draw(textureRegion, x, y + height, width, -height);
+    }
+    
     //////////////////
     //     Text     //
+
     //////////////////
     public void drawText(String text, int x, int y) {
         this.drawText(text, x, y, Color.WHITE);
@@ -786,12 +869,12 @@ public class Renderer {
     }
 
     public float getStrokeWidth() {
-        return strokeWidth;
+        return this.strokeWidth;
     }
 
     public Color getColor() {
         com.badlogic.gdx.graphics.Color color = new com.badlogic.gdx.graphics.Color();
-        com.badlogic.gdx.graphics.Color.abgr8888ToColor(color, shapes.getPackedColor());
+        com.badlogic.gdx.graphics.Color.abgr8888ToColor(color, this.shapes.getPackedColor());
         return Color.gdx(color);
     }
 
@@ -836,8 +919,6 @@ public class Renderer {
 
         if (rect.width < 1) return false;
         if (rect.height < 1) return false;
-
-        rect.y = Gdx.graphics.getHeight() - rect.y - rect.height;
 
         this.flush();
         return ScissorStack.pushScissors(rect);
@@ -893,16 +974,19 @@ public class Renderer {
         return "Renderer{}";
     }
 
+    @Deprecated(forRemoval = true)
     public void blit(int x, int y) {
-        batch.draw(curTexture, x, y);
+        this.batch.draw(this.curTexture, x, y);
     }
 
+    @Deprecated(forRemoval = true)
     public void blit(int x, int y, int width, int height) {
-        batch.draw(curTexture, x, y, width, height);
+        this.batch.draw(this.curTexture, x, y, width, height);
     }
 
-    public void texture(Identifier texture) {
-        this.curTexture = game.getTextureManager().getTexture(texture);
+    @Deprecated
+    public void setTexture(Identifier texture) {
+        this.curTexture = this.game.getTextureManager().getTexture(texture);
     }
 
     public void setFont(Font font) {
@@ -948,23 +1032,23 @@ public class Renderer {
     }
 
     public void draw9PatchTexture(Texture texture, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
-        this.texture(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
-        this.texture(texture, x + width - uWidth, y, uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x + width - uWidth, y, uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
 
         for (int dx = x + uWidth; dx < width - uWidth; dx += uWidth) {
             int maxX = Math.min(dx + uWidth, width - uWidth);
             int uW = maxX - dx;
-            this.texture(texture, dx, y + height - vHeight, uW, vHeight, u + uWidth, v, uW, vHeight, texWidth, texHeight);
-            this.texture(texture, dx, y, uW, vHeight, u + uWidth, v + vHeight * 2, uW, vHeight, texWidth, texHeight);
+            this.blit(texture, dx, y + height - vHeight, uW, vHeight, u + uWidth, v, uW, vHeight, texWidth, texHeight);
+            this.blit(texture, dx, y, uW, vHeight, u + uWidth, v + vHeight * 2, uW, vHeight, texWidth, texHeight);
         }
 
         for (int dy = y + vHeight; dy < height - vHeight; dy += vHeight) {
             int maxX = Math.min(dy + vHeight, height - vHeight);
             int vH = maxX - dy;
-            this.texture(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
-            this.texture(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
+            this.blit(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
+            this.blit(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
         }
     }
 

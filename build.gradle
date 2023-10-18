@@ -1,6 +1,11 @@
 //file:noinspection GroovyUnusedCatchParameter
 
 import org.jetbrains.gradle.ext.Application
+import org.jetbrains.gradle.ext.JavaRunConfiguration
+import org.jetbrains.gradle.ext.ModuleRunConfiguration
+import org.jetbrains.gradle.ext.BaseRunConfiguration
+import org.jetbrains.gradle.ext.BeforeRunTask
+import org.jetbrains.gradle.ext.GradleTask
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -39,6 +44,9 @@ buildscript {
 plugins {
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
+
+apply plugin: "java"
+apply plugin: "java-library"
 
 //****************************//
 // Setting up main properties //
@@ -136,6 +144,14 @@ allprojects {
             name "Maven Central"
             url "https://repo1.maven.org/maven2/"
         }
+        maven {
+            name "FabricMC"
+            url "https://maven.fabricmc.net/"
+        }
+        maven {
+            name "QuiltMC"
+            url "https://maven.quiltmc.org/repository/release/"
+        }
         flatDir {
             name "Project Libraries"
             dirs "${projectDir}/libs"
@@ -204,8 +220,11 @@ task createExec {
     }
 }
 
-artifacts {
-//    packedJar
+dependencies {
+    runtimeOnly project(":core")
+    runtimeOnly project(":desktop")
+    runtimeOnly project(":desktop-merge")
+    runtimeOnly project(":gameprovider")
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -218,4 +237,55 @@ println("OS: " + System.getProperty("os.name") + " Version: " + System.getProper
 println("Current version: " + version)
 println("Project: " + group + ":" + name)
 
-mkdir("$projectDir/build/ultreon-craft")
+mkdir("$buildDir/bubbles")
+
+def ps = System.getProperty("path.separator")
+def files = configurations.runtimeClasspath
+def strm = (files.toList()).stream()
+def rcl = String.join(ps, strm.map {
+    it.path
+}.filter{it != null }.toList())
+//\tfabric.remapClasspathFile=$buildDir/bubbles/classpath.txt
+//\tfabric.classPathGroups=$buildDir/classes/java/main/$ps$buildDir/resources/main/$ps${project(":core").buildDir}/classes/java/main/$ps${project(":core").buildDir}/resources/main/$ps${project(":desktop").buildDir}/classes/java/main/$ps${project(":desktop").buildDir}/resources/main/$ps${project(":gameprovider").buildDir}/classes/java/main/$ps${project(":gameprovider").buildDir}/resources/main/$ps$rcl
+def conf = """
+commonProperties
+\tfabric.development=true
+\tlog4j2.formatMsgNoLookups=true
+\tfabric.log.disableAnsi=false
+\tlog4j.configurationFile=$projectDir/log4j.xml
+"""
+
+def launchFile = file("$buildDir/bubbles/launch.cfg")
+Files.writeString(launchFile.toPath(), conf, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+
+def cp = "$rcl"
+
+def cpFile = file("$buildDir.absolutePath/bubbles/classpath.txt")
+Files.writeString(cpFile.toPath(), cp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+
+idea{
+    project{
+        settings {
+            withIDEADir { File dir ->
+                println("Callback 1 executed with: " + dir.absolutePath)
+            }
+
+            runConfigurations {
+                "Ultracraft"(Application) {                       // Create new run configuration "MyApp" that will run class foo.App
+                    jvmArgs = "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=$launchFile.path -Dfabric.dli.env=CLIENT -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient"
+                    mainClass = 'net.fabricmc.devlaunchinjector.Main'
+                    moduleName = idea.module.name + ".desktop.main"
+                    workingDirectory = "$projectDir/run/"
+                    programParameters = "--gameDir=."
+                    beforeRun.add(new GradleTask("build"))
+                }
+            }
+        }
+    }
+}
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}

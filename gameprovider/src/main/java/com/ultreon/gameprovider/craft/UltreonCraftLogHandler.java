@@ -1,8 +1,8 @@
 package com.ultreon.gameprovider.craft;
 
-import net.fabricmc.loader.impl.util.log.LogCategory;
-import net.fabricmc.loader.impl.util.log.LogHandler;
-import net.fabricmc.loader.impl.util.log.LogLevel;
+import org.quiltmc.loader.impl.util.log.LogCategory;
+import org.quiltmc.loader.impl.util.log.LogHandler;
+import org.quiltmc.loader.impl.util.log.LogLevel;
 import org.apache.logging.log4j.*;
 
 import java.util.HashMap;
@@ -15,12 +15,12 @@ public class UltreonCraftLogHandler implements LogHandler {
     @Override
     public void log(long time, LogLevel level, LogCategory category, String msg, Throwable exc, boolean fromReplay, boolean wasSuppressed) {
         Marker marker = this.markerMap.computeIfAbsent(category, logCategory -> MarkerManager.getMarker(logCategory.name));
-        LOGGER.log(getLevel(level), marker, msg, exc);
+        UltreonCraftLogHandler.LOGGER.log(UltreonCraftLogHandler.getLevel(level), marker, msg, exc);
     }
 
     @Override
     public boolean shouldLog(LogLevel level, LogCategory category) {
-        return LOGGER.isEnabled(getLevel(level));
+        return UltreonCraftLogHandler.LOGGER.isEnabled(UltreonCraftLogHandler.getLevel(level));
     }
 
     private static Level getLevel(LogLevel level) {

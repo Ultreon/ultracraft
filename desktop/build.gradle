@@ -35,6 +35,7 @@ plugins {
 }
 
 apply plugin: 'java'
+apply plugin: 'loom'
 apply plugin: 'java-library'
 
 //****************************//
@@ -62,6 +63,8 @@ repositories {
 dependencies {
     implementation project(":gameprovider")
     implementation project(":core")
+
+    implementation "com.formdev:flatlaf:3.2.1"
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
@@ -118,7 +121,7 @@ dependencies {
     implementation api("org.apache.logging.log4j:log4j-core:$log4j_version")
     implementation api("org.apache.logging.log4j:log4j-api:$log4j_version")
 
-    // fabric-loader dependencies
+    // quilt-loader dependencies
     implementation api("org.ow2.asm:asm:${project.asm_version}")
     implementation api("org.ow2.asm:asm-analysis:${project.asm_version}")
     implementation api("org.ow2.asm:asm-commons:${project.asm_version}")
@@ -137,7 +140,7 @@ dependencies {
     implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     implementation api('net.fabricmc:access-widener:2.1.0')
 
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
+    implementation api("org.quiltmc:quilt-loader:$quilt_version")
 
     //noinspection GradleDynamicVersion
     implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
@@ -146,7 +149,10 @@ dependencies {
     implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     implementation api('net.fabricmc:access-widener:2.1.0')
 
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
+    implementation api("org.quiltmc:quilt-loader:$quilt_version")
+    implementation api("org.quiltmc:quilt-json5:1.0.4+final")
+    implementation api("org.quiltmc:quilt-config:1.1.0-beta.3")
+    implementation api("org.quiltmc.qup:gson:0.2.0")
 }
 
 compileJava {
@@ -187,7 +193,7 @@ jar {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
-tasks.create('prepareRun', {
+tasks.register('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
 
@@ -205,54 +211,8 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
-mkdir("$projectDir/build/ultreon-craft")
-
-def ps = System.getProperty("path.separator")
-def files = configurations.runtimeClasspath
-def strm = (files.toList()).stream()
-def rcl = String.join(ps, strm.map {
-    it.path
-}.filter{it != null }.toList())
-//\tfabric.remapClasspathFile=$projectDir/build/bubbles/classpath.txt
-//\tfabric.classPathGroups=$projectDir/build/classes/java/main/$ps$projectDir/build/resources/main/$ps${project(":core").buildDir}/classes/java/main/$ps${project(":core").buildDir}/resources/main/$ps${project(":desktop").buildDir}/classes/java/main/$ps${project(":desktop").buildDir}/resources/main/$ps${project(":gameprovider").buildDir}/classes/java/main/$ps${project(":gameprovider").buildDir}/resources/main/$ps$rcl
-def conf = """
-commonProperties
-\tfabric.development=true
-\tlog4j2.formatMsgNoLookups=true
-\tfabric.log.disableAnsi=false
-\tlog4j.configurationFile=$rootProject.projectDir/log4j.xml
-"""
-
-def launchFile = file("$projectDir/build/ultreon-craft/launch.cfg")
-Files.writeString(launchFile.toPath(), conf, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
-
-def cp = "$rcl"
-
-def cpFile = file("$projectDir/build/ultreon-craft/classpath.txt")
-Files.writeString(cpFile.toPath(), cp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
-
-idea{
-    project{
-        settings {
-            withIDEADir { File dir ->
-                println("Callback 1 executed with: " + dir.absolutePath)
-            }
-
-            runConfigurations {
-                "Ultreon Craft"(org.jetbrains.gradle.ext.Application) {                       // Create new run configuration "MyApp" that will run class foo.App
-                    jvmArgs = "-Xmx2g -Dfabric.dli.config=$launchFile.path -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient"
-                    mainClass = 'net.fabricmc.devlaunchinjector.Main'
-                    moduleName = idea.module.name + ".desktop.main"
-                    workingDirectory = "$rootProject.projectDir/run/"
-                    programParameters = "--gameDir=."
-                }
-            }
-        }
-    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 publishing {

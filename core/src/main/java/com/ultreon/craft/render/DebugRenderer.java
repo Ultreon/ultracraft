@@ -1,13 +1,13 @@
 package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,7 @@ public class DebugRenderer {
         if (world != null) {
             this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
             if (worldRenderer != null) {
-                this.drawLine(renderer, "visible chunks", worldRenderer.getRenderedChunks() + "/" + worldRenderer.getTotalChunks());
+                this.drawLine(renderer, "visible chunks", worldRenderer.getVisibleChunks() + "/" + worldRenderer.getLoadedChunks());
             }
 
             // Player
@@ -47,6 +47,15 @@ public class DebugRenderer {
                 }
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
             }
+
+            this.drawLine(renderer, "section disposes", Section.getDisposeCount());
+            this.drawLine(renderer, "chunk mesh disposes", WorldRenderer.getFreeMeshes());
+            this.drawLine(renderer, "chunk loads", World.getChunkLoads());
+            this.drawLine(renderer, "chunk unloads", World.getChunkUnloads());
+            this.drawLine(renderer, "chunk saves", World.getChunkSaves());
+            this.drawLine(renderer, "pool free", WorldRenderer.getPoolFree());
+            this.drawLine(renderer, "pool max", WorldRenderer.getPoolMax());
+            this.drawLine(renderer, "pool peak", WorldRenderer.getPoolPeak());
         }
 
         // Mobile platform.
@@ -65,6 +74,6 @@ public class DebugRenderer {
 
     public void drawLine(Renderer renderer, String name, Object value) {
         this.y += 10;
-        renderer.drawText(name + ": " + value, OFFSET, this.game.getScaledHeight() - this.y);
+        renderer.drawText(name + ": " + value, OFFSET, this.y);
     }
 }

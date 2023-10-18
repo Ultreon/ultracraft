@@ -5,7 +5,7 @@ import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;

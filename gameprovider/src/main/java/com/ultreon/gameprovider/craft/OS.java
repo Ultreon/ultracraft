@@ -33,7 +33,7 @@ public class OS {
     }
 
     public static boolean isMobile() {
-        return getOSType().isMobile();
+        return OS.getOSType().isMobile();
     }
 
     private enum OSType {
@@ -44,14 +44,14 @@ public class OS {
         Ios(true),
         Unknown(false);
 
-        private boolean isMobile;
+        private final boolean isMobile;
 
         OSType(boolean isMobile) {
             this.isMobile = isMobile;
         }
 
         public boolean isMobile() {
-            return isMobile;
+            return this.isMobile;
         }
     }
 }
