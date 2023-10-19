@@ -1,15 +1,16 @@
 package com.ultreon.craft.render.world;
 
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
@@ -20,10 +21,14 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -32,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
@@ -63,9 +69,20 @@ public final class WorldRenderer implements RenderableProvider {
     private ShaderProgram shader;
     private ModelBatch modelBatch;
     private boolean disposed;
+    private final Vector3 tmp = new Vector3();
+    private final Material breakingMaterial;
+    private final Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
+    private Array<Mesh> breakingMeshes;
 
     public WorldRenderer(World world, ModelBatch modelBatch) {
         this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
+        this.breakingMaterial = new Material(UltreonCraft.strId("block_breaking"));
+        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
+        this.breakingMaterial.set(new BlendingAttribute(0.8f));
+        for (int i = 0; i < 6; i++) {
+            TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
+            this.breakingTexRegions.set(i, textureRegion);
+        }
         this.world = world;
         this.modelBatch = modelBatch;
 
@@ -92,6 +109,36 @@ public final class WorldRenderer implements RenderableProvider {
         this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
         this.meshBuilder = new ChunkMeshBuilder(indices);
+
+        // Block outline.
+        Mesh mesh = WorldRenderer.buildOutlineBox(0.005f, Color.BLACK);
+
+        int numIndices = mesh.getNumIndices();
+        int numVertices = mesh.getNumVertices();
+        Renderable renderable = new Renderable();
+        renderable.meshPart.mesh = mesh;
+        renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+        renderable.meshPart.offset = 0;
+        renderable.meshPart.primitiveType = GL_TRIANGLES;
+        Material material = new Material();
+        material.set(ColorAttribute.createDiffuse(0, 0, 0, 1f));
+        material.set(new BlendingAttribute(1.0f));
+        material.set(new DepthTestAttribute(false));
+        renderable.material = material;
+        this.cursor = renderable;
+
+        // Breaking animation meshes.
+        BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0).toGdx();
+        float v = 0.001f;
+        boundingBox.set(boundingBox);
+        boundingBox.min.sub(v);
+        boundingBox.max.add(v);
+
+        this.breakingMeshes = new Array<>();
+        for (int i = 0; i < 6; i++) {
+            BakedCubeModel bakedCubeModel = new BakedCubeModel(this.breakingTexRegions.get(i));
+            this.breakingMeshes.add(bakedCubeModel.getMesh());
+        }
     }
 
     public static long getChunkMeshFrees() {
@@ -115,7 +162,7 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     @Override
-    public void getRenderables(final Array<Renderable> output, final Pool<Renderable> ignored) {
+    public void getRenderables(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
         var player = this.game.player;
         if (player == null) return;
 
@@ -155,47 +202,31 @@ public final class WorldRenderer implements RenderableProvider {
             output.add(this.verifyOutput(chunk.mesh.renderable));
             output.add(this.verifyOutput(chunk.trasparentMesh.renderable));
 
+            for (var entry : chunk.getBreaking().entrySet()) {
+                Vec3i key = entry.getKey();
+                this.tmp.set(chunk.renderOffset);
+                this.tmp.add(key.x+1, key.y, key.z);
+
+                Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
+                int numIndices = breakingMesh.getMaxIndices();
+                int numVertices = breakingMesh.getMaxVertices();
+
+                Renderable renderable = renderablePool.obtain();
+                renderable.meshPart.mesh = breakingMesh;
+                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                renderable.meshPart.primitiveType = GL_TRIANGLES;
+                renderable.material = this.breakingMaterial;
+                renderable.worldTransform.setToTranslation(this.tmp);
+
+                output.add(this.verifyOutput(renderable));
+            }
+
             this.visibleChunks++;
 
             this.doPoolStatistics();
         }
 
         HitResult gameCursor = this.game.cursor;
-        if (this.cursor == null) {
-//            MeshBuilder build = new MeshBuilder();
-//            build.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
-//            BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
-//            BoundingBox boundingBox1 = new BoundingBox();
-//            double v = 0.001;
-//            boundingBox1.set(boundingBox);
-//            boundingBox1.min.sub(-v, v, -v);
-//            boundingBox1.max.add(-v, v, -v);
-//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
-//            boundingBox1.set(boundingBox);
-//            boundingBox1.min.sub(-v, -v, v);
-//            boundingBox1.max.add(-v, -v, v);
-//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
-//            boundingBox1.set(boundingBox);
-//            boundingBox1.min.sub(v, -v, -v);
-//            boundingBox1.max.add(v, -v, -v);
-//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
-//            Mesh mesh = build.end();
-            Mesh mesh = WorldRenderer.buildOutlineBox(0.007f, Color.BLACK);
-
-            int numIndices = mesh.getNumIndices();
-            int numVertices = mesh.getNumVertices();
-            Renderable renderable = new Renderable();
-            renderable.meshPart.mesh = mesh;
-            renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-            renderable.meshPart.offset = 0;
-            renderable.meshPart.primitiveType = GL_TRIANGLES;
-            Material material = new Material();
-            material.set(ColorAttribute.createDiffuse(0, 0, 0, 1f));
-            material.set(new BlendingAttribute());
-            material.set(new DepthTestAttribute(false));
-            renderable.material = material;
-            this.cursor = renderable;
-        }
         if (gameCursor != null && gameCursor.isCollide()) {
             Renderable renderable = this.cursor;
             Vec3i pos = gameCursor.getPos();
@@ -318,10 +349,10 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     public boolean isDisposed() {
-        return disposed;
+        return this.disposed;
     }
 
     public Texture getBreakingTex() {
-        return breakingTex;
+        return this.breakingTex;
     }
 }

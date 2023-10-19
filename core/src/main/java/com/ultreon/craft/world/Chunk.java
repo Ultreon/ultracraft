@@ -10,10 +10,14 @@ import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,6 +28,7 @@ import static com.ultreon.craft.world.World.WORLD_DEPTH;
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
+	final Map<Vec3i, Float> breaking = new HashMap<>();
 	protected final Lock lock = new ReentrantLock();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
@@ -198,28 +203,33 @@ public class Chunk implements Disposable {
 		return this.offset.cpy();
 	}
 
-	public void startBreaking(int x, int y, int z) {
-		Section sectionAt = this.getSectionAt(y);
-		if (sectionAt == null) return;
-		sectionAt.startBreaking(x, y % CHUNK_SIZE, z);
+	float getBreakProgress(float x, float y, float z) {
+		Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
+		Float v = this.breaking.get(pos);
+		if (v != null) {
+			return v;
+		}
+		return -1.0F;
 	}
 
-	public void continueBreaking(int x, int y, int z, float amount) {
-		Section sectionAt = this.getSectionAt(y);
-		if (sectionAt == null) return;
-		sectionAt.continueBreaking(x, y % CHUNK_SIZE, z, amount);
+	public void startBreaking(int x, int y, int z) {
+		this.breaking.put(new Vec3i(x, y, z), 0.0F);
 	}
 
 	public void stopBreaking(int x, int y, int z) {
-		Section sectionAt = this.getSectionAt(y);
-		if (sectionAt == null) return;
-		sectionAt.stopBreaking(x, y % CHUNK_SIZE, z);
+		this.breaking.remove(new Vec3i(x, y, z));
 	}
 
-	public float getBreakProgress(int x, int y, int z) {
-		Section sectionAt = this.getSectionAt(y);
-		if (sectionAt == null) return -1.0F;
-		return sectionAt.getBreakProgress(x, y % CHUNK_SIZE, z);
+	public void continueBreaking(int x, int y, int z, float amount) {
+		Vec3i pos = new Vec3i(x, y, z);
+		Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
+		if (v != null && v == 1.0F) {
+			this.set(new Vec3i(x, y, z), Blocks.AIR);
+		}
+	}
+
+	public Map<Vec3i, Float> getBreaking() {
+		return Collections.unmodifiableMap(this.breaking);
 	}
 
 	public boolean isReady() {

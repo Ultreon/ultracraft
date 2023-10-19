@@ -23,19 +23,19 @@ public class BlockItem extends Item {
 
         World world = useItemContext.world();
         Vec3i next = useItemContext.result().getNext();
-        if (!world.intersectEntities(block.getBoundingBox(next))) {
+        if (!world.intersectEntities(this.block.getBoundingBox(next))) {
             world.set(next, this.block);
         }
     }
 
     @Override
     public String getTranslation() {
-        return block.getTranslation();
+        return this.block.getTranslation();
     }
 
     @NotNull
     @Override
     public String getTranslationId() {
-        return block.getTranslationId();
+        return this.block.getTranslationId();
     }
 }

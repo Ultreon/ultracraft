@@ -18,7 +18,6 @@ import java.util.*;
 
 public class Section implements Disposable {
     public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
-    final Map<Vec3i, Float> breaking = new HashMap<>();
     private final int size;
     public final Vector3 renderOffset = new Vector3();
     public final Vector3 translation = new Vector3();
@@ -106,31 +105,6 @@ public class Section implements Disposable {
         this.dirty = dirty;
     }
 
-    float getBreakProgress(float x, float y, float z) {
-        Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
-        Float v = this.breaking.get(pos);
-        if (v != null) {
-            return v;
-        }
-        return -1.0F;
-    }
-
-    public void startBreaking(int x, int y, int z) {
-        this.breaking.put(new Vec3i(x, y, z), 0.0F);
-    }
-
-    public void stopBreaking(int x, int y, int z) {
-        this.breaking.remove(new Vec3i(x, y, z));
-    }
-
-    public void continueBreaking(int x, int y, int z, float amount) {
-        Vec3i pos = new Vec3i(x, y, z);
-        Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
-        if (v != null && v == 1.0F) {
-            this.set(new Vec3i(x, y, z), Blocks.AIR);
-        }
-    }
-
     @Override
     public void dispose() {
         synchronized (this.lock) {
@@ -155,9 +129,5 @@ public class Section implements Disposable {
 
     public ClientSectionData getClientData() {
         return this.clientData;
-    }
-
-    public Map<Vec3i, Float> getBreaking() {
-        return Collections.unmodifiableMap(this.breaking);
     }
 }

@@ -391,6 +391,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         return Thread.currentThread().getId() == UltreonCraft.instance.renderingThread.getId();
     }
 
+    public static String strId(String path) {
+        return UltreonCraft.id(path).toString();
+    }
+
     @Override
     public <T extends Disposable> T deferDispose(T disposable) {
         UltreonCraft.instance.disposables.add(disposable);
