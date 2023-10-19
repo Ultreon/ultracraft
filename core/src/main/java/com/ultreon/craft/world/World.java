@@ -73,7 +73,7 @@ public class World implements Disposable {
 	private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
 	private static final Biome DEFAULT_BIOME = Biome.builder()
 			.noise(NoiseSettingsInit.DEFAULT)
-			.domainWarping((seed) -> new DomainWarping(UltreonCraft.get().deferDispose(NoiseSettingsInit.DOMAIN_X.create(seed)), UltreonCraft.get().deferDispose(NoiseSettingsInit.DOMAIN_Y.create(seed))))
+			.domainWarping(seed -> new DomainWarping(UltreonCraft.get().deferDispose(NoiseSettingsInit.DOMAIN_X.create(seed)), UltreonCraft.get().deferDispose(NoiseSettingsInit.DOMAIN_Y.create(seed))))
 			.layer(new WaterTerrainLayer(64))
 			.layer(new AirTerrainLayer())
 			.layer(new SurfaceTerrainLayer())
@@ -246,10 +246,10 @@ public class World implements Disposable {
 	}
 
 	static List<ChunkPos> getChunksAround(World world, Vec3d pos) {
-		int startX = (int) (pos.x - (world.getRenderDistance()) * World.CHUNK_SIZE);
-		int startZ = (int) (pos.z - (world.getRenderDistance()) * World.CHUNK_SIZE);
-		int endX = (int) (pos.x + (world.getRenderDistance()) * World.CHUNK_SIZE);
-		int endZ = (int) (pos.z + (world.getRenderDistance()) * World.CHUNK_SIZE);
+		int startX = (int) (pos.x - world.getRenderDistance() * World.CHUNK_SIZE);
+		int startZ = (int) (pos.z - world.getRenderDistance() * World.CHUNK_SIZE);
+		int endX = (int) (pos.x + world.getRenderDistance() * World.CHUNK_SIZE);
+		int endZ = (int) (pos.z + world.getRenderDistance() * World.CHUNK_SIZE);
 
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
@@ -579,13 +579,11 @@ public class World implements Disposable {
 		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		try {
-//			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-//				for (int by = 0; by < CHUNK_SIZE; by++) {
-//					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
-//				}
-//			}
-
-			chunk.set(8, 8, 8, Blocks.GRASS_BLOCK);
+			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
+				for (int by = 0; by < CHUNK_SIZE; by++) {
+					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
+				}
+			}
 
 			if (!this.putChunk(pos, chunk)) {
 				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);

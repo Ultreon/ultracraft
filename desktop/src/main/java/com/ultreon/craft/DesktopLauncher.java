@@ -37,9 +37,11 @@ public final class DesktopLauncher {
 	@NotNull
 	private static Lwjgl3ApplicationConfiguration createConfig() {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setForegroundFPS(0);
+		config.useVsync(true);
+		config.setForegroundFPS(120);
 		config.setIdleFPS(10);
-		config.setOpenGLEmulation(GLEmulation.GL30, 3, 2);
+		config.setOpenGLEmulation(GLEmulation.GL30, 3, 0);
+		config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8);
 		config.setInitialVisible(false);
 		config.setTitle("Ultracraft");
 		config.setWindowIcon(DesktopLauncher.getIcons());
@@ -76,9 +78,8 @@ public final class DesktopLauncher {
 		if (DesktopLauncher.platform.isPackaged()) DesktopLauncher.LOGGER.debug("Running in the JPackage environment.");
 		else DesktopLauncher.LOGGER.debug("Local directory: " + System.getProperty("user.dir"));
 		DesktopLauncher.LOGGER.debug("Java Version: " + System.getProperty("java.version"));
-		DesktopLauncher.LOGGER.debug("Java Vendor: " + System.getProperty("java.vendor"));
-		DesktopLauncher.LOGGER.debug("OS Architectury: " + System.getProperty("os.arch"));
-		DesktopLauncher.LOGGER.debug("Operating System: " + System.getProperty("os.name") + " " + System.getProperty("os.version"));
+		DesktopLauncher.LOGGER.debug("Java Vendor: " + System.getProperty("java.vendor"));;
+		DesktopLauncher.LOGGER.debug("Operating System: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")");
 	}
 
 	private static String[] getIcons() {

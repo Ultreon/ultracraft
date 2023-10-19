@@ -2,16 +2,15 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Mesh;
-import com.ultreon.craft.render.world.ChunkMesh;
-import com.ultreon.craft.render.world.ChunkMeshBuilder;
-import com.ultreon.craft.render.world.WorldRenderer;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.Section;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.render.world.ChunkMesh;
+import com.ultreon.craft.render.world.WorldRenderer;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 public class DebugRenderer {
@@ -24,10 +23,12 @@ public class DebugRenderer {
     }
 
     public void render(Renderer renderer) {
-        this.y = OFFSET;
+        this.y = DebugRenderer.OFFSET;
 
         World world = this.game.world;
         @Nullable WorldRenderer worldRenderer = this.game.worldRenderer;
+
+        this.drawLine(renderer, Mesh.getManagedStatus());
 
         // World
         if (world != null) {
@@ -48,8 +49,7 @@ public class DebugRenderer {
             }
 
             this.drawLine(renderer, "meshes disposed", ChunkMesh.getMeshesDisposed());
-            this.drawLine(renderer, "meshes built", ChunkMeshBuilder.getMeshesBuilt());
-            this.drawLine(renderer, "managed meshes status", Mesh.getManagedStatus());
+//            this.drawLine(renderer, "meshes built", ChunkMeshBuilder.getMeshesBuilt());
             this.drawLine(renderer, "vertex count", WorldRenderer.getVertexCount());
 
             if (worldRenderer != null) {
@@ -81,6 +81,11 @@ public class DebugRenderer {
 
     public void drawLine(Renderer renderer, String name, Object value) {
         this.y += 10;
-        renderer.drawText(name + ": " + value, OFFSET, this.y);
+        renderer.drawText(name + ": " + value, DebugRenderer.OFFSET, this.y);
+    }
+
+    public void drawLine(Renderer renderer, String text) {
+        this.y += 10;
+        renderer.drawText(text, DebugRenderer.OFFSET, this.y);
     }
 }

@@ -24,7 +24,8 @@ public class Chunk implements Disposable {
 	protected final Object lock = new Object();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
-	protected boolean modifiedByPlayer;
+	public ChunkMesh trasparentMesh;
+    protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Section[] sections;
 	public final int size;
@@ -33,7 +34,7 @@ public class Chunk implements Disposable {
 	private final int sizeTimesHeight;
 	@Nullable
 	public TreeData treeData;
-	protected boolean dirty;
+	public boolean dirty;
 	private boolean disposed;
 
 	public Chunk(int size, int height, ChunkPos pos) {
