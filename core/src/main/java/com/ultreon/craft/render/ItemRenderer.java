@@ -3,6 +3,7 @@ package com.ultreon.craft.render;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -17,7 +18,12 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.collection.PaletteContainer;
+import com.ultreon.craft.item.BlockItem;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
+import com.ultreon.libs.commons.v0.Identifier;
 
 public class ItemRenderer {
     private final UltreonCraft game;
@@ -29,15 +35,16 @@ public class ItemRenderer {
     private final Vector3 rotation = new Vector3(-30, 45, 0);
     private final Vector3 position = new Vector3(0, 0, -1000);
     private final Vector3 scale = new Vector3(20, 20, 20);
+    protected final Vector3 tmp = new Vector3();
 
     public ItemRenderer(UltreonCraft game, Environment environment) {
         this.game = game;
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, new Vector3(.8f, 0, -.6f).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, new Vector3(-.8f, 0, .6f).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, new Vector3(0, -1, 0).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, new Vector3(0, 1, 0).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, this.tmp.set(.8f, 0, -.6f).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, this.tmp.set(-.8f, 0, .6f).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, this.tmp.set(0, -1, 0).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, this.tmp.set(0, 1, 0).rotate(Vector3.Y, 45)));
         this.batch = new ModelBatch();
         this.orthoCam = new OrthographicCamera(game.getScaledWidth(), game.getScaledHeight());
         this.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
@@ -45,15 +52,34 @@ public class ItemRenderer {
         this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
     }
 
-    public void render(Block block, Renderer renderer, int x, int y) {
+    public void render(Item item, Renderer renderer, int x, int y) {
+        if (item instanceof BlockItem blockItem) {
+            this.renderBlockItem(blockItem.getBlock(), renderer, x, this.game.getScaledHeight() - y - 16);
+            return;
+        }
+
+        Identifier curKey = Registries.ITEMS.getKey(item);
+        if (curKey == null) {
+            renderer.setTextureColor(Color.WHITE);
+            renderer.blit((TextureRegion) null, x, y, 16, 16);
+        } else {
+            TextureRegion texture = this.game.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
+            renderer.setTextureColor(Color.WHITE.darker());
+            renderer.blit(texture, x - 8, y + 1, 16, 16);
+            renderer.setTextureColor(Color.WHITE);
+            renderer.blit(texture, x - 8, y, 16, 16);
+        }
+    }
+
+    private void renderBlockItem(Block block, Renderer renderer, int x, int y) {
         renderer.model(() -> {
             float guiScale = this.game.getGuiScale();
             this.orthoCam.zoom = 32.0F / 8.0F / guiScale;
             this.orthoCam.far = 100000;
             this.orthoCam.update();
-            this.batch.begin(this.orthoCam);
             BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
             if (bakedBlockModel == null) return;
+            this.batch.begin(this.orthoCam);
             Mesh mesh = bakedBlockModel.getMesh();
             Renderable renderable = new Renderable();
             renderable.meshPart.mesh = mesh;

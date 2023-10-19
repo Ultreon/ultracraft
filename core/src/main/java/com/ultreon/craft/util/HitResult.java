@@ -1,21 +1,22 @@
 package com.ultreon.craft.util;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public class HitResult {
     // input
-    public Ray ray;
-    public float distanceMax = 5.0F;
+    protected Ray ray;
+    protected float distanceMax = 5.0F;
     // output
-    public Vec3d position = new Vec3d();
-    public Vec3d normal = new Vec3d();
-    public Vec3i pos = new Vec3i();
-    public Vec3i next = new Vec3i();
-    public Block block;
-    public boolean collide;
-    public double distance;
+    protected Vec3d position = new Vec3d();
+    protected Vec3d normal = new Vec3d();
+    protected Vec3i pos = new Vec3i();
+    protected Vec3i next = new Vec3i();
+    protected Block block = Blocks.AIR;
+    protected boolean collide;
+    protected double distance;
 
     public HitResult() {
 
@@ -25,8 +26,48 @@ public class HitResult {
         this.ray = ray;
     }
 
+    public HitResult(Ray ray, float distanceMax) {
+        this.ray = ray;
+    }
+
     public HitResult setInput(Ray ray){
         this.ray = ray;
         return this;
+    }
+
+    public Ray getRay() {
+        return this.ray;
+    }
+
+    public float getDistanceMax() {
+        return this.distanceMax;
+    }
+
+    public Vec3d getPosition() {
+        return this.position;
+    }
+
+    public Vec3d getNormal() {
+        return this.normal;
+    }
+
+    public Vec3i getPos() {
+        return this.pos;
+    }
+
+    public Vec3i getNext() {
+        return this.next;
+    }
+
+    public Block getBlock() {
+        return this.block;
+    }
+
+    public boolean isCollide() {
+        return this.collide;
+    }
+
+    public double getDistance() {
+        return this.distance;
     }
 }

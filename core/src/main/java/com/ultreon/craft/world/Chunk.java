@@ -1,16 +1,26 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
@@ -18,8 +28,12 @@ import static com.ultreon.craft.world.World.WORLD_DEPTH;
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
-	protected final Object lock = new Object();
-	protected boolean modifiedByPlayer;
+	final Map<Vec3i, Float> breaking = new HashMap<>();
+	protected final Lock lock = new ReentrantLock();
+	public Vector3 renderOffset = new Vector3();
+	public ChunkMesh mesh;
+	public ChunkMesh trasparentMesh;
+    protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Section[] sections;
 	public final int size;
@@ -28,11 +42,13 @@ public class Chunk implements Disposable {
 	private final int sizeTimesHeight;
 	@Nullable
 	public TreeData treeData;
-	protected boolean dirty;
+	public boolean dirty;
+	private boolean disposed;
+	protected boolean updateNeighbours;
 
 	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
-		
+
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
 		this.pos = pos;
@@ -55,11 +71,13 @@ public class Chunk implements Disposable {
 	void load(MapType chunkData) {
 		ListType<MapType> sectionsData = chunkData.getList("Sections", new ListType<>());
 		int y = 0;
+		this.lock.lock();
 		for (MapType sectionData : sectionsData) {
 			this.sections[y].dispose();
 			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
 		}
+		this.lock.unlock();
 
 		MapType extra = chunkData.getMap("Extra");
 		if (extra != null) {
@@ -70,9 +88,11 @@ public class Chunk implements Disposable {
 	public MapType save() {
 		MapType chunkData = new MapType();
 		ListType<MapType> sectionsData = new ListType<>();
+		this.lock.lock();
 		for (Section section : this.sections) {
 			sectionsData.add(section.save());
 		}
+		this.lock.unlock();
 		chunkData.put("Sections", sectionsData);
 
 		MapType extra = new MapType();
@@ -97,9 +117,10 @@ public class Chunk implements Disposable {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		synchronized (this.lock) {
-			return this.sections[y / this.size].getFast(x, y % this.size, z);
-		}
+		this.lock.lock();
+		Block fast = this.sections[y / this.size].getFast(x, y % this.size, z);
+		this.lock.unlock();
+		return fast;
 	}
 
 	public void set(Vec3i pos, Block block) {
@@ -112,14 +133,15 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(Vec3i pos, Block block) {
-		this.set(pos.x, pos.y, pos.z, block);
+		this.setFast(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		synchronized (this.lock) {
-			this.sections[y / this.size].setFast(x, y % this.size, z, block);
-			this.dirty = true;
-		}
+		this.lock.lock();
+		this.sections[y / this.size].setFast(x, y % this.size, z, block);
+		this.lock.unlock();
+		this.dirty = true;
+		this.updateNeighbours = true;
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {
@@ -128,10 +150,14 @@ public class Chunk implements Disposable {
 
 	@Nullable
 	public Section getSection(int sectionY) {
-		synchronized (this.lock) {
-			if (sectionY < 0 || sectionY > this.sections.length) return null;
-			return this.sections[sectionY];
+		this.lock.lock();
+		if (sectionY < 0 || sectionY > this.sections.length){
+			this.lock.unlock();
+			return null;
 		}
+		Section section = this.sections[sectionY];
+		this.lock.unlock();
+		return section;
 	}
 
 	@Nullable
@@ -147,17 +173,21 @@ public class Chunk implements Disposable {
 	}
 
 	@Override
-	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
-		synchronized (this.lock) {
-			this.ready = false;
+		this.lock.lock();
+		this.disposed = true;
+		this.ready = false;
 
-			Section[] sections = this.sections;
-			for (Section section : sections) {
-				section.dispose();
-			}
-			this.sections = null;
+		for (Section section : this.sections) {
+			section.dispose();
 		}
+		this.sections = null;
+
+		ChunkMesh chunkMesh = this.mesh;
+		if (chunkMesh != null) {
+			UltreonCraft.get().worldRenderer.free(this);
+		}
+		this.lock.unlock();
 	}
 
 	@Override
@@ -173,7 +203,48 @@ public class Chunk implements Disposable {
 		return this.offset.cpy();
 	}
 
+	float getBreakProgress(float x, float y, float z) {
+		Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
+		Float v = this.breaking.get(pos);
+		if (v != null) {
+			return v;
+		}
+		return -1.0F;
+	}
+
+	public void startBreaking(int x, int y, int z) {
+		this.breaking.put(new Vec3i(x, y, z), 0.0F);
+	}
+
+	public void stopBreaking(int x, int y, int z) {
+		this.breaking.remove(new Vec3i(x, y, z));
+	}
+
+	public void continueBreaking(int x, int y, int z, float amount) {
+		Vec3i pos = new Vec3i(x, y, z);
+		Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
+		if (v != null && v == 1.0F) {
+			this.set(new Vec3i(x, y, z), Blocks.AIR);
+		}
+	}
+
+	public Map<Vec3i, Float> getBreaking() {
+		return Collections.unmodifiableMap(this.breaking);
+	}
+
 	public boolean isReady() {
 		return this.ready;
+	}
+
+	public boolean isDisposed() {
+		return this.disposed;
+	}
+
+	public void setDirty(boolean b) {
+		this.dirty = false;
+	}
+
+	public void onNeighboursUpdated() {
+		this.updateNeighbours = false;
 	}
 }

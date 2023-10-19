@@ -127,7 +127,7 @@ public class Entity {
         this.move(this.velocityX, this.velocityY, this.velocityZ);
 
         this.velocityX *= 0.6F;
-        this.velocityY *= 0.98F;
+        this.velocityY *= this.noGravity ? 0.6F : 0.98F;
         this.velocityZ *= 0.6F;
 
         if (this.onGround) {
@@ -153,7 +153,7 @@ public class Entity {
             this.y += dy;
             this.z += dz;
         } else {
-            List<BoundingBox> boxes = this.world.collide(ext);
+            List<BoundingBox> boxes = this.world.collide(ext, false);
             BoundingBox pBox = this.getBoundingBox();
             this.isColliding = false;
             this.isCollidingY = false;
@@ -309,6 +309,19 @@ public class Entity {
         return direction;
     }
 
+    public static Vec3d getLookVector(float xRot, float yRot) {
+        // Calculate the direction vector
+        Vec3d direction = new Vec3d();
+        yRot = Mth.clamp(yRot, -89.9F, 89.9F);
+        direction.x = MathUtils.cosDeg(yRot) * MathUtils.sinDeg(xRot);
+        direction.z = MathUtils.cosDeg(yRot) * MathUtils.cosDeg(xRot);
+        direction.y = MathUtils.sinDeg(yRot);
+
+        // Normalize the direction vector
+        direction.nor();
+        return direction;
+    }
+
     public void setRotation(Vector2 position) {
         this.xRot = position.x;
         this.yRot = Mth.clamp(position.y, -90, 90);
@@ -350,8 +363,13 @@ public class Entity {
         this.gravity = gravity;
     }
 
-    public void rotate(GridPoint2 rotation) {
+    public void rotate(Vector2 rotation) {
         this.xRot = this.xRot + rotation.x;
         this.yRot = Mth.clamp(this.yRot + rotation.y, -90, 90);
+    }
+
+    public void rotate(float x, float y) {
+        this.xRot += x;
+        this.yRot += y;
     }
 }

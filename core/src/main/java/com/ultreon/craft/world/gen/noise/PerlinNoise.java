@@ -1,24 +1,22 @@
 package com.ultreon.craft.world.gen.noise;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import java.util.Random;
 
-@Deprecated
-public class PerlinNoise {
+@ApiStatus.Obsolete
+public class PerlinNoise implements NoiseType {
+	private final long default_size;
 	private double seed;
-	private long default_size;
 	private int[] p;
+
+	public PerlinNoise() {
+		this(new Random().nextGaussian() * 255);
+	}
 
 	public PerlinNoise(double seed) {
 		this.seed = seed;
-		init();
-	}
 
-	public PerlinNoise() {
-		this.seed = new Random().nextGaussian() * 255;
-		init();
-	}
-
-	private void init() {
 		// Initialize the permutation array.
 		this.p = new int[512];
 		int[] permutation = new int[]{151, 160, 137, 91, 90, 15, 131, 13, 201,
@@ -45,11 +43,10 @@ public class PerlinNoise {
 
 		// Populate it
 		for (int i = 0; i < 256; i++) {
-			p[256 + i] = p[i] = permutation[i];
+			this.p[256 + i] = this.p[i] = permutation[i];
 		}
-
 	}
-	
+
 	public void setSeed(double seed) {
 		this.seed = seed;
 	}
@@ -58,51 +55,53 @@ public class PerlinNoise {
 		return this.seed;
 	}
 
-	public double noise(double x, double y, double z, int size) {
+	public double eval(double x, double y, double z, int size) {
 		double value = 0.0;
 		double initialSize = size;
 
 		while (size >= 1) {
-			value += smoothNoise((x / size), (y / size), (z / size)) * size;
+			value += this.smoothNoise((x / size), (y / size), (z / size)) * size;
 			size /= 2.0;
 		}
 
 		return value / initialSize;
 	}
 
-	public double noise(double x, double y, double z) {
+	@Override
+	public double eval(double x, double y, double z) {
 		double value = 0.0;
-		double size = default_size;
+		double size = this.default_size;
 		double initialSize = size;
 
 		while (size >= 1) {
-			value += smoothNoise((x / size), (y / size), (z / size)) * size;
+			value += this.smoothNoise((x / size), (y / size), (z / size)) * size;
 			size /= 2.0;
 		}
 
 		return value / initialSize;
 	}
 
-	public double noise(double x, double y) {
+	@Override
+	public double eval(double x, double y) {
 		double value = 0.0;
-		double size = default_size;
+		double size = this.default_size;
 		double initialSize = size;
 
 		while (size >= 1) {
-			value += smoothNoise((x / size), (y / size), (0f / size)) * size;
+			value += this.smoothNoise((x / size), (y / size), (0f / size)) * size;
 			size /= 2.0;
 		}
 
 		return value / initialSize;
 	}
 
-    public double noise(double x) {
+    public double eval(double x) {
         double value = 0.0;
-        double size = default_size;
+        double size = this.default_size;
         double initialSize = size;
 
         while (size >= 1) {
-            value += smoothNoise((x / size), (0f / size), (0f / size)) * size;
+            value += this.smoothNoise((x / size), (0f / size), (0f / size)) * size;
             size /= 2.0;
         }
 
@@ -123,25 +122,25 @@ public class PerlinNoise {
 		y -= Math.floor(y); // OF POINT IN CUBE.
 		z -= Math.floor(z);
 
-		double u = fade(x); // COMPUTE FADE CURVES
-		double v = fade(y); // FOR EACH OF X,Y,Z.
-		double w = fade(z);
+		double u = this.fade(x); // COMPUTE FADE CURVES
+		double v = this.fade(y); // FOR EACH OF X,Y,Z.
+		double w = this.fade(z);
 
-		int A = p[X] + Y;
-		int AA = p[A] + Z;
-		int AB = p[A + 1] + Z; // HASH COORDINATES OF
-		int B = p[X + 1] + Y;
-		int BA = p[B] + Z;
-		int BB = p[B + 1] + Z; // THE 8 CUBE CORNERS,
+		int A = this.p[X] + Y;
+		int AA = this.p[A] + Z;
+		int AB = this.p[A + 1] + Z; // HASH COORDINATES OF
+		int B = this.p[X + 1] + Y;
+		int BA = this.p[B] + Z;
+		int BB = this.p[B + 1] + Z; // THE 8 CUBE CORNERS,
 
-		return lerp(w, lerp(v, lerp(u, grad(p[AA], 		x, 		y, 		z		), 	// AND ADD
-										grad(p[BA],		x - 1, 	y, 		z		)), // BLENDED
-								lerp(u, grad(p[AB], 	x, 		y - 1, 	z		), 	// RESULTS
-										grad(p[BB], 	x - 1, 	y - 1, 	z		))),// FROM 8
-						lerp(v, lerp(u, grad(p[AA + 1], x, 		y, 		z - 1	), 	// CORNERS
-										grad(p[BA + 1], x - 1, 	y, 		z - 1	)), // OF CUBE
-								lerp(u, grad(p[AB + 1], x, 		y - 1,	z - 1	),
-										grad(p[BB + 1], x - 1, 	y - 1, 	z - 1	))));
+		return this.lerp(w, this.lerp(v, this.lerp(u, this.grad(this.p[AA], 		x, 		y, 		z		), 	// AND ADD
+								this.grad(this.p[BA],		x - 1, 	y, 		z		)), // BLENDED
+						this.lerp(u, this.grad(this.p[AB], 	x, 		y - 1, 	z		), 	// RESULTS
+										this.grad(this.p[BB], 	x - 1, 	y - 1, 	z		))),// FROM 8
+				this.lerp(v, this.lerp(u, this.grad(this.p[AA + 1], x, 		y, 		z - 1	), 	// CORNERS
+										this.grad(this.p[BA + 1], x - 1, 	y, 		z - 1	)), // OF CUBE
+								this.lerp(u, this.grad(this.p[AB + 1], x, 		y - 1,	z - 1	),
+										this.grad(this.p[BB + 1], x - 1, 	y - 1, 	z - 1	))));
 	}
 
 	private double fade(double t) {
@@ -158,4 +157,10 @@ public class PerlinNoise {
 		v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 	}
+
+	@Override
+	@SuppressWarnings("DataFlowIssue")
+	public void dispose() {
+		this.p = null;
+    }
 }

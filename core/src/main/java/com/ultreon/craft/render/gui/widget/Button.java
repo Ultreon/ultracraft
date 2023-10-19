@@ -75,17 +75,18 @@ public class Button extends GuiComponent {
         int v = this.isPressed() ? 21 : 0;
 
         renderer.setTextureColor(this.color == null ? Color.WHITE : this.color);
-        renderer.texture(texture, x, y+ this.height -7, 7, 7, u, v, 7, 7);
-        renderer.texture(texture, x+7, y+ this.height -7, this.width - 14, 7, 7 + u, v, 7, 7);
-        renderer.texture(texture, x+ this.width -7, y+ this.height -7, 7, 7, 14 + u, v, 7, 7);
-        renderer.texture(texture, x, y+7, 7, this.height - 14, u, 7 + v, 7, 7);
-        renderer.texture(texture, x+7, y+7, this.width - 14, this.height - 14, 7 + u, 7 + v, 7, 7);
-        renderer.texture(texture, x+ this.width -7, y+7, 7, this.height - 14, 14 + u, 7 + v, 7, 7);
-        renderer.texture(texture, x, y, 7, 7, u, 14 + v, 7, 7);
-        renderer.texture(texture, x+7, y, this.width - 14, 7, 7 + u, 14 + v, 7, 7);
-        renderer.texture(texture, x+ this.width -7, y, 7, 7, 14 + u, 14 + v, 7, 7);
+        renderer.blit(texture, x, y, 7, 7, u, v, 7, 7);
+        renderer.blit(texture, x+7, y, this.width - 14, 7, 7 + u, v, 7, 7);
+        renderer.blit(texture, x+ this.width -7, y, 7, 7, 14 + u, v, 7, 7);
+        renderer.blit(texture, x, y+7, 7, this.height - 14, u, 7 + v, 7, 7);
+        renderer.blit(texture, x+7, y+7, this.width - 14, this.height - 14, 7 + u, 7 + v, 7, 7);
+        renderer.blit(texture, x+ this.width -7, y+7, 7, this.height - 14, 14 + u, 7 + v, 7, 7);
+        renderer.blit(texture, x, y + this.height - 7, 7, 7, u, 14 + v, 7, 7);
+        renderer.blit(texture, x+7, y + this.height - 7, this.width - 14, 7, 7 + u, 14 + v, 7, 7);
+        renderer.blit(texture, x+ this.width -7, y + this.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
         renderer.setTextureColor(Color.rgb(0xffffff));
-        renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 + this.font.lineHeight - (this.isPressed() ? 2 : 0)), this.textColor);
+
+        renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.textColor);
     }
 
     @Override

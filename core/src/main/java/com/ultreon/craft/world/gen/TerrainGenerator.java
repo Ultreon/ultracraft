@@ -17,7 +17,7 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TerrainGenerator {
     private final DomainWarping biomeDomainWarping;
-    private final List<GridPoint3> biomeCenters = new ArrayList<>();
+    private final List<Vec3i> biomeCenters = new ArrayList<>();
     private final FloatList biomeNoise = new FloatArrayList();
     private List<BiomeData> biomeGenData = new ArrayList<>();
 
@@ -54,12 +54,12 @@ public class TerrainGenerator {
         BiomeGenerator generator_1 = selectBiome(biomeSelectionHelpers.get(0).index());
         BiomeGenerator generator_2 = selectBiome(biomeSelectionHelpers.get(1).index());
 
-        float distance = biomeCenters.get(biomeSelectionHelpers.get(0).index()).dst(biomeCenters.get(biomeSelectionHelpers.get(1).index()));
-        float weight_0 = biomeSelectionHelpers.get(0).distance() / distance;
-        float weight_1 = 1 - weight_0;
+        double distance = biomeCenters.get(biomeSelectionHelpers.get(0).index()).dst(biomeCenters.get(biomeSelectionHelpers.get(1).index()));
+        double weight_0 = biomeSelectionHelpers.get(0).distance() / distance;
+        double weight_1 = 1 - weight_0;
         int terrainHeightNoise_0 = generator_1.getSurfaceHeightNoise(worldPosition.x, worldPosition.z, chunk.height);
         int terrainHeightNoise_1 = generator_2.getSurfaceHeightNoise(worldPosition.x, worldPosition.z, chunk.height);
-        return new BiomeGeneratorSelection(generator_1, Math.round(terrainHeightNoise_0 * weight_0 + terrainHeightNoise_1 * weight_1));
+        return new BiomeGeneratorSelection(generator_1, (int) Math.round(terrainHeightNoise_0 * weight_0 + terrainHeightNoise_1 * weight_1));
 
     }
 
@@ -81,11 +81,11 @@ public class TerrainGenerator {
         List<BiomeSelectionHelper> helpers = new ArrayList<>();
 
         for (int index = 0; index < biomeCenters.size(); index++) {
-            GridPoint3 center = biomeCenters.get(index);
+            Vec3i center = biomeCenters.get(index);
             helpers.add(new BiomeSelectionHelper(index, center.dst(position.x, position.y, position.z)));
         }
 
-        helpers.sort((o1, o2) -> Float.compare(o1.distance(), o2.distance()));
+        helpers.sort((o1, o2) -> Double.compare(o1.distance(), o2.distance()));
         return helpers;
     }
 

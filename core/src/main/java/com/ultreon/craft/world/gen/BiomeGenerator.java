@@ -5,7 +5,7 @@ import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.MyNoise;
+import com.ultreon.craft.world.gen.noise.NoiseUtils;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 
 import org.jetbrains.annotations.Nullable;
@@ -54,13 +54,15 @@ public class BiomeGenerator implements Disposable {
     public int getSurfaceHeightNoise(float x, float z, int height) {
         float terrainHeight;
         if (!USE_DOMAIN_WARPING) {
-            terrainHeight = MyNoise.octavePerlin(x, z, this.biomeNoise);
+            terrainHeight = NoiseUtils.octavePerlin(x, z, this.biomeNoise);
         } else {
             terrainHeight = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
         }
 
-        terrainHeight = MyNoise.redistribution(terrainHeight, this.biomeNoise);
-        return MyNoise.remapValue01ToInt(terrainHeight, 0, height);
+//        terrainHeight = NoiseUtils.redistribution(terrainHeight, this.biomeNoise);
+//        return NoiseUtils.remapValue01ToInt(terrainHeight, 0, height);
+        System.out.println("terrainHeight = " + terrainHeight);
+        return (int) Math.max(terrainHeight, 1);
     }
 
     public TreeData getTreeData(Chunk chunk, long seed) {

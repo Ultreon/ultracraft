@@ -19,7 +19,9 @@ public class TextureAtlas {
     }
 
     public TextureRegion get(Identifier id) {
+        if (id == null) return null;
         UV uv = this.uvMap.get(id);
+        if (uv == null) return null;
         return new TextureRegion(this.textureAtlas, uv.u(), uv.v(), uv.uWidth(), uv.vHeight());
     }
 

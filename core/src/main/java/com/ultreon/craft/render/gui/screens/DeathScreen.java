@@ -19,25 +19,23 @@ public class DeathScreen extends Screen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        this.respawnButton.setPos(width / 2 - 100, height - height / 3 + 5);
-        this.exitWorldButton.setPos(width / 2 - 100, height - height / 3 - 25);
+        this.respawnButton.setPos(width / 2 - 100, height / 3 + 5);
+        this.exitWorldButton.setPos(width / 2 - 100, height / 3 - 25);
     }
 
     @Override
     public void show() {
         super.show();
 
-        this.respawnButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft.screen.death.respawn"), this::respawn));
-        this.exitWorldButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 200, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.respawnButton = add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("craft.screen.death.respawn"), this::respawn));
+        this.exitWorldButton = add(new Button(this.width / 2 - 100, this.height / 3 - 25, 200, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.RED);
         this.exitWorldButton.setTextColor(Color.WHITE);
     }
 
     private void respawn(Button button) {
         this.game.respawnAsync().thenAccept(unused -> {
-            this.game.runLater(new Task(new Identifier("post_respawn"), () -> {
-                this.game.showScreen(null);
-            }));
+            this.game.submit(new Task(new Identifier("post_respawn"), () -> this.game.showScreen(null)));
         });
     }
 
@@ -45,7 +43,7 @@ public class DeathScreen extends Screen {
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        renderer.drawTextScaled(this.title, 2, (int)((float) this.width / 2 - this.font.width(this.title) / 2) / 2, (int)((float) (this.height - 40) / 2));
+        renderer.drawTextScaled(this.title, 2, (int)((float) this.width / 2 - this.font.width(this.title) / 2) / 2, (int)((float) (this.height + 40) / 2));
     }
 
     private void exitWorld(Button caller) {

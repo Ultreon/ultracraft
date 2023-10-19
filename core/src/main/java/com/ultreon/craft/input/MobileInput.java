@@ -79,13 +79,7 @@ public class MobileInput extends GameInput {
     }
 
     private void updatePlayerMovement(Player player, int screenX, int screenY, int pointer) {
-        GridPoint2 origin = this.rotateOrigin;
-        GridPoint2 cur = new GridPoint2(screenX, screenY);
-        this.rotateOrigin = cur;
-        if (origin != null) {
-            GridPoint2 rotate = new GridPoint2(origin.x - cur.x, origin.y - cur.y);
-            player.rotate(rotate);
-        }
+
     }
 
     @Override
@@ -109,7 +103,6 @@ public class MobileInput extends GameInput {
                 this.pressPos.set(screenX, screenY);
             }
         } else {
-            screenY = this.game.getHeight() - screenY;
             Screen currentScreen = this.game.currentScreen;
             return currentScreen != null && currentScreen.mousePress((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
         }
@@ -136,7 +129,6 @@ public class MobileInput extends GameInput {
             }
         } else {
             Screen currentScreen = this.game.currentScreen;
-            screenY = this.game.getHeight() - screenY;
             if (currentScreen != null) {
                 currentScreen.mouseRelease((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button);
                 currentScreen.mouseClick((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button, 1);

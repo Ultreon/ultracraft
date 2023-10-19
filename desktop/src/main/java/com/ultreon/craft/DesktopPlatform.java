@@ -4,40 +4,43 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
-import com.ultreon.craft.desktop.render.screen.ModListScreen;
+import com.ultreon.craft.desktop.client.gui.screen.ModIconOverrides;
+import com.ultreon.craft.desktop.client.gui.screen.ModListScreen;
+import com.ultreon.craft.desktop.util.util.ArgParser;
+import com.ultreon.craft.desktop.util.util.ImGuiEx;
+import com.ultreon.craft.desktop.mods.ClientModInit;
+import com.ultreon.craft.desktop.mods.DedicatedServerModInit;
+import com.ultreon.craft.desktop.mods.ModInit;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.desktop.util.util.ArgParser;
-import com.ultreon.craft.desktop.util.util.ImGuiEx;
-
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
-import net.fabricmc.api.ClientModInitializer;
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiWindowFlags;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+import imgui.type.ImBoolean;
 import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.impl.entrypoint.EntrypointUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
+import org.quiltmc.loader.api.ModContainer;
+import org.quiltmc.loader.api.QuiltLoader;
+import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import imgui.*;
-import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.type.*;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import static com.ultreon.craft.UltreonCraft.id;
 
@@ -45,33 +48,20 @@ public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
-    private static final Marker MARKER = MarkerFactory.getMarker("Platform");
+    private static final Logger LOGGER = LoggerFactory.getLogger("GamePlatform");
     private final String gameDir;
+    private final GameEnvironment gameEnv;
     private ImGuiImplGlfw imGuiGlfw;
     private ImGuiImplGl3 imGuiGl3;
     private final ImBoolean showImGui = new ImBoolean(false);
     private final ArgParser argParser;
+    private final boolean packaged;
 
-    public DesktopPlatform(ArgParser argParser, boolean packaged) {
+    public DesktopPlatform(ArgParser argParser) {
         this.argParser = argParser;
-
-        if (packaged) {
-            switch (this.getOperatingSystem()) {
-                case WINDOWS:
-                    this.gameDir = System.getProperty("user.home") + "\\AppData\\Roaming\\.ultreon-craft\\";
-                    break;
-                case LINUX:
-                case UNIX:
-                case MAC_OS:
-                    this.gameDir = System.getProperty("user.home") + "/.ultreon-craft/";
-                    break;
-                default:
-                    this.gameDir = System.getProperty("user.home") + "/Games/ultreon-craft/";
-            }
-        } else {
-            String gameDir = this.argParser.getKeywordArgs().get("gamedir");
-            this.gameDir = gameDir == null ? new File(".").getAbsolutePath() : gameDir;
-        }
+        this.gameDir = QuiltLoader.getGameDir().toAbsolutePath().toString();
+        this.gameEnv = EnumUtils.byName(System.getProperty("ultracraft.environment", "normal").toUpperCase(Locale.ROOT), GameEnvironment.NORMAL);
+        this.packaged = this.gameEnv == GameEnvironment.PACKAGED;
     }
 
     @Override
@@ -81,16 +71,11 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public OperatingSystem getOperatingSystem() {
-        switch (Platform.get()) {
-            case LINUX:
-                return OperatingSystem.LINUX;
-            case MACOSX:
-                return OperatingSystem.MAC_OS;
-            case WINDOWS:
-                return OperatingSystem.WINDOWS;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (Platform.get()) {
+            case LINUX -> OperatingSystem.LINUX;
+            case MACOSX -> OperatingSystem.MAC_OS;
+            case WINDOWS -> OperatingSystem.WINDOWS;
+        };
     }
 
     @Override
@@ -143,12 +128,12 @@ public class DesktopPlatform extends GamePlatform {
                     ImGuiInputTextFlags.AllowTabInput)) {
                 if (ImGui.beginMenuBar()) {
                     if (ImGui.beginMenu("View")) {
-                        ImGui.menuItem("Show Player Utils", null, SHOW_PLAYER_UTILS);
-                        ImGui.menuItem("Show Gui Utils", null, SHOW_GUI_UTILS);
+                        ImGui.menuItem("Show Player Utils", null, DesktopPlatform.SHOW_PLAYER_UTILS);
+                        ImGui.menuItem("Show Gui Utils", null, DesktopPlatform.SHOW_GUI_UTILS);
                         ImGui.endMenu();
                     }
                     if (ImGui.beginMenu("Debug")) {
-                        ImGui.menuItem("Utils", null, SHOW_UTILS);
+                        ImGui.menuItem("Utils", null, DesktopPlatform.SHOW_UTILS);
                         ImGui.endMenu();
                     }
 
@@ -158,9 +143,9 @@ public class DesktopPlatform extends GamePlatform {
                 ImGui.end();
             }
 
-            if (SHOW_PLAYER_UTILS.get()) this.showPlayerUtilsWindow(game);
-            if (SHOW_GUI_UTILS.get()) this.showGuiUtilsWindow(game);
-            if (SHOW_UTILS.get()) this.showUtils(game);
+            if (DesktopPlatform.SHOW_PLAYER_UTILS.get()) this.showPlayerUtilsWindow(game);
+            if (DesktopPlatform.SHOW_GUI_UTILS.get()) this.showGuiUtilsWindow(game);
+            if (DesktopPlatform.SHOW_UTILS.get()) this.showUtils(game);
 
             ImGui.render();
             this.imGuiGl3.renderDrawData(ImGui.getDrawData());
@@ -309,8 +294,11 @@ public class DesktopPlatform extends GamePlatform {
     public void setupMods() {
         super.setupMods();
 
+        ModIconOverrides.set("craft", UltreonCraft.id("icon.png"));
+        ModIconOverrides.set("libgdx", new Identifier("libgdx", "icon.png"));
+
         // Invoke entry points.
-        EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+        EntrypointUtil.invoke(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
     }
 
     @Override
@@ -318,27 +306,31 @@ public class DesktopPlatform extends GamePlatform {
         super.setupModsClient();
 
         // Invoke entry points.
-        EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+        EntrypointUtil.invoke(ClientModInit.ENTRYPOINT_KEY, ClientModInit.class, ClientModInit::onInitializeClient);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void setupModsServer() {
         super.setupModsServer();
 
         // Invoke entry points.
-        EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+        EntrypointUtil.invoke(DedicatedServerModInit.ENTRYPOINT_KEY, DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
     }
 
     @Override
     public void importModResources(ResourceManager resourceManager) {
         super.importModResources(resourceManager);
 
-        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            for (Path rootPath : mod.getRootPaths()) {
+        for (ModContainer mod : QuiltLoader.getAllMods()) {
+            for (Path rootPath : mod.getSourcePaths().stream().reduce(new ArrayList<>(), (objects, paths) -> {
+                objects.addAll(paths);
+                return objects;
+            })) {
                 try {
                     resourceManager.importPackage(rootPath);
                 } catch (IOException e) {
-                    UltreonCraft.LOGGER.warn(MARKER, "Importing resources failed for path: " + rootPath.toFile(), e);
+                    DesktopPlatform.LOGGER.warn("Importing resources failed for path: " + rootPath.toFile(), e);
                 }
             }
         }
@@ -351,6 +343,14 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public boolean isDevelopmentEnvironment() {
-        return FabricLoader.getInstance().isDevelopmentEnvironment();
+        return QuiltLoader.isDevelopmentEnvironment();
+    }
+
+    public boolean isPackaged() {
+        return this.packaged;
+    }
+
+    public GameEnvironment getGameEnv() {
+        return this.gameEnv;
     }
 }

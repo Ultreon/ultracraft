@@ -1,6 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.events.WorldEvents;
@@ -18,7 +17,8 @@ import java.util.function.Consumer;
 
 import static com.ultreon.craft.UltreonCraft.LOGGER;
 
-public class WorldRegion implements Disposable {
+@Deprecated
+public class WorldRegion {
     public static final int REGION_SIZE = 32;
 
     private final Map<ChunkPos, Chunk> chunks = new ConcurrentHashMap<>();
@@ -179,15 +179,31 @@ public class WorldRegion implements Disposable {
         return true;
     }
 
-    public void dispose() {
-        this.dispose(false);
+    /**
+     * @return true if the world region has disposed successfully.
+     */
+    public boolean dispose() {
+        synchronized (this.lock) {
+            if (!this.unload(false, false)) return false;
+
+            this.disposed = true;
+            this.data = null;
+        }
+        return true;
     }
 
-    public void dispose(boolean force) {
+    @Deprecated
+    public boolean dispose(boolean force) {
+        if (force) this.disposeNow();
+        else return this.dispose();
+        return true;
+    }
+
+    public void disposeNow() {
         synchronized (this.lock) {
             this.disposed = true;
 
-            if (!this.unload(false, force) && !force) return;
+            this.unload(false, true);
 
             this.data = null;
         }
@@ -207,12 +223,13 @@ public class WorldRegion implements Disposable {
         synchronized (this.lock) {
             if (save && !(flag = this.saveChunk(localChunkPos)) && !force) return false;
 
-            Chunk chunk = this.chunks.get(localChunkPos);
-            if (chunk == null) return false;
+            Chunk chunk = this.chunks.remove(localChunkPos);
+            if (chunk == null) {
+                LOGGER.warn("Tried to unload non-existing chunk: " + localChunkPos);
+                return false;
+            }
 
             chunk.dispose();
-
-            this.chunks.remove(localChunkPos);
         }
         return flag;
     }
@@ -227,15 +244,13 @@ public class WorldRegion implements Disposable {
 
     public boolean putChunk(ChunkPos chunkPos, Chunk chunk, boolean overwrite) {
         synchronized (this.lock) {
-            Chunk oldChunk = this.chunks.get(chunkPos);
-            if (oldChunk != null) {
-                if (overwrite) {
-                    oldChunk.dispose();
-                } else {
-                    return false;
-                }
-            }
-            this.chunks.put(chunkPos, chunk);
+            if (!overwrite)
+                return this.chunks.putIfAbsent(chunkPos, chunk) == null;
+
+            Chunk oldChunk = this.chunks.put(chunkPos, chunk);
+            if (oldChunk != null)
+                oldChunk.dispose();
+
             return true;
         }
     }

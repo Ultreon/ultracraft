@@ -9,14 +9,17 @@ import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.input.util.*;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
@@ -54,7 +57,10 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     }
 
     private long nextBreak;
-    private long nextPlace;
+    private long itemUse;
+    private boolean breaking;
+    private boolean using;
+    private final Vec3d vel = new Vec3d();
     @Nullable
     protected HitResult hitResult;
 
@@ -63,7 +69,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         this.camera = camera;
 
         Controllers.addListener(this);
-        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).collect(Collectors.toList()));
+        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).toList());
     }
 
     @Override
@@ -80,9 +86,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     @Override
     public boolean axisMoved(Controller controller, int axisCode, float value) {
-        // Check if the absolute value of the value is less than the deadzone
+        // Check if the absolute value of the value is less than the dead zone
         if (Math.abs(value) < Constants.CONTROLLER_DEADZONE) {
-            value = 0; // Set the value to 0 if it's within the deadzone
+            value = 0; // Set the value to 0 if it's within the dead zone
         }
 
         ControllerMapping mapping = controller.getMapping();
@@ -154,7 +160,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     public void update(float deltaTime) {
         if (this.game.isPlaying()) {
             Player player = this.game.player;
-            if (player != null) {
+            if (player != null && this.isControllerConnected()) {
                 Joystick joystick = JOYSTICKS.get(JoystickType.RIGHT);
 
                 float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
@@ -166,13 +172,34 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
                 @Nullable World world = this.game.world;
                 if (world != null) {
-                    this.hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    boolean destroy = TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis();
-                    boolean use = TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis();
-                    if (destroy) this.nextBreak = System.currentTimeMillis() + 500;
-                    if (use) this.nextPlace = System.currentTimeMillis() + 500;
+                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                    Vec3i pos = hitResult.getPos();
+                    Block block = world.get(pos);
+                    if (hitResult.isCollide() && block != null && !block.isAir()) {
+                        float right = TRIGGERS.get(TriggerType.RIGHT).value;
+                        if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+                            this.game.startBreaking();
+                            this.nextBreak = System.currentTimeMillis() + 500;
+                            this.breaking = true;
+                        } else if (right < 0.3F && this.breaking) {
+                            this.game.stopBreaking();
+                            this.nextBreak = 0;
+                            this.breaking = false;
+                        }
 
-                    this.onWorldHit(world, player, this.hitResult, destroy, use);
+                        float left = TRIGGERS.get(TriggerType.LEFT).value;
+                        if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
+                            UseItemContext context = new UseItemContext(world, player, hitResult);
+                            Item item = player.getSelectedItem();
+                            ItemEvents.USE.factory().onUseItem(item, context);
+                            item.use(context);
+                            this.itemUse = System.currentTimeMillis() + 500;
+                            this.using = true;
+                        } else if (left < 0.3F && this.using) {
+                            this.itemUse = 0;
+                            this.using = false;
+                        }
+                    }
                 }
 
                 player.setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
@@ -195,28 +222,29 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 if (!player.topView) {
                     Vec3d tmp = new Vec3d();
                     this.game.playerInput.tick(speed);
-                    Vec3d vel = this.game.playerInput.getVel();
+                    Vector3 velocity = this.game.playerInput.getVelocity();
+                    this.vel.set(velocity.x, velocity.y, velocity.z);
 
                     if (player.isInWater() && this.game.playerInput.up) {
                         tmp.set(0, 1, 0).nor().mul(speed);
-                        vel.add(tmp);
+                        this.vel.add(tmp);
                     }
                     if (player.isFlying()) {
                         if (this.game.playerInput.up) {
                             tmp.set(0, 1, 0).nor().mul(speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                         if (this.game.playerInput.down) {
                             tmp.set(0, 1, 0).nor().mul(-speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                     }
 
-                    vel.x *= deltaTime * UltreonCraft.TPS;
-                    vel.y *= deltaTime * UltreonCraft.TPS;
-                    vel.z *= deltaTime * UltreonCraft.TPS;
+                    this.vel.x *= deltaTime * UltreonCraft.TPS;
+                    this.vel.y *= deltaTime * UltreonCraft.TPS;
+                    this.vel.z *= deltaTime * UltreonCraft.TPS;
 
-                    player.setVelocity(player.getVelocity().add(vel));
+                    player.setVelocity(player.getVelocity().add(this.vel));
                 } else {
                     player.setX(0);
                     player.setZ(0);

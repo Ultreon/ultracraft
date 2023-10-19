@@ -1,7 +1,7 @@
 package com.ultreon.craft.render.gui.screens;
 
 import com.badlogic.gdx.Input;
-import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.Renderer;
 
 public class ItemRenderTestScreen extends Screen {
@@ -23,15 +23,15 @@ public class ItemRenderTestScreen extends Screen {
         renderer.drawCenteredText("BG [" + this.bg + "]", this.width / 2, this.height - 30);
         renderer.drawCenteredText("X [" + this.mx + "]" + "Y [" + this.my + "]", this.width / 2, this.height - 40);
 
-        if (this.state == 0) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, 16, 16);
-        if (this.state == 1) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, 16, -16);
-        if (this.state == 2) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, -16, -16);
-        if (this.state == 3) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, -16, 16);
-        if (this.state == 4) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - this.getLastMouseY());
-        if (this.state == 5) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - -this.getLastMouseY());
-        if (this.state == 6) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - -this.getLastMouseY());
-        if (this.state == 7) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - this.getLastMouseY());
-        if (this.state == 8) this.game.itemRenderer.render(Blocks.GRASS_BLOCK, renderer, mx, my);
+        if (this.state == 0) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, 16);
+        if (this.state == 1) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, -16);
+        if (this.state == 2) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, -16, -16);
+        if (this.state == 3) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, -16, 16);
+        if (this.state == 4) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - this.getLastMouseY());
+        if (this.state == 5) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - -this.getLastMouseY());
+        if (this.state == 6) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - -this.getLastMouseY());
+        if (this.state == 7) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - this.getLastMouseY());
+        if (this.state == 8) this.game.itemRenderer.render(Items.GRASS_BLOCK, renderer, mx, my);
     }
 
     @Override

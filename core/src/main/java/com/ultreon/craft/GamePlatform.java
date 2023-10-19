@@ -32,27 +32,19 @@ public abstract class GamePlatform {
     }
 
     public boolean supportsQuit() {
-        switch (this.getPlatformType()) {
-            case DESKTOP:
-                return true;
-            case MOBILE:
-            case WEB:
-                return false;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.getPlatformType()) {
+            case DESKTOP -> true;
+            case MOBILE, WEB -> false;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public boolean canAccessData() {
-        switch (this.getPlatformType()) {
-            case DESKTOP:
-                return true;
-            case MOBILE:
-            case WEB:
-                return false;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.getPlatformType()) {
+            case DESKTOP -> true;
+            case MOBILE, WEB -> false;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public void setupImGui() {
@@ -76,15 +68,11 @@ public abstract class GamePlatform {
     }
 
     public boolean hasKeyInput() {
-        switch (this.getPlatformType()) {
-            case DESKTOP:
-            case WEB:
-                return true;
-            case MOBILE:
-                return false;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.getPlatformType()) {
+            case DESKTOP, WEB -> true;
+            case MOBILE -> false;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public void firstRender() {

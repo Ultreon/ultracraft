@@ -16,6 +16,7 @@
 
 package com.ultreon.craft.util;
 
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.io.Serializable;
@@ -319,5 +320,9 @@ public class BoundingBox implements Serializable {
 
 	static double max (final double a, final double b) {
 		return a > b ? a : b;
+	}
+
+	public com.badlogic.gdx.math.collision.BoundingBox toGdx() {
+        return new com.badlogic.gdx.math.collision.BoundingBox(new Vector3((float) min.x, (float) min.y, (float) min.z), new Vector3((float) max.x, (float) max.y, (float) max.z));
 	}
 }

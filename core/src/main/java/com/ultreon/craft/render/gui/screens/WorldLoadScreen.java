@@ -5,7 +5,7 @@ import com.ultreon.craft.Task;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -55,10 +55,21 @@ public class WorldLoadScreen extends Screen {
 
         this.game.respawn();
         UltreonCraft.LOGGER.debug("Player spawned, enabling world rendering now.");
-        this.game.worldRenderer = new WorldRenderer(this.game.world);
-        this.game.renderWorld = true;
+        this.startRenderingWorld();
         UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
-        this.game.runLater(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
+        this.game.submit(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
+    }
+
+    private void startRenderingWorld() {
+        if (!UltreonCraft.isOnRenderingThread()) {
+            UltreonCraft.invokeAndWait(() -> {
+                this.startRenderingWorld();
+            });
+            return;
+        }
+
+        this.game.worldRenderer = new WorldRenderer(this.game.world, this.game.modelBatch);
+        this.game.renderWorld = true;
     }
 
     @Override
@@ -66,14 +77,14 @@ public class WorldLoadScreen extends Screen {
         fill(renderer, 0, 0, this.width, this.height, 0xff202020);
 
         renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawCenteredText(this.title, this.width / 2, this.height - this.height / 3);
+        renderer.drawCenteredText(this.title, this.width / 2, this.height / 3);
 
         World world = this.game.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                renderer.drawCenteredText(s, this.width / 2, this.height - this.height / 3 - 20);
+                renderer.drawCenteredText(s, this.width / 2, this.height / 3 - 20);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;

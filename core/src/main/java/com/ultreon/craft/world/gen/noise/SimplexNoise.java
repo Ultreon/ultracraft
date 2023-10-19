@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class SimplexNoise implements NoiseType {
-    private Ocatave[] octaves;
+    private Octave[] octaves;
     private double[] frequencies;
     private double[] amplitudes;
 
@@ -17,14 +17,14 @@ public class SimplexNoise implements NoiseType {
         // Math.ceil(7) = 7 = numberOfOctaves
         int numberOfOctaves = (int) Math.ceil(Math.log10(largestFeature) / Math.log10(2));
 
-        this.octaves = new Ocatave[numberOfOctaves];
+        this.octaves = new Octave[numberOfOctaves];
         this.frequencies = new double[numberOfOctaves];
         this.amplitudes = new double[numberOfOctaves];
 
         Random rnd = new Random(seed);
 
         for (int i = 0; i < numberOfOctaves; i++) {
-            this.octaves[i] = new Ocatave(rnd.nextInt());
+            this.octaves[i] = new Octave(rnd.nextInt());
             this.frequencies[i] = Math.pow(2, i);
             this.amplitudes[i] = Math.pow(this.persistence, this.octaves.length - i);
         }
@@ -54,8 +54,9 @@ public class SimplexNoise implements NoiseType {
     }
 
     @Override
+    @SuppressWarnings("DataFlowIssue")
     public void dispose() {
-        Arrays.stream(this.octaves).forEach(Ocatave::dispose);
+        Arrays.stream(this.octaves).forEach(Octave::dispose);
         this.octaves = null;
         this.frequencies = null;
         this.amplitudes = null;
@@ -77,7 +78,7 @@ public class SimplexNoise implements NoiseType {
      * attribution is appreciated.
      *
      */
-    public static class Ocatave {
+    public static class Octave {
         public static int RANDOM_SEED = 0;
         private static final int NUMBER_OF_SWAPS = 400;
 
@@ -94,7 +95,7 @@ public class SimplexNoise implements NoiseType {
         private short[] perm = new short[512];
         private short[] permMod12 = new short[512];
 
-        public Ocatave(int seed) {
+        public Octave(int seed) {
             this.p = P_SUPPLY.clone();
 
             if (seed == RANDOM_SEED) {
@@ -474,6 +475,7 @@ public class SimplexNoise implements NoiseType {
             }
         }
 
+        @SuppressWarnings("DataFlowIssue")
         public void dispose() {
             this.p = null;
             this.perm = null;
