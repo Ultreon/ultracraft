@@ -53,7 +53,7 @@ public class Player extends LivingEntity {
     public void tick() {
         super.tick();
 
-        this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
+        this.jumping = !this.isInWater() && !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         if (this.topView) {
             this.noGravity = true;
@@ -64,7 +64,6 @@ public class Player extends LivingEntity {
         if (this.isInVoid() && !this.isDead()) {
             GameInput.startVibration(200, 1.0F);
         }
-
     }
 
     @Override

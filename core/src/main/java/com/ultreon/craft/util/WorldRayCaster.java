@@ -67,8 +67,8 @@ public class WorldRayCaster {
 				chunk = null;
 				continue;
 			}
-			Block voxel = chunk.get(loc.cpy());
-			if(voxel != null && voxel != Blocks.AIR){
+			Block block = chunk.get(loc.cpy());
+			if(block != null && block != Blocks.AIR){
 				box.set(box.min.set(abs.x, abs.y, abs.z), box.max.set(abs.x+1,abs.y+1,abs.z+1));
 				box.update();
 				if(Intersector.intersectRayBounds(ray, box, intersection)){
@@ -77,7 +77,7 @@ public class WorldRayCaster {
 					result.distance = dst;
 					result.position.set(intersection);
 					result.pos.set(abs);
-					result.block = voxel;
+					result.block = block;
 
 					computeFace(result);
 				}

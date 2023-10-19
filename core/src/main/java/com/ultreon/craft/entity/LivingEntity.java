@@ -2,8 +2,11 @@ package com.ultreon.craft.entity;
 
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.EntityEvents;
+import com.ultreon.craft.util.Utils;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
@@ -92,8 +95,8 @@ public class LivingEntity extends Entity {
 
     @Override
     protected void hitGround() {
-        if (!this.noGravity && this.fallDistance > 4.5F) {
-            float damage = this.fallDistance - 4.5F;
+        if (!this.noGravity && !this.isInWater()) {
+            int damage = (int) (this.fallDistance - 2.2F);
             if (damage > 0) {
                 this.hurt(damage, DamageSource.FALLING);
             }
@@ -172,5 +175,13 @@ public class LivingEntity extends Entity {
 
     public boolean isDead() {
         return this.isDead;
+    }
+
+    public boolean isInWater() {
+        return this.world.get(this.blockPosition()) == Blocks.WATER;
+    }
+
+    public ChunkPos getChunkPos() {
+        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 }

@@ -31,7 +31,7 @@ public class LanguageScreen extends Screen {
     public void show() {
         super.show();
 
-        this.list = this.add(new SelectionList<>(0, 40, this.width, this.height - 40, 14));
+        this.list = this.add(new SelectionList<>(0, 0, this.width, this.height - 40, 14));
         this.list.setSelectable(true);
         this.list.setItemRenderer(this::renderItem);
         this.list.setOnSelected(locale -> {
@@ -43,7 +43,7 @@ public class LanguageScreen extends Screen {
         List<Locale> locales = LanguageManager.INSTANCE.getLocales().stream().sorted((o1, o2) -> o1.getDisplayLanguage().compareToIgnoreCase(o2.getDisplayLanguage())).collect(Collectors.toList());
         this.list.addEntries(locales);
 
-        this.backButton = this.add(new Button(this.width / 2 - 100, 10, 200, Language.translate("craft.screen.language.back"), caller -> {
+        this.backButton = this.add(new Button(this.width / 2 - 100, this.height - 30, 200, Language.translate("craft.screen.language.back"), caller -> {
             if (this.game.world != null) {
                 this.game.showScreen(new PauseScreen());
             } else {
@@ -53,20 +53,20 @@ public class LanguageScreen extends Screen {
         this.backButton.setColor(Color.rgb(0xff0000));
 
         if (false) {
-            this.prevPageButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 - 21 - 15, 21, 21 * 3 + 20, "<"));
-            this.nextPageButton = this.add(new Button(this.width / 2 + 100 + 10, this.height / 2 - 21 - 15, 21, 21 * 3 + 20, ">"));
+            this.prevPageButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 + 21 + 15, 21, 21 * 3 + 20, "<"));
+            this.nextPageButton = this.add(new Button(this.width / 2 + 100 + 10, this.height / 2 + 21 + 15, 21, 21 * 3 + 20, ">"));
 
-            this.langButton1 = this.add(new Button(this.width / 2 - 100, this.height / 2 + 21 + 5, 200, "English (" + new Locale("en").getDisplayLanguage(new Locale("en")) + ")", caller -> {
+            this.langButton1 = this.add(new Button(this.width / 2 - 100, this.height / 2 - 21 - 5, 200, "English (" + new Locale("en").getDisplayLanguage(new Locale("en")) + ")", caller -> {
                 this.game.settings.language.set(new Locale("en"));
                 this.game.settings.save();
                 this.updateTexts();
             }));
-            this.langButton2 = this.add(new Button(this.width / 2 - 100, this.height / 2 - 5, 200, "Dutch (" + new Locale("nl").getDisplayLanguage(new Locale("nl")) + ")", caller -> {
+            this.langButton2 = this.add(new Button(this.width / 2 - 100, this.height / 2 + 5, 200, "Dutch (" + new Locale("nl").getDisplayLanguage(new Locale("nl")) + ")", caller -> {
                 this.game.settings.language.set(new Locale("nl"));
                 this.game.settings.save();
                 this.updateTexts();
             }));
-            this.langButton3 = this.add(new Button(this.width / 2 - 100, this.height / 2 - 21 - 15, 200, "German (" + new Locale("de").getDisplayLanguage(new Locale("de")) + ")", caller -> {
+            this.langButton3 = this.add(new Button(this.width / 2 - 100, this.height / 2 + 21 + 15, 200, "German (" + new Locale("de").getDisplayLanguage(new Locale("de")) + ")", caller -> {
                 this.game.settings.language.set(new Locale("de"));
                 this.game.settings.save();
                 this.updateTexts();

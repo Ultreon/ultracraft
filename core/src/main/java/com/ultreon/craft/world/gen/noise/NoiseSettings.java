@@ -6,15 +6,28 @@ import java.util.Objects;
 
 public final class NoiseSettings {
     private final float noiseZoom;
-    private final int octaves;
+    private final float octaves;
     private final Vector2 offset;
     private long seed;
     private final float persistence;
     private final float redistributionModifier;
     private final float exponent;
+    private final float amplitude;
+    private final float base;
 
-    public NoiseSettings(float noiseZoom, int octaves, Vector2 offset, long seed, float persistence,
-                         float redistributionModifier, float exponent) {
+    /**
+     * @param noiseZoom              the zoom of the noise
+     * @param octaves                the roughness
+     * @param offset
+     * @param seed
+     * @param persistence
+     * @param redistributionModifier
+     * @param exponent
+     * @param amplitude
+     * @param base
+     */
+    public NoiseSettings(float noiseZoom, float octaves, Vector2 offset, long seed, float persistence,
+                         float redistributionModifier, float exponent, float amplitude, float base) {
         this.noiseZoom = noiseZoom;
         this.octaves = octaves;
         this.offset = offset;
@@ -22,20 +35,22 @@ public final class NoiseSettings {
         this.persistence = persistence;
         this.redistributionModifier = redistributionModifier;
         this.exponent = exponent;
+        this.amplitude = amplitude;
+        this.base = base;
     }
 
     public NoiseInstance create(long seed) {
         this.seed = seed;
 
         return new NoiseInstance(new SimplexNoise((int)Math.pow(2, this.octaves), this.persistence, seed), seed,
-                this.noiseZoom, this.octaves, this.offset, this.redistributionModifier, this.exponent, this.persistence);
+                this.noiseZoom, this.octaves, this.offset, this.redistributionModifier, this.exponent, this.persistence, this.amplitude, this.base);
     }
 
     public float noiseZoom() {
         return this.noiseZoom;
     }
 
-    public int octaves() {
+    public float octaves() {
         return this.octaves;
     }
 

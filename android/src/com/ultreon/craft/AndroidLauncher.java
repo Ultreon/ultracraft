@@ -6,8 +6,12 @@ import android.view.WindowManager;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.ultreon.craft.android.mods.AndroidModPreInit;
+import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
 
 public class AndroidLauncher extends AndroidApplication {
+	private AndroidPlatform platform;
+
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -17,12 +21,17 @@ public class AndroidLauncher extends AndroidApplication {
 		WindowManager.LayoutParams attrib = applicationWindow.getAttributes();
 		attrib.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 
-		GamePlatform.instance = new AndroidPlatform(this);
+		GamePlatform.instance = this.platform = new AndroidPlatform(this);
+
+		EntrypointUtil.invoke(AndroidModPreInit.ENTRYPOINT_KEY, AndroidModPreInit.class, (desktopModPreInit) -> desktopModPreInit.onInitializeAndroid(this.platform));
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useImmersiveMode = true;
-		config.useGL30 = true;
 		this.initialize(new GameLibGDXWrapper(new String[]{}), config);
 
+	}
+
+	public AndroidPlatform getPlatform() {
+		return this.platform;
 	}
 }

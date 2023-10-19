@@ -19,9 +19,9 @@ public class PauseScreen extends Screen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        this.backToGameButton.setPos(width / 2 - 100, height - height / 3 + 5);
-        this.optionsButton.setPos(width / 2 - 100, height - height / 3 - 25);
-        this.exitWorldButton.setPos(width / 2 + 5, height - height / 3 - 25);
+        this.backToGameButton.setPos(width / 2 - 100, height / 3 + 5);
+        this.optionsButton.setPos(width / 2 - 100, height / 3 - 25);
+        this.exitWorldButton.setPos(width / 2 + 5, height / 3 - 25);
     }
 
     @Override
@@ -33,11 +33,11 @@ public class PauseScreen extends Screen {
             this.game.addFuture(world.saveAsync(false));
         }
 
-        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 + 5, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
-        this.optionsButton = add(new Button(this.width / 2 - 100, this.height - this.height / 3 - 25, 95, Language.translate("craft.screen.title.options"), caller -> {
+        this.backToGameButton = add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
+        this.optionsButton = add(new Button(this.width / 2 - 100, this.height / 3 - 25, 95, Language.translate("craft.screen.title.options"), caller -> {
             UltreonCraft.get().showScreen(new LanguageScreen());
         }));
-        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height - this.height / 3 - 25, 95, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.exitWorldButton = add(new Button(this.width / 2 + 5, this.height / 3 - 25, 95, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.RED);
         this.exitWorldButton.setTextColor(Color.WHITE);
     }

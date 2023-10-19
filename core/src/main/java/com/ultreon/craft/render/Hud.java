@@ -3,49 +3,54 @@ package com.ultreon.craft.render;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.GameInput;
+import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
-import com.ultreon.craft.init.Shaders;
-import com.ultreon.craft.input.GameInput;
-import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.translations.v1.Language;
+import org.jetbrains.annotations.NotNull;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private final Texture texture;
-    private final Texture crosshair;
-    private final Texture mobileTexture;
+    private final @NotNull Texture widgetsTex;
+    private final @NotNull Texture iconsTex;
+    private final @NotNull Texture crosshairTex;
+    private final @NotNull Texture mobileTex;
     private float joyStickX;
     private float joyStickY;
     private int stickPointer;
     private Vector2 joyStick;
+    public int leftY;
+    public int rightY;
 
 
     public Hud(UltreonCraft game) {
         this.game = game;
-        this.texture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
-        this.crosshair = game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/crosshair.png"));
-        this.mobileTexture = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/mobile_widgets.png"));
+        this.widgetsTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/widgets.png"));
+        this.iconsTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/icons.png"));
+        this.crosshairTex = game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/crosshair.png"));
+        this.mobileTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/gui/mobile_widgets.png"));
     }
 
     @Override
     public void render(Renderer renderer, float deltaTime) {
+        this.leftY = this.game.getScaledHeight();
+        this.rightY = this.game.getScaledHeight();
+
         Player player = this.game.player;
         if (player == null) return;
 
         this.renderHotbar(renderer, player);
+        this.renderHealth(renderer, player);
         this.renderCrosshair(renderer, player);
 
         GameInput input = this.game.input;
@@ -55,17 +60,19 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-        renderer.setShader(Shaders.XOR);
+        renderer.flush();
+        renderer.enableInvert();
 
-        int x = this.game.getScaledWidth() / 2;
-        int y = this.game.getScaledHeight() / 2;
-        renderer.texture(this.crosshair, x - 7, y - 7, 14, 14);
+        float x = this.game.getScaledWidth() / 2f;
+        float y = this.game.getScaledHeight() / 2f;
+        renderer.blit(UltreonCraft.id("textures/gui/crosshair.png"), x - 4.5f, y - 4.5f, 9, 9);
 
-        renderer.unsetShader();
+        renderer.flush();
+        renderer.disableInvert();
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
-        renderer.texture(this.mobileTexture, 20, 25, 50, 45, 0, 0);
+        renderer.blit(this.mobileTex, 20, 25, 50, 45, 0, 0);
 
         int joyStickX = 24 - 7 + 21;
         int joyStickY = 24 - 7 + 21;
@@ -74,69 +81,57 @@ public class Hud implements GameRenderable {
             joyStickY = (int) (((this.joyStick.y + 1) / 2) * (48 - 14) + 21F);
         }
 
-        renderer.texture(this.mobileTexture, joyStickX, joyStickY, 14, 18, 50, 0);
-
-        renderer.texture(this.mobileTexture, 20, 20, 50, 5, 0, 45);
+        renderer.blit(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
+        renderer.blit(this.mobileTex, 20, 20, 50, 5, 0, 45);
     }
 
     private void renderHotbar(Renderer renderer, Player player) {
-        int x = player.selected * 18;
+        int x = player.selected * 20;
         Item selectedItem = player.getSelectedItem();
         Identifier key = Registries.ITEMS.getKey(selectedItem);
 
-        renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81, 0, 162, 39, 0, 42);
-        renderer.texture(texture, (int)((float)this.game.getScaledWidth() / 2) - 81 + x, 0, 18, 22, 0, 81);
+        renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, leftY - 43, 180, 41, 0, 42);
+        renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, leftY - 26, 20, 24, 0, 83);
 
+        //TODO use item renderer
         Item[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Item item = allowed[i];
-            int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
-            if (item instanceof BlockItem) {
-                BlockItem blockItem = (BlockItem) item;
-                BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(blockItem.getBlock());
-                if (bakedBlockModel == null) {
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture((TextureRegion) null, ix, 5, 16, 16);
-                } else {
-                    TextureRegion front = bakedBlockModel.front();
-                    TextureRegion top = bakedBlockModel.top();
-                    renderer.setTextureColor(Color.WHITE.darker());
-                    renderer.texture(front, ix, 5, 16, 6);
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture(top, ix, 11, 16, 16);
-                }
-            } else {
-                Identifier curKey = Registries.ITEMS.getKey(item);
-                if (curKey == null) {
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture((TextureRegion) null, ix, 5, 16, 16);
-                } else {
-                    TextureRegion texture = this.game.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
-                    renderer.setTextureColor(Color.WHITE.darker());
-                    renderer.texture(texture, ix, 5, 16, 16);
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture(texture, ix, 6, 16, 16);
-                }
+            int ix = (int)((float)this.game.getScaledWidth() / 2) - 90 + i * 20 + 2;
+            this.game.itemRenderer.render(item, renderer, ix + 8, this.game.getScaledHeight() - 24);
+        }
+
+        if (key != null && selectedItem != Items.AIR) {
+            if (renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, leftY - 44, 168, 12)) {
+                String name = selectedItem.getTranslation();
+                renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, leftY - 41);
+                renderer.popScissors();
             }
         }
 
-        float healthRatio = player.getHealth() / player.getMaxHeath();
-        Color color = healthRatio > 0.5f ? Color.rgb(0x00b000) : healthRatio > 0.25f ? Color.rgb(0xffb000) : Color.rgb(0xd00000);
+        this.leftY -= 47;
+        this.rightY -= 47;
+    }
 
-        renderer.drawText((int)(healthRatio * 100) + "%", (int)((float)this.game.getScaledWidth() / 2) - 65, 37, color, false);
-        if (key != null && selectedItem != Items.AIR) {
-            ScissorStack.pushScissors(new Rectangle((int) ((float) this.game.getScaledWidth() / 2) - 38, 29, 71, 10));
-            String name = selectedItem.getTranslation();
-            renderer.setColor(Color.rgb(0xffffff));
-            renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, 49);
-            ScissorStack.popScissors();
-        }
+    private void renderHealth(Renderer renderer, Player player) {
+        int x = (int) ((float) this.game.getScaledWidth() / 2) - 81;
+
+        for (int emptyHeartX = 0; emptyHeartX < 10; emptyHeartX++)
+            renderer.blit(this.iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
+
+        int heartX;
+        for (heartX = 0; heartX < Math.floor(player.getHealth() / 2); heartX++)
+            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
+
+        if ((int) player.getHealth() % 2 == 1)
+            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
+
+        this.leftY -= 13;
     }
 
     public boolean touchDown(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
-        screenX /= this.game.getGuiScale();
-        screenY /= this.game.getGuiScale();
+        screenX /= (int) this.game.getGuiScale();
+        screenY /= (int) this.game.getGuiScale();
         if (this.game.input instanceof MobileInput) {
             if (screenX >= 20 && screenX <= 70 &&
                     screenY >= 20 && screenY <= 70) {
@@ -150,7 +145,6 @@ public class Hud implements GameRenderable {
 
     @SuppressWarnings({"UnnecessaryReturnStatement", "unused"})
     public void touchUp(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
         screenX /= this.game.getGuiScale();
         screenY /= this.game.getGuiScale();
         if (this.stickPointer == pointer) {
@@ -161,7 +155,6 @@ public class Hud implements GameRenderable {
     }
 
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        screenY = this.game.getHeight() - screenY;
         screenX /= this.game.getGuiScale();
         screenY /= this.game.getGuiScale();
         Vector2 stickTouch = this.joyStick;

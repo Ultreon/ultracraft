@@ -1,8 +1,13 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.Vector2;
+import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.util.UtilityClass;
 
-public class MyNoise {
+public class NoiseUtils extends UtilityClass {
+    private NoiseUtils() {
+    }
+
     public static float remapValue(float value, float initialMin, float initialMax, float outputMin, float outputMax) {
         return outputMin + (value - initialMin) * (outputMax - outputMin) / (initialMax - initialMin);
     }
@@ -33,19 +38,20 @@ public class MyNoise {
         float amplitude = 1.0F;
         float amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
 
-        for (int i = 0; i < settings.octaves(); i++) {
-            total += settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude;
+//        for (int i = 0; i < settings.octaves(); i++) {
+            total += (float) (settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude);
 
-            amplitudeSum += amplitude;
+//            amplitudeSum += amplitude;
+//
+//            amplitude *= settings.persistence();
+//            frequency *= 2;
+//        }
 
-            amplitude *= settings.persistence();
-            frequency *= 2;
-        }
+        total *= settings.amplitude();
+        total += settings.base();
 
-        return (total / amplitudeSum + 1) / 2;
-    }
+        System.out.println("total = " + total);
 
-    private static class Flags {
-        public static boolean enableWorldGenLogging = false;
+        return total;
     }
 }

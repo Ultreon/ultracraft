@@ -1,14 +1,18 @@
 package com.ultreon.craft.world;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.client.ClientSectionData;
 import com.ultreon.craft.collection.PaletteContainer;
+import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.data.Types;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.quiltmc.loader.api.minecraft.ClientOnly;
 
 import java.util.*;
 
@@ -16,15 +20,26 @@ public class Section implements Disposable {
     public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
     final Map<Vec3i, Float> breaking = new HashMap<>();
     private final int size;
+    public final Vector3 renderOffset = new Vector3();
+    public final Vector3 translation = new Vector3();
+    @ClientOnly
+    public ChunkMesh chunkMesh;
     protected boolean ready;
     protected boolean dirty;
     public final Object lock = new Object();
     final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
+    private boolean disposed;
+    private static long disposeCount;
+    private ClientSectionData clientData = new ClientSectionData();
 
     public Section(Vec3i offset) {
         this.offset = offset;
         this.size = World.CHUNK_SIZE;
+    }
+
+    public static long getDisposeCount() {
+        return Section.disposeCount;
     }
 
     public Section(Vec3i offset, MapType sectionData) {
@@ -119,9 +134,10 @@ public class Section implements Disposable {
     @Override
     public void dispose() {
         synchronized (this.lock) {
+            this.disposed = true;
             this.ready = false;
-
             this.paletteContainer.dispose();
+            Section.disposeCount++;
         }
     }
 
@@ -131,6 +147,14 @@ public class Section implements Disposable {
 
     public boolean isReady() {
         return this.ready;
+    }
+
+    public boolean isDisposed() {
+        return disposed;
+    }
+
+    public ClientSectionData getClientData() {
+        return this.clientData;
     }
 
     public Map<Vec3i, Float> getBreaking() {

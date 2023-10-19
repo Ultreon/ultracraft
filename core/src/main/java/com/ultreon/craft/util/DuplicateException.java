@@ -1,6 +1,6 @@
 package com.ultreon.craft.util;
 
-public class DuplicateException extends RuntimeException {
+public class DuplicateException extends IllegalArgumentException {
     public DuplicateException() {
     }
 

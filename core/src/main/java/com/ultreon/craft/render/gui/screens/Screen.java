@@ -32,6 +32,8 @@ public class Screen extends GuiContainer {
     public void resize(int width, int height) {
         this.width = width;
         this.height = height;
+        this.clearWidgets();
+        this.show();
     }
 
     public void show() {
