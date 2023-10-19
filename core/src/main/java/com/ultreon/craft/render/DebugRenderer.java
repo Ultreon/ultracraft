@@ -6,6 +6,7 @@ import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.world.ChunkMesh;
+import com.ultreon.craft.render.world.ChunkMeshBuilder;
 import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
@@ -31,12 +32,14 @@ public class DebugRenderer {
         if (world != null && world.isDisposed()) world = null;
 
         this.drawLine(renderer, Mesh.getManagedStatus());
+        this.drawLine(renderer, "java heap", Gdx.app.getJavaHeap());
+        this.drawLine(renderer, "native heap", Gdx.app.getNativeHeap() - Gdx.app.getJavaHeap());
 
         // World
+        this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
+        // Player
+        Player player = this.game.player;
         if (world != null) {
-            this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
-            // Player
-            Player player = this.game.player;
             if (player != null) {
                 Vec3i blockPosition = player.blockPosition();
                 Vec3i sectionPos = this.block2sectionPos(blockPosition);
@@ -49,23 +52,22 @@ public class DebugRenderer {
                 }
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
             }
-
-            this.drawLine(renderer, "meshes disposed", ChunkMesh.getMeshesDisposed());
-//            this.drawLine(renderer, "meshes built", ChunkMeshBuilder.getMeshesBuilt());
-            this.drawLine(renderer, "vertex count", WorldRenderer.getVertexCount());
-
-            if (worldRenderer != null) {
-                this.drawLine(renderer, "visible chunks", worldRenderer.getVisibleChunks() + "/" + worldRenderer.getLoadedChunks());
-            }
-
-            this.drawLine(renderer, "chunk mesh disposes", WorldRenderer.getChunkMeshFrees());
-            this.drawLine(renderer, "chunk loads", World.getChunkLoads());
-            this.drawLine(renderer, "chunk unloads", World.getChunkUnloads());
-            this.drawLine(renderer, "chunk saves", World.getChunkSaves());
-            this.drawLine(renderer, "pool free", WorldRenderer.getPoolFree());
-            this.drawLine(renderer, "pool max", WorldRenderer.getPoolMax());
-            this.drawLine(renderer, "pool peak", WorldRenderer.getPoolPeak());
         }
+        this.drawLine(renderer, "meshes disposed", ChunkMesh.getMeshesDisposed());
+        this.drawLine(renderer, "meshes built", ChunkMeshBuilder.getMeshesBuilt());
+        this.drawLine(renderer, "vertex count", WorldRenderer.getVertexCount());
+
+        if (worldRenderer != null) {
+            this.drawLine(renderer, "visible chunks", worldRenderer.getVisibleChunks() + "/" + worldRenderer.getLoadedChunks());
+        }
+
+        this.drawLine(renderer, "chunk mesh disposes", WorldRenderer.getChunkMeshFrees());
+        this.drawLine(renderer, "chunk loads", World.getChunkLoads());
+        this.drawLine(renderer, "chunk unloads", World.getChunkUnloads());
+        this.drawLine(renderer, "chunk saves", World.getChunkSaves());
+        this.drawLine(renderer, "pool free", WorldRenderer.getPoolFree());
+        this.drawLine(renderer, "pool max", WorldRenderer.getPoolMax());
+        this.drawLine(renderer, "pool peak", WorldRenderer.getPoolPeak());
 
         // Mobile platform.
         if (GamePlatform.instance.isMobile()) {

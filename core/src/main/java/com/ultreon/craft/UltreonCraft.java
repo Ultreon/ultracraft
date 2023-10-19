@@ -19,7 +19,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
@@ -170,6 +169,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private final Thread renderingThread;
     public HitResult cursor;
     private FrameBuffer worldFbo;
+    private Future<?> chunkUpdate;
 
     public UltreonCraft(String[] args) throws Throwable {
         UltreonCraft.LOGGER.info("Booting game!");
@@ -213,6 +213,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         this.settings = new GameSettings();
         this.settings.reload();
         this.settings.reloadLanguage();
+
+        System.out.println("this.settings.renderDistance.get() = " + this.settings.renderDistance.get());
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
@@ -441,7 +443,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltreonCraft.id("blocks/grass_top"), UltreonCraft.id("blocks/dirt"), UltreonCraft.id("blocks/grass_side")));
         BlockModelRegistry.registerDefault(Blocks.DIRT);
         BlockModelRegistry.registerDefault(Blocks.SAND);
-        BlockModelRegistry.registerDefault(Blocks.WATER);
+//        BlockModelRegistry.registerDefault(Blocks.WATER);
         BlockModelRegistry.registerDefault(Blocks.STONE);
     }
 
@@ -630,15 +632,15 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
     private void renderGame(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
         if (world != null) {
-            if (this.showDebugHud) {
-                this.debugRenderer.render(renderer);
-            }
-
             this.hud.render(renderer, deltaTime);
         }
 
         if (screen != null) {
             screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
+        }
+
+        if (this.showDebugHud) {
+            this.debugRenderer.render(renderer);
         }
     }
 
@@ -709,31 +711,12 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         var player = this.player;
         if (player != null) {
             this.camera.update(player);
-
-            if (world != null && this.chunkRefresh-- == 0) {
-                this.chunkRefresh = 20;
-                world.updateChunksForPlayerAsync(player);
-            }
         }
         this.input.update();
     }
 
     public CompletableFuture<Void> respawnAsync() {
-        assert this.world != null;
-        if (this.player != null && this.world.getEntity(this.player.getId()) == this.player) {
-            this.world.despawn(this.player);
-        }
-
-        var spawnPoint = this.world.getSpawnPoint();
-
-        return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
-            var spawnPointY = this.world.getSpawnPoint().y;
-
-            this.player = Entities.PLAYER.create(this.world);
-            this.player.setHealth(this.player.getMaxHeath());
-            this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
-            this.world.spawn(this.player);
-        });
+        return CompletableFuture.runAsync(this::respawn);
     }
 
     public void respawn() {
@@ -744,7 +727,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
         var spawnPoint = this.world.getSpawnPoint();
 
-        this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
+        this.world.refreshChunks(spawnPoint.x, spawnPoint.z);
 
         var spawnPointY = this.world.getSpawnPoint().y;
 

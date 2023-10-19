@@ -12,12 +12,10 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.render.model.BakedCubeModel;
 
 public class ItemRenderer {
@@ -53,9 +51,11 @@ public class ItemRenderer {
             this.orthoCam.zoom = 32.0F / 8.0F / guiScale;
             this.orthoCam.far = 100000;
             this.orthoCam.update();
-            this.batch.begin(this.orthoCam);
             BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
-            if (bakedBlockModel == null) return;
+            if (bakedBlockModel == null) {
+                return;
+            }
+            this.batch.begin(this.orthoCam);
             Mesh mesh = bakedBlockModel.getMesh();
             Renderable renderable = new Renderable();
             renderable.meshPart.mesh = mesh;

@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -27,7 +26,8 @@ public class Chunk implements Disposable {
 	protected final Lock lock = new ReentrantLock();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
-	public ChunkMesh trasparentMesh;
+	public ChunkMesh transparentMesh;
+	final World world;
     protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Section[] sections;
@@ -40,7 +40,7 @@ public class Chunk implements Disposable {
 	public boolean dirty;
 	private boolean disposed;
 
-	public Chunk(int size, int height, ChunkPos pos) {
+	public Chunk(World world, int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
 		
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
@@ -54,10 +54,11 @@ public class Chunk implements Disposable {
 		for (int i = 0; i < this.sections.length; i++) {
 			this.sections[i] = new Section(new Vec3i(this.offset.x, this.offset.y + i * size, this.offset.z));
 		}
+		this.world = world;
 	}
 
-	public static Chunk load(ChunkPos pos, MapType mapType) {
-		Chunk chunk = new Chunk(CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
 		chunk.load(mapType);
 		return chunk;
 	}
@@ -206,5 +207,9 @@ public class Chunk implements Disposable {
 
 	public void setDirty(boolean b) {
 		this.dirty = false;
+	}
+
+	public World getWorld() {
+		return this.world;
 	}
 }

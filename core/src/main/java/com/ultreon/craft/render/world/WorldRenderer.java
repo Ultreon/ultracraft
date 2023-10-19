@@ -31,6 +31,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
@@ -42,6 +45,7 @@ public final class WorldRenderer implements RenderableProvider {
     private final ChunkMeshBuilder meshBuilder;
     private final Material material;
     private final Material transparentMaterial;
+    private final ScheduledExecutorService chunkScheduler;
     private int visibleChunks;
     private int loadedChunks;
 
@@ -66,7 +70,7 @@ public final class WorldRenderer implements RenderableProvider {
         this.world = world;
         this.modelBatch = modelBatch;
 
-        int len = 49152;
+        int len = CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6 * 6;
 
         short[] indices = new short[len];
         short j = 0;
@@ -89,6 +93,14 @@ public final class WorldRenderer implements RenderableProvider {
         this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
         this.meshBuilder = new ChunkMeshBuilder(indices);
+
+        this.chunkScheduler = Executors.newSingleThreadScheduledExecutor();
+        this.chunkScheduler.scheduleAtFixedRate(() -> {
+            Player player = this.game.player;
+            if (player != null) {
+                world.refreshChunks(player);
+            }
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     public static long getChunkMeshFrees() {
@@ -105,7 +117,7 @@ public final class WorldRenderer implements RenderableProvider {
             return;
         }
         this.pool.free(chunk.mesh);
-        this.pool.free(chunk.trasparentMesh);
+        this.pool.free(chunk.transparentMesh);
         chunk.mesh = null;
         WorldRenderer.chunkMeshFrees++;
     }
@@ -137,20 +149,29 @@ public final class WorldRenderer implements RenderableProvider {
             if (chunk.mesh == null)
                 chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
 
-            if (chunk.trasparentMesh == null)
-                chunk.trasparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
+            if (chunk.transparentMesh == null)
+                chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
 
             chunk.mesh.chunk = chunk;
             chunk.mesh.renderable.material = this.material;
             chunk.mesh.transform.setToTranslation(chunk.renderOffset);
 
-            chunk.trasparentMesh.chunk = chunk;
-            chunk.trasparentMesh.renderable.material = this.transparentMaterial;
-            chunk.trasparentMesh.transform.setToTranslation(chunk.renderOffset);
+            chunk.transparentMesh.chunk = chunk;
+            chunk.transparentMesh.renderable.material = this.transparentMaterial;
+            chunk.transparentMesh.transform.setToTranslation(chunk.renderOffset);
 
             output.add(chunk.mesh.renderable);
-            output.add(chunk.trasparentMesh.renderable);
+            output.add(chunk.transparentMesh.renderable);
 
+            //noinspection CommentedOutCode
+            {
+                //* Use in case of memory leak.
+//                try {
+//                    Thread.sleep(10); //* Set value depending on severity of memory leak.
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+            }
             this.visibleChunks++;
 
             this.doPoolStatistics();
@@ -290,6 +311,7 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     public void dispose() {
+        if (this.disposed) return;
         this.disposed = true;
         this.pool.clear();
         this.pool.flush();

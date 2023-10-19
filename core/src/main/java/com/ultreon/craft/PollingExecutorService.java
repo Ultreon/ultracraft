@@ -1,6 +1,7 @@
 package com.ultreon.craft;
 
 import com.google.common.collect.Queues;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,13 +14,13 @@ import static com.ultreon.craft.UltreonCraft.LOGGER;
 
 @SuppressWarnings("NewApi")
 public class PollingExecutorService implements ExecutorService {
-    private final Queue<Runnable> taskList = Queues.synchronizedQueue(new ArrayDeque<>());
-    private final Thread thread;
+    protected final Queue<Runnable> taskList = Queues.synchronizedQueue(new ArrayDeque<>());
+    protected Thread thread;
     private boolean isShutdown = false;
     @Nullable
     private Runnable active;
 
-    PollingExecutorService() {
+    protected PollingExecutorService() {
         this(Thread.currentThread());
     }
 
@@ -141,7 +142,7 @@ public class PollingExecutorService implements ExecutorService {
 
         try {
             return CompletableFuture.anyOf(futures.toArray(new CompletableFuture[0]))
-                    .thenApply(o -> (T)o)
+                    .thenApply(o -> (T) o)
                     .get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -159,7 +160,7 @@ public class PollingExecutorService implements ExecutorService {
 
         try {
             var result = CompletableFuture.anyOf(futures.toArray(new CompletableFuture[0]))
-                    .thenApply(o -> ((CompletableFuture<T>)o).join());
+                    .thenApply(o -> ((CompletableFuture<T>) o).join());
 
             var timeLeft = endTime - System.currentTimeMillis();
             if (timeLeft <= 0)
@@ -189,9 +190,13 @@ public class PollingExecutorService implements ExecutorService {
         return Thread.currentThread().getId() == this.thread.getId();
     }
 
-    public void poll() {
-        if ((this.active = this.taskList.poll()) != null)
+    @CanIgnoreReturnValue
+    public boolean poll() {
+        if ((this.active = this.taskList.poll()) != null) {
             this.active.run();
+            return true;
+        }
+        return false;
     }
 
     public void pollAll() {

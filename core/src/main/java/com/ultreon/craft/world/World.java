@@ -27,7 +27,7 @@ import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
-import com.ultreon.craft.world.gen.WorldGenInfo;
+import com.ultreon.craft.world.gen.ChunkRefresh;
 import com.ultreon.craft.world.gen.layer.AirTerrainLayer;
 import com.ultreon.craft.world.gen.layer.StoneTerrainLayer;
 import com.ultreon.craft.world.gen.layer.SurfaceTerrainLayer;
@@ -107,11 +107,11 @@ public class World implements Disposable {
 	@Nullable
 	private ScheduledFuture<?> saveSchedule;
 	private int chunksToLoad;
-	private int chunksLoaded;
 	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
 	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
-	private final ExecutorService executor = Executors.newCachedThreadPool();
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private boolean disposed;
+	private final ChunkBuilder chunkBuilder = new ChunkBuilder(this);
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -233,24 +233,26 @@ public class World implements Disposable {
 		}, this.saveExecutor);
 	}
 
-	private WorldGenInfo getWorldGenInfo(Vec3d pos) {
-		List<ChunkPos> needed = getChunksAround(this, pos);
-		List<ChunkPos> chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
-		List<ChunkPos> chunkPositionsToRemove = this.getChunksToUnload(needed);
+	private ChunkRefresh chunksToRefresh(Vec3d position) {
+		List<ChunkPos> needed = World.getChunksAround(this, position);
+		List<ChunkPos> toCreate = needed.stream()
+				.filter(loopPos -> this.getChunk(loopPos) == null)
+				.sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(position)))
+				.collect(Collectors.toList());
+		List<ChunkPos> toRemove = this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(loopPos -> {
+			Chunk chunk = this.getChunk(loopPos);
+			return chunk != null && !needed.contains(loopPos);
+		}).toList().stream().filter(loopPos -> this.getChunk(loopPos) != null).collect(Collectors.toList());
 
-		WorldGenInfo data = new WorldGenInfo();
-		data.toCreate = chunkPositionsToCreate;
-		data.toRemove = chunkPositionsToRemove;
-		data.toUpdate = new ArrayList<>();
-		return data;
+        return new ChunkRefresh(toCreate, toRemove);
 
 	}
 
 	static List<ChunkPos> getChunksAround(World world, Vec3d pos) {
-		int startX = (int) (pos.x - world.getRenderDistance() * World.CHUNK_SIZE);
-		int startZ = (int) (pos.z - world.getRenderDistance() * World.CHUNK_SIZE);
-		int endX = (int) (pos.x + world.getRenderDistance() * World.CHUNK_SIZE);
-		int endZ = (int) (pos.z + world.getRenderDistance() * World.CHUNK_SIZE);
+		int startX = (int) (pos.x - world.getRenderDistance() * World.CHUNK_SIZE / 2);
+		int startZ = (int) (pos.z - world.getRenderDistance() * World.CHUNK_SIZE / 2);
+		int endX = (int) (pos.x + world.getRenderDistance() * World.CHUNK_SIZE / 2);
+		int endZ = (int) (pos.z + world.getRenderDistance() * World.CHUNK_SIZE / 2);
 
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
@@ -272,22 +274,17 @@ public class World implements Disposable {
 		return toCreate;
 	}
 
-	private int getRenderDistance() {
+	int getRenderDistance() {
 		return this.game.settings.renderDistance.get();
 	}
 
 	private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
-		List<ChunkPos> toRemove = new ArrayList<>();
-		for (ChunkPos pos : this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
-			Chunk chunk = this.getChunk(pos);
-			return chunk != null && !needed.contains(pos);
-		}).collect(Collectors.toList())) {
-			if (this.getChunk(pos) != null) {
-				toRemove.add(pos);
-			}
-		}
+		List<ChunkPos> toRemove = this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
+            Chunk chunk = this.getChunk(pos);
+            return chunk != null && !needed.contains(pos);
+        }).toList().stream().filter(pos -> this.getChunk(pos) != null).collect(Collectors.toList());
 
-		return toRemove;
+        return toRemove;
 	}
 
 	private boolean shouldStayLoaded(ChunkPos pos) {
@@ -306,37 +303,43 @@ public class World implements Disposable {
 				.collect(Collectors.toList());
 	}
 
-	public CompletableFuture<Void> updateChunksForPlayerAsync(Player player) {
-		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(player.getPosition()));
+	@Deprecated
+	public Future<?> refreshChunksAsync(Player player) {
+		return this.executor.submit(() -> this.refreshChunks(player.getPosition()));
 	}
 
-	private CompletableFuture<Void> updateChunksForPlayerAsync(Vec3d position) {
-		return CompletableFuture.runAsync(() -> this.updateChunksForPlayer(position), this.executor);
+	@Deprecated
+	private Future<?> refreshChunksAsync(Vec3d position) {
+		return this.executor.submit(() -> this.refreshChunks(position));
 	}
 
-	public void updateChunksForPlayer(Player player) {
-		this.updateChunksForPlayerAsync(player.getPosition());
+	public void refreshChunks(Player player) {
+		this.refreshChunks(player.getPosition());
 	}
 
-	public void updateChunksForPlayer(float x, float z) {
-		this.updateChunksForPlayer(new Vec3d(x, WORLD_DEPTH, z));
+	public void refreshChunks(float x, float z) {
+		this.refreshChunks(new Vec3d(x, WORLD_DEPTH, z));
 	}
 
-	public void updateChunksForPlayer(Vec3d player) {
-		WorldGenInfo worldGenInfo = this.getWorldGenInfo(player);
+	public int refreshChunks(Vec3d player) {
+		ChunkRefresh worldGenInfo = this.chunksToRefresh(player);
 		List<ChunkPos> toCreate = worldGenInfo.toCreate;
 		this.chunksToLoad = toCreate.size();
-		this.chunksLoaded = 0;
-//		System.out.println("worldGenInfo.toRemove = " + worldGenInfo.toRemove);
+
 		for (ChunkPos chunkPos : worldGenInfo.toRemove) {
 			this.unloadChunk(chunkPos);
 		}
-		for (ChunkPos chunkPos : toCreate) {
-			this.loadChunk(chunkPos);
-			this.chunksLoaded++;
-		}
-		worldGenInfo.toCreate.clear();
-		worldGenInfo.toRemove.clear();
+
+		this.chunkBuilder.defer(toCreate);
+		return toCreate.size();
+	}
+
+	public boolean hasLoadedAllChunks() {
+		return !this.chunkBuilder.isEmpty();
+	}
+
+	private void loadOne() {
+
 	}
 
 	private CompletableFuture<Boolean> unloadChunkAsync(ChunkPos chunkPos) {
@@ -522,11 +525,11 @@ public class World implements Disposable {
 
 			Chunk loadedChunk = this.loadChunkFromDisk(localPos);
 			Chunk chunk;
-			if (loadedChunk == null) {
+//			if (loadedChunk == null) {
 				chunk = this.generateChunk(x, z);
-			} else {
-				chunk = loadedChunk;
-			}
+//			} else {
+//				chunk = loadedChunk;
+//			}
 			if (chunk == null) {
 				LOGGER.warn(MARKER, "Tried to load chunk at " + pos + " but it still wasn't loaded:");
 				if (oldChunk != null) loadingChunk.complete(oldChunk);
@@ -538,6 +541,7 @@ public class World implements Disposable {
 			loadingChunk.complete(chunk);
 			WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, pos, chunk);
             World.chunkLoads++;
+            this.chunksToLoad = Math.max(this.chunksToLoad - 1, 0);
 
 			return chunk;
 		} catch (RuntimeException e) {
@@ -577,7 +581,7 @@ public class World implements Disposable {
 	@Nullable
 	protected Chunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		try {
 			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
@@ -649,7 +653,7 @@ public class World implements Disposable {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				assert this.terrainGen != null;
 				Chunk newChunk = this.terrainGen.generateChunkData(chunk, this.seed);
 			}
@@ -888,10 +892,12 @@ public class World implements Disposable {
 			chunk.dispose();
 		}
 		this.generator.dispose();
+		this.chunkBuilder.shutdown();
 	}
 
-	public CompletableFuture<Void> updateChunksForPlayerAsync(float spawnX, float spawnZ) {
-		return this.updateChunksForPlayerAsync(new Vec3d(spawnX, 0, spawnZ));
+	@Deprecated
+	public Future<?> refreshChunksAsync(float spawnX, float spawnZ) {
+		return this.refreshChunksAsync(new Vec3d(spawnX, 0, spawnZ));
 	}
 
 	@Deprecated
@@ -950,7 +956,7 @@ public class World implements Disposable {
 	}
 
 	public int getChunksLoaded() {
-		return this.chunksLoaded;
+		return chunks.size();
 	}
 
 	public boolean isDisposed() {
