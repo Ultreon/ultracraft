@@ -53,9 +53,9 @@ public class ItemRenderer {
             this.orthoCam.zoom = 32.0F / 8.0F / guiScale;
             this.orthoCam.far = 100000;
             this.orthoCam.update();
-            this.batch.begin(this.orthoCam);
             BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
             if (bakedBlockModel == null) return;
+            this.batch.begin(this.orthoCam);
             Mesh mesh = bakedBlockModel.getMesh();
             Renderable renderable = new Renderable();
             renderable.meshPart.mesh = mesh;
