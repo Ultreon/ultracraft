@@ -153,7 +153,7 @@ public class Entity {
             this.y += dy;
             this.z += dz;
         } else {
-            List<BoundingBox> boxes = this.world.collide(ext);
+            List<BoundingBox> boxes = this.world.collide(ext, false);
             BoundingBox pBox = this.getBoundingBox();
             this.isColliding = false;
             this.isCollidingY = false;

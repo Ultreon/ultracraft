@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.TextureManager;
@@ -259,14 +258,14 @@ public class Renderer {
     ///////////////////
     //     Image     //
     ///////////////////
-    @Deprecated(forRemoval = true)
     public void blit(TextureRegion tex, float x, float y) {
+        if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
         this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(TextureRegion tex, float x, float y, float width, float height) {
+        if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
         this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
@@ -392,7 +391,7 @@ public class Renderer {
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
         this.batch.draw(textureRegion, x, y + height, width, -height);
     }
-    
+
     //////////////////
     //     Text     //
 
@@ -813,9 +812,10 @@ public class Renderer {
     }
 
     public void tabString(String text, int x, int y, Color color, boolean shadow) {
-        for (String line : text.split("\t"))
+        for (String line : text.split("\t")) {
             //noinspection SuspiciousNameCombination
             this.drawText(line, x += this.font.lineHeight, y, color, shadow);
+        }
     }
 
     public void clear() {
@@ -1034,7 +1034,6 @@ public class Renderer {
         this.blit(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
         this.blit(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
         this.blit(texture, x + width - uWidth, y, uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
-
         for (int dx = x + uWidth; dx < width - uWidth; dx += uWidth) {
             int maxX = Math.min(dx + uWidth, width - uWidth);
             int uW = maxX - dx;

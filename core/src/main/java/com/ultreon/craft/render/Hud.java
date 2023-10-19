@@ -2,28 +2,29 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.MobileInput;
+import com.ultreon.craft.item.BlockItem;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.translations.v1.Language;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL40;
+import org.jetbrains.annotations.NotNull;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private final Texture widgetsTex;
-    private final Texture iconsTex;
-    private final Texture crosshairTex;
-    private final Texture mobileTex;
+    private final @NotNull Texture widgetsTex;
+    private final @NotNull Texture iconsTex;
+    private final @NotNull Texture crosshairTex;
+    private final @NotNull Texture mobileTex;
     private float joyStickX;
     private float joyStickY;
     private int stickPointer;
@@ -86,22 +87,23 @@ public class Hud implements GameRenderable {
 
     private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 20;
-        Block selectedBlock = player.getSelectedBlock();
-        Identifier key = Registries.BLOCK.getKey(selectedBlock);
+        Item selectedItem = player.getSelectedItem();
+        Identifier key = Registries.ITEMS.getKey(selectedItem);
 
         renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90, leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.game.getScaledWidth() / 2) - 90 + x, leftY - 26, 20, 24, 0, 83);
 
-        Block[] allowed = Player.allowed;
+        //TODO use item renderer
+        Item[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
-            Block block = allowed[i];
+            Item item = allowed[i];
             int ix = (int)((float)this.game.getScaledWidth() / 2) - 90 + i * 20 + 2;
-            this.game.itemRenderer.render(block, renderer, ix + 8, 8);
+            this.game.itemRenderer.render(item, renderer, ix + 8, this.game.getScaledHeight() - 24);
         }
 
-        if (key != null && !selectedBlock.isAir()) {
+        if (key != null && selectedItem != Items.AIR) {
             if (renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, leftY - 44, 168, 12)) {
-                String name = Language.translate(key.location() + ".block." + key.path() + ".name");
+                String name = selectedItem.getTranslation();
                 renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, leftY - 41);
                 renderer.popScissors();
             }

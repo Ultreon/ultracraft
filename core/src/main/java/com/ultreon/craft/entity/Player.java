@@ -4,20 +4,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.util.ControllerButton;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
-    public static Block[] allowed = new Block[]{Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.STONE, Blocks.WATER};
+    public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL};
     public int selected;
     private boolean running;
     private float walkingSpeed = .09F;
@@ -41,9 +44,9 @@ public class Player extends LivingEntity {
         this.selected = toSelect;
     }
 
-    public Block getSelectedBlock() {
+    public Item getSelectedItem() {
         if (this.selected < 0) this.selected = 0;
-        return this.selected >= allowed.length ? Blocks.AIR : allowed[this.selected];
+        return this.selected >= allowed.length ? Items.AIR : allowed[this.selected];
     }
 
     @Override
@@ -61,7 +64,6 @@ public class Player extends LivingEntity {
         if (this.isInVoid() && !this.isDead()) {
             GameInput.startVibration(200, 1.0F);
         }
-
     }
 
     @Override
@@ -71,6 +73,14 @@ public class Player extends LivingEntity {
         }
 
         return false;
+    }
+
+    public boolean isInWater() {
+        return this.world.get(this.blockPosition()) == Blocks.WATER;
+    }
+
+    public ChunkPos getChunkPos() {
+        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 
     public float getEyeHeight() {
@@ -135,6 +145,10 @@ public class Player extends LivingEntity {
     @Override
     public SoundEvent getHurtSound() {
         return Sounds.PlAYER_HURT;
+    }
+
+    public HitResult rayCast() {
+        return this.world.rayCast(new Ray(this.getPosition().add(0, this.getEyeHeight(), 0), this.getLookVector()));
     }
 
     @Override

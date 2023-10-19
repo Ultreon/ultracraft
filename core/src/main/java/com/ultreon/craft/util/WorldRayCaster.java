@@ -7,6 +7,7 @@ import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
+@SuppressWarnings("UnqualifiedStaticUsage")
 public class WorldRayCaster {
 	private static final Vec3i abs = new Vec3i();
 	private static final Vec3i origin = new Vec3i();
@@ -57,11 +58,11 @@ public class WorldRayCaster {
 		for(;;){
 			if(abs.dst(origin) > result.distanceMax) return result;
 
-			if(chunk == null){
+			if(chunk == null || chunk.isDisposed()){
 				chunk = map.getChunkAt(abs.x, abs.y, abs.z);
-				if(chunk == null) return result;
+				if(chunk == null || chunk.isDisposed()) return result;
 			}
-			loc.set(abs).sub((int) chunk.getOffset().x, (int) chunk.getOffset().y, (int) chunk.getOffset().z);
+			loc.set(abs).sub(chunk.getOffset().x, chunk.getOffset().y, chunk.getOffset().z);
 			if(loc.x < 0 || loc.y < 0 || loc.z < 0 ||
 					loc.x >= chunk.size || loc.y >= chunk.height || loc.z >= chunk.size){
 				chunk = null;
@@ -89,17 +90,17 @@ public class WorldRayCaster {
 			if(tMaxX < tMaxY){
 				if(tMaxX < tMaxZ){
 					tMaxX += tDeltaX;
-					abs.x += dir.x;
+					abs.x += (int) dir.x;
 				}else{
 					tMaxZ += tDeltaZ;
-					abs.z += dir.z;
+					abs.z += (int) dir.z;
 				}
 			}else if(tMaxY < tMaxZ){
 				tMaxY += tDeltaY;
-				abs.y += dir.y;
+				abs.y += (int) dir.y;
 			}else{
 				tMaxZ += tDeltaZ;
-				abs.z += dir.z;
+				abs.z += (int) dir.z;
 			}
 		}
 	}

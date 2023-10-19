@@ -1,5 +1,6 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.block.Block;
@@ -9,10 +10,14 @@ import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.data.Types;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.quiltmc.loader.api.minecraft.ClientOnly;
 
+import java.util.*;
+
 public class Section implements Disposable {
+    public static final List<TextureRegion> BREAK_TEX = new ArrayList<>();
     private final int size;
     public final Vector3 renderOffset = new Vector3();
     public final Vector3 translation = new Vector3();
@@ -21,7 +26,7 @@ public class Section implements Disposable {
     protected boolean ready;
     protected boolean dirty;
     public final Object lock = new Object();
-    private final Vec3i offset;
+    final Vec3i offset;
     private final PaletteContainer<MapType, Block> paletteContainer = new PaletteContainer<>(4096, Types.MAP, Block::load);
     private boolean disposed;
     private static long disposeCount;

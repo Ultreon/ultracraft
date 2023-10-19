@@ -1,11 +1,12 @@
 package com.ultreon.craft;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.render.Color;
-import com.ultreon.craft.resources.ByteArrayFileHandle;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
@@ -16,42 +17,65 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TextureManager {
+
     private final Map<Identifier, Texture> textures = new HashMap<>();
+
     private final ResourceManager resourceManager;
 
-    public static final Resource DEFAULT_TEX_RESOURCE;
-    public static final Texture DEFAULT_TEX;
+    @Deprecated
+    public static final Resource DEFAULT_TEX_RESOURCE = new Resource(TextureManager::createDefaultTex);
+
+    public static final Texture DEFAULT_TEX = new Texture(TextureManager.createMissingNo());
+    public static final TextureRegion DEFAULT_TEX_REG = new TextureRegion(TextureManager.DEFAULT_TEX, 0.0F, 0.0F, 1.0F, 1.0F);
+    @Deprecated
+    public static final TextureRegion DEFAULT_TEXTURE_REG = TextureManager.DEFAULT_TEX_REG;
+
+    @SuppressWarnings("GDXJavaStaticResource")
+    @Deprecated(forRemoval = true)
+    public static final Texture DEFAULT_TEXTURE = TextureManager.DEFAULT_TEX;
 
     static {
-        DEFAULT_TEX_RESOURCE = new Resource(() -> {
-            var image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-            var graphics = image.getGraphics();
-            graphics.setColor(Color.rgb(0xffbb00).toAwt());
-            graphics.fillRect(0, 0, 16, 16);
-            graphics.setColor(Color.rgb(0x333333).toAwt());
-            graphics.fillRect(0, 8, 8, 8);
-            graphics.fillRect(8, 0, 8, 8);
-            var out = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", out);
-            graphics.dispose();
-            out.flush();
-            var byteArrayInputStream = new ByteArrayInputStream(out.toByteArray());
-            out.close();
-            return byteArrayInputStream;
-        });
-
-        DEFAULT_TEX = new Texture(new ByteArrayFileHandle(".png", TextureManager.DEFAULT_TEX_RESOURCE.loadOrGet()));
         TextureManager.DEFAULT_TEX.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         TextureManager.DEFAULT_TEX.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
     }
+
     public TextureManager(ResourceManager resourceManager) {
         Preconditions.checkNotNull(resourceManager, "resourceManager");
 
         this.resourceManager = resourceManager;
+    }
+
+    private static Pixmap createMissingNo() {
+        Pixmap pixmap = new Pixmap(16, 16, Pixmap.Format.RGB888);
+        pixmap.setColor(Color.rgb(0x000000).toGdx());
+        pixmap.fillRectangle(0, 0, 16, 16);
+        pixmap.setColor(Color.rgb(0xff00ff).toGdx());
+        pixmap.fillRectangle(0, 0, 8, 8);
+        pixmap.fillRectangle(8, 8, 16, 16);
+        return pixmap;
+    }
+
+    private static InputStream createDefaultTex() throws IOException {
+        var image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        var graphics = image.getGraphics();
+        graphics.setColor(Color.rgb(0xffbb00).toAwt());
+        graphics.fillRect(0, 0, 16, 16);
+        graphics.setColor(Color.rgb(0x333333).toAwt());
+        graphics.fillRect(0, 8, 8, 8);
+        graphics.fillRect(8, 0, 8, 8);
+        var out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        graphics.dispose();
+        out.flush();
+        var byteArrayInputStream = new ByteArrayInputStream(out.toByteArray());
+        out.close();
+        return byteArrayInputStream;
     }
 
     @NotNull
@@ -70,7 +94,7 @@ public class TextureManager {
 
     public boolean isTextureLoaded(Identifier id) {
         Preconditions.checkNotNull(id, "id");
-        
+
         return this.textures.containsKey(id);
     }
 
@@ -90,7 +114,7 @@ public class TextureManager {
             UltreonCraft.LOGGER.warn("Couldn't read texture data: " + id);
             return TextureManager.DEFAULT_TEX;
         }
-        
+
         this.textures.put(id, texture);
         return texture;
     }
