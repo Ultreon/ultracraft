@@ -12,10 +12,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
-import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
-import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.TextureManager;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.font.Font;
@@ -260,14 +258,14 @@ public class Renderer {
     ///////////////////
     //     Image     //
     ///////////////////
-    @Deprecated(forRemoval = true)
     public void blit(TextureRegion tex, float x, float y) {
+        if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
         this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(TextureRegion tex, float x, float y, float width, float height) {
+        if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
         this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
@@ -307,11 +305,8 @@ public class Renderer {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
         this.batch.setColor(this.textureColor.toGdx());
-        if (tex == null) {
-            batch.draw(TextureManager.DEFAULT_TEXTURE, x, y, width, height);
-        } else {
-            TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
-            this.batch.draw(textureRegion, x, y + height, width, -height);
+        TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
+        this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
     @Deprecated
@@ -327,7 +322,6 @@ public class Renderer {
     @Deprecated
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
         this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
-        }
     }
 
     @Deprecated
@@ -818,9 +812,10 @@ public class Renderer {
     }
 
     public void tabString(String text, int x, int y, Color color, boolean shadow) {
-        for (String line : text.split("\t"))
+        for (String line : text.split("\t")) {
             //noinspection SuspiciousNameCombination
             this.drawText(line, x += this.font.lineHeight, y, color, shadow);
+        }
     }
 
     public void clear() {

@@ -8,8 +8,9 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
-import com.ultreon.craft.input.PlayerInput;
 import com.ultreon.craft.input.util.ControllerButton;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
@@ -61,7 +62,6 @@ public class Player extends LivingEntity {
         if (this.isInVoid() && !this.isDead()) {
             GameInput.startVibration(200, 1.0F);
         }
-
     }
 
     @Override
@@ -71,6 +71,14 @@ public class Player extends LivingEntity {
         }
 
         return false;
+    }
+
+    public boolean isInWater() {
+        return this.world.get(this.blockPosition()) == Blocks.WATER;
+    }
+
+    public ChunkPos getChunkPos() {
+        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 
     public float getEyeHeight() {

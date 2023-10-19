@@ -1,12 +1,8 @@
 package com.ultreon.craft.world;
 
-import static com.ultreon.craft.UltreonCraft.LOGGER;
-
-import com.google.common.base.Preconditions;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.Task;
@@ -42,24 +38,13 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-import com.ultreon.craft.world.gen.layer.*;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import javax.annotation.ParametersAreNonnullByDefault;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static com.ultreon.craft.UltreonCraft.LOGGER;
-import static com.ultreon.craft.world.WorldRegion.REGION_SIZE;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @ParametersAreNonnullByDefault
@@ -478,8 +463,7 @@ public class World implements Disposable {
 	}
 
 	public HitResult rayCast(Ray ray, float distance) {
-		HitResult hitResult = new HitResult(ray);
-		hitResult.distanceMax = distance;
+		HitResult hitResult = new HitResult(ray, distance);
 		return WorldRayCaster.rayCast(hitResult, this);
 	}
 

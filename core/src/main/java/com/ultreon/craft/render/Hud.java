@@ -2,32 +2,29 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.input.GameInput;
+import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
-import com.ultreon.craft.init.Shaders;
-import com.ultreon.craft.input.GameInput;
-import com.ultreon.craft.input.MobileInput;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.translations.v1.Language;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL40;
+import org.jetbrains.annotations.NotNull;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private final Texture widgetsTex;
-    private final Texture iconsTex;
-    private final Texture crosshairTex;
-    private final Texture mobileTex;
+    private final @NotNull Texture widgetsTex;
+    private final @NotNull Texture iconsTex;
+    private final @NotNull Texture crosshairTex;
+    private final @NotNull Texture mobileTex;
     private float joyStickX;
     private float joyStickY;
     private int stickPointer;
@@ -100,26 +97,11 @@ public class Hud implements GameRenderable {
         Item[] allowed = Player.allowed;
         for (int i = 0, allowedLength = allowed.length; i < allowedLength; i++) {
             Item item = allowed[i];
-            int ix = (int)((float)this.game.getScaledWidth() / 2) - 80 + i * 18;
-            if (item instanceof BlockItem blockItem) {
-                Block block = blockItem.getBlock();
-                this.game.itemRenderer.render(block, renderer, ix + 8, 8);
-            } else {
-                Identifier curKey = Registries.ITEMS.getKey(item);
-                if (curKey == null) {
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture((TextureRegion) null, ix, 5, 16, 16);
-                } else {
-                    TextureRegion texture = this.game.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
-                    renderer.setTextureColor(Color.WHITE.darker());
-                    renderer.texture(texture, ix, 5, 16, 16);
-                    renderer.setTextureColor(Color.WHITE);
-                    renderer.texture(texture, ix, 6, 16, 16);
-                }
-            }
+            int ix = (int)((float)this.game.getScaledWidth() / 2) - 90 + i * 20 + 2;
+            this.game.itemRenderer.render(item, renderer, ix + 8, this.game.getScaledHeight() - 24);
         }
 
-        if (key != null && !selectedItem.isAir()) {
+        if (key != null && selectedItem != Items.AIR) {
             if (renderer.pushScissors((int) ((float) this.game.getScaledWidth() / 2) - 84, leftY - 44, 168, 12)) {
                 String name = selectedItem.getTranslation();
                 renderer.drawCenteredText(name, (int) ((float) this.game.getScaledWidth()) / 2, leftY - 41);

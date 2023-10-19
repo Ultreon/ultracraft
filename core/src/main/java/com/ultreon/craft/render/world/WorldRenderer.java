@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -148,8 +149,8 @@ public final class WorldRenderer implements RenderableProvider {
             chunk.trasparentMesh.renderable.material = this.transparentMaterial;
             chunk.trasparentMesh.transform.setToTranslation(chunk.renderOffset);
 
-            output.add(chunk.mesh.renderable);
-            output.add(chunk.trasparentMesh.renderable);
+            output.add(this.verifyOutput(chunk.mesh.renderable));
+            output.add(this.verifyOutput(chunk.trasparentMesh.renderable));
 
             this.visibleChunks++;
 
@@ -192,16 +193,23 @@ public final class WorldRenderer implements RenderableProvider {
             renderable.material = material;
             this.cursor = renderable;
         }
-        if (gameCursor != null && gameCursor.collide) {
+        if (gameCursor != null && gameCursor.isCollide()) {
             Renderable renderable = this.cursor;
-            Vec3i pos = gameCursor.pos;
+            Vec3i pos = gameCursor.getPos();
             Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
             Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
             renderable.worldTransform.setToTranslation(renderOffset);
-            output.add(this.cursor);
+            output.add(this.verifyOutput(this.cursor));
         }
     }
+
+    private Renderable verifyOutput(Renderable renderable) {
+        Preconditions.checkNotNull(renderable.meshPart.mesh, "Mesh of renderable is null");
+        Preconditions.checkNotNull(renderable.material, "Material of renderable is null");
+        return renderable;
+    }
+
     private static Mesh buildOutlineBox(float thickness, Color color) {
         MeshBuilder meshBuilder = new MeshBuilder();
         meshBuilder.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
