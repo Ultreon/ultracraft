@@ -12,6 +12,8 @@ import com.ultreon.craft.input.util.ControllerButton;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -143,6 +145,10 @@ public class Player extends LivingEntity {
     @Override
     public SoundEvent getHurtSound() {
         return Sounds.PlAYER_HURT;
+    }
+
+    public HitResult rayCast() {
+        return this.world.rayCast(new Ray(this.getPosition().add(0, this.getEyeHeight(), 0), this.getLookVector()));
     }
 
     @Override

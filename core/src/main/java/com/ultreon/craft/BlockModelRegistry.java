@@ -1,5 +1,6 @@
 package com.ultreon.craft;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +22,15 @@ import java.util.function.Supplier;
 public class BlockModelRegistry {
     private static final Map<Supplier<Block>, Supplier<CubeModel>> REGISTRY = new HashMap<>();
     private static final Set<Identifier> TEXTURES = new HashSet<>();
+
+    static {
+        TEXTURES.add(new Identifier("misc/breaking1"));
+        TEXTURES.add(new Identifier("misc/breaking2"));
+        TEXTURES.add(new Identifier("misc/breaking3"));
+        TEXTURES.add(new Identifier("misc/breaking4"));
+        TEXTURES.add(new Identifier("misc/breaking5"));
+        TEXTURES.add(new Identifier("misc/breaking6"));
+    }
 
     public static void register(Block block, CubeModel model) {
         REGISTRY.put(() -> block, () -> model);
@@ -49,6 +59,14 @@ public class BlockModelRegistry {
 
         for (Supplier<CubeModel> value : REGISTRY.values()) {
             TEXTURES.addAll(value.get().all());
+        }
+
+        final int breakStages = 6;
+
+        for (int i = 0; i < breakStages; i++) {
+            Identifier texId = new Identifier("textures/misc/breaking" + (i + 1) + ".png");
+            Texture tex = textureManager.getTexture(texId);
+            textureStitcher.add(texId, tex);
         }
 
         for (Identifier texture : TEXTURES) {

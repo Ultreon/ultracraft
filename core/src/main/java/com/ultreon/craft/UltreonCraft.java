@@ -19,7 +19,6 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
@@ -45,13 +44,11 @@ import com.ultreon.craft.input.*;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
+import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.platform.PlatformType;
 import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.render.DebugRenderer;
-import com.ultreon.craft.render.Hud;
-import com.ultreon.craft.render.ItemRenderer;
-import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.*;
 import com.ultreon.craft.render.gui.Notifications;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
@@ -69,6 +66,7 @@ import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -88,11 +86,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -146,7 +140,13 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
     public Hud hud;
     private int chunkRefresh;
-    public boolean showDebugHud = true;
+    @Nullable
+    public HitResult hitResult;
+    @Nullable
+	private Vec3i breaking;
+    @Nullable
+	private Block breakingBlock;
+	public boolean showDebugHud = true;
 
     // Public Flags
     public boolean renderWorld = false;
@@ -157,6 +157,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     // Texture Atlases
     @UnknownNullability
     public TextureAtlas blocksTextureAtlas;
+    @UnknownNullability
     public TextureAtlas itemTextureAtlas;
 	private final BakedModelRegistry bakedBlockModels;
 
@@ -171,6 +172,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private final Texture windowTex;
     private final DebugRenderer debugRenderer;
     private boolean closingWorld;
+    private int oldSelected;
     private final List<Disposable> disposables = new CopyOnWriteArrayList<>();
     private boolean loading;
     private final Thread renderingThread;
@@ -302,6 +304,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         Entities.nopInit();
         Fonts.nopInit();
         Sounds.nopInit();
+        Shaders.nopInit();
 
         for (var registry : Registry.getRegistries()) {
             RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
@@ -386,6 +389,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
     public static boolean isOnRenderingThread() {
         return Thread.currentThread().getId() == UltreonCraft.instance.renderingThread.getId();
+    }
+
+    public static String strId(String path) {
+        return UltreonCraft.id(path).toString();
     }
 
     @Override
@@ -566,7 +573,9 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 this.tick();
             }
 
-            this.input.update();
+            Player player = this.player;
+			this.hitResult = player == null ? null : player.rayCast();
+			this.input.update();
 
             if (Gdx.graphics.getFrameId() == 2) {
                 GamePlatform.instance.firstRender();
@@ -728,17 +737,63 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             }
         }
 
+        Vec3i breaking = this.breaking;
+        if (this.world != null && breaking != null) {
+			HitResult hitResult = this.hitResult;
 
-        var player = this.player;
-        if (player != null) {
-            this.camera.update(player);
-
-            if (world != null && this.chunkRefresh-- == 0) {
-                this.chunkRefresh = 20;
-                world.updateChunksForPlayerAsync(player);
+            if (hitResult != null) {
+                this.handleBlockBreaking(breaking, hitResult);
             }
         }
-        this.input.update();
+
+        var player = this.player;
+		if (player != null) {
+			this.camera.update(player);
+
+			if (world != null && this.chunkRefresh-- == 0) {
+				this.chunkRefresh = 20;
+				world.updateChunksForPlayerAsync(player);
+			}
+		}
+	}
+
+    private void handleBlockBreaking(Vec3i breaking, HitResult hitResult) {
+        World world = this.world;
+        if (world == null) return;
+        if (!hitResult.getPos().equals(breaking) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
+            this.resetBreaking(hitResult);
+        } else {
+            float efficiency = 1.0F;
+            if (this.player.getSelectedItem() instanceof ToolItem &&
+                    this.breakingBlock.getEffectiveTool() == ((ToolItem) this.player.getSelectedItem()).getToolType()) {
+                ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
+                efficiency = toolItem.getEfficiency();
+            }
+
+            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
+                this.stopBreaking();
+            } else {
+                if (this.oldSelected != this.player.selected) {
+                    this.resetBreaking();
+                }
+                this.oldSelected = this.player.selected;
+            }
+        }
+    }
+
+    private void resetBreaking(HitResult hitResult) {
+        if (this.world == null) return;
+        if (this.breaking == null) return;
+        this.world.stopBreaking(this.breaking);
+		Block block = hitResult.getBlock();
+		if (block == null || block.isAir()) {
+			this.breaking = null;
+			this.breakingBlock = null;
+		} else {
+			this.breaking = hitResult.getPos();
+			this.breakingBlock = block;
+			this.world.startBreaking(hitResult.getPos());
+		}
     }
 
     public CompletableFuture<Void> respawnAsync() {
@@ -807,7 +862,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             this.garbageCollector.shutdown();
 
             if (this.world != null) this.world.dispose();
-
+            if (this.worldRenderer != null) this.worldRenderer.dispose();
             if (this.blocksTextureAtlas != null) this.blocksTextureAtlas.dispose();
 
             GamePlatform.instance.dispose();
@@ -882,9 +937,9 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     public synchronized void exitWorldAndThen(Runnable runnable) {
         this.closingWorld = true;
         final var world = this.world;
+        final @Nullable WorldRenderer worldRenderer = this.worldRenderer;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
-        var worldRenderer = this.worldRenderer;
         if (worldRenderer != null)
             worldRenderer.dispose();
 
@@ -983,8 +1038,41 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         this.futures.add(future);
     }
 
-    public @Nullable BakedCubeModel getBakedBlockModel(Block block) {
-        return this.bakedBlockModels.bakedModels().get(block);
+	public @Nullable BakedCubeModel getBakedBlockModel(Block block) {
+		return this.bakedBlockModels.bakedModels().get(block);
+	}
+
+	public void resetBreaking() {
+		HitResult hitResult = this.hitResult;
+        if (hitResult == null || this.world == null || this.breaking == null) return;
+        this.world.stopBreaking(hitResult.getPos());
+        this.world.startBreaking(hitResult.getPos());
+        this.breaking = hitResult.getPos();
+		this.breakingBlock = hitResult.getBlock();
+	}
+
+	public void startBreaking() {
+		HitResult hitResult = this.hitResult;
+        if (hitResult == null || this.world == null) return;
+        if (this.world.getBreakProgress(hitResult.getPos()) >= 0.0F) return;
+        this.world.startBreaking(hitResult.getPos());
+		this.breaking = hitResult.getPos();
+		this.breakingBlock = hitResult.getBlock();
+	}
+
+	public void stopBreaking() {
+		HitResult hitResult = this.hitResult;
+		if (hitResult == null || this.world == null) return;
+		this.world.stopBreaking(hitResult.getPos());
+		this.breaking = null;
+		this.breakingBlock = null;
+	}
+
+    public float getBreakProgress() {
+        Vec3i breaking = this.breaking;
+        World world = this.world;
+        if (breaking == null || world == null) return -1;
+        return world.getBreakProgress(breaking);
     }
 
     private float calculateGuiScale() {

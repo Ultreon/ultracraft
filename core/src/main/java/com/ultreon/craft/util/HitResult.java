@@ -1,6 +1,7 @@
 package com.ultreon.craft.util;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
@@ -13,7 +14,7 @@ public class HitResult {
     protected Vec3d normal = new Vec3d();
     protected Vec3i pos = new Vec3i();
     protected Vec3i next = new Vec3i();
-    protected Block block;
+    protected Block block = Blocks.AIR;
     protected boolean collide;
     protected double distance;
 

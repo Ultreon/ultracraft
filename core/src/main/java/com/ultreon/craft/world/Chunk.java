@@ -10,10 +10,14 @@ import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,6 +28,7 @@ import static com.ultreon.craft.world.World.WORLD_DEPTH;
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
+	final Map<Vec3i, Float> breaking = new HashMap<>();
 	protected final Lock lock = new ReentrantLock();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
@@ -39,10 +44,11 @@ public class Chunk implements Disposable {
 	public TreeData treeData;
 	public boolean dirty;
 	private boolean disposed;
+	protected boolean updateNeighbours;
 
 	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
-		
+
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
 		this.pos = pos;
@@ -127,14 +133,15 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(Vec3i pos, Block block) {
-		this.set(pos.x, pos.y, pos.z, block);
+		this.setFast(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
 		this.lock.lock();
 		this.sections[y / this.size].setFast(x, y % this.size, z, block);
-		this.dirty = true;
 		this.lock.unlock();
+		this.dirty = true;
+		this.updateNeighbours = true;
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {
@@ -196,6 +203,35 @@ public class Chunk implements Disposable {
 		return this.offset.cpy();
 	}
 
+	float getBreakProgress(float x, float y, float z) {
+		Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
+		Float v = this.breaking.get(pos);
+		if (v != null) {
+			return v;
+		}
+		return -1.0F;
+	}
+
+	public void startBreaking(int x, int y, int z) {
+		this.breaking.put(new Vec3i(x, y, z), 0.0F);
+	}
+
+	public void stopBreaking(int x, int y, int z) {
+		this.breaking.remove(new Vec3i(x, y, z));
+	}
+
+	public void continueBreaking(int x, int y, int z, float amount) {
+		Vec3i pos = new Vec3i(x, y, z);
+		Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
+		if (v != null && v == 1.0F) {
+			this.set(new Vec3i(x, y, z), Blocks.AIR);
+		}
+	}
+
+	public Map<Vec3i, Float> getBreaking() {
+		return Collections.unmodifiableMap(this.breaking);
+	}
+
 	public boolean isReady() {
 		return this.ready;
 	}
@@ -206,5 +242,9 @@ public class Chunk implements Disposable {
 
 	public void setDirty(boolean b) {
 		this.dirty = false;
+	}
+
+	public void onNeighboursUpdated() {
+		this.updateNeighbours = false;
 	}
 }

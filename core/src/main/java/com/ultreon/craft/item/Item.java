@@ -19,13 +19,13 @@ public class Item {
     }
 
     public String getTranslation() {
-        return Language.translate(getTranslationId());
+        return Language.translate(this.getTranslationId());
     }
 
     @NotNull
     public String getTranslationId() {
         Identifier key = Registries.ITEMS.getKey(this);
-        return key == null ? "craft/item/air/name" : key.location() + "/item/" + key.path() + "/name";
+        return key == null ? "craft.item.air.name" : key.location() + ".item." + key.path() + ".name";
     }
 
     @Nullable

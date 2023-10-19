@@ -13,7 +13,6 @@ import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.ScreenEvents;
@@ -72,7 +71,7 @@ public class DesktopInput extends GameInput {
         }
 
         if (Gdx.input.isCursorCatched()) {
-            if (isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
+            if (GameInput.isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
                 this.game.showScreen(new PauseScreen());
                 return true;
             }
@@ -184,15 +183,15 @@ public class DesktopInput extends GameInput {
                 }
 
                 Player player = this.game.player;
-                if (player != null) {
-                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+                HitResult hitResult = this.game.hitResult;
+                if (player != null && hitResult != null) {
                     Vec3i pos = hitResult.getPos();
                     Block block = world.get(pos);
                     Vec3i posNext = hitResult.getNext();
                     Block blockNext = world.get(posNext);
                     if (hitResult.isCollide() && block != null && !block.isAir()) {
                         if (button == Input.Buttons.LEFT) {
-                            world.set(pos, Blocks.AIR);
+                            this.game.startBreaking();
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
                             UseItemContext context = new UseItemContext(world, player, hitResult);
                             Item item = player.getSelectedItem();
@@ -227,6 +226,7 @@ public class DesktopInput extends GameInput {
                 currentScreen.mouseClick((int) (screenX / this.game.getGuiScale()), (int) (screenY / this.game.getGuiScale()), button, 1);
             }
         }
+        this.game.stopBreaking();
         return false;
     }
 
@@ -235,20 +235,22 @@ public class DesktopInput extends GameInput {
         Screen currentScreen = this.game.currentScreen;
 
         Player player = this.game.player;
-        if (player != null) {
+        if (currentScreen == null && player != null) {
             int scrollAmount = (int) amountY;
             int i = (player.selected + scrollAmount) % 9;
             if (i < 0) {
                 i += 9;
             }
             player.selected = i;
+            return true;
+        } else {
+            int yPos = this.game.getHeight() - this.yPos;
+            if (currentScreen != null) {
+                ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
+                return currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
+            }
         }
 
-        int yPos = this.game.getHeight() - this.yPos;
-        if (currentScreen != null) {
-            ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
-            currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
-        }
         return false;
     }
 }

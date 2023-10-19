@@ -1,6 +1,6 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -244,14 +244,14 @@ public class World implements Disposable {
 		List<ChunkPos> toCreate = new ArrayList<>();
 		for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
 			for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
-				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, 0, z));
+				ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
 				toCreate.add(chunkPos);
 				if (x >= pos.x - World.CHUNK_SIZE
 						&& x <= pos.x + World.CHUNK_SIZE
 						&& z >= pos.z - World.CHUNK_SIZE
 						&& z <= pos.z + World.CHUNK_SIZE) {
 					for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
-						chunkPos = Utils.chunkPosFromBlockCoords(new Vector3(x, y, z));
+						chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
 						toCreate.add(chunkPos);
 					}
 				}
@@ -270,7 +270,7 @@ public class World implements Disposable {
 		for (ChunkPos pos : this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
 			Chunk chunk = this.getChunk(pos);
 			return chunk != null && !needed.contains(pos);
-		}).collect(Collectors.toList())) {
+		}).toList()) {
 			if (this.getChunk(pos) != null) {
 				toRemove.add(pos);
 			}
@@ -627,8 +627,8 @@ public class World implements Disposable {
 		}
 	}
 
-	public CompletableFuture<ConcurrentMap<Vector3, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
-		ConcurrentMap<Vector3, Chunk> map = new ConcurrentHashMap<>();
+	public CompletableFuture<ConcurrentMap<Vec3d, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
+		ConcurrentMap<Vec3d, Chunk> map = new ConcurrentHashMap<>();
 		return CompletableFuture.supplyAsync(() -> {
 			for (ChunkPos pos : toCreate) {
 				try {
@@ -781,6 +781,20 @@ public class World implements Disposable {
 		return Collections.unmodifiableCollection(this.chunks.values());
 	}
 
+	private boolean needsUpdateByNeighbour(Chunk chunk) {
+		ChunkPos pos = chunk.pos;
+		boolean needsUpdate = false;
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() - 1, pos.z())));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() + 1, pos.z())));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() - 1)));
+		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() + 1)));
+		return needsUpdate;
+	}
+
+	private boolean updatesNeighbour(Chunk chunk) {
+		return chunk != null && chunk.updateNeighbours;
+	}
+
 	public int getPlayTime() {
 		return this.playTime;
 	}
@@ -831,7 +845,7 @@ public class World implements Disposable {
 		return this.entities.get(id);
 	}
 
-	public List<BoundingBox> collide(BoundingBox box) {
+	public List<BoundingBox> collide(BoundingBox box, boolean collideFluid) {
 		List<BoundingBox> boxes = new ArrayList<>();
 		int xMin = (int) Math.floor(box.min.x);
 		int xMax = (int) Math.floor(box.max.x);
@@ -844,7 +858,7 @@ public class World implements Disposable {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
-					if (block.isSolid()) {
+					if (block.isSolid() && (!collideFluid || block.isFluid())) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
 						if (blockBox.intersects(box)) {
 							boxes.add(blockBox);
@@ -906,6 +920,35 @@ public class World implements Disposable {
 			if (entity.getBoundingBox().intersects(boundingBox)) return true;
 
 		return false;
+	}
+
+	public void startBreaking(Vec3i breaking) {
+		Chunk chunkAt = this.getChunkAt(breaking);
+		if (chunkAt == null) return;
+		Vec3i chunkCoords = this.toLocalBlockPos(breaking);
+		chunkAt.startBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
+	}
+
+	public boolean continueBreaking(Vec3i breaking, float amount) {
+		Chunk chunkAt = this.getChunkAt(breaking);
+		if (chunkAt == null) return false;
+		Vec3i chunkCoords = this.toLocalBlockPos(breaking);
+		chunkAt.continueBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z, amount);
+		return true;
+	}
+
+	public void stopBreaking(Vec3i breaking) {
+		Chunk chunkAt = this.getChunkAt(breaking);
+		if (chunkAt == null) return;
+		Vec3i chunkCoords = this.toLocalBlockPos(breaking);
+		chunkAt.stopBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
+	}
+
+	public float getBreakProgress(Vec3i pos) {
+		Chunk chunkAt = this.getChunkAt(pos);
+		if (chunkAt == null) return -1.0F;
+		Vec3i chunkCoords = this.toLocalBlockPos(pos);
+		return chunkAt.getBreakProgress(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 
 	public SavedWorld getSavedWorld() {

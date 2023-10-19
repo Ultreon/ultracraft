@@ -15,4 +15,9 @@ public class Debugger {
             LOGGER.debug(MARKER, message);
         }
     }
+    public static void log(String message, Throwable t) {
+        if (GameFlags.DEBUG) {
+            LOGGER.debug(MARKER, message, t);
+        }
+    }
 }
