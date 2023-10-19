@@ -45,7 +45,7 @@ public class TextureStitcher {
 
         // Create a SpriteBatch to draw the packed textures to the FrameBuffer
         SpriteBatch spriteBatch = new SpriteBatch();
-        spriteBatch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, width, height));
+        spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 
         // Draw each texture to the appropriate location on the FrameBuffer
         this.fbo.begin();

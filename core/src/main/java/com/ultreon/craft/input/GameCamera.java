@@ -2,6 +2,7 @@ package com.ultreon.craft.input;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 

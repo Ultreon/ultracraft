@@ -1,8 +1,12 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.badlogic.gdx.math.Vector2;
+import com.ultreon.craft.util.UtilityClass;
 
-public class MyNoise {
+public class NoiseUtils extends UtilityClass {
+    private NoiseUtils() {
+    }
+
     public static float remapValue(float value, float initialMin, float initialMax, float outputMin, float outputMax) {
         return outputMin + (value - initialMin) * (outputMax - outputMin) / (initialMax - initialMin);
     }

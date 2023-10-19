@@ -1,90 +1,139 @@
 package com.ultreon.craft.collection;
 
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ShortArray;
 import com.ultreon.craft.ubo.DataHolder;
 import com.ultreon.craft.ubo.DataWriter;
-import com.ultreon.craft.util.exceptions.PaletteSizeException;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
-public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> implements DataHolder<MapType> {
-    private List<@Nullable D> palette;
-    private ShortArray references;
-    private final Function<T, D> deserializer;
+public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> implements DataHolder<MapType>, Disposable {
+    private final ShortArray palette;
+    private final List<D> data;
     private final int dataId;
-    public final int maxSize;
-    private int size = 0;
-    private final Object lock = new Object();
+    private final Function<T, D> deserializer;
 
-    /**
-     * @param type DON'T USE: Reserved for data receiver.
-     */
     @SafeVarargs
-    public PaletteContainer(int size, int dataId, Function<T, D> deserializer, D... type) {
-        if (size > 65536) throw new PaletteSizeException("Size exceeds maximum value of 65536");
-        this.maxSize = size;
-        this.palette = new CopyOnWriteArrayList<>();
-        this.references = new ShortArray(size);
+    public PaletteContainer(int size, int dataId, Function<T, D> deserializer, D... ignoredType) {
+        this.palette = new ShortArray();
+        this.data = new ArrayList<>();
         this.dataId = dataId;
         this.deserializer = deserializer;
-
-        this.references.size = size;
+        this.palette.setSize(size);
     }
 
     public MapType save() {
         MapType data = new MapType();
 
         ListType<T> paletteData = new ListType<>(this.dataId);
-        for (@Nullable D t : this.palette) if (t != null) paletteData.add(t.save());
-        data.put("Palette", paletteData);
+        for (@Nullable D t : this.data) if (t != null) paletteData.add(t.save());
+        data.put("Data", paletteData);
 
-        data.putShortArray("Data", this.references.items);
+        data.putShortArray("Palette", this.palette.items);
 
         return data;
     }
 
     @Override
     public void load(MapType data) {
-        ListType<T> paletteData = data.getList("Palette", new ListType<>(this.dataId));
+        ListType<T> paletteData = data.getList("Data", new ListType<>(this.dataId));
         for (T t : paletteData) {
-            this.palette.add(this.deserializer.apply(t));
+            this.data.add(this.deserializer.apply(t));
         }
 
-        this.references.items = data.getShortArray("Data");
+        this.palette.items = data.getShortArray("Palette");
     }
 
-    public void set(int index, D value) {
-        synchronized (this.lock) {
-            short old = this.references.get(index);
+    public void set(int idx, D value) {
+        if (value == null) {
+            this.remove(idx);
+            return;
+        }
 
-            int i = this.palette.indexOf(value);
-            if (i == -1) {
-                i = this.palette.size();
-                this.palette.add(value);
-            }
-            this.references.set(index, (short) i);
 
-            if (!this.references.contains(old)) {
-                this.palette.remove(old);
+        short old = this.palette.get(idx);
+
+        short setIdx = (short) this.data.indexOf(value);
+        if (setIdx == -1) {
+            setIdx = this.add(value);
+        }
+        this.palette.set(idx, setIdx);
+
+        if (!this.palette.contains(old)) {
+            System.out.println("old = " + old);
+            this.data.remove(old);
+
+            // Update paletteMap entries for indices after the removed one
+            for (int i = idx; i < this.palette.size; i++) {
+                int oldValue = this.palette.get(i);
+                this.palette.set(i, (short) (oldValue - 1));
             }
         }
+
+//        if (!this.data.contains(value)) {
+//            this.add(value);
+//        } else {
+//            int dataIdx = this.toDataIdx(idx);
+//            if (dataIdx != -1) {
+//                this.data.set(dataIdx, value);
+//            } else {
+//
+//            }
+//        }
+    }
+
+    public short toDataIdx(int idx) {
+        if (idx >= 0 && idx < this.palette.size) {
+            return this.palette.get(idx);
+        }
+        return -1;
+    }
+
+    public D getFromDataIdx(int dataIdx) {
+        if (dataIdx >= 0 && dataIdx < this.data.size()) {
+            return this.data.get(dataIdx);
+        }
+        return null; // Or throw an exception if you prefer
+    }
+
+    public short add(D value) {
+        short dataIdx = (short) (this.data.size());
+        this.data.add(value);
+        this.palette.add((short) this.palette.size, dataIdx);
+        return dataIdx;
+    }
+
+    public void remove(int idx) {
+        if (idx >= 0 && idx < this.data.size()) {
+            int dataIdx = this.toDataIdx(idx);
+            this.data.remove(dataIdx);
+            this.palette.removeIndex(idx);
+
+            // Update paletteMap entries for indices after the removed one
+            for (int i = idx; i < this.palette.size; i++) {
+                int oldValue = this.palette.get(i);
+                this.palette.set(i, (short) (oldValue - 1));
+            }
+        }
+    }
+
+    @Override
+    public void dispose() {
+        this.palette.items = null;
+        this.palette.clear();
+        this.data.clear();
     }
 
     @Nullable
-    public D get(int index) {
-        short paletteIndex = this.references.get(index);
-        return this.palette.get(paletteIndex);
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public void dispose() {
-        this.palette = null;
-        this.references = null;
+    public D get(int idx) {
+        int paletteIdx = this.toDataIdx(idx);
+        if (paletteIdx < 0) return null;
+        return this.getFromDataIdx(paletteIdx);
     }
 }

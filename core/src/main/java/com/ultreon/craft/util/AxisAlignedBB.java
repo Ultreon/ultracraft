@@ -1,6 +1,7 @@
 package com.ultreon.craft.util;
 
 import com.badlogic.gdx.math.Vector3;
+import org.jetbrains.annotations.ApiStatus;
 
 public class AxisAlignedBB {
     public final float minX;
@@ -28,8 +29,14 @@ public class AxisAlignedBB {
     public AxisAlignedBB offset(float x, float y, float z) {
         return new AxisAlignedBB(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z);
     }
-    
+
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
     public Vector3 calculateIntersect(AxisAlignedBB other, Vector3 direction) {
+        return calculateIntersect(other, direction, new Vector3());
+    }
+
+    public Vector3 calculateIntersect(AxisAlignedBB other, Vector3 direction, Vector3 output) {
         Vector3 minDistance = other.min().sub(this.max());
         Vector3 maxDistance = other.max().sub(this.min());
 
@@ -40,7 +47,7 @@ public class AxisAlignedBB {
 
         // Find the smallest overlap distance and return the intersection vector
         float smallestOverlap = Math.min(Math.min(overlapX, overlapY), overlapZ);
-        return new Vector3(smallestOverlap * direction.x, smallestOverlap * direction.y, smallestOverlap * direction.z);
+        return output.set(smallestOverlap * direction.x, smallestOverlap * direction.y, smallestOverlap * direction.z);
     }
 
     private Vector3 min() {

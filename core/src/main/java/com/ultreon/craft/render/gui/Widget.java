@@ -9,7 +9,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2i;
  * Static widget, a widget that only has boundaries and something that will be drawn.
  * This is like an image, or text label. The {@link GuiComponent} class extends this and has input handling support.
  *
- * @author Qboi123
+ * @author XyperCode
  * @see GuiComponent
  */
 public interface Widget extends GuiStateListener {

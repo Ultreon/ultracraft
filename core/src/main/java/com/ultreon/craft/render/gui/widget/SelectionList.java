@@ -1,12 +1,11 @@
 package com.ultreon.craft.render.gui.widget;
 
-import com.badlogic.gdx.net.NetJavaServerSocketImpl;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.render.Color;
 import com.ultreon.craft.render.Renderer;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.IGuiContainer;
 import com.ultreon.libs.commons.v0.Mth;
-
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class SelectionList<T> extends GuiComponent implements IGuiContainer {
+    private static final int SCROLLBAR_WIDTH = 5;
     private final List<Entry> entries = new ArrayList<>();
     private float scrollY = 0;
     private final int itemHeight;
@@ -29,6 +29,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     private ItemRenderer<T> itemRenderer = null;
     private Consumer<T> onSelected = value -> {};
+    private final int gap = 0;
 
     public SelectionList(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, @IntRange(from = 0) int itemHeight) {
         super(x, y, width, height);
@@ -60,25 +61,18 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         renderer.pushMatrix();
         renderer.translate(0, this.scrollY);
-        renderer.pushScissors(this.x, this.y, this.width, this.height);
-        this.renderChildren(renderer, mouseX, mouseY, deltaTime);
-        renderer.popScissors();
+//        if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
+            this.renderChildren(renderer, mouseX, mouseY, deltaTime);
+//            renderer.popScissors();
+//        }
         renderer.popMatrix();
     }
 
     @Override
     public void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        int childY = this.height + this.y - this.itemHeight;
         for (Entry entry : this.entries) {
             if (entry.visible) {
-                entry.setY(childY);
-                renderer.pushMatrix();
-                renderer.translate(entry.getX(), entry.getY());
-                renderer.pushScissors(entry.getX(), this.game.getHeight()-entry.getY(), entry.getWidth(), entry.getHeight());
                 entry.render(renderer, 0, mouseX, mouseY - (int) this.scrollY, this.selectable && this.selected == entry, deltaTime);
-                renderer.popScissors();
-                renderer.popMatrix();
-                childY -= this.itemHeight;
             }
         }
     }
@@ -87,7 +81,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
     public Entry getEntryAt(int x, int y) {
         y += this.y;
         if (!this.isWithinBounds(x, y)) return null;
-        y -= this.scrollY;
+        y -= (int) this.scrollY;
         List<Entry> entries = this.entries;
         for (int i = entries.size() - 1; i >= 0; i--) {
             Entry entry = entries.get(i);
@@ -193,7 +187,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public boolean mouseWheel(int x, int y, double rotation) {
-        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 3), 0, this.getContentHeight() - this.height) : 0;
+        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 10), 0, this.getContentHeight() - this.height) : 0;
 
         return true;
     }
@@ -211,12 +205,14 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         return this.selected.value;
     }
 
+    @CanIgnoreReturnValue
     public Entry addEntry(T value) {
         Entry entry = new Entry(value);
         this.entries.add(entry);
         return entry;
     }
 
+    @CanIgnoreReturnValue
     public Entry removeEntry(Entry entry) {
         this.entries.remove(entry);
         return entry;
@@ -245,10 +241,12 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     public class Entry extends GuiComponent {
         private final T value;
+        private final SelectionList<T> list;
 
         public Entry(T value) {
             super(SelectionList.this.x, SelectionList.this.y, SelectionList.this.width, SelectionList.this.itemHeight);
             this.value = value;
+            this.list = SelectionList.this;
         }
 
         @Override
@@ -257,11 +255,20 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         }
 
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
-            if (selected) {
-                renderer.box(1, 1, this.width - 2, this.height - 2, Color.rgb(0xffffff));
-            }
+            this.x = this.list.x;
+            this.y = this.list.y + (int) (-this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
+            this.width = this.list.width - SelectionList.SCROLLBAR_WIDTH;
+            this.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;
-            if (itemRenderer != null) itemRenderer.render(renderer, this.value, y, mouseX, mouseY, selected, deltaTime);
+            if (itemRenderer != null) {
+                if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
+                    if (selected) {
+                        renderer.box(this.x, this.y, this.width - 2, this.height - 2, Color.rgb(0xffffff));
+                    }
+                    itemRenderer.render(renderer, this.value, this.y, mouseX, mouseY, selected, deltaTime);
+                    renderer.popScissors();
+                }
+            }
         }
 
         public T getValue() {

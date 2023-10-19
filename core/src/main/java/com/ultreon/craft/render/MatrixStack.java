@@ -2,6 +2,7 @@ package com.ultreon.craft.render;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.utils.Pool;
 import com.google.common.collect.Queues;
 import com.ultreon.craft.util.Utils;
 
@@ -9,17 +10,27 @@ import java.util.Deque;
 import java.util.function.Consumer;
 
 public class MatrixStack {
+    private final Pool<Matrix4> pool = new Pool<>() {
+        @Override
+        protected Matrix4 newObject() {
+            return new Matrix4();
+        }
+    };
+
     private final Deque<Matrix4> stack;
     public Consumer<Matrix4> onPush = matrix -> {};
     public Consumer<Matrix4> onPop = matrix -> {};
     public Consumer<Matrix4> onEdit = matrix -> {};
 
     public MatrixStack() {
-        this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(new Matrix4()));
+        this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(this.pool.obtain().idt()));
     }
 
     public MatrixStack(Matrix4 origin) {
         this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(origin));
+    }
+
+    public void clean() {
     }
 
     public void push() {
@@ -28,7 +39,7 @@ public class MatrixStack {
     }
 
     public void pop() {
-        this.stack.removeLast();
+        this.stack.removeLast().idt();
         this.onEdit.accept(this.stack.getLast());
     }
 

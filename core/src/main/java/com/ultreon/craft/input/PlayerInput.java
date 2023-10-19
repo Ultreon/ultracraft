@@ -10,6 +10,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.input.util.JoystickType;
 import com.ultreon.craft.util.Utils;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.jetbrains.annotations.ApiStatus;
 
 public class PlayerInput {
     public boolean forward;
@@ -79,12 +80,17 @@ public class PlayerInput {
         this.vel.set(this.tmp);
     }
 
-    @Deprecated(forRemoval = true)
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
     private void setVel(Vector3 vel) {
         this.vel.set(vel);
     }
 
     public Vec3d getVel() {
         return Utils.toCoreLibs(this.vel);
+    }
+
+    public Vector3 getVelocity() {
+        return this.vel;
     }
 }

@@ -1,6 +1,8 @@
 //file:noinspection GroovyUnusedCatchParameter
 
 
+//import com.ultreon.craftutils.CraftUtilsPlugin
+//import com.ultreon.craftutils.ProjectType
 import org.panteleyev.jpackage.ImageType
 
 import java.nio.file.Files
@@ -35,23 +37,21 @@ plugins {
     id 'java'
     id 'java-library'
     id "org.panteleyev.jpackageplugin" version "1.5.0"
-//    id 'maven-publish'
-//    id "org.panteleyev.jpackageplugin"
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-//apply plugin: 'maven-publish'
 
 //****************************//
 // Setting up main properties //
 //****************************//
 
-// Project properties.
-version project_version
-group project_group
+//projectConfig {
+//    type ProjectType.Common
+//    jarDependTasks({[copyDependencies, copyJar]})
+//}
 
-archivesBaseName = archives_base_name + "-premain"
+archivesBaseName = archives_base_name + "-gameprovider"
 
 def packageVersion = "1.0.0"
 
@@ -73,10 +73,14 @@ configurations {
     }
 }
 
+evaluationDependsOn(":core")
+
 dependencies {
     addToJar(project(":gameprovider"))
     implementation project(":core")
     implementation project(":desktop")
+
+    implementation "com.formdev:flatlaf:3.2.1"
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
@@ -133,7 +137,7 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
 
-    // fabric-loader dependencies
+    // quilt-loader dependencies
     implementation "org.ow2.asm:asm:${project.asm_version}"
     implementation "org.ow2.asm:asm-analysis:${project.asm_version}"
     implementation "org.ow2.asm:asm-commons:${project.asm_version}"
@@ -145,12 +149,14 @@ dependencies {
         exclude module: 'guava'
     }
 
+    //noinspection GradleDynamicVersion
     implementation 'net.fabricmc:tiny-mappings-parser:0.3.0+build.17'
-    implementation 'net.fabricmc:tiny-remapper:0.8.5'
+    implementation 'net.fabricmc:tiny-remapper:0.8.7'
+    //noinspection GradleDynamicVersion
     implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
     implementation 'net.fabricmc:access-widener:2.1.0'
 
-    compileOnly "net.fabricmc:fabric-loader:$fabric_version"
+    compileOnly "org.quiltmc:quilt-loader:$quilt_version"
 }
 
 processResources {
@@ -192,7 +198,7 @@ jar {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 
     doLast {
-        println "DESK_MERGE FILE: ${file("$buildDir/libs/").list().toArrayString()}"
+        println "DESK_MERGE FILE: ${file("$projectDir/build/libs/").list().toArrayString()}"
         println "CORE FILE: ${file("${project(":core")buildDir}/libs/").list().toArrayString()}"
         println "DESKTOP FILE: ${file("${project(":desktop")buildDir}/libs/").list().toArrayString()}"
         println "GAMEPROVIDER FILE: ${file("${project(":gameprovider")buildDir}/libs/").list().toArrayString()}"
@@ -203,11 +209,6 @@ tasks.create('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
 
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
-}
-
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
@@ -217,46 +218,53 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-delete "$buildDir/jars"
+delete "$projectDir/build/jars"
 
 tasks.register('copyDependencies', Copy) {
     from(configurations.runtimeClasspath)
     exclude "lwjgl-2.9.3.jar"
     exclude "lwjgl-platform-2.9.3.jar"
     exclude "lwjgl-platform-2.9.3-*.jar"
-    into("$buildDir/jars")
+    into("$projectDir/build/jars")
 }
 
 tasks.register('copyJar', Copy) {
     from(tasks.jar)
-    into("$buildDir/jars")
+    into("$projectDir/build/jars")
+}
+
+tasks.register('package', Zip) {
+    dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
+
+    from fileTree(dir: "$projectDir/build/jars", include: "*.jar")
+    archiveFileName = 'package.zip'
+    destinationDirectory = file("$rootProject/build/dist/")
 }
 
 jpackage {
     dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
 
-    input  = "$buildDir/jars"
-    destination = "$buildDir/dist"
+    input  = "$projectDir/build/jars"
+    destination = "$projectDir/build/bin"
 
-    appName = project.property("app_name").toString()
+    appName = app_name
     appVersion = project.version.toString()
     vendor = "Ultreon Team"
     copyright = "Copyright (c) 2023 Ultreon Team"
     runtimeImage = System.getProperty("java.home")
 
-//    mainJar = "fabric-loader-${fabric_loader_version}.jar"
     mainJar = jar.archiveFileName.get()
     mainClass = "com.ultreon.craft.premain.PreMain"
 
-    destination = "$buildDir/dist"
+    destination = "$projectDir/build/dist"
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged","-Dloader.skipMcProvider=true" ]
     arguments = [ "--packaged" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
@@ -270,12 +278,27 @@ jpackage {
 
     linux {
         icon = "$rootProject.projectDir/icons/icon.png"
-        linuxPackageName = project_name
-        linuxDebMaintainer = "Ultreon Team"
-        linuxRpmLicenseType = "Ultreon API License v1.1"
-        linuxAppRelease = "2"
-        linuxShortcut = true
         appVersion = project.version.toString()
+        aboutUrl = null
+        licenseFile = null
+        type = ImageType.APP_IMAGE
+        destination = "$rootProject.projectDir/build/tmp"
+
+        tasks.register("createAppImage", Zip) {
+            def app_name = app_name
+            from fileTree("$rootProject.projectDir/build/tmp/$app_name")
+            archiveFileName = "${app_name}.zip"
+            destinationDirectory = file("$projectDir/build/dist/")
+            doLast {
+                delete files("$rootProject.projectDir/build/tmp/$app_name/**/*", "$rootProject.projectDir/build/tmp/$app_name")
+            }
+        }
+
+        finalizedBy createAppImage
+
+        if (file("$rootProject.projectDir/build/tmp/$app_name").exists()) {
+            delete files("$rootProject.projectDir/build/tmp/$app_name/**/*", "$rootProject.projectDir/build/tmp/$app_name")
+        }
     }
 
     windows {

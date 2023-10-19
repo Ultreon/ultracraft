@@ -16,6 +16,7 @@ jobs:
         ]
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -45,6 +46,7 @@ jobs:
         ]
         os: [macOS-11]
     runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -74,6 +76,7 @@ jobs:
         ]
         os: [windows-2022]
     runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

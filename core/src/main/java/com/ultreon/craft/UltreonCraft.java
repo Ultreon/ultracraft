@@ -16,9 +16,15 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
+import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
@@ -44,33 +50,35 @@ import com.ultreon.craft.registry.LanguageRegistry;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.DebugRenderer;
 import com.ultreon.craft.render.Hud;
+import com.ultreon.craft.render.ItemRenderer;
 import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.WorldRenderer;
+import com.ultreon.craft.render.gui.Notifications;
 import com.ultreon.craft.render.gui.screens.*;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.render.texture.atlas.TextureStitcher;
+import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.text.LanguageData;
 import com.ultreon.craft.util.GG;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashLog;
-import com.ultreon.libs.events.v1.EventResult;
-import com.ultreon.libs.events.v1.ValueEventResult;
+import com.ultreon.libs.datetime.v0.Duration;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
-import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
@@ -79,46 +87,51 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
-public class UltreonCraft {
+public class UltreonCraft extends PollingExecutorService implements DeferredDisposable {
     public static final String NAMESPACE = "craft";
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     private static final int CULL_FACE = GL20.GL_FRONT;
-    private final Instant bootTime;
+    private final Duration bootTime;
     private final String allUnicode;
+    private final GarbageCollector garbageCollector;
+    private final GameEnvironment gameEnv;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
     @UnknownNullability
     private static SavedWorld savedWorld;
     public boolean forceUnicode = false;
+    public ItemRenderer itemRenderer;
+    public Notifications notifications = new Notifications(this);
     @SuppressWarnings("FieldMayBeFinal")
     private boolean booted;
     public static final int TPS = 20;
     public Font font;
+    @UnknownNullability
     public BitmapFont unifont;
     public GameInput input;
     @Nullable public World world;
     @Nullable public WorldRenderer worldRenderer;
     @UnknownNullability
+    @SuppressWarnings("GDXJavaStaticResource")
     private static UltreonCraft instance;
     @Nullable public Player player;
     private final SpriteBatch spriteBatch;
-    private final ModelBatch batch;
-    GameCamera camera;
+    public final ModelBatch modelBatch;
+    public GameCamera camera;
     private final Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
@@ -131,7 +144,6 @@ public class UltreonCraft {
     private final ResourceManager resourceManager;
     private final float guiScale = this.calculateGuiScale();
 
-    private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
     public Hud hud;
     private int chunkRefresh;
     public boolean showDebugHud = true;
@@ -143,6 +155,7 @@ public class UltreonCraft {
     public static final long BOOT_TIMESTAMP = System.currentTimeMillis();
 
     // Texture Atlases
+    @UnknownNullability
     public TextureAtlas blocksTextureAtlas;
     public TextureAtlas itemTextureAtlas;
 	private final BakedModelRegistry bakedBlockModels;
@@ -158,65 +171,48 @@ public class UltreonCraft {
     private final Texture windowTex;
     private final DebugRenderer debugRenderer;
     private boolean closingWorld;
+    private final List<Disposable> disposables = new CopyOnWriteArrayList<>();
+    private boolean loading;
+    private final Thread renderingThread;
+    public HitResult cursor;
+    private FrameBuffer worldFbo;
 
     public UltreonCraft(String[] args) throws Throwable {
-        LOGGER.info("Booting game!");
+        UltreonCraft.LOGGER.info("Booting game!");
 
-        Identifier.setDefaultNamespace(NAMESPACE);
-        GamePlatform.instance.preInitImGui();
-
-        List<String> argList = Arrays.asList(args);
-        this.isDevMode = argList.contains("--dev");
-
-        if (this.isDevMode) {
-            LOGGER.debug("Developer mode is enabled");
-        }
+        this.loading = true;
 
         UltreonCraft.instance = this;
+        this.renderingThread = Thread.currentThread();
+
+        Identifier.setDefaultNamespace(UltreonCraft.NAMESPACE);
+        GamePlatform.instance.preInitImGui();
+
+        var argList = Arrays.asList(args);
+        this.isDevMode = argList.contains("--dev") && GamePlatform.instance.isDevelopmentEnvironment();
+
+        if (GamePlatform.instance.isDevelopmentEnvironment())
+            this.gameEnv = GameEnvironment.DEVELOPMENT;
+        else if (Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
+            this.gameEnv = GameEnvironment.PACKAGED;
+        else
+            this.gameEnv = GameEnvironment.NORMAL;
+
+        if (this.isDevMode)
+            UltreonCraft.LOGGER.info("Developer mode is enabled");
 
         Thread.setDefaultUncaughtExceptionHandler(UltreonCraft::uncaughtException);
 
-        LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
+        UltreonCraft.LOGGER.info("Data directory is at: " + GamePlatform.data(".").file().getCanonicalFile().getAbsolutePath());
 
-        Gdx.app.setApplicationLogger(new ApplicationLogger() {
-            private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+        Gdx.app.setApplicationLogger(new LibGDXLogger());
 
-            @Override
-            public void log(String tag, String message) {
-                this.LOGGER.info(MarkerFactory.getMarker(tag), message);
-            }
+        this.configDir = UltreonCraft.createDir("config/");
+        this.garbageCollector = new GarbageCollector();
 
-            @Override
-            public void log(String tag, String message, Throwable exception) {
-                this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
-            }
-
-            @Override
-            public void error(String tag, String message) {
-                this.LOGGER.error(MarkerFactory.getMarker(tag), message);
-            }
-
-            @Override
-            public void error(String tag, String message, Throwable exception) {
-                this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
-            }
-
-            @Override
-            public void debug(String tag, String message) {
-                this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
-            }
-
-            @Override
-            public void debug(String tag, String message, Throwable exception) {
-                this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
-            }
-        });
-
-        this.configDir = createDir("config/");
-
-        createDir("screenshots/");
-        createDir("game-crashes/");
-        createDir("logs/");
+        UltreonCraft.createDir("screenshots/");
+        UltreonCraft.createDir("game-crashes/");
+        UltreonCraft.createDir("logs/");
 
         GamePlatform.instance.setupMods();
 
@@ -226,28 +222,29 @@ public class UltreonCraft {
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
-        LOGGER.info("Initializing game");
-        this.textureManager = new TextureManager();
-        this.spriteBatch = new SpriteBatch();
-
         this.resourceManager = new ResourceManager("assets");
-        LOGGER.info("Importing resources");
+        UltreonCraft.LOGGER.info("Importing resources");
         this.resourceManager.importDeferredPackage(this.getClass());
         GamePlatform.instance.importModResources(this.resourceManager);
 
-        Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
+        UltreonCraft.LOGGER.info("Initializing game");
+        this.textureManager = new TextureManager(this.resourceManager);
+        this.spriteBatch = new SpriteBatch();
+
+        var resource = this.resourceManager.getResource(UltreonCraft.id("texts/unicode.txt"));
         if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
         this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
-        LOGGER.info("Generating bitmap fonts");
-        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"));
+        UltreonCraft.LOGGER.info("Generating bitmap fonts");
+        this.unifont = new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true);
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(new ResourceFileHandle(id("font/dogica/dogicapixel.ttf")));
-        FreeTypeFontParameter fontParameter = new FreeTypeFontParameter();
+        var generator = new FreeTypeFontGenerator(new ResourceFileHandle(UltreonCraft.id("font/dogica/dogicapixel.ttf")));
+        var fontParameter = new FreeTypeFontParameter();
         fontParameter.size = 8;
         fontParameter.characters = this.allUnicode;
         fontParameter.minFilter = Texture.TextureFilter.Nearest;
         fontParameter.magFilter = Texture.TextureFilter.Nearest;
+        fontParameter.flip = true;
         fontParameter.mono = true;
 
         this.font = new Font(generator.generateFont(fontParameter));
@@ -255,45 +252,48 @@ public class UltreonCraft {
         //**********************//
         // Setting up rendering //
         //**********************//
-        LOGGER.info("Initializing rendering stuffs");
-        DefaultShader.Config config = new DefaultShader.Config();
+        UltreonCraft.LOGGER.info("Initializing rendering stuffs");
+        var config = new DepthShader.Config();
         config.defaultCullFace = GL20.GL_FRONT;
-        this.batch = new ModelBatch(new DefaultShaderProvider(config));
-        this.batch.getRenderContext().setCullFace(CULL_FACE);
+        this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
+//        this.batch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
-        this.camera.far = 1000;
+        this.camera.far = 2;
         this.input = this.createInput();
         Gdx.input.setInputProcessor(this.input);
 
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        var pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1F, 1F, 1F, 1F);
         pixmap.drawPixel(0, 0);
-        TextureRegion white = new TextureRegion(new Texture(pixmap));
+        var white = new TextureRegion(new Texture(pixmap));
 
         this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
-        LOGGER.info("Setting up world environment");
+        UltreonCraft.LOGGER.info("Setting up world environment");
         this.env = new Environment();
         this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.env.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
         this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
         this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
         this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
         this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
-        LOGGER.info("Setting up HUD");
+        this.worldFbo = new FrameBuffer(Pixmap.Format.RGBA8888, this.getWidth(), this.getHeight(), true);
+
+        UltreonCraft.LOGGER.info("Setting up HUD");
         this.hud = new Hud(this);
 
-        LOGGER.info("Setting up Debug Renderer");
+        UltreonCraft.LOGGER.info("Setting up Debug Renderer");
         this.debugRenderer = new DebugRenderer(this);
 
         //**************************//
         // Registering game content //
         //**************************//
-        LOGGER.info("Loading languages");
+        UltreonCraft.LOGGER.info("Loading languages");
         this.loadLanguages();
 
-        LOGGER.info("Registering stuff");
+        UltreonCraft.LOGGER.info("Registering stuff");
         Registries.init();
 
         Blocks.nopInit();
@@ -303,27 +303,30 @@ public class UltreonCraft {
         Fonts.nopInit();
         Sounds.nopInit();
 
-        for (Registry<?> registry : Registry.getRegistries()) {
+        for (var registry : Registry.getRegistries()) {
             RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
         }
+
         Registry.freeze();
 
-        LOGGER.info("Registering models");
+        UltreonCraft.LOGGER.info("Registering models");
         this.registerModels();
 
         //********************************************//
         // Post-initialize game content               //
         // Such as model baking and texture stitching //
         //********************************************//
-        LOGGER.info("Stitching textures");
+        UltreonCraft.LOGGER.info("Stitching textures");
         this.stitchTextures();
 
-        LOGGER.info("Initializing sounds");
-        for (SoundEvent sound : Registries.SOUNDS.values()) {
+        this.itemRenderer = new ItemRenderer(this, this.env);
+
+        UltreonCraft.LOGGER.info("Initializing sounds");
+        for (var sound : Registries.SOUNDS.values()) {
             sound.register();
         }
 
-        LOGGER.info("Baking models");
+        UltreonCraft.LOGGER.info("Baking models");
         this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
         if (this.deferredWidth != null && this.deferredHeight != null) {
@@ -332,43 +335,78 @@ public class UltreonCraft {
             this.camera.update();
         }
 
-        this.windowTex = this.textureManager.getTexture(id("textures/gui/window.png"));
+        this.windowTex = this.textureManager.getTexture(UltreonCraft.id("textures/gui/window.png"));
 
         LifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
+
+        this.loading = false;
 
         //*************//
         // Final stuff //
         //*************//
-        LOGGER.info("Opening title screen");
+        UltreonCraft.LOGGER.info("Opening title screen");
         this.showScreen(new TitleScreen());
 
-        savedWorld = new SavedWorld(GamePlatform.data("world"));
+        UltreonCraft.savedWorld = new SavedWorld(GamePlatform.data("world"));
 
         GamePlatform.instance.setupImGui();
 
         this.booted = true;
 
-        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
-        LOGGER.info("Game booted in " + this.bootTime + "ms");
+        this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltreonCraft.BOOT_TIMESTAMP);
+        UltreonCraft.LOGGER.info("Game booted in " + this.bootTime + "ms");
+    }
+
+    @CanIgnoreReturnValue
+    public static <T> T invokeAndWait(Callable<@NotNull T> func) {
+        return UltreonCraft.instance.submit(func).join();
+    }
+
+    public static void invokeAndWait(Runnable func) {
+        UltreonCraft.instance.submit(func).join();
+    }
+
+    @CanIgnoreReturnValue
+    public static @NotNull CompletableFuture<Void> invoke(Runnable func) {
+        return UltreonCraft.instance.submit(func);
+    }
+
+    @CanIgnoreReturnValue
+    public static <T> @NotNull CompletableFuture<T> invoke(Callable<T> func) {
+        return UltreonCraft.instance.submit(func);
+    }
+
+    public static FileHandle resource(Identifier id) {
+        return new ResourceFileHandle(id);
     }
 
     private static void uncaughtException(Thread t, Throwable e) {
-        LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
+        UltreonCraft.LOGGER.error("Exception in thread \"" + t.getName() + "\":", e);
     }
 
-    public Instant getBootTime() {
+    public static boolean isOnRenderingThread() {
+        return Thread.currentThread().getId() == UltreonCraft.instance.renderingThread.getId();
+    }
+
+    @Override
+    public <T extends Disposable> T deferDispose(T disposable) {
+        UltreonCraft.instance.disposables.add(disposable);
+        return disposable;
+    }
+
+    public Duration getBootTime() {
         return this.bootTime;
     }
 
     public void delayCrash(CrashLog crashLog) {
         Gdx.app.postRunnable(() -> {
-            CrashLog finalCrash = new CrashLog("An error occurred", crashLog, new RuntimeException("Delayed crash"));
-            crash(finalCrash);
+            var finalCrash = new CrashLog("An error occurred", crashLog, new RuntimeException("Delayed crash"));
+            UltreonCraft.crash(finalCrash);
         });
     }
 
     public static UltreonCraft get() {
-        return instance;
+        return UltreonCraft.instance;
     }
 
     public static Identifier id(String path) {
@@ -380,24 +418,24 @@ public class UltreonCraft {
     }
 
     private void loadLanguages() {
-        FileHandle internal = Gdx.files.internal("assets/craft/languages.json");
+        var internal = Gdx.files.internal("assets/craft/languages.json");
         List<String> languages;
-        try (Reader reader = internal.reader()) {
-            languages = GSON.fromJson(reader, LanguageData.class);
+        try (var reader = internal.reader()) {
+            languages = UltreonCraft.GSON.fromJson(reader, LanguageData.class);
         } catch (IOException e) {
             throw new RuntimeException("Unable to load languages register", e);
         }
 
-        for (String language : languages) {
-            this.registerLanguage(id(language));
+        for (var language : languages) {
+            this.registerLanguage(UltreonCraft.id(language));
         }
 
         LanguageRegistry.doRegistration(this::registerLanguage);
     }
 
     private void registerLanguage(Identifier id) {
-        String[] s = id.path().split("_", 2);
-        Locale locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
+        var s = id.path().split("_", 2);
+        var locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
         LanguageManager.INSTANCE.register(locale, id);
         LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
     }
@@ -418,7 +456,7 @@ public class UltreonCraft {
 	}
 
 	private void registerModels() {
-		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(id("blocks/grass_top"), id("blocks/dirt"), id("blocks/grass_side")));
+		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltreonCraft.id("blocks/grass_top"), UltreonCraft.id("blocks/dirt"), UltreonCraft.id("blocks/grass_side")));
 		BlockModelRegistry.registerDefault(Blocks.DIRT);
 		BlockModelRegistry.registerDefault(Blocks.SAND);
 		BlockModelRegistry.registerDefault(Blocks.WATER);
@@ -431,7 +469,7 @@ public class UltreonCraft {
     }
 
     private static FileHandle createDir(String dirName) {
-        FileHandle directory = GamePlatform.data(dirName);
+        var directory = GamePlatform.data(dirName);
         if (!directory.exists()) {
             directory.mkdirs();
         } else if (!directory.isDirectory()) {
@@ -455,7 +493,7 @@ public class UltreonCraft {
 
     @CanIgnoreReturnValue
     public boolean showScreen(@Nullable Screen open) {
-        Screen cur = this.currentScreen;
+        var cur = this.currentScreen;
         if (open == null && this.world == null) {
             open = new TitleScreen();
         }
@@ -463,10 +501,10 @@ public class UltreonCraft {
         if (open == null) {
             if (cur == null) return false;
 
-            EventResult result = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
+            var result = ScreenEvents.CLOSE.factory().onCloseScreen(this.currentScreen);
             if (result.isCanceled()) return false;
 
-            LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
+            UltreonCraft.LOGGER.debug("Closing screen: " + this.currentScreen.getClass());
 
             cur.hide();
             this.currentScreen = null;
@@ -474,7 +512,7 @@ public class UltreonCraft {
 
             return true;
         }
-        ValueEventResult<Screen> openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
+        var openResult = ScreenEvents.OPEN.factory().onOpenScreen(open);
         if (openResult.isCanceled()) {
             return false;
         }
@@ -484,19 +522,19 @@ public class UltreonCraft {
         }
 
         if (cur != null) {
-            EventResult closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(cur);
+            var closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(cur);
             if (closeResult.isCanceled()) return false;
 
             cur.hide();
             if (open != null) {
-                LOGGER.debug("Changing screen to: " + open.getClass());
+                UltreonCraft.LOGGER.debug("Changing screen to: " + open.getClass());
             } else {
-                LOGGER.debug("Closing screen: " + cur.getClass());
+                UltreonCraft.LOGGER.debug("Closing screen: " + cur.getClass());
             }
         } else {
             if (open != null) {
                 Gdx.input.setCursorCatched(false);
-                LOGGER.debug("Opening screen: " + open.getClass());
+                UltreonCraft.LOGGER.debug("Opening screen: " + open.getClass());
             } else {
                 return false;
             }
@@ -516,20 +554,17 @@ public class UltreonCraft {
         }
 
         try {
-            final float tickTime = 1f / TPS;
+            final var tickTime = 1f / UltreonCraft.TPS;
 
-            float deltaTime = Gdx.graphics.getDeltaTime();
+            this.pollAll();
+
+            var deltaTime = Gdx.graphics.getDeltaTime();
             this.timeUntilNextTick -= deltaTime;
             if (this.timeUntilNextTick < 0) {
                 this.timeUntilNextTick = tickTime + this.timeUntilNextTick;
 
                 this.tick();
             }
-
-            this.tasks.forEach(runnable -> {
-                runnable.run();
-                this.tasks.remove(runnable);
-            });
 
             this.input.update();
 
@@ -538,21 +573,57 @@ public class UltreonCraft {
                 Gdx.graphics.setTitle("UltraCraft v" + Metadata.INSTANCE.version);
             }
 
-            ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
-            World world = this.world;
-            WorldRenderer worldRenderer = this.worldRenderer;
+            var world = this.world;
+            var worldRenderer = this.worldRenderer;
 
-            if (this.renderWorld && world != null && worldRenderer != null) {
-                this.batch.begin(this.camera);
-                this.batch.getRenderContext().setCullFace(CULL_FACE);
-                this.batch.render(worldRenderer, this.env);
-                this.batch.end();
+            Texture worldTexture = null;
+            if (this.player != null) {
+                if (this.currentScreen == null && !GamePlatform.instance.isShowingImGui()) {
+                    this.player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
+                }
+
+                this.camera.update(this.player);
+                this.camera.far = (this.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
+//                this.camera.far = 10000;
+
+                var rotation = this.player != null ? this.player.getRotation() : new Vector2();
+                var quaternion = new Quaternion();
+                quaternion.setFromAxis(Vector3.Y, rotation.x);
+                quaternion.mul(new Quaternion(Vector3.X, rotation.y));
+                quaternion.conjugate();
+
+                if (this.renderWorld && world != null && worldRenderer != null && !worldRenderer.isDisposed()) {
+//                    this.worldFbo.begin();
+
+                    ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
+                    Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//                    this.shader.bind();
+
+                    this.modelBatch.begin(this.camera);
+                    this.modelBatch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
+                    this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
+                    this.modelBatch.render(worldRenderer, this.env);
+                    this.modelBatch.end();
+
+//                    Gdx.gl20.glUseProgram(GL_NONE);
+//                    Gdx.gl20.glFlush();
+
+//                    this.worldFbo.end(0, 0, this.getWidth(), this.getHeight());
+//                    worldTexture = this.worldFbo.getColorBufferTexture();
+                }
             }
 
+//            ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
             this.spriteBatch.begin();
+//            if (worldTexture != null) {
+//                this.spriteBatch.draw(worldTexture, 0, 0, this.getWidth(), this.getHeight());
+//                this.spriteBatch.flush();
+//                Gdx.gl20.glFlush();
+//            }
 
-            Screen screen = this.currentScreen;
-            Renderer renderer = new Renderer(this.shapes);
+            var screen = this.currentScreen;
+            var renderer = new Renderer(this.shapes);
+
             renderer.pushMatrix();
             renderer.translate(this.getDrawOffset().x, this.getDrawOffset().y);
             renderer.scale(this.guiScale, this.guiScale);
@@ -570,7 +641,7 @@ public class UltreonCraft {
 
             this.spriteBatch.end();
         } catch (Throwable t) {
-            crash(t);
+            UltreonCraft.crash(t);
         }
 
         Gdx.gl.glDisable(GL20.GL_CULL_FACE);
@@ -590,17 +661,17 @@ public class UltreonCraft {
         }
 
         if (screen != null) {
-            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((this.getHeight() - Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
+            screen.render(renderer, (int) ((Gdx.input.getX() - this.getDrawOffset().x) / this.getGuiScale()), (int) ((Gdx.input.getY() + this.getDrawOffset().y) / this.getGuiScale()), deltaTime);
         }
     }
 
     public static void crash(Throwable throwable) {
-        throwable.printStackTrace();
+        UltreonCraft.LOGGER.error("Game crash triggered:", throwable);
         try {
-            CrashLog crashLog = new CrashLog("An error occurred", throwable);
-            crash(crashLog);
+            var crashLog = new CrashLog("An unexpected error occurred", throwable);
+            UltreonCraft.crash(crashLog);
         } catch (Throwable t) {
-            LOGGER.error(FATAL_ERROR_MSG, t);
+            UltreonCraft.LOGGER.error(UltreonCraft.FATAL_ERROR_MSG, t);
             Gdx.app.exit();
         }
     }
@@ -608,21 +679,22 @@ public class UltreonCraft {
     public static void crash(CrashLog crashLog) {
         try {
             UltreonCraft.instance.fillGameInfo(crashLog);
-            ApplicationCrash crash = crashLog.createCrash();
-            crash(crash);
+            var crash = crashLog.createCrash();
+            UltreonCraft.crash(crash);
         } catch (Throwable t) {
-            LOGGER.error(FATAL_ERROR_MSG, t);
+            UltreonCraft.LOGGER.error(UltreonCraft.FATAL_ERROR_MSG, t);
             Gdx.app.exit();
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private void fillGameInfo(CrashLog crashLog) {
         if (this.world != null) {
             this.world.fillCrashInfo(crashLog);
         }
 
-        CrashCategory game = new CrashCategory("Game Details");
-        game.add("Time until crash", Duration.ofMillis(System.currentTimeMillis() - BOOT_TIMESTAMP).toString()); // Could be the game only crashes after a long time.
+        var game = new CrashCategory("Game Details");
+        game.add("Time until crash", Duration.ofMilliseconds(System.currentTimeMillis() - UltreonCraft.BOOT_TIMESTAMP).toSimpleString()); // Could be the game only crashes after a long time.
         game.add("Game booted", this.booted); // Could be that the game isn't booted yet.
         game.add("LibGDX Platform", GamePlatform.instance.getGdxPlatform().getDisplayName());
         game.add("Can Access Data", GamePlatform.instance.canAccessData());
@@ -635,24 +707,29 @@ public class UltreonCraft {
         try {
             crash.printCrash();
 
-            CrashLog crashLog = crash.getCrashLog();
+            var crashLog = crash.getCrashLog();
             GamePlatform.instance.handleCrash(crashLog);
             if (GamePlatform.instance.isDesktop()) Gdx.app.exit();
         } catch (Throwable t) {
-            LOGGER.error(FATAL_ERROR_MSG, t);
+            UltreonCraft.LOGGER.error(UltreonCraft.FATAL_ERROR_MSG, t);
             Gdx.app.exit();
         }
     }
 
     public void tick() {
-        World world = this.world;
+        var world = this.world;
         if (world != null) {
             WorldEvents.PRE_TICK.factory().onPreTick(world);
             world.tick();
             WorldEvents.POST_TICK.factory().onPostTick(world);
+
+            if (this.player != null) {
+                this.cursor = world.rayCast(new Ray(this.player.getPosition().add(0, this.player.getEyeHeight(), 0), this.player.getLookVector()));
+            }
         }
 
-        Player player = this.player;
+
+        var player = this.player;
         if (player != null) {
             this.camera.update(player);
 
@@ -670,12 +747,14 @@ public class UltreonCraft {
             this.world.despawn(this.player);
         }
 
-        Vec3i spawnPoint = this.world.getSpawnPoint();
+        var spawnPoint = this.world.getSpawnPoint();
 
         return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
+            var spawnPointY = this.world.getSpawnPoint().y;
+
             this.player = Entities.PLAYER.create(this.world);
             this.player.setHealth(this.player.getMaxHeath());
-            this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
+            this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
             this.world.spawn(this.player);
         });
     }
@@ -686,31 +765,33 @@ public class UltreonCraft {
             this.world.despawn(this.player);
         }
 
-        Vec3i spawnPoint = this.world.getSpawnPoint();
+        var spawnPoint = this.world.getSpawnPoint();
 
         this.world.updateChunksForPlayer(spawnPoint.x, spawnPoint.z);
+
+        var spawnPointY = this.world.getSpawnPoint().y;
+
         this.player = Entities.PLAYER.create(this.world);
-        LOGGER.debug("Player created, setting health now.");
+        UltreonCraft.LOGGER.debug("Player created, setting health now.");
         this.player.setHealth(this.player.getMaxHeath());
-        LOGGER.debug("Health set, setting position now.");
-        this.player.setPosition(spawnPoint.x + 0.5f, spawnPoint.y, spawnPoint.z + 0.5f);
-        LOGGER.debug("Position set, spawning in world now..");
+        UltreonCraft.LOGGER.debug("Health set, setting position now.");
+        this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
+        UltreonCraft.LOGGER.debug("Position set, spawning in world now..");
         this.world.spawn(this.player);
     }
 
     public void resize(int width, int height) {
-        this.spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+        this.spriteBatch.getProjectionMatrix().setToOrtho(0, width, height, 0, 0, 1000000);
         this.deferredWidth = width;
         this.deferredHeight = height;
 
-        //noinspection ConstantValue
         if (this.camera != null) {
             this.camera.viewportWidth = width;
             this.camera.viewportHeight = height;
             this.camera.update();
         }
 
-        Screen cur = this.currentScreen;
+        var cur = this.currentScreen;
         if (cur != null) {
             cur.resize(ceil(width / this.getGuiScale()), ceil(height / this.getGuiScale()));
         }
@@ -723,26 +804,28 @@ public class UltreonCraft {
             }
 
             this.scheduler.shutdownNow();
+            this.garbageCollector.shutdown();
 
-            if (this.world != null) {
-                this.world.dispose();
-            }
+            if (this.world != null) this.world.dispose();
 
-            this.blocksTextureAtlas.dispose();
+            if (this.blocksTextureAtlas != null) this.blocksTextureAtlas.dispose();
 
             GamePlatform.instance.dispose();
 
-            this.batch.dispose();
+            this.modelBatch.dispose();
             this.spriteBatch.dispose();
-            this.unifont.dispose();
+            if (this.unifont != null) this.unifont.dispose();
 
-            for (Font font : Registries.FONTS.values()) {
+            for (var font : Registries.FONTS.values()) {
                 font.dispose();
             }
 
+            this.disposables.forEach(Disposable::dispose);
+            this.disposables.clear();
+
             LifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
         } catch (Throwable t) {
-            t.printStackTrace();
+            UltreonCraft.crash(t);
         }
     }
 
@@ -771,11 +854,11 @@ public class UltreonCraft {
     }
 
     public void startWorld() {
-        this.showScreen(new WorldLoadScreen(getSavedWorld()));
+        this.showScreen(new WorldLoadScreen(UltreonCraft.getSavedWorld()));
     }
 
     public static SavedWorld getSavedWorld() {
-        return savedWorld;
+        return UltreonCraft.savedWorld;
     }
 
     public float getGuiScale() {
@@ -791,21 +874,31 @@ public class UltreonCraft {
     }
 
     public void exitWorldToTitle() {
-        this.exitWorldAndThen(() -> this.showScreen(new TitleScreen()));
+        this.exitWorldAndThen(() -> {
+            this.showScreen(new TitleScreen());
+        });
     }
 
     public synchronized void exitWorldAndThen(Runnable runnable) {
         this.closingWorld = true;
-        final World world = this.world;
+        final var world = this.world;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
-        this.worldRenderer = null;
-        this.world = null;
+        var worldRenderer = this.worldRenderer;
+        if (worldRenderer != null)
+            worldRenderer.dispose();
+
         CompletableFuture.runAsync(() -> {
-            world.dispose();
-            System.gc();
-            this.runLater(new Task(id("post_world_exit"), runnable));
-            this.closingWorld = false;
+            try {
+                world.dispose();
+                this.worldRenderer = null;
+                this.world = null;
+                System.gc();
+                UltreonCraft.invokeAndWait(runnable);
+                this.closingWorld = false;
+            } catch (Exception e) {
+                UltreonCraft.crash(e);
+            }
         });
     }
 
@@ -814,7 +907,7 @@ public class UltreonCraft {
     }
 
     /**
-     * @deprecated use {@link #runLater(Task)} instead.
+     * @deprecated use {@link #submit(Runnable)} instead.
      */
     @Deprecated
     public void runLater(Runnable task) {
@@ -822,17 +915,18 @@ public class UltreonCraft {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task:", e);
+                UltreonCraft.LOGGER.warn("Error occurred in task:", e);
             }
         });
     }
 
+    @Deprecated(forRemoval = true)
     public void runLater(Task task) {
         Gdx.app.postRunnable(() -> {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+                UltreonCraft.LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         });
     }
@@ -842,7 +936,7 @@ public class UltreonCraft {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+                UltreonCraft.LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         }, timeMillis, TimeUnit.MILLISECONDS);
     }
@@ -852,7 +946,7 @@ public class UltreonCraft {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Error occurred in task " + task.id() + ":", e);
+                UltreonCraft.LOGGER.warn("Error occurred in task " + task.id() + ":", e);
             }
         }, time, unit);
     }
@@ -866,7 +960,7 @@ public class UltreonCraft {
     }
 
     public boolean closeRequested() {
-        EventResult eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
+        var eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
                 this.exitWorldAndThen(() -> Gdx.app.exit());
@@ -877,8 +971,8 @@ public class UltreonCraft {
     }
 
     public void filesDropped(String[] files) {
-        Screen currentScreen = this.currentScreen;
-        List<FileHandle> handles = Arrays.stream(files).map(FileHandle::new).collect(Collectors.toList());
+        var currentScreen = this.currentScreen;
+        var handles = Arrays.stream(files).map(FileHandle::new).collect(Collectors.toList());
 
         if (currentScreen != null) {
             currentScreen.filesDropped(handles);
@@ -894,15 +988,11 @@ public class UltreonCraft {
     }
 
     private float calculateGuiScale() {
-        switch (GamePlatform.instance.getPlatformType()) {
-            case MOBILE:
-                return 4.0F;
-            case DESKTOP:
-            case WEB:
-                return 2.0F;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (GamePlatform.instance.getPlatformType()) {
+            case MOBILE -> 4.0F;
+            case DESKTOP, WEB -> 2.0F;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public boolean isPlaying() {
@@ -910,7 +1000,7 @@ public class UltreonCraft {
     }
 
     public static FileHandle getConfigDir() {
-        return instance.configDir;
+        return UltreonCraft.instance.configDir;
     }
 
     public GridPoint2 getDrawOffset() {
@@ -924,5 +1014,48 @@ public class UltreonCraft {
 
     public String getAllUnicode() {
         return this.allUnicode;
+    }
+
+    public boolean isLoading() {
+        return this.loading;
+    }
+
+    public static GameEnvironment getGameEnv() {
+        if (UltreonCraft.instance == null) return GameEnvironment.UNKNOWN;
+        return UltreonCraft.instance.gameEnv;
+    }
+
+    private static class LibGDXLogger implements ApplicationLogger {
+        private final Logger LOGGER = GamePlatform.instance.getLogger("LibGDX");
+
+        @Override
+        public void log(String tag, String message) {
+            this.LOGGER.info(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void log(String tag, String message, Throwable exception) {
+            this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
+        }
+
+        @Override
+        public void error(String tag, String message) {
+            this.LOGGER.error(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void error(String tag, String message, Throwable exception) {
+            this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
+        }
+
+        @Override
+        public void debug(String tag, String message) {
+            this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
+        }
+
+        @Override
+        public void debug(String tag, String message, Throwable exception) {
+            this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
+        }
     }
 }
