@@ -27,6 +27,8 @@ public class DebugRenderer {
 
         World world = this.game.world;
         @Nullable WorldRenderer worldRenderer = this.game.worldRenderer;
+        if (worldRenderer != null && worldRenderer.isDisposed()) worldRenderer = null;
+        if (world != null && world.isDisposed()) world = null;
 
         this.drawLine(renderer, Mesh.getManagedStatus());
 

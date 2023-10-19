@@ -955,7 +955,7 @@ public class Renderer {
         return ScissorStack.popScissors();
     }
 
-    private void flush() {
+    public void flush() {
         this.batch.flush();
         Gdx.gl.glFlush();
     }
@@ -1063,5 +1063,15 @@ public class Renderer {
         if (drawing) this.batch.end();
         block.run();
         if (drawing) this.batch.begin();
+    }
+
+    public void enableInvert() {
+//        this.flush();
+        this.batch.setBlendFunctionSeparate(GL20.GL_ONE_MINUS_DST_COLOR, GL20.GL_ONE_MINUS_SRC_COLOR, GL20.GL_ONE, GL20.GL_ZERO);
+    }
+
+    public void disableInvert() {
+//        this.flush();
+        this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 }

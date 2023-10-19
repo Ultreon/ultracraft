@@ -111,6 +111,7 @@ public class World implements Disposable {
 	private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
 	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
 	private final ExecutorService executor = Executors.newCachedThreadPool();
+	private boolean disposed;
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -869,6 +870,8 @@ public class World implements Disposable {
 
 	@Override
 	public void dispose() {
+		this.disposed = true;
+
 		GameInput.cancelVibration();
 
 		ScheduledFuture<?> saveSchedule = this.saveSchedule;
@@ -948,5 +951,9 @@ public class World implements Disposable {
 
 	public int getChunksLoaded() {
 		return this.chunksLoaded;
+	}
+
+	public boolean isDisposed() {
+		return disposed;
 	}
 }

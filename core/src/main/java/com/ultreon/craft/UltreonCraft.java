@@ -556,7 +556,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             Texture worldTexture = null;
             if (this.player != null) {
                 if (this.currentScreen == null && !GamePlatform.instance.isShowingImGui()) {
-                    this.player.rotate(-Gdx.input.getDeltaX(), -Gdx.input.getDeltaY());
+                    this.player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
                 }
 
                 this.camera.update(this.player);

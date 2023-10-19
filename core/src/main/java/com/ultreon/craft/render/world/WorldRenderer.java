@@ -14,13 +14,12 @@ import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
@@ -159,13 +158,26 @@ public final class WorldRenderer implements RenderableProvider {
 
         HitResult gameCursor = this.game.cursor;
         if (this.cursor == null) {
-            MeshBuilder build = new MeshBuilder();
-            build.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
-            BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
-            boundingBox.min.sub(0.0625f, 0.0625f, 0.0625f);
-            boundingBox.max.add(0.0625f, 0.0625f, 0.0625f);
-            BoxShapeBuilder.build(build, boundingBox.toGdx());
-            Mesh mesh = build.end();
+//            MeshBuilder build = new MeshBuilder();
+//            build.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
+//            BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
+//            BoundingBox boundingBox1 = new BoundingBox();
+//            double v = 0.001;
+//            boundingBox1.set(boundingBox);
+//            boundingBox1.min.sub(-v, v, -v);
+//            boundingBox1.max.add(-v, v, -v);
+//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
+//            boundingBox1.set(boundingBox);
+//            boundingBox1.min.sub(-v, -v, v);
+//            boundingBox1.max.add(-v, -v, v);
+//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
+//            boundingBox1.set(boundingBox);
+//            boundingBox1.min.sub(v, -v, -v);
+//            boundingBox1.max.add(v, -v, -v);
+//            BoxShapeBuilder.build(build, boundingBox1.toGdx());
+//            Mesh mesh = build.end();
+            Mesh mesh = WorldRenderer.buildOutlineBox(0.007f, Color.BLACK);
+
             int numIndices = mesh.getNumIndices();
             int numVertices = mesh.getNumVertices();
             Renderable renderable = new Renderable();
@@ -174,8 +186,9 @@ public final class WorldRenderer implements RenderableProvider {
             renderable.meshPart.offset = 0;
             renderable.meshPart.primitiveType = GL_TRIANGLES;
             Material material = new Material();
-            material.set(ColorAttribute.createDiffuse(1, 1, 1, 0.4f));
+            material.set(ColorAttribute.createDiffuse(0, 0, 0, 1f));
             material.set(new BlendingAttribute());
+            material.set(new DepthTestAttribute(false));
             renderable.material = material;
             this.cursor = renderable;
         }
@@ -187,6 +200,39 @@ public final class WorldRenderer implements RenderableProvider {
 
             renderable.worldTransform.setToTranslation(renderOffset);
             output.add(this.cursor);
+        }
+    }
+    private static Mesh buildOutlineBox(float thickness, Color color) {
+        MeshBuilder meshBuilder = new MeshBuilder();
+        meshBuilder.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
+
+        // Top face
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(1 + thickness, thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, -thickness), new Vector3(1 + thickness, 1 + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, 1 + -thickness), new Vector3(1 + thickness, thickness, 1 + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, 1 + -thickness), new Vector3(1 + thickness, 1 + thickness, 1 +thickness)));
+
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness),               new Vector3(thickness, 1 + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, -thickness),        new Vector3(1 + thickness, 1 + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, 1 + -thickness), new Vector3(1 + thickness, 1 + thickness, 1 + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, 1 + -thickness),        new Vector3(thickness, 1 + thickness, 1 + thickness)));
+
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(thickness, thickness, 1 + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, -thickness), new Vector3(1 + thickness, thickness, 1 + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, 1 + -thickness, -thickness), new Vector3(1 + thickness, 1 + thickness, 1 + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, -thickness), new Vector3(thickness, 1 + thickness, 1 + thickness)));
+
+        // Create the mesh from the mesh builder
+        return meshBuilder.end();
+    }
+
+    private void edge(MeshBuilder builder, Vector3[] vertices, float thickness) {
+        Vector3 max = new Vector3();
+        Vector3 min = new Vector3();
+        for (Vector3 vertex : vertices) {
+            max.set(vertex.x + thickness, vertex.y + thickness, vertex.z + thickness);
+            min.set(vertex.x - thickness, vertex.y -thickness, vertex.z - thickness);
+            BoxShapeBuilder.build(builder, new BoundingBox(min, max));
         }
     }
 

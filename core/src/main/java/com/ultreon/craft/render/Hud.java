@@ -12,6 +12,9 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.translations.v1.Language;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL40;
 
 public class Hud implements GameRenderable {
     private final UltreonCraft game;
@@ -56,13 +59,15 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer, Player player) {
-//        renderer.setShader(Shaders.XOR);
+        renderer.flush();
+        renderer.enableInvert();
 
-        int x = this.game.getScaledWidth() / 2;
-        int y = this.game.getScaledHeight() / 2;
-        renderer.blit(this.crosshairTex, x - 7, y - 7, 14, 14);
+        float x = this.game.getScaledWidth() / 2f;
+        float y = this.game.getScaledHeight() / 2f;
+        renderer.blit(UltreonCraft.id("textures/gui/crosshair.png"), x - 4.5f, y - 4.5f, 9, 9);
 
-//        renderer.unsetShader();
+        renderer.flush();
+        renderer.disableInvert();
     }
 
     private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
