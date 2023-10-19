@@ -1,1 +1,16 @@
-include 'desktop-merge', 'gameprovider', 'desktop', 'core', 'android'
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Quilt'
+            url = 'https://maven.quiltmc.org/repository/release'
+        }
+        // Currently needed for Intermediary and other temporary dependencies
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+}
+
+include 'desktop-merge', 'gameprovider', 'desktop', 'core'

@@ -78,6 +78,7 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
     @Nullable
     public D get(int index) {
         short paletteIndex = this.references.get(index);
+        if (this.palette.isEmpty()) return null;
         return this.palette.get(paletteIndex);
     }
 

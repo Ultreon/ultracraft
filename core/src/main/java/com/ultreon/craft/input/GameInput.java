@@ -180,7 +180,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                     Block blockNext = world.get(posNext);
                     Block selectedBlock = this.game.player.getSelectedBlock();
                     if (hitResult.collide && !block.isAir()) {
-                        if (TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+                        if (GameInput.TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
                             world.set(pos, Blocks.AIR);
                             System.out.println("Break Block");
                             this.nextBreak = System.currentTimeMillis() + 500;
@@ -213,28 +213,28 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                     Vec3d tmp = new Vec3d();
                     this.game.playerInput.tick(speed);
                     Vector3 velocity = this.game.playerInput.getVelocity();
-                    vel.set(velocity.x, velocity.y, velocity.z);
+                    this.vel.set(velocity.x, velocity.y, velocity.z);
 
                     if (player.isInWater() && this.game.playerInput.up) {
                         tmp.set(0, 1, 0).nor().mul(speed);
-                        vel.add(tmp);
+                        this.vel.add(tmp);
                     }
                     if (player.isFlying()) {
                         if (this.game.playerInput.up) {
                             tmp.set(0, 1, 0).nor().mul(speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                         if (this.game.playerInput.down) {
                             tmp.set(0, 1, 0).nor().mul(-speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                     }
 
-                    vel.x *= deltaTime * UltreonCraft.TPS;
-                    vel.y *= deltaTime * UltreonCraft.TPS;
-                    vel.z *= deltaTime * UltreonCraft.TPS;
+                    this.vel.x *= deltaTime * UltreonCraft.TPS;
+                    this.vel.y *= deltaTime * UltreonCraft.TPS;
+                    this.vel.z *= deltaTime * UltreonCraft.TPS;
 
-                    player.setVelocity(player.getVelocity().add(vel));
+                    player.setVelocity(player.getVelocity().add(this.vel));
                 } else {
                     player.setX(0);
                     player.setZ(0);

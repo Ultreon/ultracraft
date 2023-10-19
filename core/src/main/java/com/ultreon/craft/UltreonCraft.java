@@ -57,6 +57,8 @@ import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.text.LanguageData;
 import com.ultreon.craft.util.GG;
+import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.SavedWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
@@ -164,6 +166,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private final List<Disposable> disposables = new CopyOnWriteArrayList<>();
     private boolean loading;
     private final Thread renderingThread;
+    public HitResult cursor;
 
     public UltreonCraft(String[] args) throws Throwable {
         UltreonCraft.LOGGER.info("Booting game!");
@@ -244,7 +247,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         var config = new DepthShader.Config();
         config.defaultCullFace = GL20.GL_FRONT;
         this.batch = new ModelBatch(new DefaultShaderProvider(config));
-        this.batch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
+//        this.batch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
         this.camera.far = 2;
@@ -552,7 +555,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 }
 
                 this.camera.update(this.player);
-                this.camera.far = (this.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
+//                this.camera.far = (this.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
+                this.camera.far = 10000;
 
                 var rotation = this.player != null ? this.player.getRotation() : new Vector2();
                 var quaternion = new Quaternion();
@@ -670,7 +674,12 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             WorldEvents.PRE_TICK.factory().onPreTick(world);
             world.tick();
             WorldEvents.POST_TICK.factory().onPostTick(world);
+
+            if (this.player != null) {
+                this.cursor = world.rayCast(new Ray(this.player.getPosition().add(0, this.player.getEyeHeight(), 0), this.player.getLookVector()));
+            }
         }
+
 
         var player = this.player;
         if (player != null) {

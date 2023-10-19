@@ -127,7 +127,7 @@ public class Entity {
         this.move(this.velocityX, this.velocityY, this.velocityZ);
 
         this.velocityX *= 0.6F;
-        this.velocityY *= 0.98F;
+        this.velocityY *= this.noGravity ? 0.6F : 0.98F;
         this.velocityZ *= 0.6F;
 
         if (this.onGround) {

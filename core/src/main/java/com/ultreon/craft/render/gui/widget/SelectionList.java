@@ -61,7 +61,6 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         renderer.pushMatrix();
         renderer.translate(0, this.scrollY);
-        System.out.println("this.x = " + this.x);
 //        if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
             this.renderChildren(renderer, mouseX, mouseY, deltaTime);
 //            renderer.popScissors();
@@ -258,17 +257,17 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
             this.x = this.list.x;
             this.y = this.list.y + (int) (-this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
-            this.width = this.list.width - SCROLLBAR_WIDTH;
+            this.width = this.list.width - SelectionList.SCROLLBAR_WIDTH;
             this.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;
             if (itemRenderer != null) {
-//                if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
+                if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
                     if (selected) {
                         renderer.box(this.x, this.y, this.width - 2, this.height - 2, Color.rgb(0xffffff));
                     }
                     itemRenderer.render(renderer, this.value, this.y, mouseX, mouseY, selected, deltaTime);
-//                    renderer.popScissors();
-//                }
+                    renderer.popScissors();
+                }
             }
         }
 

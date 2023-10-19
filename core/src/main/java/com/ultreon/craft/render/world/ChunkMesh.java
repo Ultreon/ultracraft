@@ -6,13 +6,18 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Pool;
-import com.ultreon.craft.world.Section;
+import com.ultreon.craft.world.Chunk;
 
 public class ChunkMesh implements Pool.Poolable {
     public final Renderable renderable;
     public final MeshPart meshPart;
     public final Matrix4 transform;
-    public Section section;
+    public Chunk chunk;
+    private static long meshDisposes = 0L;
+
+    public static long getMeshesDisposed() {
+        return ChunkMesh.meshDisposes;
+    }
 
     public ChunkMesh() {
         this(new Renderable());
@@ -37,8 +42,13 @@ public class ChunkMesh implements Pool.Poolable {
 
     @Override
     public void reset() {
-        this.meshPart.mesh.dispose();
-        this.meshPart.mesh = null;
+        ChunkMesh.meshDisposes++;
+        if (this.meshPart.mesh != null) {
+            WorldRenderer.vertexCount -= this.meshPart.mesh.getMaxVertices();
+            this.meshPart.mesh.dispose();
+
+            this.meshPart.mesh = null;
+        }
         this.meshPart.id = null;
         this.meshPart.center.setZero();
         this.meshPart.halfExtents.setZero();
@@ -46,7 +56,6 @@ public class ChunkMesh implements Pool.Poolable {
         this.meshPart.primitiveType = 0;
         this.meshPart.size = 0;
         this.meshPart.radius = -1;
-        this.meshPart.update();
         this.transform.idt();
         this.renderable.material = null;
         this.renderable.environment = null;

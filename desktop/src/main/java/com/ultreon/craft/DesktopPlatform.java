@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
+import com.ultreon.craft.desktop.client.gui.screen.ModIconOverrides;
 import com.ultreon.craft.desktop.client.gui.screen.ModListScreen;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
@@ -13,6 +14,7 @@ import com.ultreon.craft.desktop.mods.ModInit;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.resources.v0.ResourceManager;
@@ -287,6 +289,9 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public void setupMods() {
         super.setupMods();
+
+        ModIconOverrides.set("craft", UltreonCraft.id("icon.png"));
+        ModIconOverrides.set("libgdx", new Identifier("libgdx", "icon.png"));
 
         // Invoke entry points.
         EntrypointUtil.invoke(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);

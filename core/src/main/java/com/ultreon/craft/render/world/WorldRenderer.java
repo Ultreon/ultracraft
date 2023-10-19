@@ -1,22 +1,28 @@
 package com.ultreon.craft.render.world;
 
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeType;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.client.ClientSectionData;
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
@@ -27,10 +33,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.badlogic.gdx.graphics.GL20.GL_LINES;
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public final class WorldRenderer implements RenderableProvider {
+    static long vertexCount;
+    private static long chunkMeshFrees;
     private final ChunkMeshBuilder meshBuilder;
     private final Material material;
     private int visibleChunks;
@@ -39,7 +48,6 @@ public final class WorldRenderer implements RenderableProvider {
     private final World world;
     private final UltreonCraft game = UltreonCraft.get();
 
-    private static long freeMeshes;
     private static long poolFree;
     private static int poolPeak;
     private static int poolMax;
@@ -49,6 +57,7 @@ public final class WorldRenderer implements RenderableProvider {
             return new ChunkMesh();
         }
     };
+    private Renderable cursor;
 
     public WorldRenderer(World world) {
         this.world = world;
@@ -67,10 +76,29 @@ public final class WorldRenderer implements RenderableProvider {
             indices[i + 5] = j;
         }
 
-        this.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
+        Texture texture = this.game.blocksTextureAtlas.getTexture();
+        this.material = new Material();
+        this.material.set(TextureAttribute.createDiffuse(texture));
         this.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
         this.meshBuilder = new ChunkMeshBuilder(indices);
+    }
+
+    public static long getChunkMeshFrees() {
+        return WorldRenderer.chunkMeshFrees;
+    }
+
+    public static long getVertexCount() {
+        return WorldRenderer.vertexCount;
+    }
+
+    public void free(Chunk chunk) {
+        if (!UltreonCraft.isOnRenderingThread()) {
+            UltreonCraft.invoke(() -> this.free(chunk));
+            return;
+        }
+        this.pool.free(chunk.mesh);
+        WorldRenderer.chunkMeshFrees++;
     }
 
     @Override
@@ -87,35 +115,53 @@ public final class WorldRenderer implements RenderableProvider {
         for (var chunk : chunks) {
             if (!chunk.isReady()) continue;
 
-            for (Section section : chunk.getSections()) {
-                if (!section.isReady()) continue;
+            Vec3i chunkOffset = chunk.getOffset();
+            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+            chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
-                Vec3i sectionOffset = section.getOffset();
-                Vec3f offset = sectionOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
-                section.renderOffset.set(offset.x, offset.y, offset.z);
+            if (chunk.mesh == null)
+                chunk.mesh = this.meshBuilder.buildChunk(this.pool.obtain(), chunk);
 
-                ChunkMesh chunkMesh = this.pool.obtain();
+            chunk.mesh.chunk = chunk;
+            chunk.mesh.renderable.material = this.material;
+            chunk.mesh.transform.setToTranslation(chunk.renderOffset);
 
-                this.freeOldMesh(chunkMesh);
+            output.add(chunk.mesh.renderable);
 
-                if (section.chunkMesh == null && !section.isDisposed()) {
-                    section.chunkMesh = chunkMesh;
-                    chunkMesh.section = section;
-                }
-
-                this.meshBuilder.buildMesh(chunkMesh, section);
-
-                chunkMesh.section = section;
-                chunkMesh.renderable.material = this.material;
-                chunkMesh.meshPart.primitiveType = GL20.GL_TRIANGLES;
-                chunkMesh.transform.setToTranslation(offset.x, offset.y, offset.z);
-
-                output.add(chunkMesh.renderable);
-
-                this.visibleChunks++;
-            }
+            this.visibleChunks++;
 
             this.doPoolStatistics();
+        }
+
+        HitResult gameCursor = this.game.cursor;
+        if (this.cursor == null) {
+            MeshBuilder build = new MeshBuilder();
+            build.begin(new VertexAttributes(VertexAttribute.Position()), GL_LINES);
+            BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
+            boundingBox.min.sub(.001, .001, .001);
+            boundingBox.max.add(.001, .001, .001);
+            BoxShapeBuilder.build(build, boundingBox.toGdx());
+            Mesh mesh = build.end();
+            int numIndices = mesh.getNumIndices();
+            int numVertices = mesh.getNumVertices();
+            Renderable renderable = new Renderable();
+            renderable.meshPart.mesh = mesh;
+            renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+            renderable.meshPart.offset = 0;
+            renderable.meshPart.primitiveType = GL_LINES;
+            Material material = new Material();
+            material.set(ColorAttribute.createDiffuse(Color.BLACK));
+            renderable.material = material;
+            this.cursor = renderable;
+        }
+        if (gameCursor != null && gameCursor.collide) {
+            Renderable renderable = this.cursor;
+            Vec3i pos = gameCursor.pos;
+            Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+            Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+
+            renderable.worldTransform.setToTranslation(renderOffset);
+            output.add(this.cursor);
         }
     }
 
@@ -123,19 +169,6 @@ public final class WorldRenderer implements RenderableProvider {
         WorldRenderer.poolFree = this.pool.getFree();
         WorldRenderer.poolPeak = this.pool.peak;
         WorldRenderer.poolMax = this.pool.max;
-    }
-
-    private void putMeshData(ChunkMesh chunkMesh, Section section, ClientSectionData clientData, Vec3f offset) {
-    }
-
-    private void freeOldMesh(ChunkMesh chunkMesh) {
-        final Section oldSection = chunkMesh.section;
-        if (oldSection != null && oldSection.isDisposed()) {
-            oldSection.chunkMesh = null;
-            this.pool.free(chunkMesh);
-
-            WorldRenderer.freeMeshes++;
-        }
     }
 
     @NotNull
@@ -181,10 +214,6 @@ public final class WorldRenderer implements RenderableProvider {
         return WorldRenderer.poolMax;
     }
 
-    public static long getFreeMeshes() {
-        return WorldRenderer.freeMeshes;
-    }
-
     public World getWorld() {
         return this.world;
     }
@@ -192,5 +221,12 @@ public final class WorldRenderer implements RenderableProvider {
     public void dispose() {
         this.pool.clear();
         this.pool.flush();
+        Renderable cursor1 = this.cursor;
+        if (cursor1 != null) {
+            Mesh mesh = cursor1.meshPart.mesh;
+            if (mesh != null) {
+                mesh.dispose();
+            }
+        }
     }
 }

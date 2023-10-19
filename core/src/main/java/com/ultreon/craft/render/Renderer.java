@@ -349,37 +349,34 @@ public class Renderer {
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F, backgroundColor);
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
-        this.blit(id, x, y, width, height, u, v, width, height, backgroundColor);
+        Texture texture = this.textureManager.getTexture(id);
+        this.blit(id, x, y, width, height, u, v, texture.getWidth(), texture.getHeight(), backgroundColor);
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
-        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
+        Texture texture = this.textureManager.getTexture(id);
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, texture.getWidth(), texture.getHeight(), backgroundColor);
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F);
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v) {
-        this.blit(id, x, y, width, height, u, v, width, height);
+        Texture texture = this.textureManager.getTexture(id);
+        this.blit(id, x, y, width, height, u, v, texture.getWidth(), texture.getHeight());
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
-        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+        Texture texture = this.textureManager.getTexture(id);
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, texture.getWidth(), texture.getHeight());
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
         this.batch.setColor(this.textureColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
@@ -387,7 +384,6 @@ public class Renderer {
         this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
-    @Deprecated(forRemoval = true)
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
@@ -919,6 +915,8 @@ public class Renderer {
 
         if (rect.width < 1) return false;
         if (rect.height < 1) return false;
+
+        rect.y = Gdx.graphics.getHeight() - rect.y - rect.height;
 
         this.flush();
         return ScissorStack.pushScissors(rect);

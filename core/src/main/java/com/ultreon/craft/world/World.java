@@ -472,6 +472,12 @@ public class World implements Disposable {
 		return WorldRayCaster.rayCast(new HitResult(ray), this);
 	}
 
+	public HitResult rayCast(Ray ray, float distance) {
+		HitResult hitResult = new HitResult(ray);
+		hitResult.distanceMax = distance;
+		return WorldRayCaster.rayCast(hitResult, this);
+	}
+
 	protected CompletableFuture<Chunk> loadChunkAsync(ChunkPos pos) {
 		return this.loadChunkAsync(pos.x(), pos.z());
 	}
@@ -573,11 +579,13 @@ public class World implements Disposable {
 		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		try {
-			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
-				for (int by = 0; by < CHUNK_SIZE; by++) {
-					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
-				}
-			}
+//			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
+//				for (int by = 0; by < CHUNK_SIZE; by++) {
+//					this.generator.processColumn(chunk, bx, by, CHUNK_HEIGHT);
+//				}
+//			}
+
+			chunk.set(8, 8, 8, Blocks.GRASS_BLOCK);
 
 			if (!this.putChunk(pos, chunk)) {
 				LOGGER.warn(MARKER, "Tried to overwrite chunk " + chunk.pos);
@@ -595,17 +603,16 @@ public class World implements Disposable {
 	}
 
 	private void renderChunk(int x, int z, Chunk chunk) {
-		chunk.dirty = false;
 		for (Section section : chunk.getSections()) {
 			this.game.submit(new Task(new Identifier("post_section_render"), () -> {
-				section.ready = true;
 				section.dirty = true;
+				section.ready = true;
 			}));
 		}
 
 		this.game.submit(new Task(new Identifier("post_chunk_render"), () -> {
-			chunk.ready = true;
 			chunk.dirty = true;
+			chunk.ready = true;
 		}));
 	}
 

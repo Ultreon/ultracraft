@@ -1,6 +1,8 @@
 //file:noinspection GroovyUnusedCatchParameter
 
 
+//import com.ultreon.craftutils.CraftUtilsPlugin
+//import com.ultreon.craftutils.ProjectType
 import org.panteleyev.jpackage.ImageType
 
 import java.nio.file.Files
@@ -44,9 +46,10 @@ apply plugin: 'java-library'
 // Setting up main properties //
 //****************************//
 
-// Project properties.
-version project_version
-group project_group
+//projectConfig {
+//    type ProjectType.Common
+//    jarDependTasks({[copyDependencies, copyJar]})
+//}
 
 archivesBaseName = archives_base_name + "-gameprovider"
 
@@ -206,11 +209,6 @@ tasks.create('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
 
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
-}
-
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
@@ -220,8 +218,8 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 delete "$projectDir/build/jars"
@@ -253,7 +251,7 @@ jpackage {
     input  = "$projectDir/build/jars"
     destination = "$projectDir/build/bin"
 
-    appName = project.property("app_name").toString()
+    appName = app_name
     appVersion = project.version.toString()
     vendor = "Ultreon Team"
     copyright = "Copyright (c) 2023 Ultreon Team"
@@ -287,6 +285,7 @@ jpackage {
         destination = "$rootProject.projectDir/build/tmp"
 
         tasks.register("createAppImage", Zip) {
+            def app_name = app_name
             from fileTree("$rootProject.projectDir/build/tmp/$app_name")
             archiveFileName = "${app_name}.zip"
             destinationDirectory = file("$projectDir/build/dist/")

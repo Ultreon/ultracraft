@@ -1,6 +1,9 @@
 package com.ultreon.craft.render;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Mesh;
+import com.ultreon.craft.render.world.ChunkMesh;
+import com.ultreon.craft.render.world.ChunkMeshBuilder;
 import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.Section;
@@ -29,10 +32,6 @@ public class DebugRenderer {
         // World
         if (world != null) {
             this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
-            if (worldRenderer != null) {
-                this.drawLine(renderer, "visible chunks", worldRenderer.getVisibleChunks() + "/" + worldRenderer.getLoadedChunks());
-            }
-
             // Player
             Player player = this.game.player;
             if (player != null) {
@@ -48,8 +47,16 @@ public class DebugRenderer {
                 this.drawLine(renderer, "chunk shown", world.getChunkAt(blockPosition) != null);
             }
 
-            this.drawLine(renderer, "section disposes", Section.getDisposeCount());
-            this.drawLine(renderer, "chunk mesh disposes", WorldRenderer.getFreeMeshes());
+            this.drawLine(renderer, "meshes disposed", ChunkMesh.getMeshesDisposed());
+            this.drawLine(renderer, "meshes built", ChunkMeshBuilder.getMeshesBuilt());
+            this.drawLine(renderer, "managed meshes status", Mesh.getManagedStatus());
+            this.drawLine(renderer, "vertex count", WorldRenderer.getVertexCount());
+
+            if (worldRenderer != null) {
+                this.drawLine(renderer, "visible chunks", worldRenderer.getVisibleChunks() + "/" + worldRenderer.getLoadedChunks());
+            }
+
+            this.drawLine(renderer, "chunk mesh disposes", WorldRenderer.getChunkMeshFrees());
             this.drawLine(renderer, "chunk loads", World.getChunkLoads());
             this.drawLine(renderer, "chunk unloads", World.getChunkUnloads());
             this.drawLine(renderer, "chunk saves", World.getChunkSaves());

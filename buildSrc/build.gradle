@@ -1,27 +1,36 @@
 plugins {
     id 'java-gradle-plugin' // so we can assign and ID to our plugin
     id 'org.jetbrains.kotlin.jvm' version "1.9.0"
+    id 'java'
+    id 'java-library'
 }
 
 dependencies {
     api 'org.ow2.asm:asm:9.6'
     api 'com.google.code.gson:gson:2.10.1'
+    compileOnly api('gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:1.1.7')
+}
+
+java {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+}
+
+kotlin {
+    jvmToolchain 17
 }
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 gradlePlugin {
     plugins {
-        // here we register our plugin with an ID
-        register("extra-java-module-info") {
-            id = "extra-java-module-info"
-            implementationClass = "org.gradle.sample.transform.javamodules.ExtraModuleInfoPlugin"
-        }
-        register("ultracrafter") {
-            id = "ultracrafter"
-            implementationClass = "com.ultreon.bubbles.gradle.BubblesGradlePlugin"
+        register("craftutils") {
+            id = "craftutils"
+            implementationClass = "com.ultreon.craftutils.CraftUtilsPlugin"
         }
     }
+
 }

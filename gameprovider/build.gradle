@@ -1,3 +1,5 @@
+//import com.ultreon.craftutils.ProjectType
+
 buildscript {
     repositories {
         mavenLocal()
@@ -28,11 +30,16 @@ plugins {
 version project_version
 group project_group // https://maven.apache.org/guides/mini/guide-naming-conventions.html
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '11' // Need this here so eclipse task generates correctly.
+//projectConfig {
+//    type ProjectType.Gameprovider
+//}
 
-println("Current version: $project_version")
-println("Project: $group:$archivesBaseName")
-println("Bulding a Java $compileJava.targetCompatibility project...")
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "17" // Need this here so eclipse task generates correctly.
 
 repositories {
     mavenCentral()

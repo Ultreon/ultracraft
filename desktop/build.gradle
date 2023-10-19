@@ -1,5 +1,8 @@
 //file:noinspection GroovyUnusedCatchParameter
 
+
+//import com.ultreon.craftutils.ProjectType
+
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
@@ -21,7 +24,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.11.0'
+        classpath group: 'commons-io', name: 'commons-io', version: '2.13.0'
         classpath "com.google.code.gson:gson:2.10.1"
     }
 }
@@ -35,18 +38,14 @@ plugins {
 }
 
 apply plugin: 'java'
-apply plugin: 'loom'
 apply plugin: 'java-library'
 
 //****************************//
 // Setting up main properties //
 //****************************//
-
-// Project properties.
-version project_version
-group project_group
-
-archivesBaseName = archives_base_name
+//projectConfig {
+//    type ProjectType.Desktop
+//}
 
 java {
     withSourcesJar()
@@ -196,11 +195,6 @@ jar {
 tasks.register('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
-
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
-}
 
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE

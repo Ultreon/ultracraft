@@ -1,5 +1,8 @@
 //file:noinspection GroovyUnusedCatchParameter
 
+
+//import com.ultreon.craftutils.ProjectType
+
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -20,7 +23,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'commons-io', name: 'commons-io', version: '2.11.0'
+        classpath group: 'commons-io', name: 'commons-io', version: '2.13.0'
         classpath "com.google.code.gson:gson:2.10.1"
     }
 }
@@ -37,22 +40,22 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-//apply plugin: 'maven-publish'
+//apply plugin: 'craftutils'
 
 //****************************//
 // Setting up main properties //
 //****************************//
 
-// Project properties.
-version project_version
-group project_group
+//projectConfig {
+//    type ProjectType.Common
+//}
 
 java {
     withSourcesJar()
     withJavadocJar()
     
-    sourceCompatibility("11")
-    targetCompatibility("11")
+    sourceCompatibility("17")
+    targetCompatibility("17")
 }
 
 dependencies {
@@ -100,10 +103,10 @@ processResources {
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
-    inputs.property "version", rootProject.version
+    inputs.property "version", version
 
     filesMatching("metadata.json") {
-        expand(["version": rootProject.version])
+        expand(["version": version])
     }
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
@@ -114,7 +117,7 @@ jar {
         //noinspection GroovyAssignabilityCheck
         attributes 'Implementation-Title': 'Ultreon Craft',
                 'Implementation-Vendor': 'Ultreon Team',
-                project_version: project.project_version,
+                project_version: project.version,
                 'Main-Class': 'com.ultreon.craft.DesktopLauncher',
                 'Multi-Release': 'true'
     }
@@ -133,11 +136,6 @@ jar {
 tasks.register('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
-
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
-}
 
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE

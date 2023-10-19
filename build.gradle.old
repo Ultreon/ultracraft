@@ -1,18 +1,9 @@
-//file:noinspection GroovyUnusedCatchParameter
-
-import org.jetbrains.gradle.ext.Application
-import org.jetbrains.gradle.ext.JavaRunConfiguration
-import org.jetbrains.gradle.ext.ModuleRunConfiguration
-import org.jetbrains.gradle.ext.BaseRunConfiguration
-import org.jetbrains.gradle.ext.BeforeRunTask
 import org.jetbrains.gradle.ext.GradleTask
 
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
-import static java.lang.System.getenv
-
+//file:noinspection GroovyUnusedCatchParameter
 buildscript {
     repositories {
         mavenCentral()
@@ -35,6 +26,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:1.1.7"
     }
 }
 
@@ -42,18 +34,30 @@ buildscript {
 //     Plugins     //
 //*****************//
 plugins {
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id "idea"
 }
 
+//noinspection JavaPluginLanguageLevel
 apply plugin: "java"
+//noinspection JavaPluginLanguageLevel
 apply plugin: "java-library"
+apply plugin: "org.jetbrains.gradle.plugin.idea-ext"
+apply plugin: "craftutils"
 
 //****************************//
 // Setting up main properties //
 //****************************//
 
-version project_version
-group project_group
+craftutils {
+    projectName = "Ultracraft"
+    projectVersion "0.1.0"
+    projectGroup "com.ultreon.craft"
+    projectId "ultracraft"
+    production true
+
+    coreProject project(":core")
+    desktopProject project(":desktop")
+}
 
 //**********************//
 //     Repositories     //
@@ -62,7 +66,6 @@ repositories {
     mavenCentral()
     mavenLocal()
     google()
-    jcenter()
     maven {
         name "Atlassian"
         url "https://maven.atlassian.com/3rdparty/"
@@ -88,26 +91,28 @@ repositories {
 /*****************
  * Configurations
  */
-configurations {
-    // configuration that holds jars to include in the jar
-    implementation {
-        canBeResolved true
+beforeEvaluate {
+    configurations {
+        // configuration that holds jars to include in the jar
+        implementation {
+            canBeResolved true
+        }
+        include {
+            canBeResolved true
+        }
+        addToJar {
+            canBeResolved true
+        }
     }
-    include {
-        canBeResolved true
-    }
-    addToJar {
-        canBeResolved true
-    }
-}
 
-/***************
- * Dependencies
- */
-dependencies {
-    // Projects
-    implementation(project(":core"))
-    implementation(project(":desktop"))
+    /***************
+     * Dependencies
+     */
+    dependencies {
+        // Projects
+        implementation(project(":core"))
+        implementation(project(":desktop"))
+    }
 }
 
 allprojects {
@@ -165,17 +170,6 @@ allprojects {
     dependencies {
 
     }
-
-//    publish.dependsOn build
-}
-
-tasks.create('prepareRun', {
-    Files.createDirectories(Paths.get(projectDir.getAbsolutePath(), "run"))
-})
-
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -186,82 +180,18 @@ tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
-task createExec {
-    doFirst {
-        if (!file("build").exists()) {
-            mkdir "build"
-        }
-        mkdir "build/exec/"
-        if (file("build/exec/lib/").exists()) {
-            delete fileTree("build/exec/lib/")
-        }
-        copy {
-            from file("bin/start.bat")
-            into file("build/exec/")
-        }
-        copy {
-            from file("bin/start-unix.sh")
-            into file("build/exec/")
-        }
-        copy {
-            from file("bin/start-mac.sh")
-            into file("build/exec/")
-        }
-        copy {
-            from jar.outputs.files.singleFile
-            into file("build/exec/")
-            rename ".*", "ultreon-craft.jar"
-        }
-        mkdir "build/exec/lib/"
-        copy {
-            from fileTree("build/dependencies/")
-            into file("build/exec/lib/")
-        }
-    }
-}
-
-dependencies {
-    runtimeOnly project(":core")
-    runtimeOnly project(":desktop")
-    runtimeOnly project(":desktop-merge")
-    runtimeOnly project(":gameprovider")
-}
-
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
-
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 println("OS: " + System.getProperty("os.name") + " Version: " + System.getProperty("os.version"))
 
 println("Current version: " + version)
 println("Project: " + group + ":" + name)
 
-mkdir("$buildDir/bubbles")
+def launchFile = file("$projectDir/build/craftutils/launch.cfg")
 
-def ps = System.getProperty("path.separator")
-def files = configurations.runtimeClasspath
-def strm = (files.toList()).stream()
-def rcl = String.join(ps, strm.map {
-    it.path
-}.filter{it != null }.toList())
-//\tfabric.remapClasspathFile=$buildDir/bubbles/classpath.txt
-//\tfabric.classPathGroups=$buildDir/classes/java/main/$ps$buildDir/resources/main/$ps${project(":core").buildDir}/classes/java/main/$ps${project(":core").buildDir}/resources/main/$ps${project(":desktop").buildDir}/classes/java/main/$ps${project(":desktop").buildDir}/resources/main/$ps${project(":gameprovider").buildDir}/classes/java/main/$ps${project(":gameprovider").buildDir}/resources/main/$ps$rcl
-def conf = """
-commonProperties
-\tfabric.development=true
-\tlog4j2.formatMsgNoLookups=true
-\tfabric.log.disableAnsi=false
-\tlog4j.configurationFile=$projectDir/log4j.xml
-"""
-
-def launchFile = file("$buildDir/bubbles/launch.cfg")
-Files.writeString(launchFile.toPath(), conf, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
-
-def cp = "$rcl"
-
-def cpFile = file("$buildDir.absolutePath/bubbles/classpath.txt")
-Files.writeString(cpFile.toPath(), cp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
+evaluationDependsOnChildren()
 
 idea{
     project{
@@ -271,13 +201,12 @@ idea{
             }
 
             runConfigurations {
-                "Ultracraft"(Application) {                       // Create new run configuration "MyApp" that will run class foo.App
+                "Ultracraft"(org.jetbrains.gradle.ext.Application) {                       // Create new run configuration "MyApp" that will run class foo.App
                     jvmArgs = "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=$launchFile.path -Dfabric.dli.env=CLIENT -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient"
                     mainClass = 'net.fabricmc.devlaunchinjector.Main'
                     moduleName = idea.module.name + ".desktop.main"
                     workingDirectory = "$projectDir/run/"
                     programParameters = "--gameDir=."
-                    beforeRun.add(new GradleTask("build"))
                 }
             }
         }

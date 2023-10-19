@@ -2,6 +2,7 @@ package com.ultreon.gameprovider.craft;
 
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import net.fabricmc.api.EnvType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.loader.api.ModDependency;
 import org.quiltmc.loader.api.ModDependencyIdentifier;
@@ -100,13 +101,12 @@ public class UltracraftGameprovider implements GameProvider {
     @Override
     public Collection<BuiltinMod> getBuiltinMods() {
         InternalModMetadata built = this.createUltracraftMetadata();
-
-        return Collections.singletonList(new BuiltinMod(this.gameJars, built));
+        return List.of(new BuiltinMod(this.gameJars, built), new BuiltinMod(Collections.singletonList(this.libGdxJar), this.createLibGDXMetadata()));
     }
 
     private InternalModMetadata createUltracraftMetadata() {
         V1ModMetadataBuilder metadata = new V1ModMetadataBuilder();
-        metadata.id = "ultracraft";
+        metadata.id = "craft";
         metadata.group = "builtin";
         metadata.version = Version.of(this.getNormalizedGameVersion());
         metadata.name = "Ultracraft";
@@ -239,6 +239,10 @@ public class UltracraftGameprovider implements GameProvider {
         metadata.group = "builtin";
         metadata.version = Version.of(this.versions.getProperty("libgdx"));
         metadata.name = "LibGDX";
+        metadata.contributors.add(new ModContributorImpl("LibGDX Development Team", List.of("Team")));
+        metadata.contactInformation.put("homepage", "https://libgdx.com");
+        metadata.contactInformation.put("discord", "https://libgdx.com/community/discord/");
+        metadata.contactInformation.put("reddit", "https://reddit.com/r/libgdx/");
         metadata.licenses.add(ModLicenseImpl.fromIdentifierOrDefault("Apache-2.0"));
         return metadata.build();
     }
@@ -389,7 +393,7 @@ public class UltracraftGameprovider implements GameProvider {
         System.setProperty("log4j2.formatMsgNoLookups", "true"); // lookups are not used by mc and cause issues with older log4j2 versions
 
         try {
-            final var logHandlerClsName = "com.ultreon.gameprovider.craft.UltreonCraftLogHandler";
+            final var logHandlerClsName = "com.ultreon.gameprovider.craft.UltracraftLogHandler";
 
             var prevCl = Thread.currentThread().getContextClassLoader();
             Class<?> logHandlerCls;
@@ -465,11 +469,6 @@ public class UltracraftGameprovider implements GameProvider {
     @Override
     public Arguments getArguments() {
         return this.arguments;
-    }
-
-    @Override
-    public boolean canOpenGui() {
-        return true;
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ModListScreen extends Screen {
+    private static final Identifier DEFAULT_MOD_ICON = UltreonCraft.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
@@ -37,10 +38,7 @@ public class ModListScreen extends Screen {
         this.list.setItemRenderer(this::renderItem);
         this.list.setSelectable(true);
         QuiltLoader.getAllMods().stream().sorted(Comparator.comparing(o -> o.metadata().name()))
-                .filter(modContainer -> {
-                    System.out.println("modContainer.getSourceType() = " + modContainer.getSourceType());
-                    return modContainer.getSourceType() != ModContainer.BasicSourceType.OTHER;
-                })
+                .filter(modContainer -> modContainer.getSourceType() != ModContainer.BasicSourceType.OTHER)
                 .forEachOrdered(this.list::addEntry);
     }
 
@@ -49,10 +47,20 @@ public class ModListScreen extends Screen {
         var x = this.list.getX();
 
         renderer.drawText(metadata.name(), x + 50, y + this.list.getItemHeight() - 34);
-        renderer.drawText(metadata.id(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
+        renderer.drawText("Version: " + metadata.version().raw(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
 
+        this.drawIcon(renderer, metadata, x + 7, y + 7, 32);
+    }
+
+    private void drawIcon(Renderer renderer, ModMetadata metadata, int x, int y, int size) {
+        Identifier iconId;
         @Nullable String iconPath = metadata.icon(128);
-        if (iconPath != null) {
+        Identifier overrideId = ModIconOverrides.get(metadata.id());
+        TextureManager textureManager = this.game.getTextureManager();
+        if (overrideId != null) {
+            textureManager.registerTexture(overrideId);
+            iconId = textureManager.isTextureLoaded(overrideId) ? overrideId : ModListScreen.DEFAULT_MOD_ICON;
+        } else if (iconPath != null) {
             FileHandle iconFileHandle = Gdx.files.internal(iconPath);
             if (!iconFileHandle.exists()) return;
             if (!ModListScreen.TEXTURES.containsKey(metadata.id())) {
@@ -60,10 +68,15 @@ public class ModListScreen extends Screen {
                 texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                 ModListScreen.TEXTURES.put(metadata.icon(128), texture);
             }
-            Texture texture = ModListScreen.TEXTURES.get(metadata.id());
-            this.game.getTextureManager().registerTexture(UltreonCraft.id("generated/mod_icon/" + metadata.id() + ".png"), texture);
-            renderer.blit(texture, x + 2 , y + 2, 42, 42, 0, 0, texture.getWidth(), texture.getHeight(), texture.getWidth(), texture.getHeight());
+            Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.id(), s -> new Texture(Gdx.files.classpath(metadata.icon(128))));
+            iconId = UltreonCraft.id("generated/mod_icon/" + metadata.id() + ".png");
+            if (!textureManager.isTextureLoaded(iconId)) textureManager.registerTexture(iconId, texture);
+            if (!textureManager.isTextureLoaded(iconId)) iconId = ModListScreen.DEFAULT_MOD_ICON;
+        } else {
+            iconId = ModListScreen.DEFAULT_MOD_ICON;
         }
+
+        renderer.blit(iconId, x, y, size, size);
     }
 
 
@@ -74,10 +87,19 @@ public class ModListScreen extends Screen {
         ModContainer selected = this.list.getSelected();
         if (selected != null) {
             ModMetadata metadata = selected.metadata();
-            renderer.drawTextScaled(metadata.name(), 2, 220, this.height - 20);
-            renderer.drawText(metadata.version().raw(), 220 + renderer.getFont().width(metadata.name()) * 2 + 10, this.height - 28);
-            renderer.drawText(metadata.id(),220, this.height - 44);
-            renderer.multiLineText(metadata.description(), 220, this.height - 68, Color.rgb(0x808080));
+            int x = 220;
+            int y = 20;
+
+            this.drawIcon(renderer, metadata, x, y, 64);
+
+            int xIcon = x + 84;
+            renderer.drawTextScaled(metadata.name(), 2, xIcon, y);
+            renderer.drawText("ID: " + metadata.id(), xIcon, y + 24, Color.rgb(0x808080));
+            renderer.drawText("Version: " + metadata.version().raw(), xIcon, y + 36, Color.rgb(0x808080));
+            renderer.drawText(metadata.contributors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.name()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
+
+            y += 84;
+            renderer.multiLineText(metadata.description(), x, y, Color.rgb(0x808080));
         }
     }
 

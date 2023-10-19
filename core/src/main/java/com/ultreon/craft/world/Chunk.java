@@ -1,9 +1,12 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.render.world.ChunkMesh;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
@@ -19,6 +22,8 @@ public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
 	protected final Object lock = new Object();
+	public Vector3 renderOffset = new Vector3();
+	public ChunkMesh mesh;
 	protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Section[] sections;
@@ -29,6 +34,7 @@ public class Chunk implements Disposable {
 	@Nullable
 	public TreeData treeData;
 	protected boolean dirty;
+	private boolean disposed;
 
 	public Chunk(int size, int height, ChunkPos pos) {
 		int sectionCount = height / size;
@@ -147,15 +153,20 @@ public class Chunk implements Disposable {
 	}
 
 	@Override
-	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
 		synchronized (this.lock) {
+			this.disposed = true;
 			this.ready = false;
 
 			for (Section section : this.sections) {
 				section.dispose();
 			}
 			this.sections = null;
+
+			ChunkMesh chunkMesh = this.mesh;
+			if (chunkMesh != null) {
+				UltreonCraft.get().worldRenderer.free(this);
+			}
 		}
 	}
 
@@ -174,5 +185,13 @@ public class Chunk implements Disposable {
 
 	public boolean isReady() {
 		return this.ready;
+	}
+
+	public boolean isDisposed() {
+		return this.disposed;
+	}
+
+	public void setDirty(boolean b) {
+		this.dirty = false;
 	}
 }
