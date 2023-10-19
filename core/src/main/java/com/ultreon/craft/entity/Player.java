@@ -20,7 +20,7 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
 public class Player extends LivingEntity {
-    public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE};
+    public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL};
     public int selected;
     private boolean running;
     private float walkingSpeed = .09F;
