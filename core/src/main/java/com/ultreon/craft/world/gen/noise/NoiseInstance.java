@@ -7,13 +7,15 @@ public class NoiseInstance implements Disposable {
     private final NoiseType noise;
     private final long seed;
     private final float noiseZoom;
-    private final int octaves;
+    private final float octaves;
     private final Vector2 offset;
     private final float redistributionModifier;
     private final float exponent;
     private final float persistence;
+    private final float amplitude;
+    private final float base;
 
-    public NoiseInstance(NoiseType noise, long seed, float noiseZoom, int octaves, Vector2 offset, float redistributionModifier, float exponent, float persistence) {
+    public NoiseInstance(NoiseType noise, long seed, float noiseZoom, float octaves, Vector2 offset, float redistributionModifier, float exponent, float persistence, float amplitude, float base) {
         this.noise = noise;
         this.seed = seed;
         this.noiseZoom = noiseZoom;
@@ -22,6 +24,8 @@ public class NoiseInstance implements Disposable {
         this.redistributionModifier = redistributionModifier;
         this.exponent = exponent;
         this.persistence = persistence;
+        this.amplitude = amplitude;
+        this.base = base;
     }
 
     public double eval(double x, double y) {
@@ -40,7 +44,7 @@ public class NoiseInstance implements Disposable {
         return this.noiseZoom;
     }
 
-    public int octaves() {
+    public float octaves() {
         return this.octaves;
     }
 
@@ -63,5 +67,13 @@ public class NoiseInstance implements Disposable {
     @Override
     public void dispose() {
         this.noise.dispose();
+    }
+
+    public float amplitude() {
+        return this.amplitude;
+    }
+
+    public float base() {
+        return this.base;
     }
 }

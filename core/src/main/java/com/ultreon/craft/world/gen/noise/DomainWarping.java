@@ -17,7 +17,9 @@ public class DomainWarping {
 
     public float generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
         Vector2 domainOffset = this.generateDomainOffset(x, z);
-        return NoiseUtils.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
+        float domainTotal = NoiseUtils.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
+        System.out.println("domainTotal = " + domainTotal);
+        return domainTotal;
     }
 
     public Vector2 generateDomainOffset(int x, int z) {

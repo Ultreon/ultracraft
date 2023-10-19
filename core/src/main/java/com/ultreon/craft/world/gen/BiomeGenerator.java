@@ -59,8 +59,10 @@ public class BiomeGenerator implements Disposable {
             terrainHeight = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
         }
 
-        terrainHeight = NoiseUtils.redistribution(terrainHeight, this.biomeNoise);
-        return NoiseUtils.remapValue01ToInt(terrainHeight, 0, height);
+//        terrainHeight = NoiseUtils.redistribution(terrainHeight, this.biomeNoise);
+//        return NoiseUtils.remapValue01ToInt(terrainHeight, 0, height);
+        System.out.println("terrainHeight = " + terrainHeight);
+        return (int) Math.max(terrainHeight, 1);
     }
 
     public TreeData getTreeData(Chunk chunk, long seed) {
