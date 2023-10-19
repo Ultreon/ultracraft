@@ -873,12 +873,12 @@ public class World implements Disposable {
 
 		ScheduledFuture<?> saveSchedule = this.saveSchedule;
 		if (saveSchedule != null) saveSchedule.cancel(true);
-		this.saveExecutor.shutdownNow();
+		this.saveExecutor.shutdownNow().clear();
 
 		try {
 			this.save(true);
 		} catch (IOException e) {
-			LOGGER.warn(MARKER, "Saving failed:", e);
+			LOGGER.warn(World.MARKER, "Saving failed:", e);
 		}
 
 		for (Chunk chunk : this.chunks.values()) {

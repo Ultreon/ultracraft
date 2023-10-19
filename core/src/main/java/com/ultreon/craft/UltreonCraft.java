@@ -569,7 +569,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 quaternion.mul(new Quaternion(Vector3.X, rotation.y));
                 quaternion.conjugate();
 
-                if (this.renderWorld && world != null && worldRenderer != null) {
+                if (this.renderWorld && world != null && worldRenderer != null && !worldRenderer.isDisposed()) {
 //                    this.worldFbo.begin();
 
                     ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
@@ -851,7 +851,9 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     }
 
     public void exitWorldToTitle() {
-        this.exitWorldAndThen(() -> this.showScreen(new TitleScreen()));
+        this.exitWorldAndThen(() -> {
+            this.showScreen(new TitleScreen());
+        });
     }
 
     public synchronized void exitWorldAndThen(Runnable runnable) {
@@ -863,13 +865,17 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         if (worldRenderer != null)
             worldRenderer.dispose();
 
-        this.worldRenderer = null;
-        this.world = null;
         CompletableFuture.runAsync(() -> {
-            world.dispose();
-            System.gc();
-            this.submit(new Task(UltreonCraft.id("post_world_exit"), runnable));
-            this.closingWorld = false;
+            try {
+                world.dispose();
+                this.worldRenderer = null;
+                this.world = null;
+                System.gc();
+                UltreonCraft.invokeAndWait(runnable);
+                this.closingWorld = false;
+            } catch (Exception e) {
+                UltreonCraft.crash(e);
+            }
         });
     }
 

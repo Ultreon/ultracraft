@@ -14,6 +14,9 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
@@ -21,7 +24,7 @@ import static com.ultreon.craft.world.World.WORLD_DEPTH;
 public class Chunk implements Disposable {
 	public static final int VERTEX_SIZE = 6;
 	public final ChunkPos pos;
-	protected final Object lock = new Object();
+	protected final Lock lock = new ReentrantLock();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
 	public ChunkMesh trasparentMesh;
@@ -62,11 +65,13 @@ public class Chunk implements Disposable {
 	void load(MapType chunkData) {
 		ListType<MapType> sectionsData = chunkData.getList("Sections", new ListType<>());
 		int y = 0;
+		this.lock.lock();
 		for (MapType sectionData : sectionsData) {
 			this.sections[y].dispose();
 			this.sections[y] = new Section(new Vec3i(this.offset.x, this.offset.y + y * this.size, this.offset.z), sectionData);
 			y++;
 		}
+		this.lock.unlock();
 
 		MapType extra = chunkData.getMap("Extra");
 		if (extra != null) {
@@ -77,9 +82,11 @@ public class Chunk implements Disposable {
 	public MapType save() {
 		MapType chunkData = new MapType();
 		ListType<MapType> sectionsData = new ListType<>();
+		this.lock.lock();
 		for (Section section : this.sections) {
 			sectionsData.add(section.save());
 		}
+		this.lock.unlock();
 		chunkData.put("Sections", sectionsData);
 
 		MapType extra = new MapType();
@@ -104,9 +111,10 @@ public class Chunk implements Disposable {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		synchronized (this.lock) {
-			return this.sections[y / this.size].getFast(x, y % this.size, z);
-		}
+		this.lock.lock();
+		Block fast = this.sections[y / this.size].getFast(x, y % this.size, z);
+		this.lock.unlock();
+		return fast;
 	}
 
 	public void set(Vec3i pos, Block block) {
@@ -123,10 +131,10 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		synchronized (this.lock) {
-			this.sections[y / this.size].setFast(x, y % this.size, z, block);
-			this.dirty = true;
-		}
+		this.lock.lock();
+		this.sections[y / this.size].setFast(x, y % this.size, z, block);
+		this.dirty = true;
+		this.lock.unlock();
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {
@@ -135,10 +143,14 @@ public class Chunk implements Disposable {
 
 	@Nullable
 	public Section getSection(int sectionY) {
-		synchronized (this.lock) {
-			if (sectionY < 0 || sectionY > this.sections.length) return null;
-			return this.sections[sectionY];
+		this.lock.lock();
+		if (sectionY < 0 || sectionY > this.sections.length){
+			this.lock.unlock();
+			return null;
 		}
+		Section section = this.sections[sectionY];
+		this.lock.unlock();
+		return section;
 	}
 
 	@Nullable
@@ -155,20 +167,20 @@ public class Chunk implements Disposable {
 
 	@Override
 	public void dispose() {
-		synchronized (this.lock) {
-			this.disposed = true;
-			this.ready = false;
+		this.lock.lock();
+		this.disposed = true;
+		this.ready = false;
 
-			for (Section section : this.sections) {
-				section.dispose();
-			}
-			this.sections = null;
-
-			ChunkMesh chunkMesh = this.mesh;
-			if (chunkMesh != null) {
-				UltreonCraft.get().worldRenderer.free(this);
-			}
+		for (Section section : this.sections) {
+			section.dispose();
 		}
+		this.sections = null;
+
+		ChunkMesh chunkMesh = this.mesh;
+		if (chunkMesh != null) {
+			UltreonCraft.get().worldRenderer.free(this);
+		}
+		this.lock.unlock();
 	}
 
 	@Override

@@ -61,6 +61,7 @@ public final class WorldRenderer implements RenderableProvider {
     private Renderable cursor;
     private ShaderProgram shader;
     private ModelBatch modelBatch;
+    private boolean disposed;
 
     public WorldRenderer(World world, ModelBatch modelBatch) {
         this.world = world;
@@ -243,6 +244,7 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     public void dispose() {
+        this.disposed = true;
         this.pool.clear();
         this.pool.flush();
         Renderable cursor1 = this.cursor;
@@ -256,5 +258,9 @@ public final class WorldRenderer implements RenderableProvider {
 
     public void setShader(ShaderProgram shader) {
         this.shader = shader;
+    }
+
+    public boolean isDisposed() {
+        return disposed;
     }
 }
