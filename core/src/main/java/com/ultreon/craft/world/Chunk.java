@@ -128,15 +128,15 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(Vec3i pos, Block block) {
-		this.set(pos.x, pos.y, pos.z, block);
+		this.setFast(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
 		this.lock.lock();
 		this.sections[y / this.size].setFast(x, y % this.size, z, block);
-		this.dirty = true;
 		this.lock.unlock();
-        this.updateNeighbours = true;
+		this.dirty = true;
+		this.updateNeighbours = true;
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {

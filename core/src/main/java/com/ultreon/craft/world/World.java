@@ -103,7 +103,6 @@ public class World implements Disposable {
 	private boolean disposed;
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
-		this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
 		this.savedWorld = savedWorld;
 
 		this.generator = DEFAULT_BIOME.create(this, this.seed);
@@ -271,7 +270,7 @@ public class World implements Disposable {
 		for (ChunkPos pos : this.getLoadedChunks().stream().map(chunk -> chunk.pos).filter(pos -> {
 			Chunk chunk = this.getChunk(pos);
 			return chunk != null && !needed.contains(pos);
-		}).collect(Collectors.toList())) {
+		}).toList()) {
 			if (this.getChunk(pos) != null) {
 				toRemove.add(pos);
 			}

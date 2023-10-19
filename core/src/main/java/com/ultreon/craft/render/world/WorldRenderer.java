@@ -43,6 +43,7 @@ public final class WorldRenderer implements RenderableProvider {
     private final ChunkMeshBuilder meshBuilder;
     private final Material material;
     private final Material transparentMaterial;
+    private final Texture breakingTex;
     private int visibleChunks;
     private int loadedChunks;
 
@@ -64,6 +65,7 @@ public final class WorldRenderer implements RenderableProvider {
     private boolean disposed;
 
     public WorldRenderer(World world, ModelBatch modelBatch) {
+        this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
         this.world = world;
         this.modelBatch = modelBatch;
 
@@ -108,6 +110,7 @@ public final class WorldRenderer implements RenderableProvider {
         this.pool.free(chunk.mesh);
         this.pool.free(chunk.trasparentMesh);
         chunk.mesh = null;
+        chunk.trasparentMesh = null;
         WorldRenderer.chunkMeshFrees++;
     }
 
@@ -316,5 +319,9 @@ public final class WorldRenderer implements RenderableProvider {
 
     public boolean isDisposed() {
         return disposed;
+    }
+
+    public Texture getBreakingTex() {
+        return breakingTex;
     }
 }

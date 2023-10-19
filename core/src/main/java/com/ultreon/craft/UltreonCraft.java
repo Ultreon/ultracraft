@@ -56,6 +56,7 @@ import com.ultreon.craft.render.model.BakedModelRegistry;
 import com.ultreon.craft.render.model.CubeModel;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.craft.render.texture.atlas.TextureStitcher;
+import com.ultreon.craft.render.world.WorldRenderer;
 import com.ultreon.craft.resources.ResourceFileHandle;
 import com.ultreon.craft.text.LanguageData;
 import com.ultreon.craft.util.GG;
@@ -568,11 +569,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 this.tick();
             }
 
-            this.tasks.forEach(runnable -> {
-                runnable.run();
-                this.tasks.remove(runnable);
-            });
-
             Player player = this.player;
 			this.hitResult = player == null ? null : player.rayCast();
 			this.input.update();
@@ -940,7 +936,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         final @Nullable WorldRenderer worldRenderer = this.worldRenderer;
         if (world == null) return;
         this.showScreen(new MessageScreen(Language.translate("Saving world...")));
-        var worldRenderer = this.worldRenderer;
         if (worldRenderer != null)
             worldRenderer.dispose();
 

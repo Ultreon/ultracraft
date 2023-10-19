@@ -9,6 +9,7 @@ import com.badlogic.gdx.controllers.ControllerMapping;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.Constants;
 import com.ultreon.craft.UltreonCraft;
@@ -64,7 +65,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         this.camera = camera;
 
         Controllers.addListener(this);
-        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).collect(Collectors.toList()));
+        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).toList());
     }
 
     @Override
