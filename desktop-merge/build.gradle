@@ -1,6 +1,8 @@
 //file:noinspection GroovyUnusedCatchParameter
 
 
+//import com.ultreon.craftutils.CraftUtilsPlugin
+//import com.ultreon.craftutils.ProjectType
 import org.panteleyev.jpackage.ImageType
 
 import java.nio.file.Files
@@ -44,9 +46,10 @@ apply plugin: 'java-library'
 // Setting up main properties //
 //****************************//
 
-// Project properties.
-version project_version
-group project_group
+//projectConfig {
+//    type ProjectType.Common
+//    jarDependTasks({[copyDependencies, copyJar]})
+//}
 
 archivesBaseName = archives_base_name + "-gameprovider"
 
@@ -70,10 +73,14 @@ configurations {
     }
 }
 
+evaluationDependsOn(":core")
+
 dependencies {
     addToJar(project(":gameprovider"))
     implementation project(":core")
     implementation project(":desktop")
+
+    implementation "com.formdev:flatlaf:3.2.1"
 
     implementation "com.badlogicgames.gdx:gdx:$gdx_version"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
@@ -130,7 +137,7 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
 
-    // fabric-loader dependencies
+    // quilt-loader dependencies
     implementation "org.ow2.asm:asm:${project.asm_version}"
     implementation "org.ow2.asm:asm-analysis:${project.asm_version}"
     implementation "org.ow2.asm:asm-commons:${project.asm_version}"
@@ -149,7 +156,7 @@ dependencies {
     implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
     implementation 'net.fabricmc:access-widener:2.1.0'
 
-    compileOnly "net.fabricmc:fabric-loader:$fabric_version"
+    compileOnly "org.quiltmc:quilt-loader:$quilt_version"
 }
 
 processResources {
@@ -202,11 +209,6 @@ tasks.create('prepareRun', {
     Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
 })
 
-tasks.withType(JavaCompile).configureEach {
-    options.fork = true
-    options.incremental = true
-}
-
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
@@ -216,8 +218,8 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 delete "$projectDir/build/jars"
@@ -249,7 +251,7 @@ jpackage {
     input  = "$projectDir/build/jars"
     destination = "$projectDir/build/bin"
 
-    appName = project.property("app_name").toString()
+    appName = app_name
     appVersion = project.version.toString()
     vendor = "Ultreon Team"
     copyright = "Copyright (c) 2023 Ultreon Team"
@@ -262,7 +264,7 @@ jpackage {
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged","-Dloader.skipMcProvider=true" ]
     arguments = [ "--packaged" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
@@ -283,6 +285,7 @@ jpackage {
         destination = "$rootProject.projectDir/build/tmp"
 
         tasks.register("createAppImage", Zip) {
+            def app_name = app_name
             from fileTree("$rootProject.projectDir/build/tmp/$app_name")
             archiveFileName = "${app_name}.zip"
             destinationDirectory = file("$projectDir/build/dist/")

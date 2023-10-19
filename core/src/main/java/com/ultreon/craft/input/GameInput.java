@@ -64,6 +64,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     private long nextBreak;
     private long nextPlace;
+    private final Vec3d vel = new Vec3d();
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
@@ -87,9 +88,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     @Override
     public boolean axisMoved(Controller controller, int axisCode, float value) {
-        // Check if the absolute value of the value is less than the deadzone
+        // Check if the absolute value of the value is less than the dead zone
         if (Math.abs(value) < Constants.CONTROLLER_DEADZONE) {
-            value = 0; // Set the value to 0 if it's within the deadzone
+            value = 0; // Set the value to 0 if it's within the dead zone
         }
 
         ControllerMapping mapping = controller.getMapping();
@@ -178,14 +179,12 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                     Vec3i posNext = hitResult.next;
                     Block blockNext = world.get(posNext);
                     Block selectedBlock = this.game.player.getSelectedBlock();
-                    if (hitResult.collide && block != null && !block.isAir()) {
-                        if (TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+                    if (hitResult.collide && !block.isAir()) {
+                        if (GameInput.TRIGGERS.get(TriggerType.RIGHT).value >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
                             world.set(pos, Blocks.AIR);
                             System.out.println("Break Block");
                             this.nextBreak = System.currentTimeMillis() + 500;
-                        } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis()
-                                && blockNext != null && blockNext.isAir()
-                                && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
+                        } else if (TRIGGERS.get(TriggerType.LEFT).value >= 0.3F && this.nextPlace < System.currentTimeMillis() && blockNext.isAir() && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(this.game.player.getBoundingBox())) {
                             world.set(posNext, selectedBlock);
                             System.out.println("Place Block");
                             this.nextPlace = System.currentTimeMillis() + 500;
@@ -213,28 +212,29 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 if (!player.topView) {
                     Vec3d tmp = new Vec3d();
                     this.game.playerInput.tick(speed);
-                    Vec3d vel = this.game.playerInput.getVel();
+                    Vector3 velocity = this.game.playerInput.getVelocity();
+                    this.vel.set(velocity.x, velocity.y, velocity.z);
 
                     if (player.isInWater() && this.game.playerInput.up) {
                         tmp.set(0, 1, 0).nor().mul(speed);
-                        vel.add(tmp);
+                        this.vel.add(tmp);
                     }
                     if (player.isFlying()) {
                         if (this.game.playerInput.up) {
                             tmp.set(0, 1, 0).nor().mul(speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                         if (this.game.playerInput.down) {
                             tmp.set(0, 1, 0).nor().mul(-speed);
-                            vel.add(tmp);
+                            this.vel.add(tmp);
                         }
                     }
 
-                    vel.x *= deltaTime * UltreonCraft.TPS;
-                    vel.y *= deltaTime * UltreonCraft.TPS;
-                    vel.z *= deltaTime * UltreonCraft.TPS;
+                    this.vel.x *= deltaTime * UltreonCraft.TPS;
+                    this.vel.y *= deltaTime * UltreonCraft.TPS;
+                    this.vel.z *= deltaTime * UltreonCraft.TPS;
 
-                    player.setVelocity(player.getVelocity().add(vel));
+                    player.setVelocity(player.getVelocity().add(this.vel));
                 } else {
                     player.setX(0);
                     player.setZ(0);

@@ -15,7 +15,7 @@ import org.checkerframework.common.value.qual.IntRange;
  * Controllable widget, a widget that can be controlled by the user.
  * This widget contains input event handlers like {@link #keyPress(int)} and {@link #mouseClick(int, int, int, int)}
  *
- * @author Qboi123
+ * @author XyperCode
  */
 @SuppressWarnings("unused")
 public abstract class GuiComponent implements GuiStateListener, Widget {

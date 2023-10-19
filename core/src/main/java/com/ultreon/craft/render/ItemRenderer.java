@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.render.model.BakedCubeModel;
 
 public class ItemRenderer {
@@ -29,15 +30,16 @@ public class ItemRenderer {
     private final Vector3 rotation = new Vector3(-30, 45, 0);
     private final Vector3 position = new Vector3(0, 0, -1000);
     private final Vector3 scale = new Vector3(20, 20, 20);
+    protected final Vector3 tmp = new Vector3();
 
     public ItemRenderer(UltreonCraft game, Environment environment) {
         this.game = game;
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, new Vector3(.8f, 0, -.6f).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, new Vector3(-.8f, 0, .6f).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, new Vector3(0, -1, 0).rotate(Vector3.Y, 45)));
-        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, new Vector3(0, 1, 0).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, this.tmp.set(.8f, 0, -.6f).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, this.tmp.set(-.8f, 0, .6f).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, this.tmp.set(0, -1, 0).rotate(Vector3.Y, 45)));
+        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, this.tmp.set(0, 1, 0).rotate(Vector3.Y, 45)));
         this.batch = new ModelBatch();
         this.orthoCam = new OrthographicCamera(game.getScaledWidth(), game.getScaledHeight());
         this.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));

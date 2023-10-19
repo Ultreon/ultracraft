@@ -162,5 +162,5 @@ public class PerlinNoise implements NoiseType {
 	@SuppressWarnings("DataFlowIssue")
 	public void dispose() {
 		this.p = null;
-	}
+    }
 }

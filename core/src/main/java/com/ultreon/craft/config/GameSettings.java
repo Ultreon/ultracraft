@@ -14,19 +14,15 @@ public class GameSettings extends Configuration {
         super();
 
         this.language = this.add("language", new Locale("en"), Locale::new, Locale::getLanguage, "The preferred language");
-        this.renderDistance = this.add("renderDistance", this.getDefaultRenderDistance(), 2, 12, "The maximum distance to show the world in chunks (16x16)");
+        this.renderDistance = this.add("renderDistance", this.getDefaultRenderDistance(), 2, 24, "The maximum distance to show the world in chunks (16x16)");
     }
 
     private int getDefaultRenderDistance() {
-        switch (GamePlatform.instance.getPlatformType()) {
-            case DESKTOP:
-                return 8;
-            case MOBILE:
-            case WEB:
-                return 4;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (GamePlatform.instance.getPlatformType()) {
+            case DESKTOP -> 8;
+            case MOBILE, WEB -> 3;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     @Override

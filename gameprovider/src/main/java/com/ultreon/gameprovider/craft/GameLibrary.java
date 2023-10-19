@@ -17,7 +17,7 @@
 package com.ultreon.gameprovider.craft;
 
 import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.impl.game.LibClassifier.LibraryType;
+import org.quiltmc.loader.impl.game.LibClassifier.LibraryType;
 
 enum GameLibrary implements LibraryType {
 	ULTREONCRAFT_DESKTOP("com/ultreon/craft/DesktopLauncher.class"),
@@ -30,8 +30,8 @@ enum GameLibrary implements LibraryType {
 	SLF4J_API("org/slf4j/Logger.class"),
 	SLF4J_CORE("META-INF/services/org.slf4j.spi.SLF4JServiceProvider");
 
-	static final GameLibrary[] GAME = { ULTREONCRAFT_DESKTOP, ULTREONCRAFT_CORE };
-	static final GameLibrary[] LOGGING = { LOG4J_API, LOG4J_CORE, LOG4J_CONFIG, GSON, SLF4J_API, SLF4J_CORE };
+	static final GameLibrary[] GAME = {GameLibrary.ULTREONCRAFT_DESKTOP, GameLibrary.ULTREONCRAFT_CORE};
+	static final GameLibrary[] LOGGING = {GameLibrary.LOG4J_API, GameLibrary.LOG4J_CORE, GameLibrary.LOG4J_CONFIG, GameLibrary.GSON, GameLibrary.SLF4J_API, GameLibrary.SLF4J_CORE};
 
 	private final EnvType env;
 	private final String[] paths;

@@ -14,19 +14,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> implements DataHolder<MapType> {
-    private List<@Nullable D> palette;
+    private final List<@Nullable D> palette;
     private ShortArray references;
     private final Function<T, D> deserializer;
     private final int dataId;
     public final int maxSize;
-    private int size = 0;
     private final Object lock = new Object();
 
     /**
-     * @param type DON'T USE: Reserved for data receiver.
+     * @param ignoredType DON'T USE: Reserved for data receiver.
      */
     @SafeVarargs
-    public PaletteContainer(int size, int dataId, Function<T, D> deserializer, D... type) {
+    public PaletteContainer(int size, int dataId, Function<T, D> deserializer, D... ignoredType) {
         if (size > 65536) throw new PaletteSizeException("Size exceeds maximum value of 65536");
         this.maxSize = size;
         this.palette = new CopyOnWriteArrayList<>();
@@ -79,6 +78,12 @@ public class PaletteContainer<T extends IType<?>, D extends DataWriter<T>> imple
     @Nullable
     public D get(int index) {
         short paletteIndex = this.references.get(index);
+        if (this.palette.isEmpty()) return null;
         return this.palette.get(paletteIndex);
+    }
+
+    public void dispose() {
+        this.palette.clear();
+        this.references = null;
     }
 }

@@ -1,3 +1,5 @@
+//import com.ultreon.craftutils.ProjectType
+
 buildscript {
     repositories {
         mavenLocal()
@@ -28,11 +30,16 @@ plugins {
 version project_version
 group project_group // https://maven.apache.org/guides/mini/guide-naming-conventions.html
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '11' // Need this here so eclipse task generates correctly.
+//projectConfig {
+//    type ProjectType.Gameprovider
+//}
 
-println("Current version: $project_version")
-println("Project: $group:$archivesBaseName")
-println("Bulding a Java $compileJava.targetCompatibility project...")
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "17" // Need this here so eclipse task generates correctly.
 
 repositories {
     mavenCentral()
@@ -58,8 +65,9 @@ dependencies {
     compileOnly "org.apache.logging.log4j:log4j:$log4j_version"
     compileOnly "org.apache.logging.log4j:log4j-core:$log4j_version"
     compileOnly "org.apache.logging.log4j:log4j-api:$log4j_version"
+    compileOnly "com.formdev:flatlaf:3.2.1"
 
-    compileOnly("net.fabricmc:fabric-loader:$fabric_version") {
+    compileOnly("org.quiltmc:quilt-loader:$quilt_version") {
         exclude group: "org.ow2.asm"
         exclude group: "org.ow2.sat4j"
     }
@@ -89,11 +97,12 @@ repositories {
 }
 
 jar {
+    finalizedBy build
     manifest {
         attributes 'Implementation-Title': 'QBubbles',
                 'Implementation-Vendor': 'Ultreon Team',
                 project_version: "1.0-indev1",
-                'Main-Class': 'net.fabricmc.impl.launch.knot.KnotClient',
+                'Main-Class': 'org.quiltmc.impl.launch.knot.KnotClient',
                 'Multi-Release': 'true'
     }
     from(configurations.addToJar.collect {
@@ -104,6 +113,13 @@ jar {
     exclude "*.RSA", "*.SF", "*.MF"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
+
+build {
+    finalizedBy ":desktop-merge:build"
+    finalizedBy ":desktop:build"
+    finalizedBy ":core:build"
+}
+
 test {
     useJUnitPlatform()
 }
