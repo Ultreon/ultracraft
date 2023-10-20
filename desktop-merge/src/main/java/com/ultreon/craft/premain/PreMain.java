@@ -25,6 +25,8 @@ public class PreMain {
             } else {
                 argv.add(0, new File("bin/Ultracraft").getAbsolutePath());
             }
+            Runtime.getRuntime().exec(argv.toArray(new String[]{}), new String[]{}, UltracraftGameprovider.getDataDir().toFile());
+            System.exit(0);
         }
         if (SharedLibraryLoader.isLinux) {
             if (new File(".").getCanonicalFile().getAbsoluteFile().getName().equals("bin")) {
