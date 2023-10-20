@@ -132,6 +132,8 @@ public class Entity {
             }
         }
 
+        this.move(this.velocityX, this.velocityY, this.velocityZ);
+
         if (this.isAffectedByFluid()) {
             this.velocityX *= 0.56f;
             this.velocityY *= 0.56f;
@@ -146,8 +148,6 @@ public class Entity {
             this.velocityX *= 0.9f;
             this.velocityZ *= 0.9f;
         }
-
-        this.move(this.velocityX, this.velocityY, this.velocityZ);
     }
 
     public boolean isAffectedByFluid() {
