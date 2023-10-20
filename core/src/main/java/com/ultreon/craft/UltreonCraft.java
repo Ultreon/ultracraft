@@ -15,10 +15,8 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
@@ -76,7 +74,6 @@ import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.datetime.v0.Duration;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
-import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
@@ -1061,7 +1058,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 this.world = null;
                 System.gc();
                 UltreonCraft.invokeAndWait(runnable);
-                this.closingWorld = false;
             } catch (Exception e) {
                 UltreonCraft.crash(e);
             }
@@ -1129,11 +1125,19 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         event.getSound().play();
     }
 
-    public boolean closeRequested() {
+    public boolean tryShutdown() {
         var eventResult = LifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
-                this.exitWorldAndThen(() -> Gdx.app.exit());
+                this.exitWorldAndThen(() -> {
+                    try {
+                        this.dispose();
+                    } catch (Throwable t) {
+                        UltreonCraft.crash(t);
+                        return;
+                    }
+                    System.exit(0);
+                });
                 return false;
             }
         }

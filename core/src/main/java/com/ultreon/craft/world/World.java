@@ -872,7 +872,7 @@ public class World implements Disposable {
 			for (int y = yMin; y <= yMax; y++) {
 				for (int z = zMin; z <= zMax; z++) {
 					Block block = this.get(x, y, z);
-					if (block.isSolid() && (!collideFluid || block.isFluid())) {
+					if (block.hasCollider() && (!collideFluid || block.isFluid())) {
 						BoundingBox blockBox = block.getBoundingBox(x, y, z);
 						if (blockBox.intersects(box)) {
 							boxes.add(blockBox);

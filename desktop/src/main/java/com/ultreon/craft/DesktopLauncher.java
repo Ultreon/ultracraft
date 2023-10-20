@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
-import org.slf4j.LoggerFactory;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 @ApiStatus.NonExtendable
@@ -75,7 +74,7 @@ public final class DesktopLauncher {
 
             @Override
 			public boolean closeRequested() {
-				return UltreonCraft.get().closeRequested();
+				return UltreonCraft.get().tryShutdown();
 			}
 
 			@Override

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
-    private final boolean solid;
+    private final boolean collides;
     private final boolean fluid;
     private final boolean requiresTool;
     private final float hardness;
@@ -27,7 +27,7 @@ public class Block implements DataWriter<MapType> {
 
     public Block(Properties properties) {
         this.transparent = properties.transparent;
-        this.solid = properties.solid;
+        this.collides = properties.solid;
         this.fluid = properties.fluid;
         this.hardness = properties.hardness;
         this.effectiveTool = properties.effectiveTool;
@@ -43,8 +43,8 @@ public class Block implements DataWriter<MapType> {
         return this == Blocks.AIR;
     }
 
-    public boolean isSolid() {
-        return !this.isAir() && this.solid;
+    public boolean hasCollider() {
+        return !this.isAir() && this.collides;
     }
 
     public boolean isFluid() {
