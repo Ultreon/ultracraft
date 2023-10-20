@@ -6,11 +6,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Matrix4;
 import com.google.common.collect.ImmutableMap;
+import com.ultreon.craft.Task;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.UV;
 import com.ultreon.libs.commons.v0.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.ultreon.craft.UltreonCraft.id;
+import static com.ultreon.craft.UltreonCraft.isOnMainThread;
 
 public class TextureStitcher {
     private final Map<Identifier, Texture> textures = new HashMap<>();
@@ -21,6 +26,12 @@ public class TextureStitcher {
     }
 
     public TextureAtlas stitch() {
+        if (!isOnMainThread()) {
+            return UltreonCraft.get().getAndWait(id("texture_stitcher/stitch"), this::stitch);
+        }
+
+        UltreonCraft ultracraft = UltreonCraft.get();
+
         // Determine the dimensions of the final texture atlas
         int width = 1024; // calculate the width of the atlas
         int height = 1024; // calculate the height of the atlas
@@ -41,7 +52,8 @@ public class TextureStitcher {
         }
 
         // Create a temporary FrameBuffer to hold the packed textures
-        this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        int finalHeight = height;
+        this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, finalHeight, false);
 
         // Create a SpriteBatch to draw the packed textures to the FrameBuffer
         SpriteBatch spriteBatch = new SpriteBatch();
@@ -54,7 +66,7 @@ public class TextureStitcher {
         int y = 0;
         int texHeight = 0;
 
-        ImmutableMap.Builder<Identifier, UV> uvMap = new ImmutableMap.Builder<Identifier, UV>();
+        ImmutableMap.Builder<Identifier, UV> uvMap = new ImmutableMap.Builder<>();
 
         for (Map.Entry<Identifier, Texture> e : this.textures.entrySet()) {
             Texture texture = e.getValue();
@@ -87,6 +99,6 @@ public class TextureStitcher {
     }
 
     public void dispose() {
-        fbo.dispose();
+        this.fbo.dispose();
     }
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.resources.v0.Resource;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.ultreon.craft.UltreonCraft.id;
 
 public class TextureManager {
 
@@ -81,6 +84,10 @@ public class TextureManager {
     @NotNull
     public Texture getTexture(Identifier id) {
         Preconditions.checkNotNull(id, "id");
+
+        if (!UltreonCraft.isOnRenderingThread()) {
+            return UltreonCraft.invokeAndWait(() -> getTexture(id));
+        }
 
         if (!this.textures.containsKey(id)) {
             return this.registerTexture(id);

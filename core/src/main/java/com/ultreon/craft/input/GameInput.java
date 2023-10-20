@@ -30,6 +30,8 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -59,6 +61,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     private boolean breaking;
     private boolean using;
     private final Vec3d vel = new Vec3d();
+    @Nullable
+    protected HitResult hitResult;
 
     public GameInput(UltreonCraft game, Camera camera) {
         this.game = game;
@@ -147,7 +151,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     public static boolean isKeyDown(int keycode) {
         return keys.contains(keycode);
     }
-    
+
+    @ApiStatus.NonExtendable
     public void update() {
         this.update(Gdx.graphics.getDeltaTime());
     }
@@ -280,5 +285,24 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         if (current == null) return false;
         current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));
         return true;
+    }
+
+    @Deprecated
+    protected void onWorldHit(@NotNull World world, @Nullable Player player, @Nullable HitResult hitResult, boolean destroy, boolean use) {
+//        if (player != null && hitResult != null) {
+//            Vec3i pos = hitResult.getPos();
+//            Block block = world.get(pos);
+//            Vec3i posNext = hitResult.getNext();
+//            Block blockNext = world.get(posNext);
+//            Item selectedBlock = player.getSelectedItem();
+//            if (hitResult.collide && !block.isAir()) {
+//                if (destroy) {
+//                    world.set(pos, Blocks.AIR);
+//                } else if (use && blockNext.isAir()
+//                        && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(player.getBoundingBox())) {
+//                    world.set(posNext, selectedBlock);
+//                }
+//            }
+//        }
     }
 }

@@ -15,6 +15,7 @@ import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 import org.jetbrains.annotations.NotNull;
 
 public class Hud implements GameRenderable {
@@ -51,11 +52,12 @@ public class Hud implements GameRenderable {
 
         this.renderHotbar(renderer, player);
         this.renderHealth(renderer, player);
-        this.renderCrosshair(renderer, player);
 
         GameInput input = this.game.input;
         if (input instanceof MobileInput) {
             this.renderMobileHud(renderer, player, (MobileInput) input);
+        } else {
+            this.renderCrosshair(renderer, player);
         }
     }
 
@@ -83,6 +85,12 @@ public class Hud implements GameRenderable {
 
         renderer.blit(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
         renderer.blit(this.mobileTex, 20, 20, 50, 5, 0, 45);
+
+        Vec2i touchPos = input.getTouchPos();
+        renderer.setColor(Color.argb(0x7fffffff));
+        renderer.circle(touchPos.x, touchPos.y, 30);
+        renderer.setColor(Color.argb(0xffffffff));
+        renderer.circle(touchPos.x, touchPos.y, 30 * this.game.getBreakProgress());
     }
 
     private void renderHotbar(Renderer renderer, Player player) {

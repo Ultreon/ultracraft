@@ -42,6 +42,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static com.ultreon.craft.UltreonCraft.id;
+
 public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
@@ -91,8 +93,10 @@ public class DesktopPlatform extends GamePlatform {
 
         long windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
 
-        this.imGuiGlfw.init(windowHandle, true);
-        this.imGuiGl3.init("#version 150");
+        UltreonCraft.invokeAndWait(() -> {
+            this.imGuiGlfw.init(windowHandle, true);
+            this.imGuiGl3.init("#version 150");
+        });
     }
 
     @Override

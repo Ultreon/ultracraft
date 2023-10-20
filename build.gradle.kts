@@ -123,6 +123,8 @@ allprojects {
         maven("https://repo1.maven.org/maven2/")
         maven("https://maven.fabricmc.net/")
         maven("https://maven.quiltmc.org/repository/release/")
+        maven("https://oss.sonatype.org/content/repositories/releases")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
         flatDir {
             name = "Project Libraries"
             dirs = setOf(file("${projectDir}/libs"))

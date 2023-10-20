@@ -2,6 +2,7 @@ package com.ultreon.craft.render.model;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.texture.atlas.TextureAtlas;
 import com.ultreon.libs.commons.v0.Identifier;
 
@@ -9,6 +10,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+
+import static com.ultreon.craft.UltreonCraft.id;
+import static com.ultreon.craft.UltreonCraft.isOnMainThread;
 
 public final class CubeModel {
     private final Identifier top;
@@ -60,6 +64,7 @@ public final class CubeModel {
     }
 
     public BakedCubeModel bake(TextureAtlas texture) {
+        if (!isOnMainThread()) return UltreonCraft.get().getAndWait(id("model_baking/bake_cube_model"), () -> this.bake(texture));
         TextureRegion topTex = texture.get(this.top);
         TextureRegion bottomTex = texture.get(this.bottom);
         TextureRegion leftTex = texture.get(this.left);
