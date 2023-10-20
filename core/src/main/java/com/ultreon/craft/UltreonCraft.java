@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
@@ -75,6 +76,7 @@ import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.datetime.v0.Duration;
 import com.ultreon.libs.registries.v0.Registry;
 import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import com.ultreon.libs.resources.v0.Resource;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
@@ -101,14 +103,14 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     public static final Logger LOGGER = GamePlatform.instance.getLogger("UltreonCraft");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     private static final int CULL_FACE = GL20.GL_FRONT;
-    private static final float FROM_ZOOM = 2.0f;
-    private static final float TO_ZOOM = 1.3f;
+    public static final float FROM_ZOOM = 2.0f;
+    public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
     private static final Thread MAIN_THREAD = Thread.currentThread();
-    private final Duration bootTime;
-    private final String allUnicode;
-    private final GarbageCollector garbageCollector;
-    private final GameEnvironment gameEnv;
+    private Duration bootTime;
+    private String allUnicode;
+    private GarbageCollector garbageCollector;
+    private GameEnvironment gameEnv;
     private final Sound logoRevealSound;
     private final Texture ultreonBgTex;
     private final Texture ultreonLogoTex;
@@ -118,8 +120,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private boolean showLibGDXSplash = true;
     private long ultreonSplashTime;
     private long libGDXSplashTime;
-    private Instant bootTime;
-    private String allUnicode;
     public FileHandle configDir;
 
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
@@ -144,17 +144,17 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     @NotNull
     private final SpriteBatch spriteBatch;
     public final ModelBatch modelBatch;
-    public GameCamera camera;
-    private final Environment env;
+    public final GameCamera camera;
+    private Environment env;
     private float timeUntilNextTick;
     public final PlayerInput playerInput = new PlayerInput(this);
     private boolean isDevMode;
     @Nullable
     public Screen currentScreen;
     public GameSettings settings;
-    ShapeDrawer shapes;
-    private TextureManager textureManager;
-    private ResourceManager resourceManager;
+    final ShapeDrawer shapes;
+    private final TextureManager textureManager;
+    private final ResourceManager resourceManager;
     private final float guiScale = this.calculateGuiScale();
 
     public Hud hud;
@@ -196,20 +196,25 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private boolean loading;
     private final Thread renderingThread;
     public HitResult cursor;
-    private FrameBuffer worldFbo;
     private LoadingOverlay loadingOverlay;
+    private Object argv;
 
-    public UltreonCraft(String[] args) throws Throwable {
+    public UltreonCraft(String[] argv) throws Throwable {
         UltreonCraft.LOGGER.info("Booting game!");
         UltreonCraft.instance = this;
+
+        this.renderingThread =  Thread.currentThread();
 
         this.loading = true;
 
         GamePlatform.instance.preInitImGui();
 
+        this.resourceManager = new ResourceManager("assets");
+        this.textureManager = new TextureManager(this.resourceManager);
+
         this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.camera.near = 0.01f;
-        this.camera.far = 1000;
+        this.camera.far = 2;
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1F, 1F, 1F, 1F);
@@ -219,9 +224,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         this.spriteBatch = new SpriteBatch();
         this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
-        DefaultShader.Config config = new DefaultShader.Config();
+        var config = new DepthShader.Config();
         config.defaultCullFace = GL20.GL_FRONT;
-        this.batch = new ModelBatch(new DefaultShaderProvider(config));
+        this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
+        this.modelBatch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
 
         this.ultreonBgTex = new Texture("assets/craft/textures/gui/loading_overlay_bg.png");
         this.ultreonLogoTex = new Texture("assets/craft/logo.png");
@@ -232,11 +238,11 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     }
 
     public static boolean isOnMainThread() {
-        return Thread.currentThread() == MAIN_THREAD;
+        return Thread.currentThread() == UltreonCraft.MAIN_THREAD;
     }
 
     private void load() throws Throwable {
-        Identifier.setDefaultNamespace(NAMESPACE);
+        Identifier.setDefaultNamespace(UltreonCraft.NAMESPACE);
 
         var argList = Arrays.asList(this.argv);
         this.isDevMode = argList.contains("--dev") && GamePlatform.instance.isDevelopmentEnvironment();
@@ -276,55 +282,30 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
         this.loadingOverlay.setProgress(0.15F);
 
-        LOGGER.info("Initializing game");
-        this.textureManager = new TextureManager();
-
-        this.resourceManager = new ResourceManager("assets");
         UltreonCraft.LOGGER.info("Importing resources");
         this.resourceManager.importDeferredPackage(this.getClass());
         GamePlatform.instance.importModResources(this.resourceManager);
 
         this.loadingOverlay.setProgress(0.35F);
 
-        Resource resource = this.resourceManager.getResource(id("texts/unicode.txt"));
-        UltreonCraft.LOGGER.info("Initializing game");
-        this.textureManager = new TextureManager(this.resourceManager);
-        this.spriteBatch = new SpriteBatch();
-
+        UltreonCraft.LOGGER.info("Generating bitmap fonts");
         var resource = this.resourceManager.getResource(UltreonCraft.id("texts/unicode.txt"));
         if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
         this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
-        UltreonCraft.LOGGER.info("Generating bitmap fonts");
-        this.unifont = this.runLater(new Task<>(id("main/unifont"), () -> new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true))).join();
-
-        this.font = new Font(this.runLater(new Task<>(id("main/game_font"), () -> new BitmapFont(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.fnt")))).join());
+        this.unifont = UltreonCraft.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true));
+        this.font = new Font(UltreonCraft.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.fnt"), true)));
 
         this.loadingOverlay.setProgress(0.7F);
 
         //**********************//
         // Setting up rendering //
         //**********************//
-        LOGGER.info("Initializing rendering stuffs");
-        invokeAndWait(() -> {
-                    var config = new DepthShader.Config();
-                    config.defaultCullFace = GL20.GL_FRONT;
-                    this.modelBatch = new ModelBatch(new DefaultShaderProvider(config));
-                    this.modelBatch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
-                    this.camera = new GameCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-                    this.camera.near = 0.01f;
-                    this.camera.far = 2;
+        UltreonCraft.LOGGER.info("Initializing rendering stuffs");
+        UltreonCraft.invokeAndWait(() -> {
                     this.input = this.createInput();
         });
         Gdx.input.setInputProcessor(this.input);
-
-        LOGGER.info("Setting up world environment");
-        var pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(1F, 1F, 1F, 1F);
-        pixmap.drawPixel(0, 0);
-        var white = new TextureRegion(new Texture(pixmap));
-
-        this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
         UltreonCraft.LOGGER.info("Setting up world environment");
         this.env = new Environment();
@@ -335,10 +316,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
         this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
 
-        this.worldFbo = new FrameBuffer(Pixmap.Format.RGBA8888, this.getWidth(), this.getHeight(), true);
-
         UltreonCraft.LOGGER.info("Setting up HUD");
-        this.hud = this.getAndWait(id("main/load/create_hud"), () -> new Hud(this));
+        this.hud = this.getAndWait(UltreonCraft.id("main/load/create_hud"), () -> new Hud(this));
 
         UltreonCraft.LOGGER.info("Setting up Debug Renderer");
         this.debugRenderer = new DebugRenderer(this);
@@ -360,7 +339,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         Entities.nopInit();
         Fonts.nopInit();
         Sounds.nopInit();
-        Shaders.nopInit();
+        UltreonCraft.invokeAndWait(Shaders::nopInit);
 
         for (var registry : Registry.getRegistries()) {
             RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
@@ -382,7 +361,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
         this.loadingOverlay.setProgress(0.98F);
 
-        this.itemRenderer = this.runLater(new Task<>(id("main/item_renderer"), () -> new ItemRenderer(this, this.env))).join();
+        this.itemRenderer = UltreonCraft.invokeAndWait(() -> new ItemRenderer(this, this.env));
 
         UltreonCraft.LOGGER.info("Initializing sounds");
         for (var sound : Registries.SOUNDS.values()) {
@@ -419,10 +398,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
         this.loadingOverlay.setProgress(1.0F);
 
-        this.bootTime = Instant.ofEpochMilli(System.currentTimeMillis() - BOOT_TIMESTAMP);
+        this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltreonCraft.BOOT_TIMESTAMP);
         UltreonCraft.LOGGER.info("Game booted in " + this.bootTime + "ms");
 
-        this.runLater(new Task<>(id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
+        this.runLater(new Task<>(UltreonCraft.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
         this.loadingOverlay = null;
     }
 
@@ -655,10 +634,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
                 this.spriteBatch.begin();
                 int size = Math.min(this.getWidth(), this.getHeight()) / 2;
-                renderer.texture(this.libGDXLogoTex, (float) this.getWidth() / 2 - (float) size / 2, (float) this.getHeight() / 2 - (float) size / 2, size, size);
+                renderer.blit(this.libGDXLogoTex, (float) this.getWidth() / 2 - (float) size / 2, (float) this.getHeight() / 2 - (float) size / 2, size, size);
                 this.spriteBatch.end();
 
-                if (System.currentTimeMillis() - this.libGDXSplashTime > DURATION) {
+                if (System.currentTimeMillis() - this.libGDXSplashTime > UltreonCraft.DURATION) {
                     this.showLibGDXSplash = false;
                     this.showUltreonSplash = true;
                 }
@@ -676,7 +655,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 Renderer renderer = new Renderer(this.shapes);
 
                 final long timeDiff = System.currentTimeMillis() - this.ultreonSplashTime;
-                float zoom = (float) interpolate(FROM_ZOOM, TO_ZOOM, Mth.clamp(timeDiff / DURATION, 0f, 1f));
+                float zoom = (float) UltreonCraft.interpolate(UltreonCraft.FROM_ZOOM, UltreonCraft.TO_ZOOM, Mth.clamp(timeDiff / UltreonCraft.DURATION, 0f, 1f));
                 Vec2f thumbnail = this.resizer.thumbnail(this.getWidth() * zoom, this.getHeight() * zoom);
 
                 float drawWidth = thumbnail.x;
@@ -686,11 +665,11 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 float drawY = (this.getHeight() - drawHeight) / 2;
 
                 this.spriteBatch.begin();
-                renderer.texture(this.ultreonBgTex, 0, 0, this.getWidth(), this.getHeight(), 0, 0, 1024, 1024, 1024, 1024);
-                renderer.texture(this.ultreonLogoTex, (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1920, 1080, 1920, 1080);
+                renderer.blit(this.ultreonBgTex, 0, 0, this.getWidth(), this.getHeight(), 0, 0, 1024, 1024, 1024, 1024);
+                renderer.blit(this.ultreonLogoTex, (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1920, 1080, 1920, 1080);
                 this.spriteBatch.end();
 
-                if (System.currentTimeMillis() - this.ultreonSplashTime > DURATION) {
+                if (System.currentTimeMillis() - this.ultreonSplashTime > UltreonCraft.DURATION) {
                     this.showUltreonSplash = false;
 
                     this.loadingOverlay = new LoadingOverlay(this.ultreonBgTex);
@@ -699,7 +678,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                         try {
                             this.load();
                         } catch (Throwable t) {
-                            crash(t);
+                            UltreonCraft.crash(t);
                         }
                     });
                 }
@@ -709,7 +688,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
             Player player = this.player;
             this.hitResult = player == null ? null : player.rayCast();
-            this.input.update();
+            GameInput input = this.input;
+            if (input != null) {
+                input.update();
+            }
 
             Renderer renderer = new Renderer(this.shapes);
             if (this.loadingOverlay != null) {
@@ -734,7 +716,6 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
                 this.camera.update(this.player);
                 this.camera.far = (this.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
-//                this.camera.far = 10000;
 
                 var rotation = this.player != null ? this.player.getRotation() : new Vector2();
                 var quaternion = new Quaternion();
@@ -743,36 +724,20 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 quaternion.conjugate();
 
                 if (this.renderWorld && world != null && worldRenderer != null && !worldRenderer.isDisposed()) {
-//                    this.worldFbo.begin();
-
                     ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
                     Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//                    this.shader.bind();
 
                     this.modelBatch.begin(this.camera);
                     this.modelBatch.getRenderContext().setCullFace(UltreonCraft.CULL_FACE);
                     this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
                     this.modelBatch.render(worldRenderer, this.env);
                     this.modelBatch.end();
-
-//                    Gdx.gl20.glUseProgram(GL_NONE);
-//                    Gdx.gl20.glFlush();
-
-//                    this.worldFbo.end(0, 0, this.getWidth(), this.getHeight());
-//                    worldTexture = this.worldFbo.getColorBufferTexture();
                 }
             }
 
-//            ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
             this.spriteBatch.begin();
-//            if (worldTexture != null) {
-//                this.spriteBatch.draw(worldTexture, 0, 0, this.getWidth(), this.getHeight());
-//                this.spriteBatch.flush();
-//                Gdx.gl20.glFlush();
-//            }
 
             var screen = this.currentScreen;
-            var renderer = new Renderer(this.shapes);
 
             renderer.pushMatrix();
             renderer.translate(this.getDrawOffset().x, this.getDrawOffset().y);
@@ -911,7 +876,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 efficiency = toolItem.getEfficiency();
             }
 
-            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * TPS / efficiency, 0) + 1))) {
+            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * UltreonCraft.TPS / efficiency, 0) + 1))) {
                 this.stopBreaking();
             } else {
                 if (this.oldSelected != this.player.selected) {
@@ -993,14 +958,15 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
         }
     }
 
+    @SuppressWarnings("ConstantValue")
     public void dispose() {
         try {
             while (!this.futures.isEmpty()) {
                 this.futures.removeIf(CompletableFuture::isDone);
             }
 
-            this.scheduler.shutdownNow();
-            this.garbageCollector.shutdown();
+            if (this.scheduler != null) this.scheduler.shutdownNow();
+            if (this.garbageCollector != null) this.garbageCollector.shutdown();
 
             if (this.world != null) this.world.dispose();
             if (this.worldRenderer != null) this.worldRenderer.dispose();
@@ -1008,8 +974,8 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 
             GamePlatform.instance.dispose();
 
-            this.modelBatch.dispose();
-            this.spriteBatch.dispose();
+            if (this.modelBatch != null) this.modelBatch.dispose();
+            if (this.spriteBatch != null) this.spriteBatch.dispose();
             if (this.unifont != null) this.unifont.dispose();
 
             for (var font : Registries.FONTS.values()) {
@@ -1128,7 +1094,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     }
 
     public <T> T getAndWait(Identifier id, Supplier<T> task) {
-        return this.runLater(new Task<>(id, task)).join();
+        return UltreonCraft.invokeAndWait(task::get);
     }
 
     public ScheduledFuture<?> schedule(Task<?> task, long timeMillis) {

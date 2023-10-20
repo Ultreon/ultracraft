@@ -137,6 +137,11 @@ public class MobileInput extends GameInput {
         return false;
     }
 
+    @Override
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
     public Vec2i getTouchPos() {
         float x = Gdx.input.getX(0) / this.game.getGuiScale();
         float y = (this.game.getHeight() - Gdx.input.getY(0)) / this.game.getGuiScale();

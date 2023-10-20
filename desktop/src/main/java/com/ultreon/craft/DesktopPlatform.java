@@ -93,7 +93,7 @@ public class DesktopPlatform extends GamePlatform {
 
         long windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
 
-        UltreonCraft.get().runAndWait(id("platform/setup_imgui"), () -> {
+        UltreonCraft.invokeAndWait(() -> {
             this.imGuiGlfw.init(windowHandle, true);
             this.imGuiGl3.init("#version 150");
         });

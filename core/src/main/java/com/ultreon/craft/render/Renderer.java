@@ -392,47 +392,6 @@ public class Renderer {
         this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
-    public void texture(Identifier tex, float x, float y) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y);
-    }
-
-
-    public void texture(Identifier tex, float x, float y, Color backgroundColor) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, backgroundColor);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, Color backgroundColor) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, backgroundColor);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, u, v, backgroundColor);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, u, v, uWidth, vHeight, backgroundColor);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, u, v, uWidth, vHeight, texWidth, texHeight, backgroundColor);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v) {
-        texture(tex, x, y, width, height, u, v, width, height);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, u, v, uWidth, vHeight);
-    }
-
-    public void texture(Identifier tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        this.texture(this.game.getTextureManager().getTexture(tex), x, y, width, height, u, v, uWidth, vHeight, texWidth, texHeight);
-    }
-
     //////////////////
     //     Text     //
 

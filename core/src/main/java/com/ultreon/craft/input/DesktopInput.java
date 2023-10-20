@@ -231,6 +231,11 @@ public class DesktopInput extends GameInput {
     }
 
     @Override
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = this.game.currentScreen;
 

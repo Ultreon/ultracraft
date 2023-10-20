@@ -287,21 +287,22 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         return true;
     }
 
+    @Deprecated
     protected void onWorldHit(@NotNull World world, @Nullable Player player, @Nullable HitResult hitResult, boolean destroy, boolean use) {
-        if (player != null && hitResult != null) {
-            Vec3i pos = hitResult.pos;
-            Block block = world.get(pos);
-            Vec3i posNext = hitResult.next;
-            Block blockNext = world.get(posNext);
-            Block selectedBlock = player.getSelectedBlock();
-            if (hitResult.collide && !block.isAir()) {
-                if (destroy) {
-                    world.set(pos, Blocks.AIR);
-                } else if (use && blockNext.isAir()
-                        && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(player.getBoundingBox())) {
-                    world.set(posNext, selectedBlock);
-                }
-            }
-        }
+//        if (player != null && hitResult != null) {
+//            Vec3i pos = hitResult.getPos();
+//            Block block = world.get(pos);
+//            Vec3i posNext = hitResult.getNext();
+//            Block blockNext = world.get(posNext);
+//            Item selectedBlock = player.getSelectedItem();
+//            if (hitResult.collide && !block.isAir()) {
+//                if (destroy) {
+//                    world.set(pos, Blocks.AIR);
+//                } else if (use && blockNext.isAir()
+//                        && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(player.getBoundingBox())) {
+//                    world.set(posNext, selectedBlock);
+//                }
+//            }
+//        }
     }
 }
