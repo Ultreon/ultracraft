@@ -35,7 +35,7 @@ jobs:
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Ultreon Craft Linux Build ${{ github.run_number }}
+          name: Ultracraft Linux Build ${{ github.run_number }}
           path: desktop-merge/build/dist
   build-macos:
     strategy:
@@ -65,7 +65,7 @@ jobs:
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Ultreon Craft MacOS Build ${{ github.run_number }}
+          name: Ultracraft MacOS Build ${{ github.run_number }}
           path: desktop-merge/build/dist
   build-windows:
     strategy:
@@ -93,5 +93,5 @@ jobs:
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Ultreon Craft Windows Build ${{ github.run_number }}
+          name: Ultracraft Windows Build ${{ github.run_number }}
           path: desktop-merge/build/dist

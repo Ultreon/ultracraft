@@ -116,7 +116,7 @@ jar {
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
-        attributes 'Implementation-Title': 'Ultreon Craft',
+        attributes 'Implementation-Title': 'Ultracraft',
                 'Implementation-Vendor': 'Ultreon Team',
                 project_version: project.version,
                 'Main-Class': 'com.ultreon.craft.DesktopLauncher',

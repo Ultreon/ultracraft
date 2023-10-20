@@ -1,4 +1,4 @@
-# Ultreon Craft
+# Ultracraft
 **DO NOT REDISTRIBUTE: [THIS PROJECT FALLS UNDER FULL COPYRIGHT](LICENSE)**
 
 ## Build

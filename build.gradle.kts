@@ -107,7 +107,7 @@ allprojects {
     apply(plugin = "maven-publish")
 
     ext.also {
-        it["app_name"] = "Ultreon Craft"
+        it["app_name"] = "Ultracraft"
         it["gdx_version"] = "1.11.0"
         it["robo_vm_version"] = "2.3.16"
         it["box_2d_lights_version"] = "1.5"

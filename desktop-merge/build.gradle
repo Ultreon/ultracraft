@@ -173,7 +173,7 @@ jar {
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
-        attributes 'Implementation-Title': 'Ultreon Craft',
+        attributes 'Implementation-Title': 'Ultracraft',
                 'Implementation-Vendor': 'Ultreon Team',
                 project_version: project.project_version,
                 'Main-Class': 'com.ultreon.craft.DesktopLauncher',
@@ -311,7 +311,6 @@ jpackage {
         winShortcut = false
         winUpgradeUuid = "a539b496-ae50-4df2-9a1b-8a089e44f7ce"
         winMenuGroup = "Ultreon Team"
-        winConsole = true
         appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
     }
 }
