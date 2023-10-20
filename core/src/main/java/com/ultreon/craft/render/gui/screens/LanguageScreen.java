@@ -83,6 +83,9 @@ public class LanguageScreen extends Screen {
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
+        if (selected) {
+            System.out.println("renderer = " + renderer + ", locale = " + locale + ", y = " + y + ", mouseX = " + mouseX + ", mouseY = " + mouseY + ", selected = " + selected + ", deltaTime = " + deltaTime);
+        }
         String text = locale.getDisplayLanguage(new Locale("en")) + " (" + locale.getDisplayCountry(new Locale("en")) + ")";
         text += " - " + locale.getDisplayLanguage(locale) + " (" + locale.getDisplayCountry(locale) + ")";
         renderer.drawCenteredText(text, this.width / 2f, y + 4f);
