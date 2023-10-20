@@ -1,6 +1,7 @@
 package com.ultreon.craft.entity;
 
-import com.badlogic.gdx.math.GridPoint2;
+import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -15,6 +16,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +45,8 @@ public class Entity {
 
     public boolean noClip;
     protected float fallDistance = 0;
+    private boolean wasInFluid = false;
+    private boolean swimUp;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -121,25 +125,68 @@ public class Entity {
 
     public void tick() {
         if (!this.noGravity) {
-            this.velocityY -= this.gravity;
+            if (this.isAffectedByFluid() && this.swimUp) {
+                this.swimUp = false;
+            } else {
+                this.velocityY -= this.gravity;
+            }
         }
 
-        this.move(this.velocityX, this.velocityY, this.velocityZ);
-
-        this.velocityX *= 0.6F;
-        this.velocityY *= this.noGravity ? 0.6F : 0.98F;
-        this.velocityZ *= 0.6F;
+        if (this.isAffectedByFluid()) {
+            this.velocityX *= 0.56f;
+            this.velocityY *= 0.56f;
+            this.velocityZ *= 0.56f;
+        } else {
+            this.velocityX *= 0.6F;
+            this.velocityY *= this.noGravity ? 0.6F : 0.98F;
+            this.velocityZ *= 0.6F;
+        }
 
         if (this.onGround) {
             this.velocityX *= 0.9f;
             this.velocityZ *= 0.9f;
         }
+
+        this.move(this.velocityX, this.velocityY, this.velocityZ);
     }
 
-    public void move(double dx, double dy, double dz) {
+    public boolean isAffectedByFluid() {
+        return this.isInWater();
+    }
+
+    private boolean isInWater() {
+        return this.world.get(this.blockPosition()) == Blocks.WATER;
+    }
+
+    protected void swimUp() {
+        if (this.isAffectedByFluid()) {
+            this.swimUp = true;
+        }
+
+        if (!this.wasInFluid && this.isAffectedByFluid()) {
+            this.wasInFluid = true;
+            return;
+        }
+        if (!this.wasInFluid || this.isAffectedByFluid()) return;
+        this.wasInFluid = false;
+        this.velocityY = 0.3;
+    }
+
+    public void move(double deltaX, double deltaY, double deltaZ) {
+        double dx = deltaX, dy = deltaY, dz = deltaZ;
+
+        ValueEventResult<Vec3d> eventResult = EntityEvents.MOVE.factory().onEntityMove(this, deltaX, deltaY, deltaZ);
+        Vec3d value = eventResult.getValue();
+        if (eventResult.isCanceled() && value != null) {
+            dx = value.x;
+            dy = value.y;
+            dz = value.z;
+        }
+
         double oDx = dx;
         double oDy = dy;
         double oDz = dz;
+
         BoundingBox ext = this.getBoundingBox();
         if (dx < 0) ext.min.x += dx;
         else ext.max.x += dx;

@@ -61,8 +61,6 @@ public class LivingEntity extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
-
         if (this.isDead) return;
 
         if (this.jumping && this.onGround) {
@@ -87,16 +85,19 @@ public class LivingEntity extends Entity {
                 }
             }
         }
+
+        super.tick();
     }
 
     public void jump() {
+        if (this.isInWater()) return;
         this.velocityY = this.jumpVel;
     }
 
     @Override
     protected void hitGround() {
         if (!this.noGravity && !this.isInWater()) {
-            int damage = (int) (this.fallDistance - 2.2F);
+            int damage = (int) (this.fallDistance - 0.2f) - 3;
             if (damage > 0) {
                 this.hurt(damage, DamageSource.FALLING);
             }

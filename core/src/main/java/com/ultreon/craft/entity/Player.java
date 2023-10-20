@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
@@ -14,8 +13,6 @@ import com.ultreon.craft.item.Items;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
-import com.ultreon.craft.util.Utils;
-import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 
@@ -46,14 +43,12 @@ public class Player extends LivingEntity {
 
     public Item getSelectedItem() {
         if (this.selected < 0) this.selected = 0;
-        return this.selected >= allowed.length ? Items.AIR : allowed[this.selected];
+        return this.selected >= Player.allowed.length ? Items.AIR : Player.allowed[this.selected];
     }
 
     @Override
     public void tick() {
-        super.tick();
-
-        this.jumping = !this.isInWater() && !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
+        this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         if (this.topView) {
             this.noGravity = true;
@@ -64,6 +59,15 @@ public class Player extends LivingEntity {
         if (this.isInVoid() && !this.isDead()) {
             GameInput.startVibration(200, 1.0F);
         }
+
+        if (this.jumping) this.swimUp();
+
+        super.tick();
+    }
+
+    @Override
+    public boolean isAffectedByFluid() {
+        return !(this.flying || this.noClip) && super.isAffectedByFluid();
     }
 
     @Override
@@ -73,14 +77,6 @@ public class Player extends LivingEntity {
         }
 
         return false;
-    }
-
-    public boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
-    }
-
-    public ChunkPos getChunkPos() {
-        return Utils.chunkPosFromBlockCoords(this.blockPosition());
     }
 
     public float getEyeHeight() {
