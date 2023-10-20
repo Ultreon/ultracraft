@@ -164,42 +164,42 @@ public class ChunkMeshBuilder {
 
                     if (y < CHUNK_HEIGHT - 1) {
                         this.getB(section, x, y + 1, z);
-                        if (this.getB(section, x, y + 1, z) == Blocks.AIR || this.getB(section, x, y + 1, z).isTransparent())
+                        if (this.getB(section, x, y + 1, z) == Blocks.AIR && !this.getB(section, x, y + 1, z).isTransparent())
                             ChunkMeshBuilder.createTop(offset, x, y, z, model.top(), vertices);
                     } else {
                         ChunkMeshBuilder.createTop(offset, x, y, z, model.top(), vertices);
                     }
                     if (y > 0) {
                         this.getB(section, x, y - 1, z);
-                        if (this.getB(section, x, y - 1, z) == Blocks.AIR || this.getB(section, x, y - 1, z).isTransparent())
+                        if (this.getB(section, x, y - 1, z) == Blocks.AIR && !this.getB(section, x, y - 1, z).isTransparent())
                             ChunkMeshBuilder.createBottom(offset, x, y, z, model.bottom(), vertices);
                     } else {
                         ChunkMeshBuilder.createBottom(offset, x, y, z, model.bottom(), vertices);
                     }
                     if (x > 0) {
                         this.getB(section, x - 1, y, z);
-                        if (this.getB(section, x - 1, y, z) == Blocks.AIR || this.getB(section, x - 1, y, z).isTransparent())
+                        if (this.getB(section, x - 1, y, z) == Blocks.AIR && !this.getB(section, x - 1, y, z).isTransparent())
                             ChunkMeshBuilder.createLeft(offset, x, y, z, model.left(), vertices);
                     } else {
                         ChunkMeshBuilder.createLeft(offset, x, y, z, model.left(), vertices);
                     }
                     if (x < CHUNK_SIZE - 1) {
                         this.getB(section, x + 1, y, z);
-                        if (this.getB(section, x + 1, y, z) == Blocks.AIR || this.getB(section, x + 1, y, z).isTransparent())
+                        if (this.getB(section, x + 1, y, z) == Blocks.AIR && !this.getB(section, x + 1, y, z).isTransparent())
                             ChunkMeshBuilder.createRight(offset, x, y, z, model.right(), vertices);
                     } else {
                         ChunkMeshBuilder.createRight(offset, x, y, z, model.right(), vertices);
                     }
                     if (z > 0) {
                         this.getB(section, x, y, z - 1);
-                        if (this.getB(section, x, y, z - 1) == Blocks.AIR || this.getB(section, x, y, z - 1).isTransparent())
+                        if (this.getB(section, x, y, z - 1) == Blocks.AIR && !this.getB(section, x, y, z - 1).isTransparent())
                             ChunkMeshBuilder.createFront(offset, x, y, z, model.front(), vertices);
                     } else {
                         ChunkMeshBuilder.createFront(offset, x, y, z, model.front(), vertices);
                     }
                     if (z < CHUNK_SIZE - 1) {
                         this.getB(section, x, y, z + 1);
-                        if (this.getB(section, x, y, z + 1) == Blocks.AIR || this.getB(section, x, y, z + 1).isTransparent())
+                        if (this.getB(section, x, y, z + 1) == Blocks.AIR && !this.getB(section, x, y, z + 1).isTransparent())
                             ChunkMeshBuilder.createBack(offset, x, y, z, model.back(), vertices);
                     } else {
                         ChunkMeshBuilder.createBack(offset, x, y, z, model.back(), vertices);

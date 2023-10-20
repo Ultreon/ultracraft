@@ -511,7 +511,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
 		BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltreonCraft.id("blocks/grass_top"), UltreonCraft.id("blocks/dirt"), UltreonCraft.id("blocks/grass_side")));
 		BlockModelRegistry.registerDefault(Blocks.DIRT);
 		BlockModelRegistry.registerDefault(Blocks.SAND);
-		//BlockModelRegistry.registerDefault(Blocks.WATER);
+		BlockModelRegistry.registerDefault(Blocks.WATER);
 		BlockModelRegistry.registerDefault(Blocks.STONE);
 		BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
 	}
