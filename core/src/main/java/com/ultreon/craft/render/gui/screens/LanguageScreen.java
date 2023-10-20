@@ -31,7 +31,7 @@ public class LanguageScreen extends Screen {
     public void show() {
         super.show();
 
-        this.list = this.add(new SelectionList<>(0, 0, this.width, this.height - 40, 14));
+        this.list = this.add(new SelectionList<>(0, 0, this.width, this.height - 40, 28));
         this.list.setSelectable(true);
         this.list.setItemRenderer(this::renderItem);
         this.list.setOnSelected(locale -> {
@@ -83,9 +83,12 @@ public class LanguageScreen extends Screen {
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
+        if (selected) {
+            System.out.println("renderer = " + renderer + ", locale = " + locale + ", y = " + y + ", mouseX = " + mouseX + ", mouseY = " + mouseY + ", selected = " + selected + ", deltaTime = " + deltaTime);
+        }
         String text = locale.getDisplayLanguage(new Locale("en")) + " (" + locale.getDisplayCountry(new Locale("en")) + ")";
         text += " - " + locale.getDisplayLanguage(locale) + " (" + locale.getDisplayCountry(locale) + ")";
-        renderer.drawCenteredText(text, this.width / 2, 11f);
+        renderer.drawCenteredText(text, this.width / 2f, y + 4f);
     }
 
     private void updateTexts() {
