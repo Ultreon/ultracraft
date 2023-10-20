@@ -4,10 +4,11 @@ import com.badlogic.gdx.backends.lwjgl3.*;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
 import com.ultreon.craft.desktop.mods.DesktopModPreInit;
 import com.ultreon.craft.desktop.util.util.ArgParser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
@@ -15,16 +16,28 @@ import org.slf4j.LoggerFactory;
 public final class DesktopLauncher {
 	public static final int[] SIZES = new int[]{16, 24,  32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
 
-	public static final Logger LOGGER = LoggerFactory.getLogger("Launcher");
+	public static final Logger LOGGER = LogManager.getLogger("Launcher");
 	private static DesktopPlatform platform;
 
 	@ApiStatus.Internal
 	public static void main(String[] argv) {
-		ArgParser argParser = new ArgParser(argv);
+		try {
+			ArgParser argParser = new ArgParser(argv);
 
-		GamePlatform.instance = DesktopLauncher.platform = new DesktopPlatform(argParser);
+			GamePlatform.instance = DesktopLauncher.platform = new DesktopPlatform(argParser);
 
-        DesktopLauncher.launch(argv);
+			DesktopLauncher.launch(argv);
+		} catch (Throwable t) {
+			try {
+				UltreonCraft.crash(t);
+			} catch (Throwable throwable) {
+				try {
+					DesktopLauncher.LOGGER.fatal("Fatal Error occurred when trying to launch the game!", throwable);
+				} catch (Throwable ignored) {
+					Runtime.getRuntime().halt(1);
+				}
+			}
+		}
 	}
 
 	private static void launch(String[] argv) {
