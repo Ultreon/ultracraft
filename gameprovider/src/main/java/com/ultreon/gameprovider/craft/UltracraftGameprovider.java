@@ -257,8 +257,14 @@ public class UltracraftGameprovider implements GameProvider {
         if (!Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
             return Path.of(".");
 
-        Path path;
+        Path path = getDataDir();
 
+        return path;
+    }
+
+    @NotNull
+    public static Path getDataDir() {
+        Path path;
         if (OS.isWindows())
             path = Paths.get(System.getenv("APPDATA"), "Ultracraft");
         else if (OS.isMac())
@@ -273,7 +279,6 @@ public class UltracraftGameprovider implements GameProvider {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         return path;
     }
 

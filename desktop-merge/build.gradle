@@ -76,7 +76,7 @@ configurations {
 evaluationDependsOn(":core")
 
 dependencies {
-    addToJar(project(":gameprovider"))
+    addToJar(implementation project(":gameprovider"))
     implementation project(":core")
     implementation project(":desktop")
 
