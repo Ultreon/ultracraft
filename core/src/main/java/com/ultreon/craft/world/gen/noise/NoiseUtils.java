@@ -50,8 +50,6 @@ public class NoiseUtils extends UtilityClass {
         total *= settings.amplitude();
         total += settings.base();
 
-        System.out.println("total = " + total);
-
         return total;
     }
 }

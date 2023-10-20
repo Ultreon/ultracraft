@@ -9,6 +9,7 @@ public class SimplexNoise implements NoiseType {
     private double[] amplitudes;
 
     private final double persistence;
+    private boolean disposed = false;
 
     public SimplexNoise(int largestFeature, double persistence, long seed) {
         this.persistence = persistence;
@@ -32,6 +33,7 @@ public class SimplexNoise implements NoiseType {
 
     @Override
     public double eval(double x, double y) {
+        if (disposed) return 0.0;
         double result = 0;
         for (int i = 0; i < this.octaves.length; i++) {
             result = result + this.octaves[i].noise(x / this.frequencies[i], y / this.frequencies[i]) * this.amplitudes[i];
@@ -56,6 +58,7 @@ public class SimplexNoise implements NoiseType {
     @Override
     @SuppressWarnings("DataFlowIssue")
     public void dispose() {
+        this.disposed = true;
         Arrays.stream(this.octaves).forEach(Octave::dispose);
         this.octaves = null;
         this.frequencies = null;

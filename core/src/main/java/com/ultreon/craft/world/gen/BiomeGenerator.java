@@ -53,15 +53,12 @@ public class BiomeGenerator implements Disposable {
 
     public int getSurfaceHeightNoise(float x, float z, int height) {
         float terrainHeight;
-        if (!USE_DOMAIN_WARPING) {
+        if (!BiomeGenerator.USE_DOMAIN_WARPING) {
             terrainHeight = NoiseUtils.octavePerlin(x, z, this.biomeNoise);
         } else {
             terrainHeight = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
         }
 
-//        terrainHeight = NoiseUtils.redistribution(terrainHeight, this.biomeNoise);
-//        return NoiseUtils.remapValue01ToInt(terrainHeight, 0, height);
-        System.out.println("terrainHeight = " + terrainHeight);
         return (int) Math.max(terrainHeight, 1);
     }
 

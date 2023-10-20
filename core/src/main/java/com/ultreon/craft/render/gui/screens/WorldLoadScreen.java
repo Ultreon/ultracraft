@@ -53,18 +53,17 @@ public class WorldLoadScreen extends Screen {
             }
         }
 
-        this.game.respawn();
-        UltreonCraft.LOGGER.debug("Player spawned, enabling world rendering now.");
-        this.startRenderingWorld();
-        UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
-        this.game.submit(new Task(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
+        this.game.respawnAsync().thenRun(() -> {
+            UltreonCraft.LOGGER.debug("Player spawned, enabling world rendering now.");
+            this.startRenderingWorld();
+            UltreonCraft.LOGGER.debug("World rendering enabled, closing load screen.");
+            this.game.submit(new Task<>(new Identifier("world_loaded"), () -> this.game.showScreen(null)));
+        });
     }
 
     private void startRenderingWorld() {
         if (!UltreonCraft.isOnRenderingThread()) {
-            UltreonCraft.invokeAndWait(() -> {
-                this.startRenderingWorld();
-            });
+            UltreonCraft.invokeAndWait(this::startRenderingWorld);
             return;
         }
 

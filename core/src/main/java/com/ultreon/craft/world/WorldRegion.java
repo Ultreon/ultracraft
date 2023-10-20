@@ -123,7 +123,7 @@ public class WorldRegion {
         MapType mapType = this.get(chunkPos);
         if (mapType == null) return null;
 
-        Chunk chunk = Chunk.load(worldChunkPos, mapType);
+        Chunk chunk = Chunk.load(this.world, worldChunkPos, mapType);
 
         synchronized (this.lock) {
             this.chunks.put(chunkPos, chunk);
