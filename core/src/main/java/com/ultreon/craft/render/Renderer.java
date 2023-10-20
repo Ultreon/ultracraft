@@ -270,14 +270,14 @@ public class Renderer {
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y) {
         this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
@@ -285,22 +285,22 @@ public class Renderer {
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(tex, x, y, width, height, 0.0F, 0.0F, backgroundColor);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
         this.blit(tex, x, y, width, height, u, v, width, height, backgroundColor);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
         this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
@@ -309,22 +309,22 @@ public class Renderer {
         this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height) {
         this.blit(tex, x, y, width, height, 0.0F, 0.0F);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v) {
         this.blit(tex, x, y, width, height, u, v, width, height);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
         this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
         this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
