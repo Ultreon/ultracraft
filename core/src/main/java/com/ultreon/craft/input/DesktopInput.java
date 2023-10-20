@@ -249,10 +249,9 @@ public class DesktopInput extends GameInput {
             player.selected = i;
             return true;
         } else {
-            int yPos = this.game.getHeight() - this.yPos;
             if (currentScreen != null) {
-                ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
-                return currentScreen.mouseWheel((int) (this.xPos / this.game.getGuiScale()), (int) (yPos / this.game.getGuiScale()), amountY);
+                ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (Gdx.input.getX() / this.game.getGuiScale()), (int) (Gdx.input.getY() / this.game.getGuiScale()), amountY);
+                return currentScreen.mouseWheel((int) (Gdx.input.getX() / this.game.getGuiScale()), (int) (Gdx.input.getY() / this.game.getGuiScale()), amountY);
             }
         }
 

@@ -61,10 +61,10 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         renderer.pushMatrix();
         renderer.translate(0, this.scrollY);
-//        if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
+        if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
             this.renderChildren(renderer, mouseX, mouseY, deltaTime);
-//            renderer.popScissors();
-//        }
+            renderer.popScissors();
+        }
         renderer.popMatrix();
     }
 
@@ -187,8 +187,9 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public boolean mouseWheel(int x, int y, double rotation) {
-        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 10), 0, this.getContentHeight() - this.height) : 0;
-
+        int contentHeight = this.getContentHeight();
+        System.out.println("contentHeight = " + contentHeight);
+        this.scrollY = Mth.clamp((float) (this.scrollY + rotation * 10), 0, contentHeight - this.height);
         return true;
     }
 
@@ -256,7 +257,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
             this.x = this.list.x;
-            this.y = this.list.y + (int) (-this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
+            this.y = (int) (this.list.y - this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
             this.width = this.list.width - SelectionList.SCROLLBAR_WIDTH;
             this.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;

@@ -159,9 +159,11 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
 
     @Override
     public boolean mouseWheel(int x, int y, double rotation) {
-        GuiComponent widgetAt = getWidgetAt(x, y);
+        GuiComponent widgetAt = this.getWidgetAt(x, y);
+        System.out.println("x = " + x + ", y = " + y + ", rotation = " + rotation);
         x -= this.x + this.innerXOffset;
         y -= this.y + this.innerYOffset;
+        System.out.println("widgetAt = " + widgetAt);
         if (widgetAt != null) return widgetAt.mouseWheel(x - widgetAt.getX(), y - widgetAt.getY(), rotation);
         return false;
     }
