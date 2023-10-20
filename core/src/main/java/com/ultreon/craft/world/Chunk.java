@@ -12,6 +12,7 @@ import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -19,7 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -32,7 +32,7 @@ public class Chunk implements Disposable {
 	protected final Lock lock = new ReentrantLock();
 	public Vector3 renderOffset = new Vector3();
 	public ChunkMesh mesh;
-	public ChunkMesh trasparentMesh;
+	public ChunkMesh transparentMesh;
     protected boolean modifiedByPlayer;
 	protected boolean ready;
 	private Section[] sections;
@@ -42,11 +42,15 @@ public class Chunk implements Disposable {
 	private final int sizeTimesHeight;
 	@Nullable
 	public TreeData treeData;
+	@Deprecated
 	public boolean dirty;
 	private boolean disposed;
+	@Deprecated
 	protected boolean updateNeighbours;
+	private final World world;
 
-	public Chunk(int size, int height, ChunkPos pos) {
+	public Chunk(World world, int size, int height, ChunkPos pos) {
+		this.world = world;
 		int sectionCount = height / size;
 
 		this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
@@ -62,8 +66,8 @@ public class Chunk implements Disposable {
 		}
 	}
 
-	public static Chunk load(ChunkPos pos, MapType mapType) {
-		Chunk chunk = new Chunk(CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+	public static Chunk load(World world, ChunkPos pos, MapType mapType) {
+		Chunk chunk = new Chunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
 		chunk.load(mapType);
 		return chunk;
 	}
@@ -104,19 +108,23 @@ public class Chunk implements Disposable {
 	}
 
 	public Block get(Vec3i pos) {
+		if (this.disposed) return Blocks.AIR;
 		return this.get(pos.x, pos.y, pos.z);
 	}
 
 	public Block get(int x, int y, int z) {
+		if (this.disposed) return Blocks.AIR;
 		if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
 		return this.getFast(x, y, z);
 	}
 
 	public Block getFast(Vec3i pos) {
+		if (this.disposed) return Blocks.AIR;
 		return this.getFast(pos.x, pos.y, pos.z);
 	}
 
 	public Block getFast(int x, int y, int z) {
+		if (this.disposed) return Blocks.AIR;
 		this.lock.lock();
 		Block fast = this.sections[y / this.size].getFast(x, y % this.size, z);
 		this.lock.unlock();
@@ -124,24 +132,28 @@ public class Chunk implements Disposable {
 	}
 
 	public void set(Vec3i pos, Block block) {
+		if (this.disposed) return;
 		this.set(pos.x, pos.y, pos.z, block);
 	}
 
 	public void set(int x, int y, int z, Block block) {
+		if (this.disposed) return;
 		if (this.isOutOfBounds(x, y, z)) return;
 		this.setFast(x, y, z, block);
 	}
 
 	public void setFast(Vec3i pos, Block block) {
+		if (this.disposed) return;
 		this.setFast(pos.x, pos.y, pos.z, block);
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
+		if (this.disposed) return;
 		this.lock.lock();
 		this.sections[y / this.size].setFast(x, y % this.size, z, block);
 		this.lock.unlock();
 		this.dirty = true;
-		this.updateNeighbours = true;
+		this.world.updateChunkAndNeighbours(this);
 	}
 
 	private boolean isOutOfBounds(int x, int y, int z) {
@@ -244,7 +256,18 @@ public class Chunk implements Disposable {
 		this.dirty = false;
 	}
 
+	@Deprecated
+	@ApiStatus.Internal
 	public void onNeighboursUpdated() {
-		this.updateNeighbours = false;
+
 	}
+
+	@ApiStatus.Internal
+	public void onUpdated() {
+		this.world.onChunkUpdated(this);
+	}
+
+    public World getWorld() {
+        return this.world;
+    }
 }

@@ -2,18 +2,17 @@ package com.ultreon.craft.render.world;
 
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
@@ -22,7 +21,6 @@ import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.util.HitResult;
@@ -33,11 +31,11 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
@@ -65,26 +63,14 @@ public final class WorldRenderer implements RenderableProvider {
             return new ChunkMesh();
         }
     };
-    private Renderable cursor;
-    private ShaderProgram shader;
-    private ModelBatch modelBatch;
+    private final Renderable cursor;
     private boolean disposed;
     private final Vector3 tmp = new Vector3();
     private final Material breakingMaterial;
-    private final Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
-    private Array<Mesh> breakingMeshes;
+    private final Array<Mesh> breakingMeshes;
 
     public WorldRenderer(World world, ModelBatch modelBatch) {
-        this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
-        this.breakingMaterial = new Material(UltreonCraft.strId("block_breaking"));
-        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
-        this.breakingMaterial.set(new BlendingAttribute(0.8f));
-        for (int i = 0; i < 6; i++) {
-            TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
-            this.breakingTexRegions.set(i, textureRegion);
-        }
         this.world = world;
-        this.modelBatch = modelBatch;
 
         int len = 49152;
 
@@ -128,6 +114,16 @@ public final class WorldRenderer implements RenderableProvider {
         this.cursor = renderable;
 
         // Breaking animation meshes.
+        this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
+        this.breakingMaterial = new Material(UltreonCraft.strId("block_breaking"));
+        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
+        this.breakingMaterial.set(new BlendingAttribute(0.8f));
+        Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
+        for (int i = 0; i < 6; i++) {
+            TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
+            breakingTexRegions.set(i, textureRegion);
+        }
+
         BoundingBox boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0).toGdx();
         float v = 0.001f;
         boundingBox.set(boundingBox);
@@ -136,7 +132,7 @@ public final class WorldRenderer implements RenderableProvider {
 
         this.breakingMeshes = new Array<>();
         for (int i = 0; i < 6; i++) {
-            BakedCubeModel bakedCubeModel = new BakedCubeModel(this.breakingTexRegions.get(i));
+            BakedCubeModel bakedCubeModel = new BakedCubeModel(breakingTexRegions.get(i));
             this.breakingMeshes.add(bakedCubeModel.getMesh());
         }
     }
@@ -154,10 +150,13 @@ public final class WorldRenderer implements RenderableProvider {
             UltreonCraft.invoke(() -> this.free(chunk));
             return;
         }
-        this.pool.free(chunk.mesh);
-        this.pool.free(chunk.trasparentMesh);
+
+        @Nullable ChunkMesh mesh = chunk.mesh;
+        @Nullable ChunkMesh transparentMesh = chunk.transparentMesh;
+        if (mesh != null) this.pool.free(mesh);
+        if (mesh != null) this.pool.free(transparentMesh);
         chunk.mesh = null;
-        chunk.trasparentMesh = null;
+        chunk.transparentMesh = null;
         WorldRenderer.chunkMeshFrees++;
     }
 
@@ -172,6 +171,7 @@ public final class WorldRenderer implements RenderableProvider {
         this.loadedChunks = chunks.size();
         this.visibleChunks = 0;
 
+        boolean chunkRendered = false;
         for (var chunk : chunks) {
             if (!chunk.isReady()) continue;
 
@@ -179,8 +179,10 @@ public final class WorldRenderer implements RenderableProvider {
             Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
             chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
-            if (chunk.dirty && chunk.mesh != null) {
+            if ((chunk.dirty || chunk.getWorld().isChunkInvalidated(chunk)) && (chunk.mesh != null || chunk.transparentMesh != null) && !chunkRendered) {
                 this.free(chunk);
+                chunk.onUpdated();
+                chunkRendered = true;
             }
 
             chunk.dirty = false;
@@ -188,19 +190,19 @@ public final class WorldRenderer implements RenderableProvider {
             if (chunk.mesh == null)
                 chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
 
-            if (chunk.trasparentMesh == null)
-                chunk.trasparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
+            if (chunk.transparentMesh == null)
+                chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
 
             chunk.mesh.chunk = chunk;
             chunk.mesh.renderable.material = this.material;
             chunk.mesh.transform.setToTranslation(chunk.renderOffset);
 
-            chunk.trasparentMesh.chunk = chunk;
-            chunk.trasparentMesh.renderable.material = this.transparentMaterial;
-            chunk.trasparentMesh.transform.setToTranslation(chunk.renderOffset);
+            chunk.transparentMesh.chunk = chunk;
+            chunk.transparentMesh.renderable.material = this.transparentMaterial;
+            chunk.transparentMesh.transform.setToTranslation(chunk.renderOffset);
 
             output.add(this.verifyOutput(chunk.mesh.renderable));
-            output.add(this.verifyOutput(chunk.trasparentMesh.renderable));
+            output.add(this.verifyOutput(chunk.transparentMesh.renderable));
 
             for (var entry : chunk.getBreaking().entrySet()) {
                 Vec3i key = entry.getKey();
@@ -268,16 +270,6 @@ public final class WorldRenderer implements RenderableProvider {
         return meshBuilder.end();
     }
 
-    private void edge(MeshBuilder builder, Vector3[] vertices, float thickness) {
-        Vector3 max = new Vector3();
-        Vector3 min = new Vector3();
-        for (Vector3 vertex : vertices) {
-            max.set(vertex.x + thickness, vertex.y + thickness, vertex.z + thickness);
-            min.set(vertex.x - thickness, vertex.y -thickness, vertex.z - thickness);
-            BoxShapeBuilder.build(builder, new BoundingBox(min, max));
-        }
-    }
-
     private void doPoolStatistics() {
         WorldRenderer.poolFree = this.pool.getFree();
         WorldRenderer.poolPeak = this.pool.peak;
@@ -290,21 +282,9 @@ public final class WorldRenderer implements RenderableProvider {
         toSort.sort((o1, o2) -> {
             Vec3d mid1 = new Vec3d(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
             Vec3d mid2 = new Vec3d(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
-            return Double.compare(mid2.dst(player.getPosition()), mid1.dst(player.getPosition()));
+            return Double.compare(mid1.dst(player.getPosition()), mid2.dst(player.getPosition()));
         });
         return toSort;
-    }
-
-    public static Matrix4 rotateTowards(Matrix4 transformMatrix, Vector3 currentPos, Vector3 targetPos) {
-        // Calculate the direction vector from current to target position
-        Vector3 direction = targetPos.cpy().sub(currentPos).nor();
-
-        // Calculate the rotation angle in radians using the direction vector
-        float angle = (float) Math.atan2(-direction.z, -direction.x);
-
-        // Create a rotation matrix using LibGDX's Matrix4 API
-        transformMatrix.rotateRad(Vector3.Y, angle);
-        return transformMatrix;
     }
 
     public int getVisibleChunks() {
@@ -345,7 +325,6 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     public void setShader(ShaderProgram shader) {
-        this.shader = shader;
     }
 
     public boolean isDisposed() {

@@ -1,6 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -101,6 +100,7 @@ public class World implements Disposable {
 	private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
 	private final ExecutorService executor = Executors.newCachedThreadPool();
 	private boolean disposed;
+	private final Set<ChunkPos> invalidatedChunks = new HashSet<>();
 
 	public World(SavedWorld savedWorld, int chunksX, int chunksZ) {
 		this.savedWorld = savedWorld;
@@ -467,26 +467,29 @@ public class World implements Disposable {
 		return WorldRayCaster.rayCast(hitResult, this);
 	}
 
-	protected CompletableFuture<Chunk> loadChunkAsync(ChunkPos pos) {
+	protected CompletableFuture<@Nullable Chunk> loadChunkAsync(ChunkPos pos) {
 		return this.loadChunkAsync(pos.x(), pos.z());
 	}
 
-	public CompletableFuture<Chunk> loadChunkAsync(int x, int z) {
+	public CompletableFuture<@Nullable Chunk> loadChunkAsync(int x, int z) {
 		return this.loadChunkAsync(x, z, false);
 	}
 
-	public CompletableFuture<Chunk> loadChunkAsync(int x, int z, boolean overwrite) {
+	public CompletableFuture<@Nullable Chunk> loadChunkAsync(int x, int z, boolean overwrite) {
 		return CompletableFuture.supplyAsync(() -> this.loadChunk(x, z, overwrite));
 	}
 
+	@Nullable
 	protected Chunk loadChunk(ChunkPos pos) {
 		return this.loadChunk(pos.x(), pos.z());
 	}
 
+	@Nullable
 	public Chunk loadChunk(int x, int z) {
 		return this.loadChunk(x, z, false);
 	}
 
+	@Nullable
 	public synchronized Chunk loadChunk(int x, int z, boolean overwrite) {
 		ChunkPos pos = new ChunkPos(x, z);
 		CompletableFuture<Chunk> loadingChunk = this.loadingChunks.get(pos);
@@ -518,7 +521,6 @@ public class World implements Disposable {
 			if (chunk == null) {
 				LOGGER.warn(MARKER, "Tried to load chunk at " + pos + " but it still wasn't loaded:");
 				if (oldChunk != null) loadingChunk.complete(oldChunk);
-				else throw new IllegalStateException("Chunk loading failed: chunk wasn't loaded while requested to load");
 				return oldChunk;
 			}
 
@@ -555,7 +557,7 @@ public class World implements Disposable {
 	}
 
 	protected CompletableFuture<@Nullable Chunk> generateChunkAsync(int x, int z) {
-		return CompletableFuture.supplyAsync(() -> this.generateChunk(x, z), executor);
+		return CompletableFuture.supplyAsync(() -> this.generateChunk(x, z), this.executor);
 	}
 
 	protected @Nullable Chunk generateChunk(ChunkPos pos) {
@@ -565,7 +567,7 @@ public class World implements Disposable {
 	@Nullable
 	protected Chunk generateChunk(int x, int z) {
 		ChunkPos pos = new ChunkPos(x, z);
-		Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+		Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 
 		try {
 			for (int bx = 0; bx < CHUNK_SIZE; bx++) {
@@ -637,7 +639,7 @@ public class World implements Disposable {
 					throw new RuntimeException(e);
 				}
 
-				Chunk chunk = new Chunk(CHUNK_SIZE, CHUNK_HEIGHT, pos);
+				Chunk chunk = new Chunk(this, CHUNK_SIZE, CHUNK_HEIGHT, pos);
 				assert this.terrainGen != null;
 				Chunk newChunk = this.terrainGen.generateChunkData(chunk, this.seed);
 			}
@@ -704,7 +706,7 @@ public class World implements Disposable {
 
 	@Nullable
 	public Chunk getChunk(ChunkPos chunkPos) {
-		Chunk chunk = chunks.get(chunkPos);
+		Chunk chunk = this.chunks.get(chunkPos);
 		if (chunk != null && !chunk.pos.equals(chunkPos)) {
 			throw new ValueMismatchException("Position of chunk received (" + chunk.pos + ") doesn't match the requested position (" + chunkPos + ")");
 		}
@@ -781,18 +783,30 @@ public class World implements Disposable {
 		return Collections.unmodifiableCollection(this.chunks.values());
 	}
 
-	private boolean needsUpdateByNeighbour(Chunk chunk) {
-		ChunkPos pos = chunk.pos;
-		boolean needsUpdate = false;
-		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() - 1, pos.z())));
-		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x() + 1, pos.z())));
-		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() - 1)));
-		needsUpdate |= this.updatesNeighbour(this.getChunk(new ChunkPos(pos.x(), pos.z() + 1)));
-		return needsUpdate;
+	public boolean isChunkInvalidated(Chunk chunk) {
+        return this.invalidatedChunks.contains(chunk.pos);
 	}
 
-	private boolean updatesNeighbour(Chunk chunk) {
-		return chunk != null && chunk.updateNeighbours;
+	@ApiStatus.Internal
+	public void updateNeighbours(Chunk chunk) {
+		ChunkPos pos = chunk.pos;
+		this.updateChunk(this.getChunk(new ChunkPos(pos.x() - 1, pos.z())));
+		this.updateChunk(this.getChunk(new ChunkPos(pos.x() + 1, pos.z())));
+		this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.z() - 1)));
+		this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.z() + 1)));
+	}
+
+	@ApiStatus.Internal
+	public void updateChunkAndNeighbours(Chunk chunk) {
+		ChunkPos pos = chunk.pos;
+		this.updateChunk(chunk);
+		this.updateNeighbours(chunk);
+	}
+
+	@ApiStatus.Internal
+	public void updateChunk(@Nullable Chunk chunk) {
+		if (chunk == null) return;
+		this.invalidatedChunks.add(chunk.pos);
 	}
 
 	public int getPlayTime() {
@@ -993,6 +1007,10 @@ public class World implements Disposable {
 	}
 
 	public boolean isDisposed() {
-		return disposed;
+		return this.disposed;
+	}
+
+	void onChunkUpdated(Chunk chunk) {
+        this.invalidatedChunks.remove(chunk.pos);
 	}
 }
