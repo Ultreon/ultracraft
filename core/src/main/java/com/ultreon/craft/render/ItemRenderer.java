@@ -13,12 +13,10 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.collection.PaletteContainer;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.registry.Registries;
@@ -29,7 +27,7 @@ public class ItemRenderer {
     private final UltreonCraft game;
     private final Environment environment;
     private final ModelBatch batch;
-    private final OrthographicCamera orthoCam;
+    private final OrthographicCamera itemCam;
     private final Material material;
     private final Quaternion quaternion = new Quaternion();
     private final Vector3 rotation = new Vector3(-30, 45, 0);
@@ -46,7 +44,7 @@ public class ItemRenderer {
         this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, this.tmp.set(0, -1, 0).rotate(Vector3.Y, 45)));
         this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, this.tmp.set(0, 1, 0).rotate(Vector3.Y, 45)));
         this.batch = new ModelBatch();
-        this.orthoCam = new OrthographicCamera(game.getScaledWidth(), game.getScaledHeight());
+        this.itemCam = new OrthographicCamera(game.getScaledWidth(), game.getScaledHeight());
         this.material = new Material(new TextureAttribute(TextureAttribute.Diffuse, this.game.blocksTextureAtlas.getTexture()));
         this.material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
@@ -74,12 +72,12 @@ public class ItemRenderer {
     private void renderBlockItem(Block block, Renderer renderer, int x, int y) {
         renderer.model(() -> {
             float guiScale = this.game.getGuiScale();
-            this.orthoCam.zoom = 32.0F / 8.0F / guiScale;
-            this.orthoCam.far = 100000;
-            this.orthoCam.update();
+            this.itemCam.zoom = 4.0f / guiScale;
+            this.itemCam.far = 100000;
+            this.itemCam.update();
             BakedCubeModel bakedBlockModel = this.game.getBakedBlockModel(block);
             if (bakedBlockModel == null) return;
-            this.batch.begin(this.orthoCam);
+            this.batch.begin(this.itemCam);
             Mesh mesh = bakedBlockModel.getMesh();
             Renderable renderable = new Renderable();
             renderable.meshPart.mesh = mesh;
@@ -97,11 +95,13 @@ public class ItemRenderer {
         });
     }
 
-    public OrthographicCamera getOrthoCam() {
-        return this.orthoCam;
+    public OrthographicCamera getItemCam() {
+        return this.itemCam;
     }
 
     public void resize(int width, int height) {
-        this.orthoCam.setToOrtho(false, width, height);
+        this.itemCam.viewportWidth = this.game.getScaledWidth();
+        this.itemCam.viewportHeight = this.game.getScaledHeight();
+        this.itemCam.update(true);
     }
 }
