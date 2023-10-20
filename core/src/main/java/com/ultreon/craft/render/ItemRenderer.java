@@ -100,4 +100,8 @@ public class ItemRenderer {
     public OrthographicCamera getOrthoCam() {
         return this.orthoCam;
     }
+
+    public void resize(int width, int height) {
+        this.orthoCam.setToOrtho(false, width, height);
+    }
 }

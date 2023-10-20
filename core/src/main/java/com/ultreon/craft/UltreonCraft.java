@@ -952,6 +952,10 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             this.camera.update();
         }
 
+        if (this.itemRenderer != null) {
+            this.itemRenderer.resize(width, height);
+        }
+
         var cur = this.currentScreen;
         if (cur != null) {
             cur.resize(ceil(width / this.getGuiScale()), ceil(height / this.getGuiScale()));

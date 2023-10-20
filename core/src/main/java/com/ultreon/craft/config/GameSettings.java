@@ -21,7 +21,6 @@ public class GameSettings extends Configuration {
         return switch (GamePlatform.instance.getPlatformType()) {
             case DESKTOP -> 8;
             case MOBILE, WEB -> 3;
-            default -> throw new IllegalArgumentException();
         };
     }
 
