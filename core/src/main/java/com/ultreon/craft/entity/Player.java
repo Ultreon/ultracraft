@@ -60,7 +60,7 @@ public class Player extends LivingEntity {
             GameInput.startVibration(200, 1.0F);
         }
 
-        if (this.jumping) this.swimUp();
+        if (this.jumping && !this.flying) this.swimUp();
 
         super.tick();
     }
