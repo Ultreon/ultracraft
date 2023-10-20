@@ -17,6 +17,7 @@ import java.util.List;
 public class PreMain {
     public static void main(String[] args) throws IOException, InterruptedException {
         List<String> argv = Lists.newArrayList(args);
+        System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
         if (argv.remove("--packaged")) {
             PreMain.setDirectory();
         }
