@@ -16,7 +16,7 @@ jobs:
         ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    name: Build on ${{ matrix.os }}
+    name: Build package.zip
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -27,13 +27,11 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Build
-        run: |
-          chmod +x ./gradlew
-          ./gradlew pack
+        run: chmod +x ./gradlew && ./gradlew pack
         env:
           GITHUB_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Ultracraft Build ${{ github.run_number }}
-          path: desktop-merge/build/dist
+          path: desktop-merge/build/dist/package.zip
