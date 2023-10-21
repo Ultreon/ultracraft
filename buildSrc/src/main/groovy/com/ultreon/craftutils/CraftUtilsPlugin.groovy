@@ -1,13 +1,30 @@
 package com.ultreon.craftutils
 
+
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.stream.JsonWriter
 import com.ultreon.craftutils.tasks.ClearQuiltCacheTask
+import com.ultreon.craftutils.tasks.MetadataTask
 import com.ultreon.craftutils.tasks.PrepareRunTask
+import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.DependencyArtifact
+import org.gradle.api.file.CopySpec
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.bundling.Zip
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 
+@SuppressWarnings('unused')
 class CraftUtilsPlugin implements Plugin<Project> {
+    static CraftUtilsExt extension
+
     CraftUtilsPlugin() {
 
     }
@@ -17,12 +34,108 @@ class CraftUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         if (project != project.rootProject) return
 
-        def extension = project.extensions.create("craftutils", CraftUtilsExt.class)
+        extension = project.extensions.create("craftutils", CraftUtilsExt.class)
         extension.runDirectory = project.file("run")
 
         project.afterEvaluate {
             if (!extension.production) {
                 println("WARNING: App $extension.projectName is in developer mode.")
+            }
+
+            if (extension.javaVersion == -1) {
+                throw new GradleException("Java Version is not set.")
+            }
+            if (extension.packageProject == null) {
+                throw new GradleException("Project to package is not set.")
+            }
+            if (extension.mainClass == null) {
+                throw new GradleException("Main class is not set.")
+            }
+
+            extension.packageProject.with { Project proj ->
+                configurations.register("pack") {
+                    it.canBeResolved = true
+                    it.canBeConsumed = true
+                }
+
+                def metadataTask = proj.tasks.register("metadata", MetadataTask.class)
+
+                proj.rootProject.tasks.register("pack", Zip) { Zip zip ->
+                    zip.dependsOn metadataTask
+
+                    zip.group = "craftutils"
+
+                    def json = new JsonObject()
+                    def classpathJson = new JsonArray()
+
+                    proj.configurations.pack.with { Configuration conf ->
+                        List<Dep> dependencies = []
+                        if (conf.isCanBeResolved()) {
+                            conf.getResolvedConfiguration().getResolvedArtifacts().each {
+                                at ->
+                                    def dep = at.getModuleVersion().getId()
+                                    dependencies.add(new Dep(dep.group, dep.name, dep.version, at.extension, at.classifier, at.file))
+                            }
+                        } else {
+                            throw new GradleException("Pack config can't be resolved!")
+                        }
+                        dependencies.collect { Dep dep ->
+                            dep.file.with { File file ->
+                                String name
+                                if (dep.classifier == null || dep.classifier == "null") {
+                                    name = dep.name + "-" + dep.version + "." + dep.extension
+                                } else {
+                                    name = dep.name + "-" + dep.version + "-" + dep.classifier + "." + dep.extension
+                                }
+                                {
+                                    def dest = "libraries/" + dep.group.replaceAll("\\.", "/") + "/" + dep.name
+                                    println "Adding \"$file.name\" to \"$dest\""
+
+                                    zip.from file, new Action<CopySpec>() {
+                                        @Override
+                                        void execute(CopySpec spec) {
+                                            spec.into(dest)
+                                        }
+                                    }
+                                }
+                                classpathJson.add "libraries/" + dep.group.replaceAll("\\.", "/") + "/" + dep.name + "/" + name
+                                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                            }
+
+                            return null
+                        }
+                    }
+
+                    json.add("classpath", classpathJson)
+
+                    def sdkJson = new JsonObject()
+                    sdkJson.addProperty("version", proj.tasks.named("compileJava", JavaCompile).get().targetCompatibility)
+                    sdkJson.addProperty("type", "JavaJDK")
+                    json.add("sdk", sdkJson)
+                    json.addProperty("main-class", extension.mainClass)
+                    json.addProperty("game", "ultracraft")
+
+                    def gson = new GsonBuilder().create()
+                    def writer = new JsonWriter(new FileWriter(proj.file("$proj.projectDir/build/config.json")))
+                    gson.toJson json, writer
+                    writer.flush()
+                    writer.close()
+
+                    zip.from(metadataTask.get().metadataFile)
+                    zip.from("$proj.projectDir/build/config.json")
+                    zip.from(tasks.jar.outputs, new Action<CopySpec>() {
+                        @Override
+                        void execute(CopySpec copySpec) {
+                            copySpec.rename { extension.projectVersion + ".jar" }
+                        }
+                    })
+
+                    println metadataTask.get().metadataFile
+
+                    zip.destinationDirectory.set(file("$proj.projectDir/build/dist"))
+                    zip.archiveBaseName.set("package")
+                    proj.delete(zip.archiveFile)
+                }
             }
         }
 

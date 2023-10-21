@@ -76,87 +76,87 @@ configurations {
 evaluationDependsOn(":core")
 
 dependencies {
-    addToJar(implementation project(":gameprovider"))
-    implementation project(":core")
-    implementation project(":desktop")
+    addToJar implementation(project(":gameprovider"))
+    pack implementation(project(":core"))
+    pack implementation(project(":desktop"))
 
-    implementation "com.formdev:flatlaf:3.2.1"
+    pack implementation("com.formdev:flatlaf:3.2.1")
 
-    implementation "com.badlogicgames.gdx:gdx:$gdx_version"
-    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
-    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
-    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
-    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
-    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
-    implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
+    pack implementation("com.badlogicgames.gdx:gdx:$gdx_version")
+    pack implementation("com.badlogicgames.gdx:gdx-box2d:$gdx_version")
+    pack implementation("com.badlogicgames.ashley:ashley:$ashley_version")
+    pack implementation("com.badlogicgames.gdx:gdx-ai:$ai_version")
+    pack implementation("com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version")
+    pack implementation("com.badlogicgames.gdx:gdx-freetype:$gdx_version")
+    pack implementation("com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version")
 
-    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
-    implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
-    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
-    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
+    pack implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version")
+    pack implementation("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop")
+    pack implementation("com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop")
+    pack implementation("com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop")
+    pack implementation("com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version")
+    pack implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop")
 
     // Apache Log4J
-    implementation "org.apache.logging.log4j:log4j:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+    pack implementation("org.apache.logging.log4j:log4j:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-core:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-api:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
 
     // JNA
-    implementation "net.java.dev.jna:jna:$jna_version"
-    implementation "net.java.dev.jna:jna-platform:$jna_version"
+    pack implementation("net.java.dev.jna:jna:$jna_version")
+    pack implementation("net.java.dev.jna:jna-platform:$jna_version")
 
     // SLF4J
-    api "org.slf4j:slf4j-api:$slf4j_version"
+    pack api("org.slf4j:slf4j-api:$slf4j_version")
 
     // Google
-    implementation "com.google.code.gson:gson:2.10.1"
-    implementation 'com.google.guava:guava:32.0.0-jre'
+    pack implementation("com.google.code.gson:gson:2.10.1")
+    pack implementation('com.google.guava:guava:32.0.0-jre')
 
     // Misc
-    implementation 'it.unimi.dsi:fastutil:8.5.12'
-    implementation 'com.raylabz:opensimplex:1.0.3'
+    pack implementation('it.unimi.dsi:fastutil:8.5.12')
+    pack implementation('com.raylabz:opensimplex:1.0.3')
 
-    implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
+    pack implementation("space.earlygrey:shapedrawer:$shapedrawer_version")
 
     // ImGui
-    implementation "io.github.spair:imgui-java-binding:$imgui_version"
-    implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
-    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+    pack implementation("io.github.spair:imgui-java-binding:$imgui_version")
+    pack implementation("io.github.spair:imgui-java-lwjgl3:$imgui_version")
+    pack implementation("io.github.spair:imgui-java-natives-linux:$imgui_version")
+    pack implementation("io.github.spair:imgui-java-natives-macos:$imgui_version")
+    pack implementation("io.github.spair:imgui-java-natives-windows:$imgui_version")
 
-    implementation "it.unimi.dsi:fastutil-core:8.5.9"
-    implementation "com.google.code.findbugs:jsr305:$jsr_version"
+    pack implementation("it.unimi.dsi:fastutil-core:8.5.9")
+    pack implementation("com.google.code.findbugs:jsr305:$jsr_version")
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 
-    implementation "org.xbib.elasticsearch:joptsimple:6.3.2.1"
-    implementation "org.apache.logging.log4j:log4j:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    pack implementation("org.xbib.elasticsearch:joptsimple:6.3.2.1")
+    pack implementation("org.apache.logging.log4j:log4j:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-core:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-api:$log4j_version")
 
     // quilt-loader dependencies
-    implementation "org.ow2.asm:asm:${project.asm_version}"
-    implementation "org.ow2.asm:asm-analysis:${project.asm_version}"
-    implementation "org.ow2.asm:asm-commons:${project.asm_version}"
-    implementation "org.ow2.asm:asm-tree:${project.asm_version}"
-    implementation "org.ow2.asm:asm-util:${project.asm_version}"
+    pack implementation("org.ow2.asm:asm:${project.asm_version}")
+    pack implementation("org.ow2.asm:asm-analysis:${project.asm_version}")
+    pack implementation("org.ow2.asm:asm-commons:${project.asm_version}")
+    pack implementation("org.ow2.asm:asm-tree:${project.asm_version}")
+    pack implementation("org.ow2.asm:asm-util:${project.asm_version}")
 
-    implementation("net.fabricmc:sponge-mixin:${project.mixin_version}") {
+    pack implementation("net.fabricmc:sponge-mixin:${project.mixin_version}") {
         exclude module: 'launchwrapper'
         exclude module: 'guava'
     }
 
     //noinspection GradleDynamicVersion
-    implementation 'net.fabricmc:tiny-mappings-parser:0.3.0+build.17'
-    implementation 'net.fabricmc:tiny-remapper:0.8.7'
+    pack implementation('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
+    pack implementation('net.fabricmc:tiny-remapper:0.8.7')
     //noinspection GradleDynamicVersion
-    implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
-    implementation 'net.fabricmc:access-widener:2.1.0'
+    pack implementation('net.fabricmc:dev-launch-injector:0.2.1+build.8')
+    pack implementation('net.fabricmc:access-widener:2.1.0')
 
-    compileOnly "org.quiltmc:quilt-loader:$quilt_version"
+    pack compileOnly("org.quiltmc:quilt-loader:$quilt_version")
 }
 
 processResources {

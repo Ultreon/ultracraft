@@ -55,6 +55,10 @@ public abstract class GamePlatform {
 
     }
 
+    public boolean isChunkSectionBordersShown() {
+        return false;
+    }
+
     public void renderImGui(UltreonCraft game) {
 
     }

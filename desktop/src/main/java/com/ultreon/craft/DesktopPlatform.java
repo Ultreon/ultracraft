@@ -6,11 +6,11 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.desktop.client.gui.screen.ModIconOverrides;
 import com.ultreon.craft.desktop.client.gui.screen.ModListScreen;
-import com.ultreon.craft.desktop.util.util.ArgParser;
-import com.ultreon.craft.desktop.util.util.ImGuiEx;
 import com.ultreon.craft.desktop.mods.ClientModInit;
 import com.ultreon.craft.desktop.mods.DedicatedServerModInit;
 import com.ultreon.craft.desktop.mods.ModInit;
+import com.ultreon.craft.desktop.util.util.ArgParser;
+import com.ultreon.craft.desktop.util.util.ImGuiEx;
 import com.ultreon.craft.platform.OperatingSystem;
 import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.screens.Screen;
@@ -42,12 +42,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import static com.ultreon.craft.UltreonCraft.id;
-
 public class DesktopPlatform extends GamePlatform {
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+    private static final ImBoolean SHOW_CHUNK_SECTION_BORDERS = new ImBoolean(false);
     private static final Logger LOGGER = LoggerFactory.getLogger("GamePlatform");
     private final String gameDir;
     private final GameEnvironment gameEnv;
@@ -106,6 +105,11 @@ public class DesktopPlatform extends GamePlatform {
     }
 
     @Override
+    public boolean isChunkSectionBordersShown() {
+        return DesktopPlatform.SHOW_CHUNK_SECTION_BORDERS.get();
+    }
+
+    @Override
     public void renderImGui(UltreonCraft game) {
         if (this.showImGui.get()) {
             this.imGuiGlfw.newFrame();
@@ -134,6 +138,7 @@ public class DesktopPlatform extends GamePlatform {
                     }
                     if (ImGui.beginMenu("Debug")) {
                         ImGui.menuItem("Utils", null, DesktopPlatform.SHOW_UTILS);
+                        ImGui.menuItem("Show Chunk Section Borders", null, DesktopPlatform.SHOW_CHUNK_SECTION_BORDERS);
                         ImGui.endMenu();
                     }
 

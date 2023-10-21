@@ -25,6 +25,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.Section;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -48,6 +49,8 @@ public final class WorldRenderer implements RenderableProvider {
     private final Material material;
     private final Material transparentMaterial;
     private final Texture breakingTex;
+    private final Mesh sectionBorder;
+    private final Material sectionBorderMaterial;
     private int visibleChunks;
     private int loadedChunks;
 
@@ -78,12 +81,12 @@ public final class WorldRenderer implements RenderableProvider {
         short j = 0;
 
         for (int i = 0; i < len; i += 6, j += 4) {
-            indices[i] = (short)(j + 0);
-            indices[i + 1] = (short)(j + 1);
-            indices[i + 2] = (short)(j + 2);
-            indices[i + 3] = (short)(j + 0);
-            indices[i + 4] = (short)(j + 2);
-            indices[i + 5] = (short)(j + 3);
+            indices[i] = (short) (j + 0);
+            indices[i + 1] = (short) (j + 1);
+            indices[i + 2] = (short) (j + 2);
+            indices[i + 3] = (short) (j + 0);
+            indices[i + 4] = (short) (j + 2);
+            indices[i + 5] = (short) (j + 3);
         }
 
         Texture texture = this.game.blocksTextureAtlas.getTexture();
@@ -96,22 +99,36 @@ public final class WorldRenderer implements RenderableProvider {
         this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
         this.meshBuilder = new ChunkMeshBuilder(indices);
 
-        // Block outline.
-        Mesh mesh = WorldRenderer.buildOutlineBox(0.005f, Color.BLACK);
+        // Chunk border outline
+        {
+            Mesh mesh = WorldRenderer.buildOutlineBox(1 / 16f, 16, 16, 16, Color.BLACK);
 
-        int numIndices = mesh.getNumIndices();
-        int numVertices = mesh.getNumVertices();
-        Renderable renderable = new Renderable();
-        renderable.meshPart.mesh = mesh;
-        renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-        renderable.meshPart.offset = 0;
-        renderable.meshPart.primitiveType = GL_TRIANGLES;
-        Material material = new Material();
-        material.set(ColorAttribute.createDiffuse(0, 0, 0, 1f));
-        material.set(new BlendingAttribute(1.0f));
-        material.set(new DepthTestAttribute(false));
-        renderable.material = material;
-        this.cursor = renderable;
+            Material material = new Material();
+            material.set(ColorAttribute.createDiffuse(0, 0f, 0f, 0.25f));
+            material.set(new BlendingAttribute());
+            material.set(new DepthTestAttribute(false));
+            this.sectionBorderMaterial = material;
+            this.sectionBorder = mesh;
+        }
+
+        // Block outline.
+        {
+            Mesh mesh = WorldRenderer.buildOutlineBox(0.005f, Color.BLACK);
+
+            int numIndices = mesh.getNumIndices();
+            int numVertices = mesh.getNumVertices();
+            Renderable renderable = new Renderable();
+            renderable.meshPart.mesh = mesh;
+            renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+            renderable.meshPart.offset = 0;
+            renderable.meshPart.primitiveType = GL_TRIANGLES;
+            Material material = new Material();
+            material.set(ColorAttribute.createDiffuse(0, 0, 0, 1f));
+            material.set(new BlendingAttribute(1.0f));
+            material.set(new DepthTestAttribute(false));
+            renderable.material = material;
+            this.cursor = renderable;
+        }
 
         // Breaking animation meshes.
         this.breakingTex = this.game.getTextureManager().getTexture(UltreonCraft.id("textures/break_stages.png"));
@@ -207,7 +224,7 @@ public final class WorldRenderer implements RenderableProvider {
             for (var entry : chunk.getBreaking().entrySet()) {
                 Vec3i key = entry.getKey();
                 this.tmp.set(chunk.renderOffset);
-                this.tmp.add(key.x+1, key.y, key.z);
+                this.tmp.add(key.x + 1, key.y, key.z);
 
                 Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
                 int numIndices = breakingMesh.getMaxIndices();
@@ -219,6 +236,25 @@ public final class WorldRenderer implements RenderableProvider {
                 renderable.meshPart.primitiveType = GL_TRIANGLES;
                 renderable.material = this.breakingMaterial;
                 renderable.worldTransform.setToTranslation(this.tmp);
+
+                output.add(this.verifyOutput(renderable));
+            }
+
+            this.tmp.set(chunk.renderOffset);
+            List<Section> sections = chunk.getSections();
+            for (int y = 0, sectionsSize = sections.size(); y < sectionsSize; y++) {
+                Mesh mesh = this.sectionBorder;
+
+                int numIndices = mesh.getNumIndices();
+                int numVertices = mesh.getNumVertices();
+                Renderable renderable = renderablePool.obtain();
+                renderable.meshPart.mesh = mesh;
+                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                renderable.meshPart.offset = 0;
+                renderable.meshPart.primitiveType = GL_TRIANGLES;
+                renderable.material = this.sectionBorderMaterial;
+                Vector3 add = this.tmp.add(0, y * 4, 0);
+                renderable.worldTransform.setToTranslation(add);
 
                 output.add(this.verifyOutput(renderable));
             }
@@ -247,27 +283,35 @@ public final class WorldRenderer implements RenderableProvider {
     }
 
     private static Mesh buildOutlineBox(float thickness, Color color) {
+        return WorldRenderer.buildOutlineBox(thickness, 1, 1, 1, color);
+    }
+
+    private static Mesh buildOutlineBox(float thickness, float width, float height, float depth, Color color) {
         MeshBuilder meshBuilder = new MeshBuilder();
         meshBuilder.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
 
-        // Top face
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(1 + thickness, thickness, thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, -thickness), new Vector3(1 + thickness, 1 + thickness, thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, 1 + -thickness), new Vector3(1 + thickness, thickness, 1 + thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, 1 + -thickness), new Vector3(1 + thickness, 1 + thickness, 1 +thickness)));
-
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness),               new Vector3(thickness, 1 + thickness, thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, -thickness),        new Vector3(1 + thickness, 1 + thickness, thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, 1 + -thickness), new Vector3(1 + thickness, 1 + thickness, 1 + thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, 1 + -thickness),        new Vector3(thickness, 1 + thickness, 1 + thickness)));
-
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(thickness, thickness, 1 + thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, -thickness, -thickness), new Vector3(1 + thickness, thickness, 1 + thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(1 + -thickness, 1 + -thickness, -thickness), new Vector3(1 + thickness, 1 + thickness, 1 + thickness)));
-        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, 1 + -thickness, -thickness), new Vector3(thickness, 1 + thickness, 1 + thickness)));
+        WorldRenderer.buildOutlineBox(thickness, width, height, depth, meshBuilder);
 
         // Create the mesh from the mesh builder
         return meshBuilder.end();
+    }
+
+    private static void buildOutlineBox(float thickness, float width, float height, float depth, MeshBuilder meshBuilder) {
+        // Top face
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(width + thickness, thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, height + -thickness, -thickness), new Vector3(width + thickness, height + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, depth + -thickness), new Vector3(width + thickness, thickness, depth + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, height + -thickness, depth + -thickness), new Vector3(width + thickness, height + thickness, depth + thickness)));
+
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(thickness, height + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(width + -thickness, -thickness, -thickness), new Vector3(width + thickness, height + thickness, thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(width + -thickness, -thickness, depth + -thickness), new Vector3(width + thickness, height + thickness, depth + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, depth + -thickness), new Vector3(thickness, height + thickness, depth + thickness)));
+
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, -thickness, -thickness), new Vector3(thickness, thickness, depth + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(width + -thickness, -thickness, -thickness), new Vector3(width + thickness, thickness, depth + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(width + -thickness, height + -thickness, -thickness), new Vector3(width + thickness, depth + thickness, depth + thickness)));
+        BoxShapeBuilder.build(meshBuilder, new BoundingBox(new Vector3(-thickness, height + -thickness, -thickness), new Vector3(thickness, height + thickness, depth + thickness)));
     }
 
     private void doPoolStatistics() {

@@ -15,10 +15,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -207,7 +204,8 @@ public class Chunk implements Disposable {
 		return "Chunk[x=" + this.pos.x() + ", z=" + this.pos.z() + "]";
 	}
 
-	public Iterable<Section> getSections() {
+	public List<Section> getSections() {
+		if (this.disposed) return Collections.emptyList();
 		return Arrays.asList(this.sections);
 	}
 

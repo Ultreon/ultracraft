@@ -57,6 +57,10 @@ extensions.configure<CraftUtilsExt> {
 
     coreProject = project(":core")
     desktopProject = project(":desktop")
+    packageProject = project(":desktop-merge")
+
+    mainClass = "com.ultreon.craft.premain.PreMain"
+    javaVersion = 17
 }
 
 //**********************//
@@ -193,8 +197,6 @@ commonProperties
         StandardOpenOption.TRUNCATE_EXISTING,
         StandardOpenOption.WRITE
     )
-
-    evaluationDependsOnChildren()
 
     idea {
         project {

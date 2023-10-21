@@ -1,7 +1,6 @@
 package com.ultreon.craftutils
 
 import org.gradle.api.Project
-
 import java.time.Instant
 
 class CraftUtilsExt {
@@ -11,7 +10,10 @@ class CraftUtilsExt {
     String projectId = "example-project"
     Project coreProject
     Project desktopProject
+    Project packageProject
+    int javaVersion = -1
     boolean production = false
     final buildDate = Instant.now()
     File runDirectory
+    String mainClass
 }
