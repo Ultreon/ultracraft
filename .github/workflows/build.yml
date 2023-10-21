@@ -27,7 +27,9 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Build
-        run: cmd /c "gradlew.bat pack"
+        run: |
+          chmod +x ./gradlew
+          ./gradlew pack
         env:
           GITHUB_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
