@@ -270,6 +270,7 @@ jpackage {
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"
 
     mac {
+        javaOptions = javaOptions + [ "-XstartOnFirstThread" ]
         icon = "$rootProject.projectDir/icons/icon.icns"
         macPackageIdentifier = project_id
         macPackageName = project_name

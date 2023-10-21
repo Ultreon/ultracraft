@@ -52,7 +52,6 @@ public final class DesktopLauncher {
 		config.useVsync(true);
 		config.setForegroundFPS(120);
 		config.setIdleFPS(10);
-		config.setOpenGLEmulation(GLEmulation.GL30, 3, 0);
 		config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 0);
 		config.setInitialVisible(false);
 		config.setTitle("Ultracraft");
