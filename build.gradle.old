@@ -42,13 +42,13 @@ apply plugin: "java"
 //noinspection JavaPluginLanguageLevel
 apply plugin: "java-library"
 apply plugin: "org.jetbrains.gradle.plugin.idea-ext"
-apply plugin: "craftutils"
+apply plugin: "gameutils"
 
 //****************************//
 // Setting up main properties //
 //****************************//
 
-craftutils {
+gameutils {
     projectName = "Ultracraft"
     projectVersion "0.1.0"
     projectGroup "com.ultreon.craft"
@@ -197,7 +197,7 @@ println("OS: " + System.getProperty("os.name") + " Version: " + System.getProper
 println("Current version: " + version)
 println("Project: " + group + ":" + name)
 
-def launchFile = file("$projectDir/build/craftutils/launch.cfg")
+def launchFile = file("$projectDir/build/gameutils/launch.cfg")
 
 evaluationDependsOnChildren()
 

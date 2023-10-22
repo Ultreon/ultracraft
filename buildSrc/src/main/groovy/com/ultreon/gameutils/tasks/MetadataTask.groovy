@@ -1,27 +1,31 @@
-package com.ultreon.craftutils.tasks
+package com.ultreon.gameutils.tasks
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.stream.JsonWriter
-import com.ultreon.craftutils.CraftUtilsExt
-import com.ultreon.craftutils.CraftUtilsPlugin
+import com.ultreon.gameutils.GameUtilsExt
+import com.ultreon.gameutils.GameUtilsPlugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 import javax.inject.Inject
 import java.time.ZoneOffset
 
+@DisableCachingByDefault
 class MetadataTask extends DefaultTask {
-    public CraftUtilsExt craftUtils
+    public GameUtilsExt craftUtils
 
     @OutputFile
     def metadataFile = project.file("$project.projectDir/build/metadata.json")
 
     @Inject
     MetadataTask() {
-        this.craftUtils = CraftUtilsPlugin.extension
-        this.group = "craftutils"
+        this.craftUtils = GameUtilsPlugin.extension
+        this.group = "gameutils"
+        this.didWork = true
+        this.enabled = true
     }
 
     @TaskAction

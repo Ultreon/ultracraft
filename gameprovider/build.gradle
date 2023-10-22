@@ -1,4 +1,4 @@
-//import com.ultreon.craftutils.ProjectType
+//import com.ultreon.gameutils.ProjectType
 
 buildscript {
     repositories {

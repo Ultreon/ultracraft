@@ -1,4 +1,4 @@
-import com.ultreon.craftutils.CraftUtilsExt
+import com.ultreon.gameutils.GameUtilsExt
 import org.jetbrains.gradle.ext.Application
 import org.jetbrains.gradle.ext.GradleTask
 import org.jetbrains.gradle.ext.runConfigurations
@@ -43,12 +43,12 @@ plugins {
 apply(plugin = "java")
 apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
-apply(plugin = "craftutils")
+apply(plugin = "gameutils")
 
 //****************************//
 // Setting up main properties //
 //****************************//
-extensions.configure<CraftUtilsExt> {
+extensions.configure<GameUtilsExt> {
     projectName = "Ultracraft"
     projectVersion = "0.1.0"
     projectGroup = "com.ultreon.craft"
@@ -162,7 +162,7 @@ println("Current version: $version")
 println("Project: $group:$name")
 
 fun setupIdea() {
-    mkdir("$projectDir/build/craftutils")
+    mkdir("$projectDir/build/gameutils")
 
     val ps = System.getProperty("path.separator")!!
     val files = configurations["runtimeClasspath"]!!
@@ -180,7 +180,7 @@ commonProperties
 	fabric.log.disableAnsi=false
 	log4j.configurationFile=$projectDir/log4j.xml
     """.trimIndent()
-    val launchFile = file("$projectDir/build/craftutils/launch.cfg")
+    val launchFile = file("$projectDir/build/gameutils/launch.cfg")
     Files.writeString(
         launchFile.toPath(),
         conf,
@@ -189,7 +189,7 @@ commonProperties
         StandardOpenOption.WRITE
     )
 
-    val cpFile = file("$projectDir/build/craftutils/classpath.txt")
+    val cpFile = file("$projectDir/build/gameutils/classpath.txt")
     Files.writeString(
         cpFile.toPath(),
         classPath,

@@ -1,4 +1,4 @@
-//import com.ultreon.craftutils.ProjectType
+//import com.ultreon.gameutils.ProjectType
 
 apply plugin: "com.android.application"
 

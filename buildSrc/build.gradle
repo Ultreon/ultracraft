@@ -27,9 +27,9 @@ repositories {
 
 gradlePlugin {
     plugins {
-        register("craftutils") {
-            id = "craftutils"
-            implementationClass = "com.ultreon.craftutils.CraftUtilsPlugin"
+        register("gameutils") {
+            id = "gameutils"
+            implementationClass = "com.ultreon.gameutils.GameUtilsPlugin"
         }
     }
 

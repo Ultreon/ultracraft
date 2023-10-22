@@ -1,9 +1,9 @@
-package com.ultreon.craftutils
+package com.ultreon.gameutils
 
 import org.gradle.api.Project
 import java.time.Instant
 
-class CraftUtilsExt {
+class GameUtilsExt {
     String projectName
     String projectVersion = "dev"
     String projectGroup = "com.example"

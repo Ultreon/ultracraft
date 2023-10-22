@@ -1,6 +1,8 @@
 package com.ultreon.craft;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -16,6 +18,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     @Override
     public void create() {
         try {
+            Gdx.app.setLogLevel(Application.LOG_DEBUG);
             this.game = new UltreonCraft(this.argv);
         } catch (Throwable t) {
             UltreonCraft.crash(t);

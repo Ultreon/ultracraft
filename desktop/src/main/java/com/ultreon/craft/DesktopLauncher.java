@@ -1,14 +1,20 @@
 package com.ultreon.craft;
 
-import com.badlogic.gdx.backends.lwjgl3.*;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration.GLEmulation;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.ultreon.craft.desktop.mods.DesktopModPreInit;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.lwjgl.glfw.GLFW;
 import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
+
+import javax.swing.*;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 @ApiStatus.NonExtendable
@@ -28,12 +34,13 @@ public final class DesktopLauncher {
 			DesktopLauncher.launch(argv);
 		} catch (Throwable t) {
 			try {
+				DesktopLauncher.LOGGER.error("Launch failed!", t);
 				UltreonCraft.crash(t);
 			} catch (Throwable throwable) {
 				try {
-					DesktopLauncher.LOGGER.fatal("Fatal Error occurred when trying to launch the game!", throwable);
+					DesktopLauncher.LOGGER.fatal("Fatal error occurred when trying to launch the game!", throwable);
 				} catch (Throwable ignored) {
-					Runtime.getRuntime().halt(1);
+					Runtime.getRuntime().halt(2);
 				}
 			}
 		}
@@ -43,7 +50,18 @@ public final class DesktopLauncher {
 		EntrypointUtil.invoke(DesktopModPreInit.ENTRYPOINT_KEY, DesktopModPreInit.class, DesktopLauncher::setupDesktopMods);
         DesktopLauncher.logDebug();
 
-		new Lwjgl3Application(new GameLibGDXWrapper(argv), DesktopLauncher.createConfig());
+		FlatMacLightLaf.setup();
+
+		// Before initializing LibGDX or creating a window:
+		try (var ignored = GLFW.glfwSetErrorCallback((error, description) -> DesktopLauncher.LOGGER.error("GLFW Error: " + description))) {
+			try {
+				new Lwjgl3Application(new GameLibGDXWrapper(argv), DesktopLauncher.createConfig());
+			} catch (Throwable t) {
+				DesktopLauncher.LOGGER.fatal("Failed to create LWJGL3 Application:", t);
+				JOptionPane.showMessageDialog(null, t.getMessage() + "\n\nCheck the debug.log file for more info!", "Launch failed!", JOptionPane.ERROR_MESSAGE);
+				Runtime.getRuntime().halt(1);
+			}
+		}
 	}
 
 	@NotNull
@@ -52,7 +70,7 @@ public final class DesktopLauncher {
 		config.useVsync(true);
 		config.setForegroundFPS(120);
 		config.setIdleFPS(10);
-		config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 0);
+		config.setBackBufferConfig(8, 8, 8, 8, 8, 0, 0);
 		config.setInitialVisible(false);
 		config.setTitle("Ultracraft");
 		config.setWindowIcon(DesktopLauncher.getIcons());
@@ -89,8 +107,8 @@ public final class DesktopLauncher {
 		if (DesktopLauncher.platform.isPackaged()) DesktopLauncher.LOGGER.debug("Running in the JPackage environment.");
 		else DesktopLauncher.LOGGER.debug("Local directory: " + System.getProperty("user.dir"));
 		DesktopLauncher.LOGGER.debug("Java Version: " + System.getProperty("java.version"));
-		DesktopLauncher.LOGGER.debug("Java Vendor: " + System.getProperty("java.vendor"));;
-		DesktopLauncher.LOGGER.debug("Operating System: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")");
+		DesktopLauncher.LOGGER.debug("Java Vendor: " + System.getProperty("java.vendor"));
+        DesktopLauncher.LOGGER.debug("Operating System: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")");
 	}
 
 	private static String[] getIcons() {

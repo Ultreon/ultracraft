@@ -1,20 +1,19 @@
-package com.ultreon.craftutils
+package com.ultreon.gameutils
 
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.stream.JsonWriter
-import com.ultreon.craftutils.tasks.ClearQuiltCacheTask
-import com.ultreon.craftutils.tasks.MetadataTask
-import com.ultreon.craftutils.tasks.PrepareRunTask
+import com.ultreon.gameutils.tasks.ClearQuiltCacheTask
+import com.ultreon.gameutils.tasks.MetadataTask
+import com.ultreon.gameutils.tasks.PrepareRunTask
 import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.DependencyArtifact
 import org.gradle.api.file.CopySpec
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.bundling.Zip
@@ -22,10 +21,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 
 @SuppressWarnings('unused')
-class CraftUtilsPlugin implements Plugin<Project> {
-    static CraftUtilsExt extension
+class GameUtilsPlugin implements Plugin<Project> {
+    static GameUtilsExt extension
 
-    CraftUtilsPlugin() {
+    GameUtilsPlugin() {
 
     }
 
@@ -34,7 +33,7 @@ class CraftUtilsPlugin implements Plugin<Project> {
     void apply(Project project) {
         if (project != project.rootProject) return
 
-        extension = project.extensions.create("craftutils", CraftUtilsExt.class)
+        extension = project.extensions.create("gameutils", GameUtilsExt.class)
         extension.runDirectory = project.file("run")
 
         project.afterEvaluate {
@@ -53,7 +52,7 @@ class CraftUtilsPlugin implements Plugin<Project> {
             }
 
             extension.packageProject.with { Project proj ->
-                configurations.register("pack") {
+                proj.configurations.register("pack") {
                     it.canBeResolved = true
                     it.canBeConsumed = true
                 }
@@ -63,7 +62,7 @@ class CraftUtilsPlugin implements Plugin<Project> {
                 proj.rootProject.tasks.register("pack", Zip) { Zip zip ->
                     zip.dependsOn metadataTask
 
-                    zip.group = "craftutils"
+                    zip.group = "gameutils"
 
                     def json = new JsonObject()
                     def classpathJson = new JsonArray()
