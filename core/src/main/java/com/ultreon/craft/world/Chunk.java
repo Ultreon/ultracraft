@@ -121,8 +121,8 @@ public class Chunk implements Disposable {
 	}
 
 	public Block getFast(int x, int y, int z) {
-		if (this.disposed) return Blocks.AIR;
 		this.lock.lock();
+		if (this.disposed) return Blocks.AIR;
 		Block fast = this.sections[y / this.size].getFast(x, y % this.size, z);
 		this.lock.unlock();
 		return fast;
@@ -145,8 +145,8 @@ public class Chunk implements Disposable {
 	}
 
 	public void setFast(int x, int y, int z, Block block) {
-		if (this.disposed) return;
 		this.lock.lock();
+		if (this.disposed) return;
 		this.sections[y / this.size].setFast(x, y % this.size, z, block);
 		this.lock.unlock();
 		this.dirty = true;
