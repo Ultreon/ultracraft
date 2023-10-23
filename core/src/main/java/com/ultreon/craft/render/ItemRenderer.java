@@ -19,6 +19,7 @@ import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.render.model.BakedCubeModel;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -51,8 +52,12 @@ public class ItemRenderer {
     }
 
     public void render(Item item, Renderer renderer, int x, int y) {
+        if (item == null || item == Items.AIR) {
+            return;
+        }
+
         if (item instanceof BlockItem blockItem) {
-            this.renderBlockItem(blockItem.getBlock(), renderer, x, this.game.getScaledHeight() - y - 16);
+            this.renderBlockItem(blockItem.getBlock(), renderer, x + 8, this.game.getScaledHeight() - y - 16);
             return;
         }
 
@@ -62,10 +67,8 @@ public class ItemRenderer {
             renderer.blit((TextureRegion) null, x, y, 16, 16);
         } else {
             TextureRegion texture = this.game.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
-            renderer.setTextureColor(Color.WHITE.darker());
-            renderer.blit(texture, x - 8, y + 1, 16, 16);
             renderer.setTextureColor(Color.WHITE);
-            renderer.blit(texture, x - 8, y, 16, 16);
+            renderer.blit(texture, x, y, 16, 16);
         }
     }
 

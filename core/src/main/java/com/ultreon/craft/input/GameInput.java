@@ -19,6 +19,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.input.util.*;
 import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.Screen;
 import com.ultreon.craft.util.HitResult;
@@ -189,8 +190,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
                         float left = TRIGGERS.get(TriggerType.LEFT).value;
                         if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
-                            UseItemContext context = new UseItemContext(world, player, hitResult);
-                            Item item = player.getSelectedItem();
+                            ItemStack stack = player.getSelectedItem();
+                            UseItemContext context = new UseItemContext(world, player, hitResult, stack);
+                            Item item = stack.getItem();
                             ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                             this.itemUse = System.currentTimeMillis() + 500;

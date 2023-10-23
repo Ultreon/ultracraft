@@ -200,11 +200,11 @@ public class Renderer {
     }
 
     public void rectLine(int x, int y, int width, int height) {
-        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
+        this.shapes.rectangle(x + strokeWidth / 2f, y + strokeWidth / 2f, width - strokeWidth, height - strokeWidth, this.strokeWidth);
     }
 
     public void rectLine(float x, float y, float width, float height) {
-        this.shapes.rectangle(x, y, width, height, this.strokeWidth);
+        this.shapes.rectangle(x + strokeWidth / 2f, y + strokeWidth / 2f, width - strokeWidth, height - strokeWidth, this.strokeWidth);
     }
 
     public void rect(int x, int y, int width, int height) {
@@ -354,12 +354,12 @@ public class Renderer {
 
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
-        this.blit(id, x, y, width, height, u, v, texture.getWidth(), texture.getHeight(), backgroundColor);
+        this.blit(id, x, y, width, height, u, v, 256, 256, backgroundColor);
     }
 
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
-        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, texture.getWidth(), texture.getHeight(), backgroundColor);
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
     }
 
     public void blit(Identifier id, float x, float y, float width, float height) {
@@ -367,13 +367,11 @@ public class Renderer {
     }
 
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v) {
-        Texture texture = this.textureManager.getTexture(id);
-        this.blit(id, x, y, width, height, u, v, texture.getWidth(), texture.getHeight());
+        this.blit(id, x, y, width, height, u, v, width, height);
     }
 
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
-        Texture texture = this.textureManager.getTexture(id);
-        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, texture.getWidth(), texture.getHeight());
+        this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
     }
 
     public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {

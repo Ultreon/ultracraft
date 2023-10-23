@@ -14,6 +14,8 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.input.GameInput;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.util.exceptions.ValueMismatchException;
 import com.ultreon.craft.world.gen.BiomeGenerator;
@@ -943,12 +945,21 @@ public class World implements Disposable {
 		chunkAt.startBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z);
 	}
 
-	public boolean continueBreaking(Vec3i breaking, float amount) {
+	public boolean continueBreaking(Vec3i breaking, float amount, Player player) {
 		Chunk chunkAt = this.getChunkAt(breaking);
 		if (chunkAt == null) return false;
 		Vec3i chunkCoords = this.toLocalBlockPos(breaking);
-		chunkAt.continueBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z, amount);
-		return true;
+		Block block = this.get(breaking);
+        if (!chunkAt.continueBreaking(chunkCoords.x, chunkCoords.y, chunkCoords.z, amount))
+			return true;
+        ItemStack stack = player.getSelectedItem();
+        if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool()))
+            return true;
+        if (player.inventory.addItems(block.getItemDrops()))
+			return true;
+
+        this.game.notifications.notify("Inventory", "Your inventory is full!");
+        return true;
 	}
 
 	public void stopBreaking(Vec3i breaking) {

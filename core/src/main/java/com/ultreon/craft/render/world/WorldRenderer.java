@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Player;
@@ -240,23 +241,25 @@ public final class WorldRenderer implements RenderableProvider {
                 output.add(this.verifyOutput(renderable));
             }
 
-            this.tmp.set(chunk.renderOffset);
-            List<Section> sections = chunk.getSections();
-            for (int y = 0, sectionsSize = sections.size(); y < sectionsSize; y++) {
-                Mesh mesh = this.sectionBorder;
+            if (GamePlatform.instance.isChunkSectionBordersShown()) {
+                this.tmp.set(chunk.renderOffset);
+                List<Section> sections = chunk.getSections();
+                for (int y = 0, sectionsSize = sections.size(); y < sectionsSize; y++) {
+                    Mesh mesh = this.sectionBorder;
 
-                int numIndices = mesh.getNumIndices();
-                int numVertices = mesh.getNumVertices();
-                Renderable renderable = renderablePool.obtain();
-                renderable.meshPart.mesh = mesh;
-                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                renderable.meshPart.offset = 0;
-                renderable.meshPart.primitiveType = GL_TRIANGLES;
-                renderable.material = this.sectionBorderMaterial;
-                Vector3 add = this.tmp.add(0, y * 4, 0);
-                renderable.worldTransform.setToTranslation(add);
+                    int numIndices = mesh.getNumIndices();
+                    int numVertices = mesh.getNumVertices();
+                    Renderable renderable = renderablePool.obtain();
+                    renderable.meshPart.mesh = mesh;
+                    renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                    renderable.meshPart.offset = 0;
+                    renderable.meshPart.primitiveType = GL_TRIANGLES;
+                    renderable.material = this.sectionBorderMaterial;
+                    Vector3 add = this.tmp.add(0, y * 4, 0);
+                    renderable.worldTransform.setToTranslation(add);
 
-                output.add(this.verifyOutput(renderable));
+                    output.add(this.verifyOutput(renderable));
+                }
             }
 
             this.visibleChunks++;

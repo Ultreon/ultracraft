@@ -5,20 +5,24 @@ import com.badlogic.gdx.Input;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.audio.SoundEvent;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.GameInput;
 import com.ultreon.craft.input.util.ControllerButton;
-import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
+import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.render.gui.screens.DeathScreen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import org.jetbrains.annotations.ApiStatus;
 
 public class Player extends LivingEntity {
-    public static Item[] allowed = new Item[]{Items.GRASS_BLOCK, Items.DIRT, Items.SAND, Items.STONE, Items.COBBLESTONE, Items.WATER, Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL};
+    @ApiStatus.Internal
     public int selected;
+    public Inventory inventory = new Inventory();
     private boolean running;
     private float walkingSpeed = .09F;
     private float flyingSpeed = 0.5F;
@@ -33,6 +37,18 @@ public class Player extends LivingEntity {
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
+
+        this.inventory.build();
+        this.setInitialItems();
+    }
+
+    private void setInitialItems() {
+        if (PlayerEvents.INITIAL_ITEMS.factory().onPlayerInitialItems(this, this.inventory).isCanceled()) {
+            return;
+        }
+
+        this.inventory.getHotbarSlot(0).setItem(Items.WOODEN_PICKAXE.defaultStack());
+        this.inventory.getHotbarSlot(1).setItem(Items.WOODEN_SHOVEL.defaultStack());
     }
 
     public void selectBlock(int i) {
@@ -41,9 +57,9 @@ public class Player extends LivingEntity {
         this.selected = toSelect;
     }
 
-    public Item getSelectedItem() {
+    public ItemStack getSelectedItem() {
         if (this.selected < 0) this.selected = 0;
-        return this.selected >= Player.allowed.length ? Items.AIR : Player.allowed[this.selected];
+        return this.selected >= 9 ? ItemStack.empty() : this.inventory.getHotbarSlot(this.selected).getItem();
     }
 
     @Override

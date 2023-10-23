@@ -41,6 +41,7 @@ import com.ultreon.craft.init.Sounds;
 import com.ultreon.craft.input.*;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.platform.PlatformType;
@@ -194,11 +195,13 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     private final Thread renderingThread;
     public HitResult cursor;
     private LoadingOverlay loadingOverlay;
-    private Object argv;
+    private String[] argv;
 
     public UltreonCraft(String[] argv) throws Throwable {
         UltreonCraft.LOGGER.info("Booting game!");
         UltreonCraft.instance = this;
+
+        this.argv = argv;
 
         this.renderingThread =  Thread.currentThread();
 
@@ -645,7 +648,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
                 if (this.ultreonSplashTime == 0L) {
                     this.ultreonSplashTime = System.currentTimeMillis();
 
-                    this.logoRevealSound.play();
+                    this.logoRevealSound.play(0.5f);
                 }
 
                 ScreenUtils.clear(0, 0, 0, 1, true);
@@ -867,13 +870,14 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
             this.resetBreaking(hitResult);
         } else {
             float efficiency = 1.0F;
-            if (this.player.getSelectedItem() instanceof ToolItem &&
-                    this.breakingBlock.getEffectiveTool() == ((ToolItem) this.player.getSelectedItem()).getToolType()) {
-                ToolItem toolItem = (ToolItem) this.player.getSelectedItem();
+            ItemStack stack = this.player.getSelectedItem();
+            Item item = stack.getItem();
+            if (item instanceof ToolItem toolItem &&
+                    this.breakingBlock.getEffectiveTool() == ((ToolItem) item).getToolType()) {
                 efficiency = toolItem.getEfficiency();
             }
 
-            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * UltreonCraft.TPS / efficiency, 0) + 1))) {
+            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * UltreonCraft.TPS / efficiency, 0) + 1), this.player)) {
                 this.stopBreaking();
             } else {
                 if (this.oldSelected != this.player.selected) {
@@ -900,21 +904,29 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     }
 
     public CompletableFuture<Void> respawnAsync() {
-        assert this.world != null;
-        if (this.player != null && this.world.getEntity(this.player.getId()) == this.player) {
-            this.world.despawn(this.player);
+        try {
+            assert this.world != null;
+            if (this.player != null && this.world.getEntity(this.player.getId()) == this.player) {
+                this.world.despawn(this.player);
+            }
+
+            var spawnPoint = this.world.getSpawnPoint();
+            return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
+                try {
+                    var spawnPointY = this.world.getSpawnPoint().y;
+
+                    this.player = Entities.PLAYER.create(this.world);
+                    this.player.setHealth(this.player.getMaxHeath());
+                    this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
+                    this.world.spawn(this.player);
+                } catch (Exception e) {
+                    UltreonCraft.LOGGER.error("Failed to spawn player!", e);
+                }
+            });
+        } catch (Exception e) {
+            UltreonCraft.LOGGER.error("Failed to respawn player!", e);
         }
-
-        var spawnPoint = this.world.getSpawnPoint();
-
-        return this.world.updateChunksForPlayerAsync(spawnPoint.x, spawnPoint.z).thenAccept(unused -> {
-            var spawnPointY = this.world.getSpawnPoint().y;
-
-            this.player = Entities.PLAYER.create(this.world);
-            this.player.setHealth(this.player.getMaxHeath());
-            this.player.setPosition(spawnPoint.x + 0.5f, spawnPointY, spawnPoint.z + 0.5f);
-            this.world.spawn(this.player);
-        });
+        return CompletableFuture.completedFuture(null);
     }
 
     public void respawn() {
@@ -1037,9 +1049,7 @@ public class UltreonCraft extends PollingExecutorService implements DeferredDisp
     }
 
     public void exitWorldToTitle() {
-        this.exitWorldAndThen(() -> {
-            this.showScreen(new TitleScreen());
-        });
+        this.exitWorldAndThen(() -> this.showScreen(new TitleScreen()));
     }
 
     public synchronized void exitWorldAndThen(Runnable runnable) {
