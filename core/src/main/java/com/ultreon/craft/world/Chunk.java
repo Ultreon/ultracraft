@@ -230,12 +230,14 @@ public class Chunk implements Disposable {
 		this.breaking.remove(new Vec3i(x, y, z));
 	}
 
-	public void continueBreaking(int x, int y, int z, float amount) {
+	public boolean continueBreaking(int x, int y, int z, float amount) {
 		Vec3i pos = new Vec3i(x, y, z);
 		Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
 		if (v != null && v == 1.0F) {
 			this.set(new Vec3i(x, y, z), Blocks.AIR);
+			return true;
 		}
+		return false;
 	}
 
 	public Map<Vec3i, Float> getBreaking() {

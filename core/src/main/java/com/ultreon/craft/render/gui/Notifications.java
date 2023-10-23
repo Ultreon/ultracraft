@@ -76,4 +76,12 @@ public class Notifications implements Renderable {
                 .build()
         );
     }
+
+    public void notify(String title, String description) {
+        this.notify(Notification.builder(title, description).build());
+    }
+
+    public void notify(String title, String description, String subText) {
+        this.notify(Notification.builder(title, description).subText(subText).build());
+    }
 }

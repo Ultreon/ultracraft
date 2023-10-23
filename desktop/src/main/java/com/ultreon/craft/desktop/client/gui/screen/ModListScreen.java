@@ -76,7 +76,9 @@ public class ModListScreen extends Screen {
             iconId = ModListScreen.DEFAULT_MOD_ICON;
         }
 
-        renderer.blit(iconId, x, y, size, size);
+        int texW = textureManager.getTexture(iconId).getWidth();
+        int texH = textureManager.getTexture(iconId).getHeight();
+        renderer.blit(iconId, x, y, size, size, 0, 0, texW, texH, texW, texH);
     }
 
 

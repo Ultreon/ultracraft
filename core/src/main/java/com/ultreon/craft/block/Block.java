@@ -1,6 +1,8 @@
 package com.ultreon.craft.block;
 
 import com.ultreon.craft.UltreonCraft;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.ubo.DataWriter;
@@ -13,13 +15,20 @@ import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
     private final boolean collides;
     private final boolean fluid;
-    private final boolean requiresTool;
+    private final boolean toolRequired;
     private final float hardness;
+    @Nullable
     private final ToolType effectiveTool;
+    private final List<ItemStack> itemDrops;
 
     public Block() {
         this(new Properties());
@@ -31,7 +40,8 @@ public class Block implements DataWriter<MapType> {
         this.fluid = properties.fluid;
         this.hardness = properties.hardness;
         this.effectiveTool = properties.effectiveTool;
-        this.requiresTool = properties.requiresTool;
+        this.toolRequired = properties.requiresTool;
+        this.itemDrops = Collections.unmodifiableList(properties.itemDrops);
     }
 
     public Identifier id() {
@@ -78,7 +88,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public String getTranslation() {
-        return Language.translate(getTranslationId());
+        return Language.translate(this.getTranslationId());
     }
 
     @NotNull
@@ -96,17 +106,23 @@ public class Block implements DataWriter<MapType> {
         return this.effectiveTool;
     }
 
-    public boolean getRequiresTool() {
-        return this.requiresTool;
+    public boolean isToolRequired() {
+        return this.toolRequired;
+    }
+
+    public List<ItemStack> getItemDrops() {
+        return this.itemDrops;
     }
 
     public static class Properties {
+        @Nullable
         private ToolType effectiveTool = null;
         private float hardness = 0.0F;
         private boolean transparent = false;
         private boolean solid = true;
         private boolean fluid = false;
         private boolean requiresTool = false;
+        public final List<ItemStack> itemDrops = new ArrayList<>();
 
         public Properties transparent() {
             this.transparent = true;
@@ -135,6 +151,16 @@ public class Block implements DataWriter<MapType> {
 
         public Properties fluid() {
             this.fluid = true;
+            return this;
+        }
+
+        public Properties dropsItems(ItemStack...  drops) {
+            this.itemDrops.addAll(List.of(drops));
+            return this;
+        }
+
+        public Properties dropsItems(Item...  drops) {
+            this.itemDrops.addAll(Arrays.stream(drops).map(Item::defaultStack).toList());
             return this;
         }
     }

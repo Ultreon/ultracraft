@@ -6,10 +6,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
-import com.badlogic.gdx.math.GridPoint2;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.block.Block;
@@ -17,11 +14,15 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.ScreenEvents;
 import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.render.gui.screens.PauseScreen;
 import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.craft.render.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
+import com.ultreon.libs.translations.v1.Language;
 
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class DesktopInput extends GameInput {
     public int imGuiFocusKey = Input.Keys.F10;
     public int debugHudKey = Input.Keys.F3;
     public int screenshotKey = Input.Keys.F2;
+    public int inventoryKey = Input.Keys.E;
     private int xPos;
     private int yPos;
     private int deltaX;
@@ -92,6 +94,9 @@ public class DesktopInput extends GameInput {
     public boolean keyUp(int keycode) {
         super.keyUp(keycode);
 
+        Player player = this.game.player;
+
+        Screen currentScreen = this.game.currentScreen;
         if (keycode == this.imGuiKey) {
             if (this.game.isShowingImGui() && this.game.world != null) {
                 Gdx.input.setCursorCatched(true);
@@ -103,9 +108,12 @@ public class DesktopInput extends GameInput {
             }
         } else if (keycode == this.debugHudKey) {
             this.game.showDebugHud = !this.game.showDebugHud;
+        } else if (currentScreen == null && player != null) {
+            if (keycode == this.inventoryKey && this.game.showScreen(new InventoryScreen(player.inventory, Language.translate("craft.screen.inventory")))) {
+                return true;
+            }
         }
 
-        Screen currentScreen = this.game.currentScreen;
         if (currentScreen != null) currentScreen.keyRelease(keycode);
         return true;
     }
@@ -193,8 +201,9 @@ public class DesktopInput extends GameInput {
                         if (button == Input.Buttons.LEFT) {
                             this.game.startBreaking();
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
-                            UseItemContext context = new UseItemContext(world, player, hitResult);
-                            Item item = player.getSelectedItem();
+                            ItemStack stack = player.getSelectedItem();
+                            UseItemContext context = new UseItemContext(world, player, hitResult, stack);
+                            Item item = stack.getItem();
                             ItemEvents.USE.factory().onUseItem(item, context);
                             item.use(context);
                         }

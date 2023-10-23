@@ -6,6 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.UltreonCraft;
 import com.ultreon.craft.render.Renderer;
+import com.ultreon.craft.render.gui.GuiComponent;
 import com.ultreon.craft.render.gui.GuiContainer;
 
 import javax.annotation.Nullable;
@@ -46,17 +47,22 @@ public class Screen extends GuiContainer {
 
     @Override
     public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        renderBackground(renderer);
+        this.renderBackground(renderer);
 
         super.render(renderer, mouseX, mouseY, deltaTime);
     }
 
     protected void renderBackground(Renderer renderer) {
-        if (game.world != null) {
-            fill(renderer, 0, 0, width, height, 0xa0202020);
-        } else {
-            fill(renderer, 0, 0, width, height, 0xff202020);
-        }
+        if (this.game.world != null) this.renderTransparentBackground(renderer);
+        else this.renderSolidBackground(renderer);
+    }
+
+    protected void renderSolidBackground(Renderer renderer) {
+        GuiComponent.fill(renderer, 0, 0, this.width, this.height, 0xff202020);
+    }
+
+    protected void renderTransparentBackground(Renderer renderer) {
+        GuiComponent.fill(renderer, 0, 0, this.width, this.height, 0xa0202020);
     }
 
     public String getTitle() {
