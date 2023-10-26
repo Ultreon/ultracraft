@@ -1,0 +1,29 @@
+package com.ultreon.craft.network;
+
+import com.ultreon.craft.network.packets.Packet;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.util.AttributeKey;
+
+import java.util.List;
+
+public class PacketDecoder extends ByteToMessageDecoder {
+
+    private final AttributeKey<? extends PacketData<?>> theirDataKey;
+
+    public PacketDecoder(AttributeKey<? extends PacketData<?>> theirDataKey) {
+        this.theirDataKey = theirDataKey;
+    }
+
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+        PacketBuffer buffer = new PacketBuffer(in);
+        int id = buffer.readInt();
+
+        PacketData<?> data = ctx.channel().attr(this.theirDataKey).get();
+        Packet<?> packet = data.decode(id, buffer);
+        out.add(packet);
+    }
+
+}

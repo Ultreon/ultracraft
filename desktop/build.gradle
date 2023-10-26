@@ -61,7 +61,8 @@ repositories {
 
 dependencies {
     implementation project(":gameprovider")
-    implementation project(":core")
+    implementation project(":client")
+    implementation project(":server")
 
     implementation "com.formdev:flatlaf:3.2.1"
 
@@ -86,6 +87,9 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
+    implementation "org.apache.commons:commons-compress:$commons_compress_version"
+    implementation "org.tukaani:xz:$tukaani_xz_version"
+    implementation "org.bidib.org.oxbow:swingbits:$swingbits_version"
 
     // JNA
     implementation "net.java.dev.jna:jna:$jna_version"
@@ -157,12 +161,12 @@ dependencies {
 
 compileJava {
     dependsOn ":gameprovider:build"
-    dependsOn ":core:build"
+    dependsOn ":client:build"
 }
 
 processResources {
     dependsOn ":gameprovider:build"
-    dependsOn ":core:build"
+    dependsOn ":client:build"
     from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
     exclude "*.pdn", "*.xcf", "*.ps"
 
@@ -171,7 +175,7 @@ processResources {
 
 jar {
     dependsOn ":gameprovider:build"
-    dependsOn ":core:build"
+    dependsOn ":client:build"
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck

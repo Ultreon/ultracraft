@@ -27,7 +27,7 @@
         <exclude domain="root" path="file_to_exclude"/>
         -->
 
-        <include domain="file" path="world/"/>
+        <include domain="file" path="chunk/"/>
         <include domain="file" path="worlds/"/>
         <include domain="file" path="settings.xml"/>
     </cloud-backup>

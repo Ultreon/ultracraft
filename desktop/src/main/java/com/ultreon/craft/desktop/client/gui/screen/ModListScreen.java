@@ -3,12 +3,12 @@ package com.ultreon.craft.desktop.client.gui.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
-import com.ultreon.craft.TextureManager;
-import com.ultreon.craft.UltreonCraft;
-import com.ultreon.craft.render.Color;
-import com.ultreon.craft.render.Renderer;
-import com.ultreon.craft.render.gui.screens.Screen;
-import com.ultreon.craft.render.gui.widget.SelectionList;
+import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ModListScreen extends Screen {
-    private static final Identifier DEFAULT_MOD_ICON = UltreonCraft.id("textures/gui/icons/missing_mod.png");
+    private static final Identifier DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
@@ -30,8 +30,8 @@ public class ModListScreen extends Screen {
     }
 
     @Override
-    public void show() {
-        super.show();
+    public void init() {
+        super.init();
 
         this.clearWidgets();
         this.list = this.add(new SelectionList<>(0, 0, 200, this.height, 48));
@@ -56,7 +56,7 @@ public class ModListScreen extends Screen {
         Identifier iconId;
         @Nullable String iconPath = metadata.icon(128);
         Identifier overrideId = ModIconOverrides.get(metadata.id());
-        TextureManager textureManager = this.game.getTextureManager();
+        TextureManager textureManager = this.client.getTextureManager();
         if (overrideId != null) {
             textureManager.registerTexture(overrideId);
             iconId = textureManager.isTextureLoaded(overrideId) ? overrideId : ModListScreen.DEFAULT_MOD_ICON;
@@ -69,7 +69,7 @@ public class ModListScreen extends Screen {
                 ModListScreen.TEXTURES.put(metadata.icon(128), texture);
             }
             Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.id(), s -> new Texture(Gdx.files.classpath(metadata.icon(128))));
-            iconId = UltreonCraft.id("generated/mod_icon/" + metadata.id() + ".png");
+            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.id() + ".png");
             if (!textureManager.isTextureLoaded(iconId)) textureManager.registerTexture(iconId, texture);
             if (!textureManager.isTextureLoaded(iconId)) iconId = ModListScreen.DEFAULT_MOD_ICON;
         } else {

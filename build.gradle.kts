@@ -55,7 +55,7 @@ extensions.configure<GameUtilsExt> {
     projectId = "ultracraft"
     production = true
 
-    coreProject = project(":core")
+    coreProject = project(":client")
     desktopProject = project(":desktop")
     packageProject = project(":desktop-merge")
 

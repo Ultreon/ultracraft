@@ -4,6 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
+import com.ultreon.craft.client.GameEnvironment;
+import com.ultreon.craft.client.GamePlatform;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.desktop.client.gui.screen.ModIconOverrides;
 import com.ultreon.craft.desktop.client.gui.screen.ModListScreen;
 import com.ultreon.craft.desktop.mods.ClientModInit;
@@ -11,9 +14,9 @@ import com.ultreon.craft.desktop.mods.DedicatedServerModInit;
 import com.ultreon.craft.desktop.mods.ModInit;
 import com.ultreon.craft.desktop.util.util.ArgParser;
 import com.ultreon.craft.desktop.util.util.ImGuiEx;
-import com.ultreon.craft.platform.OperatingSystem;
-import com.ultreon.craft.render.gui.GuiComponent;
-import com.ultreon.craft.render.gui.screens.Screen;
+import com.ultreon.craft.client.platform.OperatingSystem;
+import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -30,12 +33,16 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.Platform;
+import org.oxbow.swingbits.dialog.task.TaskDialog;
+import org.oxbow.swingbits.util.Strings;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -79,7 +86,7 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public void setupImGui() {
-        UltreonCraft.LOGGER.info("Setting up ImGui");
+        UltracraftClient.LOGGER.info("Setting up ImGui");
 
         GLFWErrorCallback.createPrint(System.err).set();
         if (!GLFW.glfwInit()) {
@@ -92,7 +99,7 @@ public class DesktopPlatform extends GamePlatform {
 
         long windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
 
-        UltreonCraft.invokeAndWait(() -> {
+        UltracraftClient.invokeAndWait(() -> {
             this.imGuiGlfw.init(windowHandle, true);
             this.imGuiGl3.init("#version 150");
         });
@@ -110,7 +117,7 @@ public class DesktopPlatform extends GamePlatform {
     }
 
     @Override
-    public void renderImGui(UltreonCraft game) {
+    public void renderImGui(UltracraftClient client) {
         if (this.showImGui.get()) {
             this.imGuiGlfw.newFrame();
 
@@ -148,82 +155,83 @@ public class DesktopPlatform extends GamePlatform {
                 ImGui.end();
             }
 
-            if (DesktopPlatform.SHOW_PLAYER_UTILS.get()) this.showPlayerUtilsWindow(game);
-            if (DesktopPlatform.SHOW_GUI_UTILS.get()) this.showGuiUtilsWindow(game);
-            if (DesktopPlatform.SHOW_UTILS.get()) this.showUtils(game);
+            if (DesktopPlatform.SHOW_PLAYER_UTILS.get()) this.showPlayerUtilsWindow(client);
+            if (DesktopPlatform.SHOW_GUI_UTILS.get()) this.showGuiUtilsWindow(client);
+            if (DesktopPlatform.SHOW_UTILS.get()) this.showUtils(client);
 
             ImGui.render();
             this.imGuiGl3.renderDrawData(ImGui.getDrawData());
         }
     }
 
-    private void showPlayerUtilsWindow(UltreonCraft game) {
+    private void showPlayerUtilsWindow(UltracraftClient client) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (game.player != null && ImGui.begin("Player Utils", this.getDefaultFlags())) {
-            ImGuiEx.text("Id:", () -> game.player.getId());
-            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", game.player.getWalkingSpeed(), v -> game.player.setWalkingSpeed(v));
-            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", game.player.getFlyingSpeed(), v -> game.player.setFlyingSpeed(v));
-            ImGuiEx.editFloat("Gravity:", "PlayerGravity", game.player.gravity, v -> game.player.gravity = v);
-            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", game.player.jumpVel, v -> game.player.jumpVel = v);
-            ImGuiEx.editFloat("Health:", "PlayerHealth", game.player.getHealth(), v -> game.player.setHealth(v));
-            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", game.player.getMaxHeath(), v -> game.player.setMaxHeath(v));
-            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", game.player.noGravity, v -> game.player.noGravity = v);
-            ImGuiEx.editBool("Flying:", "PlayerFlying", game.player.isFlying(), v -> game.player.setFlying(v));
-            ImGuiEx.editBool("Spectating:", "PlayerSpectating", game.player.isSpectating(), v -> game.player.setSpectating(v));
-            ImGuiEx.bool("On Ground:", () -> game.player.onGround);
-            ImGuiEx.bool("Colliding:", () -> game.player.isColliding);
-            ImGuiEx.bool("Colliding X:", () -> game.player.isCollidingX);
-            ImGuiEx.bool("Colliding Y:", () -> game.player.isCollidingY);
-            ImGuiEx.bool("Colliding Z:", () -> game.player.isCollidingZ);
+        if (client.player != null && ImGui.begin("Player Utils", this.getDefaultFlags())) {
+            ImGuiEx.text("Id:", () -> client.player.getId());
+            ImGuiEx.text("Dead:", () -> client.player.isDead());
+            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", client.player.getWalkingSpeed(), v -> client.player.setWalkingSpeed(v));
+            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", client.player.getFlyingSpeed(), v -> client.player.setFlyingSpeed(v));
+            ImGuiEx.editFloat("Gravity:", "PlayerGravity", client.player.gravity, v -> client.player.gravity = v);
+            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", client.player.jumpVel, v -> client.player.jumpVel = v);
+            ImGuiEx.editFloat("Health:", "PlayerHealth", client.player.getHealth(), v -> client.player.setHealth(v));
+            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", client.player.getMaxHeath(), v -> client.player.setMaxHeath(v));
+            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", client.player.noGravity, v -> client.player.noGravity = v);
+            ImGuiEx.editBool("Flying:", "PlayerFlying", client.player.isFlying(), v -> client.player.setFlying(v));
+            ImGuiEx.editBool("Spectating:", "PlayerSpectating", client.player.isSpectating(), v -> client.player.setSpectating(v));
+            ImGuiEx.bool("On Ground:", () -> client.player.onGround);
+            ImGuiEx.bool("Colliding:", () -> client.player.isColliding);
+            ImGuiEx.bool("Colliding X:", () -> client.player.isCollidingX);
+            ImGuiEx.bool("Colliding Y:", () -> client.player.isCollidingY);
+            ImGuiEx.bool("Colliding Z:", () -> client.player.isCollidingZ);
 
             if (ImGui.collapsingHeader("Position")) {
                 ImGui.treePush();
-                ImGuiEx.editDouble("X:", "PlayerX", game.player.getX(), v -> game.player.setX(v));
-                ImGuiEx.editDouble("Y:", "PlayerY", game.player.getY(), v -> game.player.setY(v));
-                ImGuiEx.editDouble("Z:", "PlayerZ", game.player.getZ(), v -> game.player.setZ(v));
+                ImGuiEx.editDouble("X:", "PlayerX", client.player.getX(), v -> client.player.setX(v));
+                ImGuiEx.editDouble("Y:", "PlayerY", client.player.getY(), v -> client.player.setY(v));
+                ImGuiEx.editDouble("Z:", "PlayerZ", client.player.getZ(), v -> client.player.setZ(v));
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Velocity")) {
                 ImGui.treePush();
-                ImGuiEx.editDouble("X:", "PlayerVelocityX", game.player.velocityX, v -> game.player.velocityX = v);
-                ImGuiEx.editDouble("Y:", "PlayerVelocityY", game.player.velocityY, v -> game.player.velocityY = v);
-                ImGuiEx.editDouble("Z:", "PlayerVelocityZ", game.player.velocityZ, v -> game.player.velocityZ = v);
+                ImGuiEx.editDouble("X:", "PlayerVelocityX", client.player.velocityX, v -> client.player.velocityX = v);
+                ImGuiEx.editDouble("Y:", "PlayerVelocityY", client.player.velocityY, v -> client.player.velocityY = v);
+                ImGuiEx.editDouble("Z:", "PlayerVelocityZ", client.player.velocityZ, v -> client.player.velocityZ = v);
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Rotation")) {
                 ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerXRot", game.player.getXRot(), v -> game.player.setXRot(v));
-                ImGuiEx.editFloat("Y:", "PlayerYRot", game.player.getYRot(), v -> game.player.setYRot(v));
+                ImGuiEx.editFloat("X:", "PlayerXRot", client.player.getXRot(), v -> client.player.setXRot(v));
+                ImGuiEx.editFloat("Y:", "PlayerYRot", client.player.getYRot(), v -> client.player.setYRot(v));
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Player Input")) {
                 ImGui.treePush();
-                ImGuiEx.bool("Forward", () -> game.playerInput.forward);
-                ImGuiEx.bool("Backward", () -> game.playerInput.backward);
-                ImGuiEx.bool("Left", () -> game.playerInput.strafeLeft);
-                ImGuiEx.bool("Right", () -> game.playerInput.strafeRight);
-                ImGuiEx.bool("Up", () -> game.playerInput.up);
-                ImGuiEx.bool("Down", () -> game.playerInput.down);
+                ImGuiEx.bool("Forward", () -> client.playerInput.forward);
+                ImGuiEx.bool("Backward", () -> client.playerInput.backward);
+                ImGuiEx.bool("Left", () -> client.playerInput.strafeLeft);
+                ImGuiEx.bool("Right", () -> client.playerInput.strafeRight);
+                ImGuiEx.bool("Up", () -> client.playerInput.up);
+                ImGuiEx.bool("Down", () -> client.playerInput.down);
                 ImGui.treePop();
             }
+            ImGui.end();
         }
-        ImGui.end();
     }
 
-    private void showGuiUtilsWindow(UltreonCraft game) {
+    private void showGuiUtilsWindow(UltracraftClient client) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (ImGui.begin("GUI Utils", this.getDefaultFlags())) {
-            Screen currentScreen = game.currentScreen;
+            Screen currentScreen = client.screen;
             ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
             if (currentScreen != null) {
-                GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / game.getGuiScale()), (int) (Gdx.input.getY() / game.getGuiScale()));
+                GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / client.getGuiScale()), (int) (Gdx.input.getY() / client.getGuiScale()));
                 if (exactWidgetAt != null) {
-                    game.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
-                    game.shapes.rectangle(
-                            exactWidgetAt.getX() * game.getGuiScale(), exactWidgetAt.getY() * game.getGuiScale(),
-                            exactWidgetAt.getWidth() * game.getGuiScale(), exactWidgetAt.getHeight() * game.getGuiScale()
+                    client.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
+                    client.shapes.rectangle(
+                            exactWidgetAt.getX() * client.getGuiScale(), exactWidgetAt.getY() * client.getGuiScale(),
+                            exactWidgetAt.getWidth() * client.getGuiScale(), exactWidgetAt.getHeight() * client.getGuiScale()
                     );
                 }
                 ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
@@ -232,15 +240,11 @@ public class DesktopPlatform extends GamePlatform {
         ImGui.end();
     }
 
-    private void showUtils(UltreonCraft game) {
+    private void showUtils(UltracraftClient client) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (ImGui.begin("Utils", this.getDefaultFlags())) {
-            ImGui.button("Respawn");
-            if (ImGui.isItemClicked()) {
-                game.respawnAsync();
-            }
-            ImGuiEx.slider("FOV", "GameFOV", (int) game.camera.fieldOfView, 10, 150, i -> game.camera.fieldOfView = i);
+            ImGuiEx.slider("FOV", "GameFOV", (int) client.camera.fieldOfView, 10, 150, i -> client.camera.fieldOfView = i);
         }
         ImGui.end();
     }
@@ -287,7 +291,7 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public void openModList() {
-        UltreonCraft.get().showScreen(new ModListScreen(UltreonCraft.get().currentScreen));
+        UltracraftClient.get().showScreen(new ModListScreen(UltracraftClient.get().screen));
     }
 
     @Override
@@ -299,7 +303,7 @@ public class DesktopPlatform extends GamePlatform {
     public void setupMods() {
         super.setupMods();
 
-        ModIconOverrides.set("craft", UltreonCraft.id("icon.png"));
+        ModIconOverrides.set("craft", UltracraftClient.id("icon.png"));
         ModIconOverrides.set("libgdx", new Identifier("libgdx", "icon.png"));
 
         // Invoke entry points.
@@ -343,7 +347,50 @@ public class DesktopPlatform extends GamePlatform {
 
     @Override
     public void handleCrash(CrashLog crashLog) {
-        crashLog.writeToFile(new File(GamePlatform.data("game-crashes").file(), crashLog.getDefaultFileName()));
+        File file = new File(GamePlatform.data("crash-reports").file(), crashLog.getDefaultFileName());
+        crashLog.writeToFile(file);
+
+        try {
+            Gdx.input.setCursorCatched(false);
+            Lwjgl3Graphics graphics = (Lwjgl3Graphics) Gdx.graphics;
+            graphics.getWindow().setVisible(false);
+        } catch (Throwable ignored) {
+
+        }
+
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                TaskDialog dlg = new TaskDialog(null, "Game crashed!");
+
+                String title = "Game crashed!";
+                String description = "See crash report below:";
+                boolean noMessage = Strings.isEmpty(title);
+
+                dlg.setInstruction(noMessage ? description : title);
+                dlg.setText(noMessage ? "" : description);
+
+                dlg.setIcon(UIManager.getIcon(TaskDialog.StandardIcon.ERROR));
+                dlg.setCommands(TaskDialog.StandardCommand.CANCEL.derive(TaskDialog.makeKey("Close")));
+
+                JTextArea text = new JTextArea();
+                text.setEditable(false);
+                text.setFont(new Font("Monospaced", Font.PLAIN, 11));
+                text.setText(crashLog.toString());
+                text.setCaretPosition(0);
+
+                JScrollPane scroller = new JScrollPane(text);
+                scroller.setPreferredSize(new Dimension(400, 200));
+                dlg.getDetails().setExpandableComponent(scroller);
+                dlg.getDetails().setExpanded(noMessage);
+
+                dlg.setResizable(true);
+                dlg.setVisible(true);
+
+            });
+        } catch (Throwable ignored) {
+
+        }
+        Runtime.getRuntime().halt(1);
     }
 
     @Override

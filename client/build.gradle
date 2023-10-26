@@ -1,0 +1,178 @@
+//file:noinspection GroovyUnusedCatchParameter
+
+
+//import com.ultreon.gameutils.ProjectType
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+buildscript {
+    repositories {
+        mavenCentral()
+
+        maven {
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "sonatype"
+        }
+
+        maven {
+            url = "https://maven.atlassian.com/3rdparty/"
+        }
+
+        google()
+    }
+
+    dependencies {
+        classpath group: 'commons-io', name: 'commons-io', version: '2.13.0'
+        classpath "com.google.code.gson:gson:2.10.1"
+    }
+}
+
+//*****************//
+//     Plugins     //
+//*****************//
+plugins {
+//    id 'java'
+//    id 'java-library'
+//    id 'maven-publish'
+//    id "org.panteleyev.jpackageplugin"
+}
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+//apply plugin: 'gameutils'
+
+//****************************//
+// Setting up main properties //
+//****************************//
+
+//projectConfig {
+//    type ProjectType.Common
+//}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    
+    sourceCompatibility("17")
+    targetCompatibility("17")
+}
+
+dependencies {
+    implementation project(":server")
+    
+    // CoreLibs
+    api "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
+    api "com.github.Ultreon.corelibs:corelibs-translations-v1:$corelibs_version"
+    api "com.github.Ultreon:ultreon-data:$ultreon_data_version"
+
+    // LibGDX
+    api "com.badlogicgames.gdx:gdx:$gdx_version"
+    api "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    api "com.badlogicgames.ashley:ashley:$ashley_version"
+    api "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+    api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    api "com.badlogicgames.gdx:gdx-tools:$gdx_version"
+    api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
+    api "com.badlogicgames.gdx-video:gdx-video:1.3.2-SNAPSHOT"
+
+    api "org.apache.commons:commons-compress:$commons_compress_version"
+    api "org.apache.commons:commons-lang3:3.13.0"
+    api "org.apache.commons:commons-collections4:4.4"
+    api "org.tukaani:xz:$tukaani_xz_version"
+    api "com.jcraft:jzlib:1.1.3"
+    api "org.bidib.org.oxbow:swingbits:$swingbits_version"
+
+    // SLF4J
+    api "org.slf4j:slf4j-api:$slf4j_version"
+
+    // Google
+    api "com.google.code.gson:gson:2.10.1"
+    api 'com.google.guava:guava:32.0.0-jre'
+
+    // Misc. Libraries
+    api 'it.unimi.dsi:fastutil:8.5.12'
+    api 'com.raylabz:opensimplex:1.0.3'
+    api 'org.jetbrains:annotations:24.0.1'
+
+    api "space.earlygrey:shapedrawer:$shapedrawer_version"
+
+    api "org.quiltmc:quilt-loader:$quilt_version"
+}
+
+processResources {
+    from(file("$rootProject.projectDir/LICENSE")) { into "META-INF/" }
+    exclude "*.pdn", "*.xcf", "*.ps"
+
+    inputs.property "version", version
+
+    filesMatching("metadata.json") {
+        expand(["version": version])
+    }
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+jar {
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'Ultracraft',
+                'Implementation-Vendor': 'Ultreon Team',
+                project_version: project.version,
+                'Main-Class': 'com.ultreon.craft.DesktopLauncher',
+                'Multi-Release': 'true'
+    }
+
+    from {
+        compileJava.outputs
+    }
+    from {
+        processResources.outputs
+    }
+
+    zip64 true
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.register('prepareRun', {
+    Files.createDirectories(Paths.get(rootProject.projectDir.getAbsolutePath(), "run"))
+})
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+tasks.register('copyDependencies', Copy) {
+    from(configurations.runtimeClasspath)
+    into("$projectDir/build/jars")
+}
+
+tasks.register('copyJar', Copy) {
+    from(tasks.jar)
+    into("$projectDir/build/jars")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+}

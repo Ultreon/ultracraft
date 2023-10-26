@@ -1,0 +1,977 @@
+package com.ultreon.craft.world;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Queues;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.util.Task;
+import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.server.ServerConstants;
+import com.ultreon.craft.server.ServerDisposable;
+import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.util.InvalidThreadException;
+import com.ultreon.craft.util.OverwriteError;
+import com.ultreon.craft.util.ValidationError;
+import com.ultreon.craft.world.gen.BiomeGenerator;
+import com.ultreon.craft.world.gen.TerrainGenerator;
+import com.ultreon.craft.world.gen.WorldGenInfo;
+import com.ultreon.craft.world.gen.layer.*;
+import com.ultreon.craft.world.gen.noise.DomainWarping;
+import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.data.types.ListType;
+import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.checkerframework.common.reflection.qual.NewInstance;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.concurrent.NotThreadSafe;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+public final class ServerWorld extends World {
+    @Nullable
+    private TerrainGenerator terrainGen;
+    private final WorldStorage storage;
+    private final UltracraftServer server;
+    private final RegionStorage regionStorage = new RegionStorage();
+    @Nullable
+    private CompletableFuture<Boolean> saveFuture;
+    @Nullable
+    private ScheduledFuture<?> saveSchedule;
+    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
+    private static long chunkUnloads;
+    private static long chunkLoads;
+    private static long chunkSaves;
+    private final Map<ChunkPos, CompletableFuture<Chunk>> loadingChunks = new ConcurrentHashMap<>();
+
+    private static final Biome DEFAULT_BIOME = Biome.builder()
+            .noise(NoiseSettingsInit.DEFAULT)
+            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseSettingsInit.DOMAIN_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseSettingsInit.DOMAIN_Y.create(seed))))
+            .layer(new WaterTerrainLayer(64))
+            .layer(new AirTerrainLayer())
+            .layer(new SurfaceTerrainLayer())
+            .layer(new StoneTerrainLayer())
+            .layer(new UndergroundTerrainLayer())
+//			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
+            .build();
+
+    static {
+        // TODO Use biome registry
+        ServerWorld.DEFAULT_BIOME.buildLayers();
+
+    }
+
+    private final Queue<ChunkPos> chunksToLoad = this.createSyncQueue();
+    private final Queue<ChunkPos> chunksToUnload = this.createSyncQueue();
+    private final Queue<Runnable> tasks = this.createSyncQueue();
+
+    private final BiomeGenerator generator;
+    private int playTime;
+    private Lock chunkLock = new ReentrantLock();
+
+    public ServerWorld(UltracraftServer server, WorldStorage storage) {
+        super();
+        this.server = server;
+        this.storage = storage;
+
+        this.generator = ServerWorld.DEFAULT_BIOME.create(this, this.seed);
+    }
+
+    public static long getChunkUnloads() {
+        return ServerWorld.chunkUnloads;
+    }
+
+    public static long getChunkLoads() {
+        return ServerWorld.chunkLoads;
+    }
+
+    public static long getChunkSaves() {
+        return ServerWorld.chunkSaves;
+    }
+
+    public int getChunksToLoad() {
+        return this.chunksToLoad.size();
+    }
+
+    private <T> Queue<T> createSyncQueue() {
+        return Queues.synchronizedQueue(Queues.newConcurrentLinkedQueue());
+    }
+
+    public int getRenderDistance() {
+        return this.server.getRenderDistance();
+    }
+
+    @Override
+    protected boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos) {
+        this.checkThread();
+
+        if (!chunk.getPos().equals(pos)) {
+            throw new ValidationError("Chunk position (" + chunk.getPos() + ") and provided position (" + pos + ") don't match.");
+        }
+        if (!this.unloadChunk(pos, true, false))
+            World.LOGGER.warn(World.MARKER, "Failed to unload chunk at " + pos);
+
+        WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.getPos(), chunk);
+        return true;
+    }
+
+    @Nullable
+    @SuppressWarnings("UnusedReturnValue")
+    private Chunk loadChunk(ChunkPos pos) {
+        this.checkThread();
+
+        return this.loadChunk(pos.x(), pos.z());
+    }
+
+    @Nullable
+    public Chunk loadChunk(int x, int z) {
+        this.checkThread();
+
+        return this.loadChunk(x, z, false);
+    }
+
+    @Nullable
+    public Chunk loadChunk(int x, int z, boolean overwrite) {
+        this.checkThread();
+
+        var globalPos = new ChunkPos(x, z);
+        var loadingChunk = this.loadingChunks.get(globalPos);
+        if (loadingChunk != null) {
+            if (loadingChunk.isDone()) this.loadingChunks.remove(globalPos);
+            return loadingChunk.join();
+        }
+        loadingChunk = new CompletableFuture<>();
+
+        var localPos = World.toLocalChunkPos(x, z);
+
+        try {
+            var oldChunk = this.getChunk(globalPos);
+            if (oldChunk != null && !overwrite) {
+                loadingChunk.complete(oldChunk);
+                return oldChunk;
+            }
+
+            var region = this.getOrOpenRegionAt(globalPos);
+            var chunk = region.openChunk(localPos, globalPos);
+            if (chunk.active) {
+                throw new IllegalStateError("Chunk is already active.");
+            }
+
+            loadingChunk.complete(chunk);
+
+            WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
+            World.chunkLoads++;
+
+            return chunk;
+        } catch (Exception e) {
+            World.LOGGER.error(World.MARKER, "Failed to load chunk " + globalPos + ":", e);
+            throw e;
+        }
+    }
+
+    private WorldGenInfo getWorldGenInfo(Vec3d pos) {
+        var needed = World.getChunksAround(this, pos);
+        var chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
+        var chunkPositionsToRemove = this.getChunksToUnload(needed);
+
+        var data = new WorldGenInfo();
+        data.toLoad = chunkPositionsToCreate;
+        data.toRemove = chunkPositionsToRemove;
+        data.toUpdate = new ArrayList<>();
+        return data;
+
+    }
+
+    public void tick() {
+        this.playTime++;
+
+        for (var entity : this.entities.values()) {
+            entity.tick();
+        }
+
+        var poll = this.tasks.poll();
+        if (poll != null) poll.run();
+
+        this.pollChunkQueues();
+    }
+
+    private void pollChunkQueues() {
+        this.chunkLock.lock();
+        try {
+            var unload = this.chunksToUnload.poll();
+            if (unload != null) {
+                var region = this.regionStorage.getRegionAt(unload);
+                if (region != null && region.getActiveChunk(World.toLocalChunkPos(unload)) != null) {
+                    this.unloadChunk(unload);
+                }
+            }
+        } catch (Throwable t) {
+            World.LOGGER.error("Failed to poll chunk task", t);
+        }
+
+        try {
+            var load = this.chunksToLoad.poll();
+            if (load != null) this.loadChunk(load);
+        } catch (Throwable t) {
+            World.LOGGER.error("Failed to poll chunk task", t);
+        }
+        this.chunkLock.unlock();
+    }
+
+    private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
+        return needed.stream()
+                .filter(chunkPos -> this.getChunk(chunkPos) == null)
+                .sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos)))
+                .collect(Collectors.toList());
+    }
+
+    private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
+        List<ChunkPos> toRemove = new ArrayList<>();
+        for (var pos : this.getLoadedChunks().stream().map(Chunk::getPos).filter(pos -> {
+            var chunk = this.getChunk(pos);
+            return chunk != null && !needed.contains(pos);
+        }).toList()) {
+            if (this.getChunk(pos) != null) {
+                toRemove.add(pos);
+            }
+        }
+
+        return toRemove;
+    }
+
+    @Deprecated
+    public void refreshChunks(float x, float z) {
+        this.refreshChunks(new Vec3d(x, World.WORLD_DEPTH, z));
+    }
+
+    @Deprecated
+    public void refreshChunks(Vec3d vec) {
+        var worldGenInfo = this.getWorldGenInfo(vec);
+        this.tasks.offer(() -> {
+            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
+            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
+        });
+    }
+
+    public void refreshChunks(Player player) {
+        var worldGenInfo = this.getWorldGenInfo(player.getPosition());
+        this.tasks.offer(() -> {
+            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
+            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
+        });
+    }
+
+    private void deferLoadChunk(ChunkPos chunkPos) {
+        this.chunkLock.lock();
+        try {
+            if (this.chunksToLoad.contains(chunkPos)) return;
+            this.chunksToLoad.offer(chunkPos);
+        } catch (Throwable t) {
+            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":",t);
+        }
+        this.chunkLock.unlock();
+    }
+
+    private void deferUnloadChunk(ChunkPos chunkPos) {
+        this.chunkLock.lock();
+        try {
+            if (this.chunksToUnload.contains(chunkPos)) return;
+            this.chunksToUnload.add(chunkPos);
+        } catch (Throwable t) {
+            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":",t);
+        }
+        this.chunkLock.unlock();
+    }
+
+    public boolean unloadChunk(ChunkPos chunkPos, boolean save, boolean force) {
+        this.checkThread();
+
+        var region = this.regionStorage.getRegionAt(chunkPos);
+        if (region == null)
+            throw new IllegalStateException("Region is unloaded while unloading chunk " + chunkPos);
+
+        var localChunkPos = World.toLocalChunkPos(chunkPos);
+
+        if (region.getActiveChunk(localChunkPos) == null)
+            throw new IllegalStateError("Tried to unload chunk %s but it isn't active".formatted(chunkPos));
+
+        var chunk = region.deactivate(localChunkPos);
+        if (chunk == null) {
+            throw new IllegalStateError("Tried to unload non-existing chunk: " + chunkPos);
+        }
+
+        if (region.isEmpty()) {
+            try {
+                this.saveRegion(region);
+            } catch (Exception e) {
+                World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
+            }
+        }
+
+        ServerWorld.chunkUnloads++;
+        return true;
+    }
+
+    @CanIgnoreReturnValue
+    public boolean unloadChunk(ChunkPos localChunkPos, boolean save) {
+        this.checkThread();
+
+        return this.unloadChunk(localChunkPos, save, false);
+    }
+
+    public int getPlayTime() {
+        return this.playTime;
+    }
+
+    @Override
+    protected void checkThread() {
+        if (!UltracraftServer.isOnServerThread())
+            throw new InvalidThreadException("Should be on tick thread.");
+    }
+
+    @Override
+    public @Nullable Chunk getChunk(@NotNull ChunkPos pos) {
+        var region = this.regionStorage.getRegionAt(pos);
+        if (region == null) return null;
+        var localPos = World.toLocalChunkPos(pos);
+        var chunk = region.getChunk(localPos);
+        if (chunk != null) {
+            var foundAt = chunk.getPos();
+            if (!foundAt.equals(localPos)) {
+                throw new ValidationError("Chunk expected to be found at %s was found at %s instead.".formatted(pos, foundAt));
+            }
+        }
+        return chunk;
+    }
+
+    /**
+     * Get all chunks currently loaded in.
+     *
+     * @return the currently loaded chunks.
+     */
+    @Override
+    public Collection<ServerChunk> getLoadedChunks() {
+        var regions = this.regionStorage.regions.values();
+        return regions.stream().flatMap(value -> value.getChunks().stream()).toList();
+    }
+
+    /**
+     * Disposes the world, and cleans up the objects it uses.
+     * Added for clean closing of the world.
+     */
+    @Override
+    @ApiStatus.Internal
+    public void dispose() {
+        var saveSchedule = this.saveSchedule;
+        if (saveSchedule != null) saveSchedule.cancel(true);
+        this.saveExecutor.shutdownNow().clear();
+
+        try {
+            this.save(false);
+        } catch (IOException e) {
+            World.LOGGER.warn(World.MARKER, "Saving failed:", e);
+        }
+
+        for (var region : this.regionStorage.regions.values()) {
+            try {
+                this.saveRegion(region, true);
+            } catch (Exception e) {
+                World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
+                var remove = this.regionStorage.regions.remove(region.getPos());
+                if (remove != region)
+                    this.server.crash(new ValidationError("Removed region is not the region that got saved."));
+                region.dispose();
+            }
+        }
+        this.generator.dispose();
+    }
+
+    /**
+     * Play a sound at a specific position.
+     *
+     * @param sound sound to play.
+     * @param x the X-position.
+     * @param y the Y-position.
+     * @param z the Z-position.
+     */
+    @Override
+    public void playSound(SoundEvent sound, double x, double y, double z) {
+        float range = sound.getRange();
+        var playersWithinRange = this.getPlayersWithinRange(x, y, z, range);
+        for (Player player : playersWithinRange) {
+            player.playSound(sound, (float) ((range - player.getPosition().dst(x, y, z)) / range));
+        }
+
+    }
+
+    /**
+     * @param x the origin X-position.
+     * @param y the origin Y-position.
+     * @param z the origin Z-position.
+     * @param range the range.
+     * @return the players within the range of the XYZ coordinates.
+     */
+    public List<ServerPlayer> getPlayersWithinRange(double x, double y, double z, float range) {
+        var withinRange = new ArrayList<ServerPlayer>();
+
+        // Assuming you have a list of Player objects with their coordinates
+        var allPlayers = this.server.getPlayers();
+
+        for (var player : allPlayers) {
+            var playerX = player.getX();
+            var playerY = player.getY();
+            var playerZ = player.getZ();
+
+            // Calculate the distance between the given point (x, y, z) and the player's coordinates
+            var distance = Math.sqrt(Math.pow(playerX - x, 2) + Math.pow(playerY - y, 2) + Math.pow(playerZ - z, 2));
+
+            // Check if the distance is within the specified range
+            if (distance <= range) {
+                withinRange.add(player);
+            }
+        }
+
+        return withinRange;
+    }
+
+    /**
+     * @return the storage for world data.
+     */
+    public WorldStorage getStorage() {
+        return this.storage;
+    }
+
+    /**
+     * Loads the world from the disk.
+     *
+     * @throws IOException when loading the world fails.
+     */
+    @ApiStatus.Internal
+    public void load() throws IOException {
+        this.storage.createDir("data/");
+        this.storage.createDir("regions/");
+
+        if (this.storage.exists("data/entities.ubo")) {
+            ListType<MapType> entitiesData = this.storage.read("data/entities.ubo");
+            for (var entityData : entitiesData) {
+                var entity = Entity.loadFrom(this, entityData);
+                this.entities.put(entity.getId(), entity);
+            }
+        }
+
+//        if (this.storage.exists("data/player.ubo")) {
+//			MapType playerData = this.worldStorage.read("data/player.ubo");
+//			Player player = EntityTypes.PLAYER.create(this);
+//			player.loadWithPos(playerData);
+//			UltreonCraft.get().player = player;
+//        }
+
+        WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
+
+        this.saveSchedule = this.server.schedule(new Task<>(new Identifier("auto_save")) {
+            @Override
+            public void run() {
+                try {
+                    ServerWorld.this.save(true);
+                } catch (Exception e) {
+                    World.LOGGER.error(World.MARKER, "Failed to save world:", e);
+                }
+                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, ServerConstants.AUTO_SAVE_DELAY, ServerConstants.AUTO_SAVE_DELAY_UNIT);
+            }
+        }, ServerConstants.INITIAL_AUTO_SAVE_DELAY, ServerConstants.AUTO_SAVE_DELAY_UNIT);
+    }
+
+    /**
+     * Save the world to disk.
+     *
+     * @param silent true to silence the logs.
+     * @throws IOException when saving the world fails.
+     */
+    @ApiStatus.Internal
+    public void save(boolean silent) throws IOException {
+        if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getName());
+
+        var entitiesData = new ListType<MapType>();
+        for (var entity : this.entities.values()) {
+            if (entity instanceof Player) continue;
+
+            var entityData = entity.save(new MapType());
+            entitiesData.add(entityData);
+        }
+        this.storage.write(entitiesData, "data/entities.ubo");
+
+//		Player player = UltreonCraft.get().player;
+//		MapType playerData = player == null ? new MapType() : player.save(new MapType());
+//		this.worldStorage.write(playerData, "data/player.ubo");
+
+        for (var region : this.regionStorage.regions.values()) {
+            this.saveRegion(region);
+        }
+
+        WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
+
+        if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getName());
+    }
+
+    /**
+     * Save a region to disk.
+     *
+     * @param region the region to save.
+     * @throws IOException when saving the region file failed.
+     */
+    public void saveRegion(Region region) throws IOException {
+        this.saveRegion(region, true);
+    }
+
+    /**
+     * Save a region to disk.
+     *
+     * @param region the region to save.
+     * @param dispose true to also dispose the region.
+     * @throws IOException when saving the region file failed.
+     */
+    public void saveRegion(Region region, boolean dispose) throws IOException {
+        var file = this.storage.regionFile(region.getPos());
+        try (var stream = new GZIPOutputStream(new FileOutputStream(file, false))) {
+            var dataStream = new DataOutputStream(stream);
+
+            this.regionStorage.save(region, dataStream, dispose);
+            stream.finish();
+            stream.flush();
+        }
+    }
+
+    /**
+     * Internal asynchronous save method.
+     *
+     * @param silent true to silence the logs.
+     * @return the future of the save function. Will return true if successful when finished.
+     */
+    @ApiStatus.Internal
+    public CompletableFuture<Boolean> saveAsync(boolean silent) {
+        var saveSchedule = this.saveSchedule;
+        if (saveSchedule != null && !saveSchedule.isDone()) {
+            return this.saveFuture != null ? this.saveFuture : CompletableFuture.completedFuture(true);
+        }
+        if (saveSchedule != null) {
+            saveSchedule.cancel(false);
+        }
+        try {
+            return this.saveFuture = CompletableFuture.supplyAsync(() -> {
+                try {
+                    this.save(silent);
+                    return true;
+                } catch (Exception e) {
+                    World.LOGGER.error(World.MARKER, "Failed to save world", e);
+                    return false;
+                }
+            }, this.saveExecutor);
+        } catch (Exception e) {
+            World.LOGGER.error(World.MARKER, "Failed to save world", e);
+            return CompletableFuture.completedFuture(false);
+        }
+    }
+
+    @NotNull
+    private Region getOrOpenRegionAt(ChunkPos chunkPos) {
+        this.checkThread();
+
+        var rx = chunkPos.x() / World.REGION_SIZE;
+        var rz = chunkPos.z() / World.REGION_SIZE;
+
+        var regionPos = new RegionPos(rx, rz);
+        var regions = this.regionStorage.regions;
+        var oldRegion = regions.get(regionPos);
+        if (oldRegion != null) {
+            return oldRegion;
+        }
+
+        if (this.storage.regionExists(rx, rz)) {
+            try {
+                return this.openRegion(rx, rz);
+            } catch (IOException e) {
+                World.LOGGER.warn("Region at %s,%s failed to load:".formatted(rx, rz), e);
+            }
+        }
+
+        var region = new Region(this, regionPos);
+        this.regionStorage.regions.put(regionPos, region);
+
+        return region;
+    }
+
+    @NotNull
+    private Region openRegion(int rx, int rz) throws IOException {
+        var fileHandle = this.storage.regionFile(rx, rz);
+        try (var stream = new GZIPInputStream(new FileInputStream(fileHandle))) {
+            var dataStream = new DataInputStream(stream);
+            return this.regionStorage.load(this, dataStream);
+        }
+    }
+
+    /**
+     * Spawn an entity into the world.
+     *
+     * @param entity the entity to spawn.
+     * @return the spawned entity. (Same as {@code entity} parameter)
+     * @param <T> the entity.
+     */
+    @Override
+    public <T extends Entity> T spawn(@NotNull T entity) {
+        if (!(entity instanceof ServerPlayer) && entity instanceof Player)
+            throw new IllegalStateException("Tried to spawn a non-server player in a server world.");
+
+        return super.spawn(entity);
+    }
+
+    @ApiStatus.Experimental
+    public CompletableFuture<Map<Vec3d, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
+        Map<Vec3d, Chunk> map = new ConcurrentHashMap<>();
+        return CompletableFuture.supplyAsync(() -> {
+            for (var pos : toCreate) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                var chunk = new ServerChunk(this, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+                assert this.terrainGen != null;
+                this.terrainGen.generateChunkData(chunk, this.seed);
+            }
+            return map;
+        });
+    }
+
+    /**
+     * Prepares spawn for a player.<br>
+     * This method is synchronous with the server thread.<br>
+     * The action will block the thread.
+     *
+     * @param player the player to prepare the spawn for.
+     */
+    public void prepareSpawn(Player player) {
+        if (!UltracraftServer.isOnServerThread()) {
+            UltracraftServer.invokeAndWait(() -> this.prepareSpawn(player));
+            return;
+        }
+
+        ChunkPos origin = player.getChunkPos();
+        for (int x = origin.x() - 1; x <= origin.x() + 1; x++) {
+            for (int z = origin.z() - 1; z <= origin.z() + 1; z++) {
+                this.loadChunk(x, z);
+            }
+        }
+    }
+
+    public UltracraftServer getServer() {
+        return server;
+    }
+
+    @NotThreadSafe
+    public static class Region implements ServerDisposable {
+        private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
+        private final RegionPos pos;
+        public int dataVersion;
+        public String lastPlayedIn = UltracraftServer.get().getGameVersion();
+        private Map<ChunkPos, ServerChunk> chunks = new ConcurrentHashMap<>();
+        private boolean disposed = false;
+        private final ServerWorld world;
+
+        public Region(ServerWorld world, RegionPos pos) {
+            this.world = world;
+            this.pos = pos;
+        }
+
+        public Region(ServerWorld world, RegionPos pos, Map<ChunkPos, ServerChunk> chunks) {
+            this.world = world;
+            this.pos = pos;
+            this.chunks = chunks;
+        }
+
+        public Collection<ServerChunk> getChunks() {
+            return Collections.unmodifiableCollection(this.chunks.values());
+        }
+
+        public RegionPos pos() {
+            return this.getPos();
+        }
+
+        @ApiStatus.Internal
+        public void dispose() {
+            this.validateThread();
+            if (this.disposed) throw new ValidationError("Region is already disposed");
+            this.disposed = true;
+            for (Chunk value : this.chunks.values()) {
+                value.dispose();
+            }
+            this.chunks.clear();
+        }
+
+        @Nullable
+        public Chunk deactivate(@NotNull ChunkPos chunkPos) {
+            this.validateLocalPos(chunkPos);
+            this.validateThread();
+            Chunk chunk = this.chunks.get(chunkPos);
+            if (chunk == null) return null;
+            if (!this.activeChunks.remove(chunkPos)) {
+                throw new IllegalStateError("Can't deactivate an already inactive chunk.");
+            }
+            chunk.active = false;
+            return chunk;
+        }
+
+        @Nullable
+        @CanIgnoreReturnValue
+        public Chunk activate(@NotNull ChunkPos chunkPos, ChunkPos globalPos) {
+            this.validateLocalPos(chunkPos);
+            this.validateThread();
+            @Nullable Chunk chunk = this.chunks.get(chunkPos);
+            if (chunk == null) return null;
+            if (this.activeChunks.contains(chunkPos)) {
+                return chunk;
+            }
+            this.activeChunks.add(chunkPos);
+            chunk.active = true;
+
+            return chunk;
+        }
+
+        private void validateLocalPos(ChunkPos chunkPos) {
+            Preconditions.checkElementIndex(chunkPos.x(), World.REGION_SIZE, "Chunk x-position out of range");
+            Preconditions.checkElementIndex(chunkPos.z(), World.REGION_SIZE, "Chunk z-position out of range");
+        }
+
+        /**
+         * Get a currently loaded chunk with the specified local position.
+         *
+         * @param chunkPos the position of the chunk to get.
+         * @return the chunk at that position, or null if the chunk wasn't loaded.
+         */
+        @Nullable
+        public Chunk getChunk(ChunkPos chunkPos) {
+            this.validateLocalPos(chunkPos);
+            this.validateThread();
+            return this.chunks.get(chunkPos);
+        }
+
+        /**
+         * Get the currently active chunks in this section.
+         *
+         * @return the active chunks.
+         */
+        public Set<ChunkPos> getActiveChunks() {
+            return Collections.unmodifiableSet(this.activeChunks);
+        }
+
+        /**
+         * Get the active chunk at the specified position;
+         *
+         * @param pos the position of the active chunk to get.
+         * @return the active chunk, or null if there's no active chunk at the specified position.
+         */
+        @Nullable
+        public Chunk getActiveChunk(ChunkPos pos) {
+            this.validateLocalPos(pos);
+            this.validateThread();
+            if (!this.activeChunks.contains(pos)) {
+                return null;
+            }
+            return this.chunks.get(pos);
+        }
+
+        /**
+         * @return true if this region has active chunks.
+         */
+        public boolean hasActiveChunks() {
+            return !this.activeChunks.isEmpty();
+        }
+
+        /**
+         * @return true if there are no active chunks.
+         */
+        public boolean isEmpty() {
+            return this.activeChunks.isEmpty();
+        }
+
+        @CanIgnoreReturnValue
+        public Chunk putChunk(@NotNull ChunkPos pos, @NotNull ServerChunk chunk) {
+            this.validateLocalPos(pos);
+            this.validateThread();
+            if (this.chunks.containsKey(pos))
+                throw new IllegalStateError("Chunk is already loaded");
+
+            return this.chunks.put(pos, chunk);
+        }
+
+        private void validateThread() {
+            if (!UltracraftServer.isOnServerThread()) {
+                throw new InvalidThreadException("Should be on server thread.");
+            }
+        }
+
+        /**
+         * Generate a chunk at the specified chunk position local to the region.
+         *
+         * @param pos       the position of the chunk to generate.
+         * @param globalPos
+         * @return the generated chunk.
+         */
+        @NotNull
+        @NewInstance
+        public ServerChunk generateChunk(ChunkPos pos, ChunkPos globalPos) {
+            this.validateThread();
+            var chunk = new ServerChunk(this.world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
+
+            this.buildChunkAsync(chunk, globalPos);
+            this.putChunk(World.toLocalChunkPos(pos), chunk);
+            return chunk;
+        }
+
+        private void buildChunkAsync(Chunk chunk, ChunkPos globalPos) {
+            CompletableFuture.runAsync(() -> {
+                for (var bx = 0; bx < World.CHUNK_SIZE; bx++) {
+                    for (var by = 0; by < World.CHUNK_SIZE; by++) {
+                        this.world.generator.processColumn(chunk, bx, by, World.CHUNK_HEIGHT);
+                    }
+                }
+
+                WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
+
+                try {
+                    this.world.server.sendChunk(globalPos, chunk);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                chunk.ready = true;
+            }, this.world.executor).exceptionally(throwable -> {
+                World.LOGGER.error("Failed to build chunk at %s:".formatted(chunk.getPos()), throwable);
+                this.world.server.invoke(chunk::dispose);
+                return null;
+            });
+        }
+
+        /**
+         * Opens a chunk at a specified position. If it isn't loaded yet, it will defer generating the chunk.
+         *
+         * @param pos       the region local position of the chunk to open.
+         * @param globalPos
+         * @return the loaded/generated chunk.
+         */
+        public @NotNull Chunk openChunk(ChunkPos pos, ChunkPos globalPos) {
+            this.validateThread();
+
+            @Nullable Chunk loadedChunk = this.getChunk(pos);
+            var chunk = loadedChunk == null ? this.generateChunk(pos, globalPos) : loadedChunk;
+
+            var loadedAt = chunk.getPos();
+            if (!loadedAt.equals(pos)) {
+                throw new IllegalStateError("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
+            }
+
+            return chunk;
+        }
+
+        public RegionPos getPos() {
+            return this.pos;
+        }
+    }
+
+    public static class RegionStorage {
+        private final Map<RegionPos, Region> regions = new ConcurrentHashMap<>();
+
+        public void save(Region region, DataOutputStream stream, boolean dispose) throws IOException {
+            var pos = region.pos();
+
+            stream.writeInt(region.dataVersion);
+            stream.writeUTF(region.lastPlayedIn);
+            stream.writeInt(pos.x());
+            stream.writeInt(pos.z());
+            stream.writeInt(World.REGION_SIZE);
+            var chunks = region.getChunks();
+            stream.writeShort(chunks.size());
+            var idx = 0;
+            for (var chunk : chunks) {
+                if (idx >= World.REGION_SIZE * World.REGION_SIZE)
+                    throw new IllegalArgumentException("Too many chunks in region!");
+                var localChunkPos = World.toLocalChunkPos(chunk.getPos());
+                stream.writeByte(localChunkPos.x());
+                stream.writeByte(localChunkPos.z());
+                chunk.save().write(stream);
+                idx++;
+            }
+
+            stream.flush();
+
+            if (dispose) {
+                this.regions.remove(region.getPos());
+                region.dispose();
+            }
+        }
+
+        public Region load(ServerWorld world, DataInputStream stream) throws IOException {
+            var dataVersion = stream.readInt();
+            var lastPlayedIn = stream.readUTF();
+            var x = stream.readInt();
+            var z = stream.readInt();
+            var regionSize = stream.readInt();
+            var worldOffsetX = x * World.REGION_SIZE;
+            var worldOffsetZ = z * World.REGION_SIZE;
+
+            Map<ChunkPos, ServerChunk> chunkMap = new HashMap<>();
+            var maxIdx = stream.readUnsignedShort();
+            for (var idx = 0; idx <= maxIdx; idx++) {
+                var chunkX = stream.readUnsignedByte();
+                var chunkZ = stream.readUnsignedByte();
+                var localChunkPos = new ChunkPos(chunkX, chunkZ);
+                Preconditions.checkElementIndex(chunkX, World.REGION_SIZE, "Invalid chunk X position");
+                Preconditions.checkElementIndex(chunkZ, World.REGION_SIZE, "Invalid chunk Z position");
+                var globalChunkPos = new ChunkPos(chunkX + x * World.REGION_SIZE * World.REGION_SIZE, chunkZ + z * World.REGION_SIZE);
+
+                var chunk = new ServerChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalChunkPos);
+                chunk.load(MapType.read(stream));
+                chunkMap.put(localChunkPos, chunk);
+            }
+
+            var regionPos = new RegionPos(x, z);
+            var oldRegion = this.regions.get(regionPos);
+            if (oldRegion != null) {
+                throw new OverwriteError("Tried to overwrite region %s".formatted(regionPos));
+            }
+
+            var region = new Region(world, regionPos, chunkMap);
+            this.regions.put(regionPos, region);
+            return region;
+        }
+
+        @Nullable
+        public Region getRegionAt(ChunkPos chunkPos) {
+            var regionX = chunkPos.x() / 32;
+            var regionZ = chunkPos.z() / 32;
+
+            return this.getRegion(regionX, regionZ);
+        }
+
+        @Nullable
+        private Region getRegion(int regionX, int regionZ) {
+            return this.getRegion(new RegionPos(regionX, regionZ));
+        }
+
+        @Nullable
+        private Region getRegion(RegionPos regionPos) {
+            return this.regions.get(regionPos);
+        }
+    }
+}

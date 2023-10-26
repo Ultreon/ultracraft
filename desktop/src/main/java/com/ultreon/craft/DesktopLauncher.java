@@ -5,8 +5,12 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowAdapter;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import com.ultreon.craft.client.GameLibGDXWrapper;
+import com.ultreon.craft.client.GamePlatform;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.desktop.mods.DesktopModPreInit;
 import com.ultreon.craft.desktop.util.util.ArgParser;
+import com.ultreon.libs.crash.v0.CrashLog;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
@@ -31,11 +35,15 @@ public final class DesktopLauncher {
 
 			GamePlatform.instance = DesktopLauncher.platform = new DesktopPlatform(argParser);
 
-			DesktopLauncher.launch(argv);
+			try {
+				DesktopLauncher.launch(argv);
+			} catch (Error e) {
+                DesktopLauncher.platform.handleCrash(new CrashLog("Launch failed", e).createCrash().getCrashLog());
+			}
 		} catch (Throwable t) {
 			try {
 				DesktopLauncher.LOGGER.error("Launch failed!", t);
-				UltreonCraft.crash(t);
+				UltracraftClient.crash(t);
 			} catch (Throwable throwable) {
 				try {
 					DesktopLauncher.LOGGER.fatal("Fatal error occurred when trying to launch the game!", throwable);
@@ -86,17 +94,17 @@ public final class DesktopLauncher {
 
 			@Override
 			public void focusLost() {
-				UltreonCraft.get().pause();
+				UltracraftClient.get().pause();
 			}
 
             @Override
 			public boolean closeRequested() {
-				return UltreonCraft.get().tryShutdown();
+				return UltracraftClient.get().tryShutdown();
 			}
 
 			@Override
 			public void filesDropped(String[] files) {
-				UltreonCraft.get().filesDropped(files);
+				UltracraftClient.get().filesDropped(files);
 			}
 
         });

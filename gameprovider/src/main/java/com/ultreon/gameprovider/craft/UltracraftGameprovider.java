@@ -304,6 +304,8 @@ public class UltracraftGameprovider implements GameProvider {
         this.arguments.parse(args);
 
         try {
+            System.setProperty("io.netty.tryReflectionSetAccessible", "false");
+
             var classifier = new LibClassifier<>(GameLibrary.class, this.envType, this);
             var gameLib = GameLibrary.ULTREONCRAFT_DESKTOP;
             var gameJar = GameProviderHelper.getCommonGameJar();
