@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.ultreon.craft.client.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.util.JoystickType;
 import com.ultreon.craft.entity.Player;
@@ -38,33 +37,25 @@ public class PlayerInput {
         this.moveX = 0;
         this.moveY = 0;
 
-        if (GamePlatform.instance.hasKeyInput()) {
-            this.forward = Gdx.input.isKeyPressed(Input.Keys.W) && Gdx.input.isCursorCatched();
-            this.backward = Gdx.input.isKeyPressed(Input.Keys.S) && Gdx.input.isCursorCatched();
-            this.strafeLeft = Gdx.input.isKeyPressed(Input.Keys.A) && Gdx.input.isCursorCatched();
-            this.strafeRight = Gdx.input.isKeyPressed(Input.Keys.D) && Gdx.input.isCursorCatched();
-            this.up = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
-            this.down = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isCursorCatched();
+        this.forward = Gdx.input.isKeyPressed(Input.Keys.W) && Gdx.input.isCursorCatched();
+        this.backward = Gdx.input.isKeyPressed(Input.Keys.S) && Gdx.input.isCursorCatched();
+        this.strafeLeft = Gdx.input.isKeyPressed(Input.Keys.A) && Gdx.input.isCursorCatched();
+        this.strafeRight = Gdx.input.isKeyPressed(Input.Keys.D) && Gdx.input.isCursorCatched();
+        this.up = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
+        this.down = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isCursorCatched();
 
-            if (this.forward || this.backward || this.strafeLeft || this.strafeRight) {
-                if (this.forward) {
-                    this.moveY += 1;
-                }
-                if (this.backward) {
-                    this.moveY -= 1;
-                }
-                if (this.strafeLeft) {
-                    this.moveX -= 1;
-                }
-                if (this.strafeRight) {
-                    this.moveX += 1;
-                }
+        if (this.forward || this.backward || this.strafeLeft || this.strafeRight) {
+            if (this.forward) {
+                this.moveY += 1;
             }
-        } else if (GamePlatform.instance.isMobile()) {
-            Vector2 joyStick = this.client.hud.getJoyStick();
-            if (joyStick != null) {
-                this.moveX = joyStick.x;
-                this.moveY = joyStick.y;
+            if (this.backward) {
+                this.moveY -= 1;
+            }
+            if (this.strafeLeft) {
+                this.moveX -= 1;
+            }
+            if (this.strafeRight) {
+                this.moveX += 1;
             }
         }
 

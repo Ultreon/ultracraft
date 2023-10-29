@@ -1,6 +1,6 @@
 package com.ultreon.craft.client.config;
 
-import com.ultreon.craft.client.GamePlatform;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.gui.ConfigEntry;
 import com.ultreon.libs.translations.v1.LanguageManager;
 
@@ -14,14 +14,7 @@ public class GameSettings extends Configuration {
         super();
 
         this.language = this.add("language", new Locale("en"), Locale::new, Locale::getLanguage, "The preferred language");
-        this.renderDistance = this.add("renderDistance", this.getDefaultRenderDistance(), 2, 24, "The maximum distance to show the world in chunks (16x16)");
-    }
-
-    private int getDefaultRenderDistance() {
-        return switch (GamePlatform.instance.getPlatformType()) {
-            case DESKTOP -> 8;
-            case MOBILE, WEB -> 3;
-        };
+        this.renderDistance = this.add("renderDistance", 8, 2, 24, "The maximum distance to show the world in chunks (16x16)");
     }
 
     @Override

@@ -31,10 +31,10 @@ public class BiomeGenerator implements ServerDisposable {
         this.extraLayers = extraLayers;
     }
 
-    public Chunk processColumn(Chunk chunk, int x, int z, @Nullable Integer height) {
+    public Chunk processColumn(Chunk chunk, int x, int z) {
         final int chunkAmplitude = 1;
 
-        int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z, chunk.height) * chunkAmplitude;
+        int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z) * chunkAmplitude;
 
         for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
             for (TerrainLayer layer : this.layers) {
@@ -51,22 +51,22 @@ public class BiomeGenerator implements ServerDisposable {
         return chunk;
     }
 
-    public int getSurfaceHeightNoise(float x, float z, int height) {
-        float terrainHeight;
-        if (!BiomeGenerator.USE_DOMAIN_WARPING) {
-            terrainHeight = NoiseUtils.octavePerlin(x, z, this.biomeNoise);
-        } else {
-            terrainHeight = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
-        }
+    public int getSurfaceHeightNoise(float x, float z) {
+        float height;
 
-        return (int) Math.max(terrainHeight, 1);
+        if (BiomeGenerator.USE_DOMAIN_WARPING)
+            height = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);
+        else
+            height = NoiseUtils.octavePerlin(x, z, this.biomeNoise);
+
+        return (int) Math.ceil(Math.max(height, 1));
     }
 
     public TreeData getTreeData(Chunk chunk, long seed) {
-        if (treeGenerator == null)
+        if (this.treeGenerator == null)
             return new TreeData();
 
-        return treeGenerator.generateTreeData(chunk, seed);
+        return this.treeGenerator.generateTreeData(chunk, seed);
     }
 
     @Override

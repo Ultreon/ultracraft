@@ -9,6 +9,8 @@ import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.api.EnvType;
 
@@ -83,5 +85,9 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onPlayerMove(ServerPlayer player, double dx, double dy, double dz) {
         this.server.submit(() -> player.move(dx, dy, dz));
+    }
+
+    public void onChunkStatus(ServerPlayer player, ChunkPos pos, Chunk.Status status) {
+        player.onChunkStatus(pos, status);
     }
 }

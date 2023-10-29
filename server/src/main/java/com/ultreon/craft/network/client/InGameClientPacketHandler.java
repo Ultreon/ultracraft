@@ -17,9 +17,11 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onPlayerSetPos(Vec3d pos);
 
-    void onChunkStart(ChunkPos pos, int dataLength);
+    void onChunkStart(ChunkPos pos, byte[] hash, int dataLength);
 
     void onChunkPart(ChunkPos pos, byte[] partialData);
 
     void onChunkFinish(ChunkPos pos);
+
+    void onChunkCancel(ChunkPos pos);
 }

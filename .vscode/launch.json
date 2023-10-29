@@ -1,0 +1,140 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "NumberIdExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.NumberIdExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "RLEExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.RLEExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "BitPackingExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.bitpacking.BitPackingExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "BitPackingOldExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.bitpacking.old.BitPackingOldExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "GreedyMeshingExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.greedymeshing.GreedyMeshingExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.greedymeshing.Main",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "HoffmanExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.hoffman.HoffmanExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "Main(1)",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.octree.Main",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "OctreeEncodingExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.octree.old.OctreeEncodingExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "VoxelGame",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.palette.stage2.VoxelGame",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "ChunkOld",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.palette.stage3.ChunkOld",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "Main(2)",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.palette.stage3.Main",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "MainOld",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.palette.stage3.MainOld",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "MainOldOld",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.palette.stage3.MainOldOld",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "SparseExample",
+            "request": "launch",
+            "mainClass": "com.ultreon.test.chunk.optimize.sparse.SparseExample",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
+            "name": "DevMain",
+            "request": "launch",
+            "mainClass": "com.ultreon.craft.premain.DevMain",
+            "projectName": "desktop-merge"
+        },
+        {
+            "type": "java",
+            "name": "PreMain",
+            "request": "launch",
+            "mainClass": "com.ultreon.craft.premain.PreMain",
+            "projectName": "desktop-merge"
+        },
+        {
+            "type": "java",
+            "name": "DesktopLauncher",
+            "request": "launch",
+            "mainClass": "com.ultreon.craft.DesktopLauncher",
+            "projectName": "desktop"
+        }
+    ]
+}

@@ -3,7 +3,6 @@ package com.ultreon.craft.client.world;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
@@ -12,7 +11,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
@@ -21,8 +19,8 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.client.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.BakedCubeModel;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -52,6 +50,8 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     private final Material sectionBorderMaterial;
     private int visibleChunks;
     private int loadedChunks;
+    private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
+    private static final Vector3 HALF_CHUNK_DIMENSIONS = WorldRenderer.CHUNK_DIMENSIONS.cpy().scl(0.5f);
 
     private final ClientWorld world;
     private final UltracraftClient client = UltracraftClient.get();
@@ -71,7 +71,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     private final Material breakingMaterial;
     private final Array<Mesh> breakingMeshes;
 
-    public WorldRenderer(ClientWorld world, ModelBatch modelBatch) {
+    public WorldRenderer(ClientWorld world) {
         this.world = world;
 
         int len = 49152;
@@ -100,7 +100,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
 
         // Chunk border outline
         {
-            Mesh mesh = WorldRenderer.buildOutlineBox(1 / 16f, CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE, Color.BLACK);
+            Mesh mesh = WorldRenderer.buildOutlineBox(1 / 16f, CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
 
             Material material = new Material();
             material.set(ColorAttribute.createDiffuse(0, 0f, 0f, 0.25f));
@@ -112,7 +112,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
 
         // Block outline.
         {
-            Mesh mesh = WorldRenderer.buildOutlineBox(0.005f, Color.BLACK);
+            Mesh mesh = WorldRenderer.buildOutlineBox(0.005f);
 
             int numIndices = mesh.getNumIndices();
             int numVertices = mesh.getNumVertices();
@@ -162,7 +162,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     }
 
     public void free(ClientChunk chunk) {
-        if (!UltracraftClient.isOnRenderingThread()) {
+        if (!UltracraftClient.isOnMainThread()) {
             UltracraftClient.invoke(() -> this.free(chunk));
             return;
         }
@@ -185,7 +185,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
 
         output.clear();
 
-        var chunks = WorldRenderer.sortChunks(this.world.getLoadedChunks(), player);
+        var chunks = WorldRenderer.chunksInViewSorted(this.world.getLoadedChunks(), player);
         this.loadedChunks = chunks.size();
         this.visibleChunks = 0;
 
@@ -202,6 +202,10 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             Vec3i chunkOffset = chunk.getOffset();
             Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
             chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+            if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
+                continue;
+            }
+
 
             if (chunk.dirty && !chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || chunk.getWorld().isChunkInvalidated(chunk) && (chunk.mesh != null || chunk.transparentMesh != null) && !chunkRendered) {
                 this.free(chunk);
@@ -247,7 +251,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
                 output.add(this.verifyOutput(renderable));
             }
 
-            if (GamePlatform.instance.isChunkSectionBordersShown()) {
+            if (ImGuiOverlay.isChunkSectionBordersShown()) {
                 this.tmp.set(chunk.renderOffset);
                 Mesh mesh = this.sectionBorder;
 
@@ -287,11 +291,11 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         return renderable;
     }
 
-    public static Mesh buildOutlineBox(float thickness, Color color) {
-        return WorldRenderer.buildOutlineBox(thickness, 1, 1, 1, color);
+    public static Mesh buildOutlineBox(float thickness) {
+        return WorldRenderer.buildOutlineBox(thickness, 1, 1, 1);
     }
 
-    public static Mesh buildOutlineBox(float thickness, float width, float height, float depth, Color color) {
+    public static Mesh buildOutlineBox(float thickness, float width, float height, float depth) {
         MeshBuilder meshBuilder = new MeshBuilder();
         meshBuilder.begin(new VertexAttributes(VertexAttribute.Position()), GL_TRIANGLES);
 
@@ -326,7 +330,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     }
 
     @NotNull
-    private static List<ClientChunk> sortChunks(Collection<ClientChunk> chunks, Player player) {
+    private static List<ClientChunk> chunksInViewSorted(Collection<ClientChunk> chunks, Player player) {
         List<ClientChunk> toSort = new ArrayList<>(chunks);
         toSort.sort((o1, o2) -> {
             Vec3d mid1 = new Vec3d(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
@@ -372,9 +376,6 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
                 cursor1.meshPart.mesh = null;
             }
         }
-    }
-
-    public void setShader(ShaderProgram shader) {
     }
 
     public boolean isDisposed() {

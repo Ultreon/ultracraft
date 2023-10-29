@@ -25,7 +25,7 @@ public class TextureStitcher {
 
     public TextureAtlas stitch() {
         if (!isOnMainThread()) {
-            return UltracraftClient.get().getAndWait(id("texture_stitcher/stitch"), this::stitch);
+            return UltracraftClient.invokeAndWait(this::stitch);
         }
 
         UltracraftClient ultracraft = UltracraftClient.get();

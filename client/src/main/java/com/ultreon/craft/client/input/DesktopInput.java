@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.client.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.Player;
@@ -69,7 +68,7 @@ public class DesktopInput extends GameInput {
             ByteBuffer pixels = pixmap.getPixels();
             Gdx.gl.glReadPixels(this.client.getDrawOffset().x, this.client.getDrawOffset().y, this.client.getWidth(), this.client.getHeight(), GL20.GL_RGB, GL20.GL_UNSIGNED_BYTE, pixels);
 
-            PixmapIO.writePNG(GamePlatform.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+            PixmapIO.writePNG(UltracraftClient.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
             pixmap.dispose();
         }
 

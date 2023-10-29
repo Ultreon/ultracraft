@@ -53,7 +53,7 @@ public class Notifications implements Renderable {
     }
 
     public void notify(Notification notification) {
-        if (!UltracraftClient.isOnRenderingThread()) {
+        if (!UltracraftClient.isOnMainThread()) {
             UltracraftClient.invoke(() -> this.notify(notification));
             return;
         }

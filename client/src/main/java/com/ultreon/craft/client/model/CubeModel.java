@@ -64,7 +64,7 @@ public final class CubeModel {
     }
 
     public BakedCubeModel bake(TextureAtlas texture) {
-        if (!isOnMainThread()) return UltracraftClient.get().getAndWait(id("model_baking/bake_cube_model"), () -> this.bake(texture));
+        if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(texture));
         TextureRegion topTex = texture.get(this.top);
         TextureRegion bottomTex = texture.get(this.bottom);
         TextureRegion leftTex = texture.get(this.left);

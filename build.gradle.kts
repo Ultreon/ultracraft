@@ -123,12 +123,14 @@ allprojects {
         mavenLocal()
         mavenCentral()
         google()
-        maven("https://jitpack.io")
         maven("https://repo1.maven.org/maven2/")
         maven("https://maven.fabricmc.net/")
         maven("https://maven.quiltmc.org/repository/release/")
         maven("https://oss.sonatype.org/content/repositories/releases")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://github.com/Ultreon/ultreon-data/raw/main/.mvnrepo/")
+        maven("https://github.com/Ultreon/corelibs/raw/main/.mvnrepo/")
+        maven("https://jitpack.io")
         flatDir {
             name = "Project Libraries"
             dirs = setOf(file("${projectDir}/libs"))
@@ -164,7 +166,7 @@ println("Project: $group:$name")
 fun setupIdea() {
     mkdir("$projectDir/build/gameutils")
 
-    val ps = System.getProperty("path.separator")!!
+    val ps = File.pathSeparator!!
     val files = configurations["runtimeClasspath"]!!
 
     val classPath = files.asSequence()

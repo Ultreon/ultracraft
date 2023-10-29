@@ -1,7 +1,8 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.collection.OrderedMap;
-import com.ultreon.craft.util.HexTable;
+import com.ultreon.data.types.ListType;
+import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -79,39 +80,32 @@ public class Palette<T> {
     }
 
     // Serialize the palette to a byte array
-    public byte[] serializePalette() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(bos);
-
-        dos.writeShort(this.indexMap.size());
+    public ListType<MapType> serializePalette() throws IOException {
+        var outputData = new ListType<MapType>();
         int i = 0;
         for (T obj : this.indexMap.valueList()) {
             if (obj == null) throw new IllegalStateException("Chunk has not defined every block, undefined value at " + i);
-            this.encoder.encode(dos, obj);
+
+            MapType entryData = new MapType();
+            this.encoder.encode(entryData, obj);
+            outputData.add(entryData);
             i++;
         }
-
-        dos.close();
-        return bos.toByteArray();
+        return outputData;
     }
 
     // Deserialize the palette from a byte array
-    public void deserializePalette(byte[] data) throws IOException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        DataInputStream dis = new DataInputStream(bis);
-
+    public void deserializePalette(ListType<MapType> inputData) throws IOException {
         this.objectMap.clear();
         this.indexMap.clear();
         this.indices.clear();
         this.size = 0;
 
-        int size = dis.readUnsignedShort();
-        for (int i = 0; i < size; i++) {
-            T obj = this.decoder.decode(dis);
+        for (int idx = 0; idx < inputData.size(); idx++) {
+            var entryData = inputData.get(idx);
+            T obj = this.decoder.decode(entryData);
             this.add(obj);
         }
-
-        dis.close();
     }
 
     @Override
@@ -142,12 +136,7 @@ public class Palette<T> {
     }
 
     public static class Index implements Comparable<Index> {
-        public static final Index INVALID = new Index(-1) {
-            @Override
-            void update(int value) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        public static final Index INVALID = new Index(-1);
         private short value;
     
         public Index(short value) {
@@ -165,14 +154,16 @@ public class Palette<T> {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Index index)) return false;
-//            if (this.value == -1 && index.value == -1) return true;
-            return this.getValue() == index.getValue();
+            if (!(o instanceof Index index)) {
+                System.out.println("o.getClass().getName() = " + o.getClass().getName());
+                return false;
+            }
+            return this.value == index.value;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.getValue());
+            return Objects.hash(this.value);
         }
 
         @Override
@@ -204,10 +195,10 @@ public class Palette<T> {
     }
 
     public interface Encoder<T> {
-        void encode(DataOutputStream output, T value) throws IOException;
+        void encode(MapType data, T value);
     }
 
     public interface Decoder<T> {
-        T decode(DataInputStream output) throws IOException;
+        T decode(MapType data);
     }
 }

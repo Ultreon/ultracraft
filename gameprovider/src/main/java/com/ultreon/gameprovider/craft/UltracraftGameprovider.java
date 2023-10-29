@@ -24,7 +24,6 @@ import org.quiltmc.loader.impl.util.log.Log;
 import org.quiltmc.loader.impl.util.log.LogCategory;
 import org.quiltmc.loader.impl.util.log.LogHandler;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
@@ -307,7 +306,7 @@ public class UltracraftGameprovider implements GameProvider {
             System.setProperty("io.netty.tryReflectionSetAccessible", "false");
 
             var classifier = new LibClassifier<>(GameLibrary.class, this.envType, this);
-            var gameLib = GameLibrary.ULTREONCRAFT_DESKTOP;
+            var gameLib = GameLibrary.ULTREONCRAFT_CLIENT;
             var gameJar = GameProviderHelper.getCommonGameJar();
             var commonGameJarDeclared = gameJar != null;
 
@@ -317,8 +316,8 @@ public class UltracraftGameprovider implements GameProvider {
 
             classifier.process(launcher.getClassPath());
 
-            gameJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_DESKTOP);
-            var coreJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_CORE);
+            gameJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_CLIENT);
+            var coreJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_SERVER);
             this.libGdxJar = classifier.getOrigin(GameLibrary.LIBGDX);
 
             if (commonGameJarDeclared && gameJar == null) {

@@ -2,6 +2,7 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.ClientPlayer;
+import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
@@ -28,8 +29,10 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         this.client.connection.setHandler(new InGameClientPacketHandlerImpl(this.connection));
 
         this.client.submit(() -> {
-            this.client.worldRenderer = new WorldRenderer(clientWorld, this.client.modelBatch);
+            this.client.worldRenderer = new WorldRenderer(clientWorld);
             this.client.renderWorld = true;
+
+            this.client.setActivity(Activity.SINGLEPLAYER);
         });
     }
 

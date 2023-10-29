@@ -17,6 +17,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public class MobileInput extends GameInput {
     private int rotatePointer = -1;
     private GridPoint2 rotateOrigin;

@@ -13,10 +13,13 @@ import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
+import com.ultreon.craft.network.packets.C2SChunkStatusPacket;
+import com.ultreon.craft.util.Hashing;
+import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.Logger;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +35,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private final Map<ChunkPos, ByteArrayOutputStream> chunkParts = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, byte[]> chunkHashes = new ConcurrentHashMap<>();
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -80,35 +84,114 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkStart(ChunkPos pos, int dataLength) {
-        ByteArrayOutputStream byteBuf = this.chunkParts.get(pos);
-        if (byteBuf != null) {
-            try {
-                byteBuf.close();
-            } catch (IOException ignored) {
+    public void onChunkStart(ChunkPos pos, byte[] hash, int dataLength) {
+        if (this.chunkParts.containsKey(pos)) {
+            UltracraftClient.LOGGER.warn("Chunk starting while already started.");
+            return;
+        }
 
+        ByteArrayOutputStream stream = this.chunkParts.get(pos);
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                UltracraftClient.LOGGER.error("Can't close previously opened stream:", e);
             }
         }
+        this.chunkHashes.put(pos, hash);
         this.chunkParts.put(pos, new ByteArrayOutputStream());
     }
 
     @Override
     public void onChunkPart(ChunkPos pos, byte[] partialData) {
-        this.chunkParts.get(pos).writeBytes(partialData);
+        ByteArrayOutputStream bos = this.chunkParts.get(pos);
+        if (!this.chunkParts.containsKey(pos)) {
+            UltracraftClient.LOGGER.warn("[PART-CHECK] Chunk not started yet: " + pos);
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            this.chunkHashes.remove(pos);
+            return;
+        }
+        if (!this.chunkHashes.containsKey(pos)) {
+            UltracraftClient.LOGGER.warn("[HASH-CHECK] Chunk not started yet: " + pos);
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            try {
+                this.chunkParts.remove(pos).close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+        bos.writeBytes(partialData);
     }
 
     @Override
     public void onChunkFinish(ChunkPos pos) {
-        ByteArrayOutputStream remove = this.chunkParts.remove(pos);
+        if (!this.chunkParts.containsKey(pos)) {
+            UltracraftClient.LOGGER.debug("Chunk %s has missing chunk parts".formatted(pos));
+
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            this.chunkHashes.remove(pos);
+            return;
+        }
+        if (!this.chunkHashes.containsKey(pos)) {
+            UltracraftClient.LOGGER.debug("Chunk %s has missing chunk hashes".formatted(pos));
+
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            this.chunkParts.remove(pos);
+            return;
+        }
+
+        ByteArrayOutputStream stream = this.chunkParts.remove(pos);
         ClientWorld world = this.client.world;
+        byte[] data = stream.toByteArray();
+        byte[] remove = this.chunkHashes.remove(pos);
+        if (!Hashing.verifyMD5(data, remove)) {
+            UltracraftClient.LOGGER.warn("""
+            Chunk hash don't match! World corruptions may occur.
+              Original Hash: %s
+              Current Hash: %s
+              Chunk position: %s""".formatted(
+                      InGameClientPacketHandlerImpl.byteArrayToHexString(remove), InGameClientPacketHandlerImpl.byteArrayToHexString(Hashing.hashMD5(data)), pos)
+            );
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            return;
+        }
+
         if (world != null) {
-            world.loadChunk(pos, remove.toByteArray());
+            UltracraftClient.LOGGER.debug("Chunk %s finished".formatted(pos));
+
+            world.loadChunk(pos, data);
+        } else {
+            UltracraftClient.LOGGER.warn("World is not available when chunk load packet got received.");
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
         }
         try {
-            remove.close();
+            stream.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            UltracraftClient.LOGGER.warn("Failed to close chunk i/o stream.");
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
         }
+    }
+
+    @Override
+    public void onChunkCancel(ChunkPos pos) {
+        try {
+            this.chunkParts.remove(pos).close();
+        } catch (IOException ignored) {
+
+        }
+
+        this.chunkHashes.remove(pos);
+
+        this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+    }
+
+    public static String byteArrayToHexString(byte[] byteArray) {
+        StringBuilder hexString = new StringBuilder(2 * byteArray.length);
+        for (byte b : byteArray) {
+            hexString.append(String.format("%02X", b));
+        }
+        return hexString.toString();
     }
 
     @Override

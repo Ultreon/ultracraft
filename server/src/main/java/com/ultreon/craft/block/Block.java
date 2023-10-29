@@ -11,6 +11,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.translations.v1.Language;
+import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +26,7 @@ public class Block implements DataWriter<MapType> {
     @Nullable
     private final ToolType effectiveTool;
     private final List<ItemStack> itemDrops;
+    private final boolean disableRendering;
 
     public Block() {
         this(new Properties());
@@ -32,6 +34,7 @@ public class Block implements DataWriter<MapType> {
 
     public Block(Properties properties) {
         this.transparent = properties.transparent;
+        this.disableRendering = properties.disableRendering;
         this.collides = properties.solid;
         this.fluid = properties.fluid;
         this.hardness = properties.hardness;
@@ -42,7 +45,7 @@ public class Block implements DataWriter<MapType> {
 
     public Identifier getId() {
         Identifier key = Registries.BLOCK.getKey(this);
-        return key == null ? new Identifier("air") : key;
+        return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
     }
 
     public boolean isAir() {
@@ -51,6 +54,10 @@ public class Block implements DataWriter<MapType> {
 
     public boolean hasCollider() {
         return !this.isAir() && this.collides;
+    }
+
+    public boolean doesRender() {
+        return !this.isAir() && !this.disableRendering;
     }
 
     public boolean isFluid() {
@@ -125,45 +132,51 @@ public class Block implements DataWriter<MapType> {
         private boolean solid = true;
         private boolean fluid = false;
         private boolean requiresTool = false;
-        public final List<ItemStack> itemDrops = new ArrayList<>();
+        private final List<ItemStack> itemDrops = new ArrayList<>();
+        private boolean disableRendering;
 
-        public Properties transparent() {
+        public @This Properties transparent() {
             this.transparent = true;
             return this;
         }
 
-        public Properties noCollision() {
+        public @This Properties noCollision() {
             this.solid = false;
             return this;
         }
 
-        public Properties hardness(float hardness) {
+        public @This Properties hardness(float hardness) {
             this.hardness = hardness;
             return this;
         }
 
-        public Properties effectiveTool(ToolType toolType) {
+        public @This Properties effectiveTool(ToolType toolType) {
             this.effectiveTool = toolType;
             return this;
         }
 
-        public Properties requiresTool() {
+        public @This Properties requiresTool() {
             this.requiresTool = true;
             return this;
         }
 
-        public Properties fluid() {
+        public @This Properties fluid() {
             this.fluid = true;
             return this;
         }
 
-        public Properties dropsItems(ItemStack...  drops) {
+        public @This Properties dropsItems(ItemStack...  drops) {
             this.itemDrops.addAll(List.of(drops));
             return this;
         }
 
-        public Properties dropsItems(Item...  drops) {
+        public @This Properties dropsItems(Item...  drops) {
             this.itemDrops.addAll(Arrays.stream(drops).map(Item::defaultStack).toList());
+            return this;
+        }
+
+        public @This Properties noRendering() {
+            this.disableRendering = true;
             return this;
         }
     }

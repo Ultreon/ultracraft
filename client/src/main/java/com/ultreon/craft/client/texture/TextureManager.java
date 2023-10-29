@@ -83,7 +83,7 @@ public class TextureManager {
     public Texture getTexture(Identifier id) {
         Preconditions.checkNotNull(id, "id");
 
-        if (!UltracraftClient.isOnRenderingThread()) {
+        if (!UltracraftClient.isOnMainThread()) {
             return UltracraftClient.invokeAndWait(() -> getTexture(id));
         }
 

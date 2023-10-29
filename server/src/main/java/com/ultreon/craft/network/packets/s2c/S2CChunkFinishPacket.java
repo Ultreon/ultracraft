@@ -1,5 +1,6 @@
 package com.ultreon.craft.network.packets.s2c;
 
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
@@ -24,6 +25,7 @@ public class S2CChunkFinishPacket extends Packet<InGameClientPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameClientPacketHandler listener) {
+        Debugger.log("Chunk finished @ " + this.pos);
         listener.onChunkFinish(this.pos);
     }
 }

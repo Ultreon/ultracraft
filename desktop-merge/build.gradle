@@ -46,10 +46,14 @@ apply plugin: 'java-library'
 // Setting up main properties //
 //****************************//
 
-//projectConfig {
-//    type ProjectType.Common
-//    jarDependTasks({[copyDependencies, copyJar]})
-//}
+tasks.register('runClient', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'com.ultreon.craft.premain.DevMain'
+
+    // arguments to pass to the application
+    workingDir "$rootProject.projectDir/run/"
+}
 
 archivesBaseName = archives_base_name + "-gameprovider"
 

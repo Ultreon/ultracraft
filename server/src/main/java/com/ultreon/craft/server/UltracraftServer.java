@@ -6,25 +6,21 @@ import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CChunkFinishPacket;
 import com.ultreon.craft.network.packets.s2c.S2CChunkPartPacket;
-import com.ultreon.craft.network.packets.s2c.S2CChunkStartPacket;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.HexTable;
+import com.ultreon.craft.util.Hashing;
 import com.ultreon.craft.util.PollingExecutorService;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -51,7 +47,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private long onlineTicks;
     private boolean running = true;
     private int currentTps;
-    private boolean canSendChunk;
     private boolean sendingChunk;
 
     public UltracraftServer(WorldStorage storage) {
@@ -66,7 +61,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     @CanIgnoreReturnValue
-    public static <T> T invokeAndWait(Callable<@NotNull T> func) {
+    public static <T> T invokeAndWait(@NotNull Callable<T> func) {
         return UltracraftServer.instance.submit(func).join();
     }
 
@@ -154,13 +149,17 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             return;
         }
 
-        UltracraftServer.instance = null;
         ServerLifecycleEvents.SERVER_STOPPED.factory().onServerStopped(this);
     }
 
     public abstract void crash(Throwable t);
 
     public void shutdown() {
+        if (!UltracraftServer.isOnServerThread()) {
+            UltracraftServer.invoke(this::shutdown);
+            return;
+        }
+
         ServerLifecycleEvents.SERVER_STOPPING.factory().onServerStopping(this);
 
         this.running = false;
@@ -168,7 +167,11 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         for (ServerPlayer player : this.players.values()) {
             player.kick("Server stopped");
         }
+
         this.players.clear();
+        this.world.dispose();
+
+        UltracraftServer.instance = null;
 
         super.shutdown();
     }
@@ -185,15 +188,31 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             WorldEvents.POST_TICK.factory().onPostTick(world);
         }
 
-
+        // Tick chunk refresh time.
         if (this.world != null && this.chunkRefresh-- == 0) {
-            this.chunkRefresh = 40;
+            this.chunkRefresh = UltracraftServer.seconds2tick(40);
+
+            // Refresh chunks.
+            ChunkRefresher refresher = new ChunkRefresher();
             for (ServerPlayer player : this.players.values()) {
-                this.world.refreshChunks(player);
+                player.refreshChunks(refresher);
+                world.doRefresh(refresher);
             }
         }
 
         this.pollChunkPacket();
+    }
+
+    public static int seconds2tick(float seconds) {
+        return (int) (seconds * UltracraftServer.TPS);
+    }
+
+    public static int minutes2tick(float minutes) {
+        return (int) (minutes * 60 * UltracraftServer.TPS);
+    }
+
+    public static int hours2tick(float hours) {
+        return (int) (hours * 3600 * UltracraftServer.TPS);
     }
 
     private void pollChunkPacket() {
@@ -287,25 +306,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) throws IOException {
-        if (!UltracraftServer.isOnServerThread()) {
-            this.submit(() -> {
-                try {
-                    this._sendChunk(player, pos, chunk);
-                } catch (IOException e) {
-                    UltracraftServer.LOGGER.error("Failed to send chunk:", e);
-                    throw new RuntimeException(e);
-                }
-            });
-            return;
-        }
         byte[] bytes = chunk.serializeChunk();
-        this.chunkNetworkQueue.offer(new Pair<>(player, new S2CChunkStartPacket(pos, bytes.length)));
-        byte[] buffer = new byte[S2CChunkPartPacket.BUFFER_SIZE];
-        ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
-        while (stream.read(buffer) != -1) {
-            this.chunkNetworkQueue.offer(new Pair<>(player, new S2CChunkPartPacket(pos, ArrayUtils.clone(buffer))));
-        }
-        this.chunkNetworkQueue.offer(new Pair<>(player, new S2CChunkFinishPacket(pos)));
+        player.onChunkPending(pos);
+        this.chunkNetworkQueue.offer(new Pair<>(player, new S2CChunkPartPacket(pos, Hashing.hashMD5(bytes), bytes)));
     }
 
     public int getCurrentTps() {

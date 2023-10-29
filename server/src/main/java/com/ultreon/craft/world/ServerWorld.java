@@ -3,7 +3,7 @@ package com.ultreon.craft.world;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.util.Task;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
@@ -13,6 +13,7 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.OverwriteError;
+import com.ultreon.craft.util.Task;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
@@ -53,7 +54,7 @@ public final class ServerWorld extends World {
     private static long chunkUnloads;
     private static long chunkLoads;
     private static long chunkSaves;
-    private final Map<ChunkPos, CompletableFuture<Chunk>> loadingChunks = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, CompletableFuture<ServerChunk>> loadingChunks = new ConcurrentHashMap<>();
 
     private static final Biome DEFAULT_BIOME = Biome.builder()
             .noise(NoiseSettingsInit.DEFAULT)
@@ -77,8 +78,9 @@ public final class ServerWorld extends World {
     private final Queue<Runnable> tasks = this.createSyncQueue();
 
     private final BiomeGenerator generator;
+    private final Lock chunkLock = new ReentrantLock();
+
     private int playTime;
-    private Lock chunkLock = new ReentrantLock();
 
     public ServerWorld(UltracraftServer server, WorldStorage storage) {
         super();
@@ -142,33 +144,26 @@ public final class ServerWorld extends World {
     }
 
     @Nullable
-    public Chunk loadChunk(int x, int z, boolean overwrite) {
+    public ServerChunk loadChunk(int x, int z, boolean overwrite) {
         this.checkThread();
 
-        var globalPos = new ChunkPos(x, z);
-        var loadingChunk = this.loadingChunks.get(globalPos);
-        if (loadingChunk != null) {
-            if (loadingChunk.isDone()) this.loadingChunks.remove(globalPos);
-            return loadingChunk.join();
-        }
-        loadingChunk = new CompletableFuture<>();
+//        if (x != 17 || z != 18) return null;
 
+        var globalPos = new ChunkPos(x, z);
         var localPos = World.toLocalChunkPos(x, z);
 
         try {
             var oldChunk = this.getChunk(globalPos);
             if (oldChunk != null && !overwrite) {
-                loadingChunk.complete(oldChunk);
                 return oldChunk;
             }
 
             var region = this.getOrOpenRegionAt(globalPos);
             var chunk = region.openChunk(localPos, globalPos);
+            if (chunk == null) return null;
             if (chunk.active) {
                 throw new IllegalStateError("Chunk is already active.");
             }
-
-            loadingChunk.complete(chunk);
 
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
             World.chunkLoads++;
@@ -180,6 +175,7 @@ public final class ServerWorld extends World {
         }
     }
 
+    @Deprecated
     private WorldGenInfo getWorldGenInfo(Vec3d pos) {
         var needed = World.getChunksAround(this, pos);
         var chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
@@ -229,6 +225,18 @@ public final class ServerWorld extends World {
         this.chunkLock.unlock();
     }
 
+    public void doRefresh(ChunkRefresher refresher) {
+        if (!refresher.isFrozen()) return;
+
+        for (ChunkPos pos : refresher.toLoad) {
+            this.deferLoadChunk(pos);
+        }
+
+        for (ChunkPos pos : refresher.toUnload) {
+            this.deferUnloadChunk(pos);
+        }
+    }
+
     private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
         return needed.stream()
                 .filter(chunkPos -> this.getChunk(chunkPos) == null)
@@ -257,19 +265,20 @@ public final class ServerWorld extends World {
 
     @Deprecated
     public void refreshChunks(Vec3d vec) {
-        var worldGenInfo = this.getWorldGenInfo(vec);
-        this.tasks.offer(() -> {
-            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
-            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
-        });
+//        var worldGenInfo = this.getWorldGenInfo(vec);
+//        this.tasks.offer(() -> {
+//            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
+//            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
+//        });
     }
 
+    @Deprecated
     public void refreshChunks(Player player) {
-        var worldGenInfo = this.getWorldGenInfo(player.getPosition());
-        this.tasks.offer(() -> {
-            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
-            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
-        });
+//        var worldGenInfo = this.getWorldGenInfo(player.getPosition());
+//        this.tasks.offer(() -> {
+//            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
+//            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
+//        });
     }
 
     private void deferLoadChunk(ChunkPos chunkPos) {
@@ -311,7 +320,7 @@ public final class ServerWorld extends World {
             throw new IllegalStateError("Tried to unload non-existing chunk: " + chunkPos);
         }
 
-        if (region.isEmpty()) {
+        if (region.isEmpty() && save) {
             try {
                 this.saveRegion(region);
             } catch (Exception e) {
@@ -341,7 +350,7 @@ public final class ServerWorld extends World {
     }
 
     @Override
-    public @Nullable Chunk getChunk(@NotNull ChunkPos pos) {
+    public @Nullable ServerChunk getChunk(@NotNull ChunkPos pos) {
         var region = this.regionStorage.getRegionAt(pos);
         if (region == null) return null;
         var localPos = World.toLocalChunkPos(pos);
@@ -516,7 +525,7 @@ public final class ServerWorld extends World {
 //		this.worldStorage.write(playerData, "data/player.ubo");
 
         for (var region : this.regionStorage.regions.values()) {
-            this.saveRegion(region);
+            this.saveRegion(region, false);
         }
 
         WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
@@ -528,9 +537,8 @@ public final class ServerWorld extends World {
      * Save a region to disk.
      *
      * @param region the region to save.
-     * @throws IOException when saving the region file failed.
      */
-    public void saveRegion(Region region) throws IOException {
+    public void saveRegion(Region region) {
         this.saveRegion(region, true);
     }
 
@@ -539,9 +547,12 @@ public final class ServerWorld extends World {
      *
      * @param region the region to save.
      * @param dispose true to also dispose the region.
-     * @throws IOException when saving the region file failed.
      */
-    public void saveRegion(Region region, boolean dispose) throws IOException {
+    public void saveRegion(Region region, boolean dispose) {
+        if (!UltracraftServer.isOnServerThread()) {
+            UltracraftServer.invokeAndWait(() -> this.saveRegion(region, dispose));
+        }
+
         var file = this.storage.regionFile(region.getPos());
         try (var stream = new GZIPOutputStream(new FileOutputStream(file, false))) {
             var dataStream = new DataOutputStream(stream);
@@ -549,6 +560,8 @@ public final class ServerWorld extends World {
             this.regionStorage.save(region, dataStream, dispose);
             stream.finish();
             stream.flush();
+        } catch (IOException e) {
+            World.LOGGER.error("Failed to save region %s".formatted(region.getPos()), e);
         }
     }
 
@@ -601,7 +614,7 @@ public final class ServerWorld extends World {
             try {
                 return this.openRegion(rx, rz);
             } catch (IOException e) {
-                World.LOGGER.warn("Region at %s,%s failed to load:".formatted(rx, rz), e);
+                World.LOGGER.error("Region at %s,%s failed to load:".formatted(rx, rz), e);
             }
         }
 
@@ -635,25 +648,6 @@ public final class ServerWorld extends World {
         return super.spawn(entity);
     }
 
-    @ApiStatus.Experimental
-    public CompletableFuture<Map<Vec3d, Chunk>> generateWorldChunkData(List<ChunkPos> toCreate) {
-        Map<Vec3d, Chunk> map = new ConcurrentHashMap<>();
-        return CompletableFuture.supplyAsync(() -> {
-            for (var pos : toCreate) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                var chunk = new ServerChunk(this, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
-                assert this.terrainGen != null;
-                this.terrainGen.generateChunkData(chunk, this.seed);
-            }
-            return map;
-        });
-    }
-
     /**
      * Prepares spawn for a player.<br>
      * This method is synchronous with the server thread.<br>
@@ -679,6 +673,25 @@ public final class ServerWorld extends World {
         return server;
     }
 
+    /**
+     * Should only be used for debugging.<br>
+     * Note that this method is not thread safe.<br>
+     * Only run this method in the server thread.<br>
+     * Be sure to remove the client chunk before calling this.
+     *
+     * @param globalPos the position of the chunk in global space.
+     */
+    @ApiStatus.Experimental
+    public void regenerateChunk(ChunkPos globalPos) {
+        this.checkThread();
+        this.unloadChunk(globalPos);
+        Region region = this.getOrOpenRegionAt(globalPos);
+        var localPos = World.toLocalChunkPos(globalPos);
+        region.activeChunks.remove(localPos);
+        region.chunks.remove(localPos);
+        region.generateChunk(localPos, globalPos);
+    }
+
     @NotThreadSafe
     public static class Region implements ServerDisposable {
         private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
@@ -688,6 +701,8 @@ public final class ServerWorld extends World {
         private Map<ChunkPos, ServerChunk> chunks = new ConcurrentHashMap<>();
         private boolean disposed = false;
         private final ServerWorld world;
+        private final List<ChunkPos> generatingChunks = new CopyOnWriteArrayList<>();
+        private final Object buildLock = new Object();
 
         public Region(ServerWorld world, RegionPos pos) {
             this.world = world;
@@ -711,7 +726,7 @@ public final class ServerWorld extends World {
         @ApiStatus.Internal
         public void dispose() {
             this.validateThread();
-            if (this.disposed) throw new ValidationError("Region is already disposed");
+            if (this.disposed) return;
             this.disposed = true;
             for (Chunk value : this.chunks.values()) {
                 value.dispose();
@@ -760,7 +775,7 @@ public final class ServerWorld extends World {
          * @return the chunk at that position, or null if the chunk wasn't loaded.
          */
         @Nullable
-        public Chunk getChunk(ChunkPos chunkPos) {
+        public ServerChunk getChunk(ChunkPos chunkPos) {
             this.validateLocalPos(chunkPos);
             this.validateThread();
             return this.chunks.get(chunkPos);
@@ -825,63 +840,78 @@ public final class ServerWorld extends World {
          * Generate a chunk at the specified chunk position local to the region.
          *
          * @param pos       the position of the chunk to generate.
-         * @param globalPos
-         * @return the generated chunk.
+         * @param globalPos the global position of the chunk to generate.
          */
-        @NotNull
         @NewInstance
-        public ServerChunk generateChunk(ChunkPos pos, ChunkPos globalPos) {
+        public void generateChunk(ChunkPos pos, ChunkPos globalPos) {
             this.validateThread();
-            var chunk = new ServerChunk(this.world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos);
-
-            this.buildChunkAsync(chunk, globalPos);
-            this.putChunk(World.toLocalChunkPos(pos), chunk);
-            return chunk;
+            
+            this.buildChunkAsync(globalPos);
         }
 
-        private void buildChunkAsync(Chunk chunk, ChunkPos globalPos) {
+        private void buildChunkAsync(ChunkPos globalPos) {
+            if (DebugFlags.WARN_CHUNK_BUILD_OVERLOAD && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
+                World.LOGGER.warn("Chunk building is being overloaded!");
+            }
+            synchronized (this.buildLock) {
+                if (this.generatingChunks.contains(globalPos)) return;
+                this.generatingChunks.add(globalPos);
+            }
             CompletableFuture.runAsync(() -> {
-                for (var bx = 0; bx < World.CHUNK_SIZE; bx++) {
-                    for (var by = 0; by < World.CHUNK_SIZE; by++) {
-                        this.world.generator.processColumn(chunk, bx, by, World.CHUNK_HEIGHT);
-                    }
-                }
-
-                WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
-
+                var localPos = World.toLocalChunkPos(globalPos);
+                var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, localPos);
                 try {
-                    this.world.server.sendChunk(globalPos, chunk);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                    for (var bx = 0; bx < World.CHUNK_SIZE; bx++) {
+                        for (var by = 0; by < World.CHUNK_SIZE; by++) {
+                            this.world.generator.processColumn(chunk, bx, by);
+                        }
+                    }
 
-                chunk.ready = true;
-            }, this.world.executor).exceptionally(throwable -> {
-                World.LOGGER.error("Failed to build chunk at %s:".formatted(chunk.getPos()), throwable);
-                this.world.server.invoke(chunk::dispose);
-                return null;
-            });
+                    WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
+
+                    ServerChunk builtChunk = chunk.build();
+                    this.chunks.put(localPos, builtChunk);
+
+                    try {
+                        this.world.server.sendChunk(globalPos, builtChunk);
+                    } catch (IOException e) {
+                        this.generatingChunks.remove(globalPos);
+                        throw new RuntimeException(e);
+                    }
+
+                    chunk.ready = true;
+
+                    this.generatingChunks.remove(globalPos);
+                } catch (Throwable t) {
+                    this.generatingChunks.remove(globalPos);
+                    World.LOGGER.error("Failed to build chunk at %s:".formatted(chunk.getPos()), t);
+                    UltracraftServer.invoke(chunk::dispose);
+                }
+            }, this.world.executor);
         }
 
         /**
          * Opens a chunk at a specified position. If it isn't loaded yet, it will defer generating the chunk.
          *
          * @param pos       the region local position of the chunk to open.
-         * @param globalPos
+         * @param globalPos the global position.
          * @return the loaded/generated chunk.
          */
-        public @NotNull Chunk openChunk(ChunkPos pos, ChunkPos globalPos) {
+        public @Nullable ServerChunk openChunk(ChunkPos pos, ChunkPos globalPos) {
             this.validateThread();
 
-            @Nullable Chunk loadedChunk = this.getChunk(pos);
-            var chunk = loadedChunk == null ? this.generateChunk(pos, globalPos) : loadedChunk;
+            @Nullable ServerChunk loadedChunk = this.getChunk(pos);
+            if (loadedChunk == null) {
+                this.generateChunk(pos, globalPos);
+                return null;
+            }
 
-            var loadedAt = chunk.getPos();
+            var loadedAt = loadedChunk.getPos();
             if (!loadedAt.equals(pos)) {
                 throw new IllegalStateError("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
             }
 
-            return chunk;
+            return loadedChunk;
         }
 
         public RegionPos getPos() {
@@ -917,7 +947,7 @@ public final class ServerWorld extends World {
 
             if (dispose) {
                 this.regions.remove(region.getPos());
-                region.dispose();
+                UltracraftServer.invokeAndWait(region::dispose);
             }
         }
 
@@ -940,8 +970,7 @@ public final class ServerWorld extends World {
                 Preconditions.checkElementIndex(chunkZ, World.REGION_SIZE, "Invalid chunk Z position");
                 var globalChunkPos = new ChunkPos(chunkX + x * World.REGION_SIZE * World.REGION_SIZE, chunkZ + z * World.REGION_SIZE);
 
-                var chunk = new ServerChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalChunkPos);
-                chunk.load(MapType.read(stream));
+                var chunk = ServerChunk.load(world, globalChunkPos, MapType.read(stream));
                 chunkMap.put(localChunkPos, chunk);
             }
 

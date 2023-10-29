@@ -1,20 +1,34 @@
 package com.ultreon.craft.server.player;
 
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.network.Connection;
+import com.ultreon.craft.network.packets.S2CChunkCancelPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHealthPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
 import com.ultreon.craft.network.packets.s2c.S2CRespawnPacket;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.Unit;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.ChunkRefresher;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public final class ServerPlayer extends Player {
     public Connection connection;
@@ -22,6 +36,10 @@ public final class ServerPlayer extends Player {
     private UUID uuid;
     private final String name;
     private final UltracraftServer server = UltracraftServer.get();
+    private final Object2IntMap<ChunkPos> retryChunks = Object2IntMaps.synchronize(new Object2IntArrayMap<>());
+    private final Cache<ChunkPos, S2CChunkCancelPacket> pendingChunks = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).removalListener(notification -> { }).build();
+    private final Cache<ChunkPos, Unit> failedChunks = CacheBuilder.newBuilder().expireAfterWrite(90, TimeUnit.SECONDS).build();
+    private final Set<ChunkPos> activeChunks = new HashSet<>();
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name) {
         super(entityType, world);
@@ -70,7 +88,6 @@ public final class ServerPlayer extends Player {
         this.setHealth(this.getMaxHeath());
         this.setPosition(position);
         this.world.prepareSpawn(this);
-        this.server.submit(() -> this.world.refreshChunks(this)).join();
         this.world.spawn(this);
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
     }
@@ -118,5 +135,42 @@ public final class ServerPlayer extends Player {
                 "uuid=" + this.uuid +
                 ", name='" + this.name + '\'' +
                 '}';
+    }
+
+    public void onChunkStatus(@NotNull ChunkPos pos, Chunk.Status status) {
+        switch (status) {
+            case FAILED -> {
+                if (this.retryChunks.computeInt(pos, (chunkPos, integer) -> integer == null ? 1 : integer + 1) == 3)
+                    this.pendingChunks.invalidate(pos);
+            }
+            case SUCCESS -> this.activeChunks.add(pos);
+        }
+    }
+
+    public void onChunkPending(ChunkPos pos) {
+        this.pendingChunks.put(pos, new S2CChunkCancelPacket(pos));
+    }
+
+    public void refreshChunks(ChunkRefresher refresher) {
+        Vec3d pos = this.getPosition();
+        var needed = this.world.getChunksAround(pos);
+        var toLoad = this.getChunksToLoad(needed);
+        var toUnload = this.getChunksToUnload(needed);
+        this.pendingChunks.invalidateAll(toUnload);
+
+        refresher.addLoading(toLoad);
+        refresher.addUnloading(toUnload);
+    }
+
+    private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
+        return this.activeChunks.stream()
+                .filter(pos -> !needed.contains(pos))
+                .toList();
+    }
+
+    private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed) {
+        return needed.stream()
+                .filter(chunkPos -> !this.activeChunks.contains(chunkPos))
+                .toList();
     }
 }

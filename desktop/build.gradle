@@ -53,6 +53,7 @@ java {
 }
 
 repositories {
+    mavenCentral()
     maven {
         url = "https://maven.fabricmc.net"
         name = "FabricMC"

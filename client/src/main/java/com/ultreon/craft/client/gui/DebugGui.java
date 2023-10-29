@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.Gdx;
-import com.ultreon.craft.client.GamePlatform;
+import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
@@ -28,7 +28,7 @@ public class DebugGui {
     public void render(Renderer renderer) {
         this.y = DebugGui.OFFSET;
 
-        ClientWorld world = this.client.world;
+        @Nullable ClientWorld world = this.client.world;
         @Nullable WorldRenderer worldRenderer = this.client.worldRenderer;
         if (worldRenderer != null && worldRenderer.isDisposed()) worldRenderer = null;
         if (world != null && world.isDisposed()) world = null;
@@ -36,12 +36,13 @@ public class DebugGui {
         this.drawLine(renderer, Mesh.getManagedStatus());
 
         // World
-        if (this.client.integratedServer != null) {
-            this.drawLine(renderer, "server", this.client.integratedServer);
-            this.drawLine(renderer, "server tps", this.client.integratedServer.getCurrentTps());
+        @Nullable IntegratedServer integratedServer = this.client.integratedServer;
+        if (integratedServer != null) {
+            this.drawLine(renderer, "server", integratedServer);
+            this.drawLine(renderer, "server tps", integratedServer.getCurrentTps());
             this.drawLine(renderer, "server tps", this.client.getCurrentTps());
-            this.drawLine(renderer, "packets", "recv " + Connection.getPacketsReceived() + " | sent " + Connection.getPacketsSent());
-            this.drawLine(renderer, "server xyz", this.client.integratedServer.getPlayers().stream().findFirst().map(Entity::getPosition).orElse(null));
+            this.drawLine(renderer, "packets", "recv " + Connection.getPacketsReceived() + " total " + Connection.getPacketsReceivedTotal() + " | sent " + Connection.getPacketsSent());
+            this.drawLine(renderer, "server xyz", integratedServer.getPlayers().stream().findFirst().map(Entity::getPosition).orElse(null));
         }
         if (world != null) {
             this.drawLine(renderer, "fps", Gdx.graphics.getFramesPerSecond());
@@ -81,15 +82,6 @@ public class DebugGui {
             this.drawLine(renderer, "pool free", WorldRenderer.getPoolFree());
             this.drawLine(renderer, "pool max", WorldRenderer.getPoolMax());
             this.drawLine(renderer, "pool peak", WorldRenderer.getPoolPeak());
-        }
-
-        // Mobile platform.
-        if (GamePlatform.instance.isMobile()) {
-            // HUD
-            Hud hud = this.client.hud;
-            if (hud != null) {
-                this.drawLine(renderer, "joystick", hud.getJoyStick());
-            }
         }
     }
 

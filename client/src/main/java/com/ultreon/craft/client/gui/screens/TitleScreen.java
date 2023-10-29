@@ -2,17 +2,15 @@ package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.ultreon.craft.client.GamePlatform;
-import com.ultreon.craft.util.Task;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.screen.ModListScreen;
 import com.ultreon.craft.client.gui.widget.Button;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.libs.translations.v1.Language;
+import net.miginfocom.layout.AC;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class TitleScreen extends Screen {
     private Button startButton;
@@ -22,6 +20,7 @@ public class TitleScreen extends Screen {
     private Button quitButton;
     private final GlyphLayout layout = new GlyphLayout();
     private static int hiddenClicks = 0;
+    private boolean activitySet = false;
 
     public TitleScreen() {
         super("Title Screen");
@@ -45,13 +44,17 @@ public class TitleScreen extends Screen {
 
     @Override
     public void init() {
-        clearWidgets();
+        this.clearWidgets();
 
         super.init();
 
-        int y = height / 2 + 5;
+        if (!this.activitySet) {
+            this.client.setActivity(Activity.MAIN_MENU);
+        }
 
-        startButton = add(new Button(width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
+        int y = this.height / 2 + 5;
+
+        this.startButton = this.add(new Button(this.width / 2 - 100, y, 200, Language.translate("craft.screen.title.start_world"), caller -> {
             try {
                 UltracraftClient.getSavedWorld().delete();
             } catch (IOException e) {
@@ -60,71 +63,34 @@ public class TitleScreen extends Screen {
             UltracraftClient.get().startWorld();
         }));
 
-        this.resetWorldButton = this.add(new Button(this.width / 2 - 100, y+=25, 200, Language.translate("craft.screen.title.reset_world"), caller -> {
-            try {
-                UltracraftClient.getSavedWorld().delete();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        this.modListButton = this.add(new Button(this.width / 2 - 100, y += 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
+            this.client.showScreen(new ModListScreen(this));
         }));
-
-        if (GamePlatform.instance.isModsSupported()) {
-            this.modListButton = this.add(new Button(this.width / 2 - 100, y += 25, 200, Language.translate("craft.screen.mod_list"), caller -> {
-                GamePlatform.instance.openModList();
-            }));
-        }
-        optionsButton = add(new Button(width / 2 - 100, y+=25, 95, Language.translate("craft.screen.title.options"), caller -> {
-            UltracraftClient.get().showScreen(new LanguageScreen());
+        this.optionsButton = this.add(new Button(this.width / 2 - 100, y += 25, 95, Language.translate("craft.screen.title.options"), caller -> {
+            this.client.showScreen(new LanguageScreen());
         }));
-        this.quitButton = new Button(width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
-            if (GamePlatform.instance.supportsQuit()) {
-                Gdx.app.exit();
-            }
-        });
-
-        if (GamePlatform.instance.supportsQuit()) {
-            this.add(this.quitButton);
-        } else {
-            this.optionsButton.setWidth(200);
-        }
+        this.quitButton = this.add(new Button(this.width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), caller -> {
+            Gdx.app.exit();
+        }));
     }
 
     @Override
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        renderer.drawCenteredTextScaled("Ultracraft", 3, (int)((float) this.width / 2), (int) (float) 40);
-    }
-
-    @Override
-    public boolean mouseClick(int x, int y, int button, int count) {
-        if (!GamePlatform.instance.supportsQuit() && this.quitButton.isWithinBounds(x, y)) {
-            hiddenClicks++;
-            if (hiddenClicks == 1) {
-                this.client.schedule(new Task(new Identifier("button_crash"), () -> {
-                    hiddenClicks = 0;
-                }), 2, TimeUnit.MINUTES);
-            }
-
-            UltracraftClient.LOGGER.warn("Clicks: " + hiddenClicks);
-            if (hiddenClicks == 16) {
-                CrashLog crashLog = new CrashLog("Hidden quit button", new Exception("Funny"));
-                this.client.delayCrash(crashLog);
-            }
-        }
-        return super.mouseClick(x, y, button, count);
+        renderer.drawCenteredTextScaled("Ultracraft", 3, (int) ((float) this.width / 2), (int) (float) 40);
     }
 
     public Button getStartButton() {
-        return startButton;
+        return this.startButton;
     }
 
     public Button getOptionsButton() {
-        return optionsButton;
+        return this.optionsButton;
     }
 
     public Button getQuitButton() {
-        return quitButton;
+        return this.quitButton;
     }
 
     @Override

@@ -337,10 +337,10 @@ public class PacketBuffer {
         return new BlockPos(x, y, z);
     }
 
-    public void writeBlockPos(BlockPos vec) {
-        this.buf.writeInt(vec.x());
-        this.buf.writeInt(vec.y());
-        this.buf.writeInt(vec.z());
+    public void writeBlockPos(BlockPos pos) {
+        this.buf.writeInt(pos.x());
+        this.buf.writeInt(pos.y());
+        this.buf.writeInt(pos.z());
     }
 
     public ChunkPos readChunkPos() {
@@ -350,9 +350,9 @@ public class PacketBuffer {
         return new ChunkPos(x, z);
     }
 
-    public void writeChunkPos(ChunkPos vec) {
-        this.buf.writeInt(vec.x());
-        this.buf.writeInt(vec.z());
+    public void writeChunkPos(ChunkPos pos) {
+        this.buf.writeInt(pos.x());
+        this.buf.writeInt(pos.z());
     }
 
     public void writeUbo(IType<?> ubo) {

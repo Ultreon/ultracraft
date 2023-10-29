@@ -1,7 +1,6 @@
 package com.ultreon.craft.client.config;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.ultreon.craft.client.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.entries.*;
 import com.ultreon.craft.client.config.gui.ConfigEntry;
@@ -16,7 +15,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public class Configuration {
-    public static final FileHandle FILE = GamePlatform.data("settings.txt");
+    public static final FileHandle FILE = UltracraftClient.data("settings.txt");
 
     private static final Map<String, Configuration> CONFIGS = new HashMap<>();
     private final Map<String, ConfigEntry<?>> entries = new OrderedHashMap<>();

@@ -42,13 +42,27 @@ public class Item {
         return new ItemStack(this);
     }
 
+    /**
+     * Get the maximum item stack size.
+     *
+     * @return the maximum stack size.
+     * @see ItemStack#getCount() 
+     */
     public int getMaxStackSize() {
         return this.maxStackSize;
     }
 
+    /**
+     * Item properties.
+     */
     public static class Properties {
         private int maxStackSize = 64;
 
+        /**
+         * Set the max stack size.
+         *
+         * @param size the stack size.
+         */
         public @This Properties stackSize(int size) {
             this.maxStackSize = size;
             return this;

@@ -32,27 +32,16 @@ buildscript {
 //     Plugins     //
 //*****************//
 plugins {
-//    id 'java'
-//    id 'java-library'
-//    id 'maven-publish'
-//    id "org.panteleyev.jpackageplugin"
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
 apply plugin: 'java'
 apply plugin: 'java-library'
-//apply plugin: 'gameutils'
-
-//****************************//
-// Setting up main properties //
-//****************************//
-
-//projectConfig {
-//    type ProjectType.Common
-//}
 
 java {
     withSourcesJar()
-    withJavadocJar()
     
     sourceCompatibility("17")
     targetCompatibility("17")
@@ -60,53 +49,106 @@ java {
 
 dependencies {
     implementation project(":server")
-    
+    implementation project(":gameprovider")
+
     // CoreLibs
-    api "com.github.Ultreon.corelibs:corelibs-collections-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-commons-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-crash-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-datetime-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-events-v1:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-functions-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-registries-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-resources-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-text-v0:$corelibs_version"
-    api "com.github.Ultreon.corelibs:corelibs-translations-v1:$corelibs_version"
-    api "com.github.Ultreon:ultreon-data:$ultreon_data_version"
+    implementation "io.github.ultreon.corelibs:collections-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:commons-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:crash-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:datetime-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:events-v1:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:functions-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:registries-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:resources-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:text-v0:$corelibs_version"
+    implementation "io.github.ultreon.corelibs:translations-v1:$corelibs_version"
+    implementation "io.github.ultreon:ubo:$ultreon_data_version"
 
     // LibGDX
-    api "com.badlogicgames.gdx:gdx:$gdx_version"
-    api "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
-    api "com.badlogicgames.ashley:ashley:$ashley_version"
-    api "com.badlogicgames.gdx:gdx-ai:$ai_version"
-    api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
-    api "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
-    api "com.badlogicgames.gdx:gdx-tools:$gdx_version"
-    api "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
-    api "com.badlogicgames.gdx-video:gdx-video:1.3.2-SNAPSHOT"
+    implementation "com.badlogicgames.gdx:gdx:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
+    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    implementation "com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version"
 
-    api "org.apache.commons:commons-compress:$commons_compress_version"
-    api "org.apache.commons:commons-lang3:3.13.0"
-    api "org.apache.commons:commons-collections4:4.4"
-    api "org.tukaani:xz:$tukaani_xz_version"
-    api "com.jcraft:jzlib:1.1.3"
-    api "org.bidib.org.oxbow:swingbits:$swingbits_version"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop"
+    implementation "com.badlogicgames.gdx-video:gdx-video-lwjgl3:1.3.2-SNAPSHOT"
+
+    // ImGui
+    implementation "io.github.spair:imgui-java-binding:$imgui_version"
+    implementation "io.github.spair:imgui-java-lwjgl3:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+
+    implementation "org.apache.commons:commons-compress:$commons_compress_version"
+    implementation "org.apache.commons:commons-lang3:3.13.0"
+    implementation "org.apache.commons:commons-collections4:4.4"
+    implementation "org.tukaani:xz:$tukaani_xz_version"
+    implementation "com.jcraft:jzlib:1.1.3"
+    implementation "org.bidib.org.oxbow:swingbits:$swingbits_version"
 
     // SLF4J
-    api "org.slf4j:slf4j-api:$slf4j_version"
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
 
     // Google
-    api "com.google.code.gson:gson:2.10.1"
-    api 'com.google.guava:guava:32.0.0-jre'
+    implementation "com.google.code.gson:gson:2.10.1"
+    implementation 'com.google.guava:guava:32.0.0-jre'
 
     // Misc. Libraries
-    api 'it.unimi.dsi:fastutil:8.5.12'
-    api 'com.raylabz:opensimplex:1.0.3'
-    api 'org.jetbrains:annotations:24.0.1'
+    implementation 'it.unimi.dsi:fastutil:8.5.12'
+    implementation 'com.raylabz:opensimplex:1.0.3'
+    implementation 'org.jetbrains:annotations:24.0.1'
 
-    api "space.earlygrey:shapedrawer:$shapedrawer_version"
+    implementation "space.earlygrey:shapedrawer:$shapedrawer_version"
 
-    api "org.quiltmc:quilt-loader:$quilt_version"
+    implementation "org.tukaani:xz:$tukaani_xz_version"
+    implementation "org.bidib.org.oxbow:swingbits:$swingbits_version"
+
+    implementation "com.formdev:flatlaf:3.2.1"
+    // quilt-loader dependencies
+    implementation "org.ow2.asm:asm:$project.asm_version"
+    implementation "org.ow2.asm:asm-analysis:$project.asm_version"
+    implementation "org.ow2.asm:asm-commons:$project.asm_version"
+    implementation "org.ow2.asm:asm-tree:$project.asm_version"
+    implementation "org.ow2.asm:asm-util:$project.asm_version"
+
+    implementation "net.fabricmc:sponge-mixin:$project.mixin_version", {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+
+    //noinspection GradleDynamicVersion
+    implementation 'net.fabricmc:tiny-mappings-parser:0.3.0+build.17'
+    implementation 'net.fabricmc:tiny-remapper:0.8.7'
+    //noinspection GradleDynamicVersion
+    implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
+    implementation 'net.fabricmc:access-widener:2.1.0'
+
+    implementation "org.quiltmc:quilt-loader:$quilt_version"
+
+    //noinspection GradleDynamicVersion
+    implementation 'net.fabricmc:tiny-mappings-parser:0.3.0+build.17'
+    implementation 'net.fabricmc:tiny-remapper:0.8.7'
+    //noinspection GradleDynamicVersion
+    implementation 'net.fabricmc:dev-launch-injector:0.2.1+build.8'
+    implementation 'net.fabricmc:access-widener:2.1.0'
+
+    implementation "org.quiltmc:quilt-loader:$quilt_version"
+    implementation "org.quiltmc:quilt-json5:1.0.4+final"
+    implementation "org.quiltmc:quilt-config:1.1.0-beta.3"
+    implementation "org.quiltmc.qup:gson:0.2.0"
+
+    runtimeOnly "org.apache.logging.log4j:log4j:$log4j_version"
+    runtimeOnly "org.apache.logging.log4j:log4j-core:$log4j_version"
+    runtimeOnly "org.apache.logging.log4j:log4j-api:$log4j_version"
 }
 
 processResources {

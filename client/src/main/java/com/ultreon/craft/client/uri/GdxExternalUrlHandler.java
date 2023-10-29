@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.uri;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.ultreon.craft.client.GamePlatform;
+import com.ultreon.craft.client.UltracraftClient;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,7 +19,7 @@ public class GdxExternalUrlHandler extends URLStreamHandlerProvider {
         return new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL u) {
-                FileHandle external = GamePlatform.data(u.getPath());
+                FileHandle external = UltracraftClient.data(u.getPath());
                 return new URLConnection(u) {
                     private InputStream inputStream;
                     private OutputStream outputStream;

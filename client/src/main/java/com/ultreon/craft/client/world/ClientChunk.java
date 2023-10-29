@@ -6,7 +6,6 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 import java.io.*;
 
@@ -26,8 +25,8 @@ public final class ClientChunk extends Chunk {
     }
 
     @Override
-    public void deserializeChunk(byte[] data) throws IOException {
-        super.deserializeChunk(data);
+    public void deserializeChunk(byte[] bytes) throws IOException {
+        super.deserializeChunk(bytes);
     }
 
     @Override
@@ -42,34 +41,36 @@ public final class ClientChunk extends Chunk {
 
     @Override
     public Block getFast(int x, int y, int z) {
-        if (!UltracraftClient.isOnRenderingThread()) {
-            return UltracraftClient.invokeAndWait(() -> this.getFast(x, y, z));
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException("Should be on rendering thread.");
         }
+
         return super.getFast(x, y, z);
     }
 
     @Override
     public void setFast(int x, int y, int z, Block block) {
-        if (!UltracraftClient.isOnRenderingThread()) {
-            UltracraftClient.invokeAndWait(() -> this.setFast(x, y, z, block));
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException("Should be on rendering thread.");
         }
+
         super.setFast(x, y, z, block);
 
         this.dirty = true;
         this.clientWorld.updateChunkAndNeighbours(this);
     }
 
-    public void setDirty(boolean b) {
+    public void setDirty(boolean ignoredB) {
         this.dirty = false;
     }
 
     @Override
     public void onUpdated() {
-        super.onUpdated();
-
-        if (!UltracraftClient.isOnRenderingThread()) {
+        if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException("Should be on rendering thread.");
         }
+
+        super.onUpdated();
     }
 
     @Override
@@ -78,11 +79,14 @@ public final class ClientChunk extends Chunk {
     }
 
     void ready() {
-        if (!UltracraftClient.isOnRenderingThread()) {
+        if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException("Should be on rendering thread.");
         }
-//        this.dirty = true;
         this.ready = true;
         this.clientWorld.updateChunkAndNeighbours(this);
+    }
+
+    public Object getBounds() {
+        return null;
     }
 }

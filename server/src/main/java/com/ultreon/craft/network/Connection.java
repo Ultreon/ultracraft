@@ -39,6 +39,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     public static final AttributeKey<PacketData<ServerPacketHandler>> DATA_TO_SERVER_KEY = AttributeKey.valueOf("data_to_server");
     public static final AttributeKey<PacketData<ClientPacketHandler>> DATA_TO_CLIENT_KEY = AttributeKey.valueOf("data_to_client");
     private static int packetsReceived;
+    private static int packetsReceivedTotal;
 
     private final PacketDestination direction;
     @Nullable
@@ -77,11 +78,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public static int getPacketsSent() {
-        return packetsSent;
+        return Connection.packetsSent;
     }
 
     public static int getPacketsReceived() {
-        return packetsReceived;
+        return Connection.packetsReceived;
+    }
+
+    public static int getPacketsReceivedTotal() {
+        return Connection.packetsReceivedTotal;
     }
 
     public void delayDisconnect(String message) {
@@ -192,8 +197,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         if (this.channel == null) return;
         if (!this.channel.isOpen()) throw new ClosedChannelException();
 
-        Connection.packetsSent++;
-
         if (this.channel.eventLoop().inEventLoop()) {
             this._sendInEventLoop(packet, stateListener, flush);
         } else {
@@ -204,29 +207,57 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private void _sendInEventLoop(Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
         try {
             Preconditions.checkNotNull(packet, "packet");
-            if (this.channel == null) return;
+            if (this.channel == null) {
+                Connection.LOGGER.warn("Can send packet as the channel is closed.");
+                return;
+            }
             if (!this.channel.isOpen()) throw new ClosedChannelException();
 
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
-            if (stateListener != null) {
-                sent.addListener(future -> {
-                    try {
-                        if (future.isSuccess()) {
-                            stateListener.onSuccess();
-                            return;
-                        }
 
-                        Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
-                        Packet<?> failPacket = stateListener.onFailure();
-                        if (failPacket != null) {
-                            ChannelFuture finalAttempt = this.channel.writeAndFlush(failPacket);
-                            finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-                        }
-                    } catch (Exception e) {
-                        Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName());
-                    }
+            Connection.packetsSent++;
+
+            if (stateListener == null) {
+                sent.addListener(future -> {
+                    if (future.isSuccess()) return;
+
+                    Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
+                    this.disconnect(("""
+                            Internal Error
+
+                            %s
+                            %s
+                            
+                            Check logs for more information""").formatted(future.cause().getClass().getName(), future.cause().getMessage()));
                 });
+                return;
             }
+
+            sent.addListener(future -> {
+                try {
+                    if (future.isSuccess()) {
+                        stateListener.onSuccess();
+                        return;
+                    }
+
+                    Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
+                    this.disconnect(("""
+                            Internal Error
+
+                            %s
+                            %s
+                            
+                            Check logs for more information""").formatted(future.cause().getClass().getName(), future.cause().getMessage()));
+
+                    Packet<?> failPacket = stateListener.onFailure();
+                    if (failPacket != null) {
+                        ChannelFuture finalAttempt = this.channel.writeAndFlush(failPacket);
+                        finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                    }
+                } catch (Exception e) {
+                    Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName());
+                }
+            });
         } catch (Exception e) {
             Connection.LOGGER.error("Failed to sent packet: " + packet.getClass().getName());
         }
@@ -238,10 +269,12 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet<?> msg) {
+        Connection.packetsReceivedTotal++;
         if (this.channel != null && this.channel.isOpen()) {
             PacketHandler handler = this.handler;
             if (handler == null) {
-                throw new IllegalStateException("Packet handler isn't set yet!");
+                Connection.LOGGER.error("Packet handler isn't set yet!");
+                return;
             }
             try {
                 Connection.packetsReceived++;

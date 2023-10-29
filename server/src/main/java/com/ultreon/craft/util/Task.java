@@ -41,4 +41,8 @@ public class Task <T> implements Runnable {
             this.future.complete(obj);
         }
     }
+
+    public @Nullable T get() {
+        return this.future.getNow(null);
+    }
 }

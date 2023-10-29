@@ -74,22 +74,22 @@ public final class WorldStorage {
     }
 
     public boolean regionExists(int x, int z) {
-        return this.exists("regions/" + x + "." + z + ".region");
+        return this.exists("regions/" + x + "." + z + ".ucregion");
     }
 
     public File regionFile(int x, int z) {
-        return new File(this.directory, "regions/" + x + "." + z + ".region");
+        return new File(this.directory, "regions/" + x + "." + z + ".ucregion");
     }
 
     @Deprecated
     public MapType readRegion(int x, int z) throws IOException {
-        return this.read("regions/r" + x + "." + z + ".region");
+        return this.read("regions/r" + x + "." + z + ".ucregion");
     }
 
     @Deprecated
     public void writeRegion(int x, int z, MapType data) throws IOException {
         Preconditions.checkNotNull(data, "Region data is null");
-        this.write(data, "regions/r" + x + "." + z + ".region");
+        this.write(data, "regions/r" + x + "." + z + ".ucregion");
     }
 
     @CanIgnoreReturnValue

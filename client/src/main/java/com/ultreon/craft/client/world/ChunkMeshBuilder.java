@@ -63,7 +63,7 @@ public class ChunkMeshBuilder {
                 for (int x = 0; x < CHUNK_SIZE; x++, i++) {
                     Block block = chunk.get(x, y, z);
 
-                    if (block == Blocks.AIR) continue;
+                    if (!block.doesRender()) continue;
 
                     BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
                     if (block.isTransparent()) continue;
@@ -72,32 +72,32 @@ public class ChunkMeshBuilder {
 
                     {
                         Block b = this.block(chunk, x, y + 1, z);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createTop(offset, x, y, z, model.top(), vertices);
                     }
                     {
                         Block b = this.block(chunk, x, y - 1, z);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createBottom(offset, x, y, z, model.bottom(), vertices);
                     }
                     {
                         Block b = this.block(chunk, x - 1, y, z);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createLeft(offset, x, y, z, model.left(), vertices);
                     }
                     {
                         Block b = this.block(chunk, x + 1, y, z);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createRight(offset, x, y, z, model.right(), vertices);
                     }
                     {
                         Block b = this.block(chunk, x, y, z - 1);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createFront(offset, x, y, z, model.front(), vertices);
                     }
                     {
                         Block b = this.block(chunk, x, y, z + 1);
-                        if ((b == null || b == Blocks.AIR) || b.isTransparent())
+                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createBack(offset, x, y, z, model.back(), vertices);
                     }
                 }
@@ -143,7 +143,7 @@ public class ChunkMeshBuilder {
                 for (int x = 0; x < CHUNK_SIZE; x++, i++) {
                     Block block = section.get(x, y, z);
 
-                    if (block == Blocks.AIR) continue;
+                    if (!block.doesRender()) continue;
                     if (!block.isTransparent()) continue;
 
                     BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
@@ -152,32 +152,32 @@ public class ChunkMeshBuilder {
 
                     {
                         Block b = this.block(section, x, y + 1, z);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createTop(offset, x, y, z, model.top(), vertices);
                     }
                     {
                         Block b = this.block(section, x, y - 1, z);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createBottom(offset, x, y, z, model.bottom(), vertices);
                     }
                     {
                         Block b = this.block(section, x - 1, y, z);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createLeft(offset, x, y, z, model.left(), vertices);
                     }
                     {
                         Block b = this.block(section, x + 1, y, z);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createRight(offset, x, y, z, model.right(), vertices);
                     }
                     {
                         Block b = this.block(section, x, y, z - 1);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createFront(offset, x, y, z, model.front(), vertices);
                     }
                     {
                         Block b = this.block(section, x, y, z + 1);
-                        if (b == Blocks.AIR && !b.isTransparent())
+                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
                             ChunkMeshBuilder.createBack(offset, x, y, z, model.back(), vertices);
                     }
                 }
