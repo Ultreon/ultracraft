@@ -4,6 +4,7 @@ import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
@@ -38,7 +39,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-
+        this.connection.close();
     }
 
     public boolean shouldHandlePacket(Packet<?> packet) {
@@ -80,15 +81,31 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         } while (this.server.getPlayerByUuid(uuid) != null);
 
         UUID finalUuid = uuid;
-        ServerPlayer serverPlayer = new ServerPlayer(EntityTypes.PLAYER, this.server.getWorld(), finalUuid, name);
-        this.server.placePlayer(serverPlayer);
 
-        this.connection.send(new S2CLoginAcceptedPacket(finalUuid), true);
-        this.connection.moveToInGame();
-        this.connection.setHandler(new InGameServerPacketHandler(this.server, serverPlayer, this.connection));
+        if (this.server.getPlayerByUuid(finalUuid) != null) {
+            this.connection.disconnect("Player " + name + " is already in the server.");
+            return;
+        }
 
-        BlockPos spawnPoint = this.server.submit(() -> this.server.getWorld().getSpawnPoint()).join();
+        if (this.server.getPlayerCount() >= this.server.getMaxPlayers()) {
+            this.connection.disconnect("The server is full.");
+            return;
+        }
 
-        serverPlayer.spawn(spawnPoint.vec().d().add(0.5, 0, 0.5), this.connection);
+        ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.server.getWorld(), finalUuid, name);
+        this.server.placePlayer(player);
+
+        Connection.LOGGER.info(name + " joined the server.");
+
+        this.connection.setPlayer(player);
+
+        this.connection.send(new S2CLoginAcceptedPacket(finalUuid), PacketResult.onEither(() -> {
+            this.connection.moveToInGame();
+            this.connection.setHandler(new InGameServerPacketHandler(this.server, player, this.connection));
+
+            BlockPos spawnPoint = UltracraftServer.invokeAndWait(() -> this.server.getWorld().getSpawnPoint());
+
+            player.spawn(spawnPoint.vec().d().add(0.5, 0, 0.5), this.connection);
+        }), true);
     }
 }

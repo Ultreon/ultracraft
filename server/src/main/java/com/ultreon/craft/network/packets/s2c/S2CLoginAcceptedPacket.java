@@ -24,7 +24,7 @@ public class S2CLoginAcceptedPacket extends Packet<LoginClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, LoginClientPacketHandler listener) {
-        listener.onLoginAccepted(this.uuid);
+    public void handle(PacketContext ctx, LoginClientPacketHandler handler) {
+        handler.onLoginAccepted(this.uuid);
     }
 }

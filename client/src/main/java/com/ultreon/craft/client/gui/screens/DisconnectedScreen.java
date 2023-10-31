@@ -1,7 +1,9 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.util.Color;
+import com.ultreon.libs.translations.v1.Language;
 
 public class DisconnectedScreen extends Screen {
     private final String message;
@@ -9,6 +11,15 @@ public class DisconnectedScreen extends Screen {
     public DisconnectedScreen(String message) {
         super("Disconnected");
         this.message = message;
+    }
+
+    @Override
+    public void init() {
+        this.clearWidgets();
+
+        this.add(new Button(this.width / 2 - 75, this.height / 2 - 10, 150, Language.translate("craft.ui.backToTitle"), caller -> {
+            this.client.showScreen(new TitleScreen());
+        }));
     }
 
     @Override

@@ -21,7 +21,7 @@ import org.quiltmc.loader.impl.game.LibClassifier.LibraryType;
 
 enum GameLibrary implements LibraryType {
 	ULTREONCRAFT_CLIENT("com/ultreon/craft/client/UltracraftClient.class"),
-	ULTREONCRAFT_SERVER("com/ultreon/craft/server/Main.class"),
+	ULTREONCRAFT_SERVER("com/ultreon/craft/server/dedicated/Main.class"),
 	LIBGDX("com/badlogic/gdx/Gdx.class"),
 	LOG4J_API("org/apache/logging/log4j/LogManager.class"),
 	LOG4J_CORE("META-INF/services/org.apache.logging.log4j.spi.Provider", "META-INF/log4j-provider.properties"),

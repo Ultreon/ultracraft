@@ -29,4 +29,12 @@ public record BlockPos(int x, int y, int z) {
     public String toString() {
         return "%d,%d,%d".formatted(this.x, this.y, this.z);
     }
+
+    public BlockPos below() {
+        return this.offset(0, -1, 0);
+    }
+
+    public BlockPos above() {
+        return this.offset(0, -1, 0);
+    }
 }

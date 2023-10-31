@@ -1,7 +1,8 @@
-package com.ultreon.craft.network.packets;
+package com.ultreon.craft.network.packets.c2s;
 
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
@@ -27,8 +28,8 @@ public class C2SChunkStatusPacket extends Packet<InGameServerPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameServerPacketHandler listener) {
+    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
         assert ctx.getPlayer() != null;
-        listener.onChunkStatus(ctx.getPlayer(), this.pos, this.status);
+        handler.onChunkStatus(ctx.getPlayer(), this.pos, this.status);
     }
 }

@@ -13,6 +13,7 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
     protected GuiComponent pressingWidget;
     int innerXOffset;
     int innerYOffset;
+    private @Nullable GuiComponent focusedWidget = null;
 
     public GuiContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(x, y, width, height);
@@ -20,7 +21,7 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
 
     @Override
     public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        renderChildren(renderer, mouseX, mouseY, deltaTime);
+        this.renderChildren(renderer, mouseX, mouseY, deltaTime);
     }
 
     public void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
@@ -33,9 +34,8 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
 
     @Nullable
     public GuiComponent getExactWidgetAt(int x, int y) {
-        GuiComponent widgetAt = getWidgetAt(x, y);
-        if (widgetAt instanceof GuiContainer) {
-            GuiContainer container = (GuiContainer) widgetAt;
+        GuiComponent widgetAt = this.getWidgetAt(x, y);
+        if (widgetAt instanceof GuiContainer container) {
             return container.getExactWidgetAt(x, y);
         }
         return widgetAt;
@@ -71,22 +71,33 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
 
     @Override
     public boolean mouseClick(int x, int y, int button, int count) {
-        GuiComponent widgetAt = getWidgetAt(x, y);
-        return widgetAt != null && widgetAt.mouseClick(x - widgetAt.getX(), y - widgetAt.getY(), button, count);
+        GuiComponent widgetAt = this.getWidgetAt(x, y);
+        boolean b = widgetAt != null;
+
+        if (this.focusedWidget != null)
+            this.focusedWidget.focused = false;
+
+        if (b) {
+            widgetAt.focused = true;
+            this.focusedWidget = widgetAt;
+            return widgetAt.mouseClick(x - widgetAt.getX(), y - widgetAt.getY(), button, count);
+        }
+
+        return false;
     }
 
     @Override
     public boolean mousePress(int x, int y, int button) {
-        GuiComponent widgetAt = getWidgetAt(x, y);
+        GuiComponent widgetAt = this.getWidgetAt(x, y);
         x -= this.x + this.innerXOffset;
         y -= this.y + this.innerYOffset;
-        pressingWidget = widgetAt;
+        this.pressingWidget = widgetAt;
         return widgetAt != null && widgetAt.mousePress(x - widgetAt.getX(), y - widgetAt.getY(), button);
     }
 
     @Override
     public boolean mouseRelease(int x, int y, int button) {
-        GuiComponent widgetAt = pressingWidget;
+        GuiComponent widgetAt = this.pressingWidget;
         x -= this.x + this.innerXOffset;
         y -= this.y + this.innerYOffset;
         return widgetAt != null && widgetAt.mouseRelease(x - widgetAt.getX(), y - widgetAt.getY(), button);
@@ -138,7 +149,7 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
 
     @Override
     public void mouseDrag(int x, int y, int nx, int ny, int button) {
-        GuiComponent widgetAt = getWidgetAt(x, y);
+        GuiComponent widgetAt = this.getWidgetAt(x, y);
         x -= this.x + this.innerXOffset;
         y -= this.y + this.innerYOffset;
         nx -= this.x + this.innerXOffset;
@@ -163,6 +174,27 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
         return false;
     }
 
+    @Override
+    public boolean keyPress(int keyCode) {
+        if (this.focusedWidget != null && this.focusedWidget.keyPress(keyCode)) return true;
+
+        return super.keyPress(keyCode);
+    }
+
+    @Override
+    public boolean keyRelease(int keyCode) {
+        if (this.focusedWidget != null && this.focusedWidget.keyRelease(keyCode)) return true;
+
+        return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean charType(char character) {
+        if (this.focusedWidget != null && this.focusedWidget.charType(character)) return true;
+
+        return super.charType(character);
+    }
+
     protected final void clearWidgets() {
         for (GuiComponent widget : this.children) {
             widget.destroy();
@@ -171,7 +203,7 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
     }
 
     public GuiComponent getHoveredWidget() {
-        return hoveredWidget;
+        return this.hoveredWidget;
     }
 
     @Override

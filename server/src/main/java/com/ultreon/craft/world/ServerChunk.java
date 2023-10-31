@@ -23,11 +23,6 @@ public final class ServerChunk extends Chunk {
     }
 
     @Override
-    public byte[] serializeChunk() throws IOException {
-        return super.serializeChunk();
-    }
-
-    @Override
     public void setFast(int x, int y, int z, Block block) {
         if (!UltracraftServer.isOnServerThread()) {
             throw new InvalidThreadException("Should be on server thread.");

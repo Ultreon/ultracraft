@@ -24,6 +24,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     protected int height;
     public boolean enabled = true;
     public boolean visible = true;
+    public boolean focused = false;
     private boolean valid;
     protected Color backgroundColor;
     protected final UltracraftClient client = UltracraftClient.get();

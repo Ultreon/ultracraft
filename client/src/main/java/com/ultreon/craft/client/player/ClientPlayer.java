@@ -2,16 +2,14 @@ package com.ultreon.craft.client.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
-import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.gui.screens.DeathScreen;
+import com.ultreon.craft.client.input.GameInput;
+import com.ultreon.craft.client.input.util.ControllerButton;
+import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
-import com.ultreon.craft.client.input.GameInput;
-import com.ultreon.craft.client.input.util.ControllerButton;
-import com.ultreon.craft.client.gui.screens.DeathScreen;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -37,11 +35,22 @@ public class ClientPlayer extends Player {
         super.tick();
 
         if (this.x != this.ox || this.y != this.oy || this.z != this.oz) {
+            if (this.world.getChunk(this.getChunkPos()) == null) {
+                this.x = this.ox;
+                this.z = this.oz;
+            }
             this.client.connection.send(new C2SPlayerMovePacket(this.x - this.ox, this.y - this.oy, this.z - this.oz));
             this.ox = this.x;
             this.oy = this.y;
             this.oz = this.z;
         }
+    }
+
+    @Override
+    protected void move() {
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+
+        super.move();
     }
 
     @Override
@@ -67,12 +76,7 @@ public class ClientPlayer extends Player {
     public void onDeath() {
         super.onDeath();
 
-        Screen screen = UltracraftClient.get().screen;
-        if (screen instanceof WorldLoadScreen worldLoadScreen) {
-//            worldLoadScreen.setCloseScreen(new DeathScreen());
-        } else {
-            this.client.showScreen(new DeathScreen());
-        }
+        this.client.showScreen(new DeathScreen());
     }
 
     @Override

@@ -9,6 +9,7 @@
   "craft.item.wooden_pickaxe.name": "Wooden Pickaxe",
   "craft.item.wooden_shovel.name": "Wooden Shovel",
   "craft.item.air.name": "Air",
+  "craft.ui.backToTitle": "Go back to the title",
   "craft.screen.world_load.loading_world": "Loading World",
   "craft.screen.language.back": "Back",
   "craft.screen.mod_list": "Mod List",
@@ -16,8 +17,11 @@
   "craft.screen.death.title": "You Died",
   "craft.screen.pause.back_to_game": "Back to the game",
   "craft.screen.pause.exit_world": "Exit World",
-  "craft.screen.title.start_world": "Start New World",
+  "craft.screen.title.singleplayer": "Singleplayer",
   "craft.screen.title.reset_world": "Reset World",
   "craft.screen.title.options": "Options...",
-  "craft.screen.title.quit": "Quit"
+  "craft.screen.title.quit": "Quit",
+  "craft.screen.multiplayer": "Multiplayer",
+  "craft.screen.multiplayer.server_ip": "Server IP",
+  "craft.screen.multiplayer.join": "Join"
 }

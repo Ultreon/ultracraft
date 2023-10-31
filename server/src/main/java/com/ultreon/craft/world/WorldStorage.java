@@ -4,73 +4,72 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.data.DataIo;
 import com.ultreon.data.types.IType;
-import com.ultreon.data.types.MapType;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 
-@SuppressWarnings("ClassCanBeRecord")
 public final class WorldStorage {
-    private final File directory;
+    private final Path directory;
 
-    public WorldStorage(File directory) {
-        this.directory = directory;
+    public WorldStorage(Path path) {
+        this.directory = path;
+    }
+
+    public WorldStorage(String path) {
+        this(Paths.get(path));
     }
 
     @SafeVarargs
-    public final <T extends IType<?>> T read(String path, T... type) throws IOException {
-        if (path.contains("..")) {
-            throw new IllegalArgumentException("Invalid path: " + path);
-        }
-        return DataIo.readCompressed(new File(this.directory, path), type);
+    public final <T extends IType<?>> T read(String path, T... typeGetter) throws IOException {
+        Preconditions.checkNotNull(path, "Path is null");
+        Preconditions.checkNotNull(typeGetter, "TypeGetter is null");
+        return DataIo.readCompressed(this.validatePath(path).toFile(), typeGetter);
     }
 
     public void write(IType<?> data, String path) throws IOException {
         Preconditions.checkNotNull(data, "Data is null");
-        if (path.contains("..")) {
-            throw new IllegalArgumentException("Invalid path: " + path);
-        }
-        DataIo.writeCompressed(data, new File(this.directory, path));
+        DataIo.writeCompressed(data, this.validatePath(path).toFile());
     }
 
     public boolean exists(String path) {
-        if (path.contains("..")) {
-            throw new IllegalArgumentException("Invalid path: " + path);
-        }
-        return new File(this.directory, path).exists();
+        Path worldPath = this.validatePath(path);
+        return Files.exists(worldPath);
     }
 
-    public void createDir(String path) {
-        if (path.contains("..")) {
-            throw new IllegalArgumentException("Invalid path: " + path);
-        }
-        File file = new File(this.directory, path);
-        if (!file.exists()) {
-            file.mkdirs();
+    public void createDir(String path) throws IOException {
+        // Validate path
+        var worldPath = this.validatePath(path);
+        
+        // Create the directory if it doesn't exist
+        if (Files.notExists(worldPath.getParent(), LinkOption.NOFOLLOW_LINKS)) {
+            Files.createDirectories(worldPath.getParent());
         }
     }
 
-    public File getDirectory() {
+    private Path validatePath(String path) {
+        // Check if the path is in the world directory based on the absolute path.
+        if (Paths.get(path).isAbsolute())
+            throw new IllegalArgumentException("Path is absolute: " + path);
+
+        Path worldPath = this.directory.resolve(path).toAbsolutePath().normalize();
+
+        // Check if there are any links in the world directory by iterating through the world path.
+        for (Path value : worldPath) {
+            if (Files.isSymbolicLink(value)) {
+                throw new IllegalArgumentException("Path contains symbolic links: " + path);
+            }
+        }
+        
+        return worldPath;
+    }
+
+    public Path getDirectory() {
         return this.directory;
-    }
-
-    @Deprecated
-    public boolean chunkExists(int x, int z) {
-        return this.exists("chunks/c" + x + "." + z + ".ubo");
-    }
-
-    @Deprecated
-    public MapType readChunk(int x, int z) throws IOException {
-        return this.read("chunks/c" + x + "." + z + ".ubo");
-    }
-
-    @Deprecated
-    public void writeChunk(int x, int z, MapType data) throws IOException {
-        Preconditions.checkNotNull(data, "Chunk data is null");
-        this.write(data, "chunks/c" + x + "." + z + ".ubo");
     }
 
     public boolean regionExists(int x, int z) {
@@ -78,32 +77,27 @@ public final class WorldStorage {
     }
 
     public File regionFile(int x, int z) {
-        return new File(this.directory, "regions/" + x + "." + z + ".ucregion");
-    }
-
-    @Deprecated
-    public MapType readRegion(int x, int z) throws IOException {
-        return this.read("regions/r" + x + "." + z + ".ucregion");
-    }
-
-    @Deprecated
-    public void writeRegion(int x, int z, MapType data) throws IOException {
-        Preconditions.checkNotNull(data, "Region data is null");
-        this.write(data, "regions/r" + x + "." + z + ".ucregion");
+        return this.directory.resolve("regions/" + x + "." + z + ".ucregion").toFile();
     }
 
     @CanIgnoreReturnValue
-    @SuppressWarnings({"ResultOfMethodCallIgnored", "resource"})
+    @SuppressWarnings({"ResultOfMethodCallIgnored"})
     public boolean delete() throws IOException {
-        if (!this.directory.exists()) return false;
-        Files.walk(this.directory.toPath())
-                .sorted(Comparator.reverseOrder())
+        if (Files.notExists(this.directory)) return false;
+        try (var stream = Files.walk(this.directory)) {
+            stream.sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(File::delete);
-        return true;
+            return true;
+        }
     }
 
     public File regionFile(RegionPos pos) {
         return this.regionFile(pos.x(), pos.z());
+    }
+
+    public void createWorld() throws IOException {
+        this.createDir("regions");
+        this.createDir("data");
     }
 }

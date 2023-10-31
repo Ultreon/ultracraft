@@ -13,16 +13,16 @@ public class C2SLoginPacket extends Packet<LoginServerPacketHandler> {
     }
 
     public C2SLoginPacket(PacketBuffer buffer) {
-        this.name = buffer.readString(20);
+        this.name = buffer.readUTF(20);
     }
 
     @Override
     public void toBytes(PacketBuffer buffer) {
-        buffer.writeString(this.name, 20);
+        buffer.writeUTF(this.name, 20);
     }
 
     @Override
-    public void handle(PacketContext ctx, LoginServerPacketHandler listener) {
-        listener.onPlayerLogin(this.name);
+    public void handle(PacketContext ctx, LoginServerPacketHandler handler) {
+        handler.onPlayerLogin(this.name);
     }
 }

@@ -1,6 +1,8 @@
 package com.ultreon.craft.client.resources;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.resources.v0.Resource;
@@ -25,21 +27,21 @@ public class ResourceFileHandle extends FileHandle {
     }
 
     public Identifier getId() {
-        return id;
+        return this.id;
     }
 
     public Resource getResource() {
-        return resource;
+        return this.resource;
     }
 
     @Override
     public InputStream read() {
-        if (resource == null) return null;
-        return resource.loadOrOpenStream();
+        if (this.resource == null) throw new GdxRuntimeException("Resource %s not found".formatted(this.id));
+        return this.resource.loadOrOpenStream();
     }
 
     @Override
     public boolean exists() {
-        return resource != null;
+        return this.resource != null;
     }
 }

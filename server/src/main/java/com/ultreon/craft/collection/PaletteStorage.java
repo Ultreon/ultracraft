@@ -1,5 +1,6 @@
 package com.ultreon.craft.collection;
 
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.ubo.DataKeys;
 import com.ultreon.craft.ubo.DataWriter;
@@ -10,12 +11,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisposable {
     private short[] palette;
-    private final List<D> data = new ArrayList<>();
+    private List<D> data = new ArrayList<>();
     private int paletteCounter = 0;
 
     public PaletteStorage(int size) {
@@ -30,6 +32,11 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
         }
 
         this.palette = data.getShortArray("Palette");
+    }
+
+    public PaletteStorage(short[] palette, List<D> data) {
+        this.palette = palette;
+        this.data = data;
     }
 
     public MapType save(MapType outputData) {
@@ -51,6 +58,34 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
         }
 
         this.palette = inputData.getShortArray(DataKeys.PALETTE, new short[this.palette.length]);
+    }
+
+    public void write(PacketBuffer buffer) {
+        buffer.writeInt(this.data.size());
+        for (D entry : this.data) {
+            buffer.writeUbo(entry.save());
+        }
+
+        buffer.writeInt(this.palette.length);
+        for (short v : this.palette) {
+            buffer.writeShort(v);
+        }
+    }
+
+    public void read(PacketBuffer buffer, Function<MapType, D> decoder) {
+        this.data.clear();
+
+        int dataSize = buffer.readInt();
+        for (int i = 0; i < dataSize; i++) {
+            var ubo = buffer.<MapType>readUbo();
+            decoder.apply(ubo);
+        }
+
+        short[] palette = new short[buffer.readUnsignedShort()];
+        for (int i = 0; i < palette.length; i++) {
+            palette[i] = buffer.readShort();
+        }
+        this.palette = palette;
     }
 
     public void set(int idx, D value) {
@@ -126,5 +161,13 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
         int paletteIdx = this.toDataIdx(idx);
         if (paletteIdx < 0) return null;
         return this.direct(paletteIdx);
+    }
+
+    public short[] getPalette() {
+        return this.palette;
+    }
+
+    public List<D> getData() {
+        return Collections.unmodifiableList(this.data);
     }
 }

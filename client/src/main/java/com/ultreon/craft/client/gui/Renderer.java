@@ -1048,6 +1048,28 @@ public class Renderer {
         }
     }
 
+    public void draw9PatchTexture(Identifier id, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
+        Texture texture = this.client.getTextureManager().getTexture(id);
+
+        this.blit(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        this.blit(texture, x + width - uWidth, y, uWidth, vHeight, u + uWidth * 2, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
+        for (int dx = x + uWidth; dx < width - uWidth; dx += uWidth) {
+            int maxX = Math.min(dx + uWidth, width - uWidth);
+            int uW = maxX - dx;
+            this.blit(texture, dx, y + height - vHeight, uW, vHeight, u + uWidth, v, uW, vHeight, texWidth, texHeight);
+            this.blit(texture, dx, y, uW, vHeight, u + uWidth, v + vHeight * 2, uW, vHeight, texWidth, texHeight);
+        }
+
+        for (int dy = y + vHeight; dy < height - vHeight; dy += vHeight) {
+            int maxX = Math.min(dy + vHeight, height - vHeight);
+            int vH = maxX - dy;
+            this.blit(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
+            this.blit(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
+        }
+    }
+
     public void setShader(ShaderProgram program) {
         this.batch.setShader(program);
     }
@@ -1071,5 +1093,9 @@ public class Renderer {
     public void disableInvert() {
 //        this.flush();
         this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    public void drawLine(float x1, int y1, float x2, int y2, Color color) {
+        this.shapes.line(x1, y1, x2, y2, color.toGdx(), this.strokeWidth);
     }
 }

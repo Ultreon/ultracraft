@@ -22,15 +22,20 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
     @Override
     public void onLoginAccepted(UUID uuid) {
-        ClientWorld clientWorld = new ClientWorld(this.client);
-        this.client.world = clientWorld;
-        this.client.player = new ClientPlayer(EntityTypes.PLAYER, clientWorld, uuid);
         this.client.connection.moveToInGame();
         this.client.connection.setHandler(new InGameClientPacketHandlerImpl(this.connection));
 
+        ClientWorld clientWorld = new ClientWorld(this.client);
+        this.client.world = clientWorld;
+        this.client.player = new ClientPlayer(EntityTypes.PLAYER, clientWorld, uuid);
+
         this.client.submit(() -> {
-            this.client.worldRenderer = new WorldRenderer(clientWorld);
-            this.client.renderWorld = true;
+            try {
+                this.client.worldRenderer = new WorldRenderer(clientWorld);
+                this.client.renderWorld = true;
+            } catch (Exception e) {
+                UltracraftClient.crash(e);
+            }
 
             this.client.setActivity(Activity.SINGLEPLAYER);
         });
@@ -38,7 +43,7 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-
+        this.connection.close();
     }
 
     @Override

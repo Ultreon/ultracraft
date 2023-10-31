@@ -9,7 +9,6 @@ import com.ultreon.craft.network.server.LoginServerPacketHandler;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -91,11 +90,11 @@ public class ServerConnections {
             if (Epoll.isAvailable()) {
                 clazz = EpollServerSocketChannel.class;
                 group = ServerConnections.SERVER_EPOLL_EVENT_GROUP.get();
-                ServerConnections.LOGGER.info("Using epoll channel type");
+                ServerConnections.LOGGER.info("Using Epoll server");
             } else {
                 clazz = NioServerSocketChannel.class;
                 group = ServerConnections.SERVER_EVENT_GROUP.get();
-                ServerConnections.LOGGER.info("Using default channel type");
+                ServerConnections.LOGGER.info("Using Nio server");
             }
 
             this.channels.add(new ServerBootstrap()
@@ -107,11 +106,12 @@ public class ServerConnections {
                     .syncUninterruptibly());
         }
     }
+
     public void tick() {
-        synchronized(this.connections) {
+        synchronized (this.connections) {
             Iterator<Connection> iterator = this.connections.iterator();
 
-            while(true) {
+            while (true) {
                 Connection connection;
                 do {
                     if (!iterator.hasNext()) {
@@ -119,21 +119,20 @@ public class ServerConnections {
                     }
 
                     connection = iterator.next();
-                } while(connection.isConnecting());
+                } while (connection.isConnecting());
 
                 if (connection.isConnected()) {
                     try {
                         connection.tick();
-                    } catch (Exception var7) {
+                    } catch (Exception e) {
                         if (connection.isMemoryConnection()) {
-                            this.server.crash(new RuntimeException("Ticking memory connection"));
+                            this.server.crash(new RuntimeException("Failed to tick packet", e));
                         }
 
-                        ServerConnections.LOGGER.warn("Failed to handle packet:", var7);
+                        ServerConnections.LOGGER.warn("Failed to handle packet:", e);
                         Connection finalConnection = connection;
-                        connection.send(new S2CDisconnectPacket("Internal server error"), PacketResult.onEither(() -> {
-                            finalConnection.disconnect("Internal server error");
-                        }));
+                        String message = "Server failed to tick the connection";
+                        connection.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(() -> finalConnection.disconnect(message)));
                         connection.setReadOnly();
                     }
                 } else {
@@ -143,6 +142,7 @@ public class ServerConnections {
             }
         }
     }
+
     public UltracraftServer getServer() {
         return this.server;
     }
@@ -153,8 +153,8 @@ public class ServerConnections {
         for (ChannelFuture future : this.channels) {
             try {
                 future.channel().close().sync();
-            } catch (InterruptedException var4) {
-                ServerConnections.LOGGER.error("Interrupted whilst closing channel");
+            } catch (InterruptedException ex) {
+                ServerConnections.LOGGER.warn("Failed to close channel", ex);
             }
         }
     }
@@ -179,7 +179,7 @@ public class ServerConnections {
             }
 
             ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
-            Connection connection = new Connection(PacketDestination.SERVER);
+            Connection connection = new Connection(PacketDestination.CLIENT);
             ServerConnections.this.connections.add(connection);
             connection.setup(pipeline);
             connection.setupPacketHandler(pipeline);

@@ -27,7 +27,7 @@ public class S2CPlayerSetPosPacket extends Packet<InGameClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameClientPacketHandler listener) {
-        listener.onPlayerSetPos(this.pos);
+    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
+        handler.onPlayerSetPos(this.pos);
     }
 }

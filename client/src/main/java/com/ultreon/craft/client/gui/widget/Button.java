@@ -7,6 +7,7 @@ import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.GuiComponent;
 import org.checkerframework.common.value.qual.IntRange;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public class Button extends GuiComponent {
@@ -17,18 +18,19 @@ public class Button extends GuiComponent {
     private Color textColor = Color.WHITE;
 
     /**
-     * @param x       position create the widget
-     * @param y       position create the widget
-     * @param width   size create the widget
+     * @param x       the X position of the button
+     * @param y       the Y position of the button
+     * @param width   the width of the button
      */
     public Button(int x, int y, @IntRange(from = 21) int width,  String message) {
         this(x, y, width, 21, message);
     }
 
     /**
-     * @param x       position create the widget
-     * @param y       position create the widget
-     * @param width   size create the widget
+     * @param x       the X position of the button
+     * @param y       the Y position of the button
+     * @param width   the width of the button
+     * @param message the button message.
      */
     public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message) {
         super(x, y, width, height);
@@ -36,18 +38,21 @@ public class Button extends GuiComponent {
     }
 
     /**
-     * @param x        position create the widget
-     * @param y        position create the widget
-     * @param width    size create the widget
+     * @param x        the X position of the button
+     * @param y        the Y position of the button
+     * @param width    the width of the button
+     * @param callback the callback of the button, gets called when the button activates.
      */
     public Button(int x, int y, @IntRange(from = 21) int width,  String message, Callback<Button> callback) {
         this(x, y, width, 21, message, callback);
     }
 
     /**
-     * @param x       position create the widget
-     * @param y       position create the widget
-     * @param width   size create the widget
+     * @param x       the X position of the button
+     * @param y       the Y position of the button
+     * @param width   the width of the button
+     * @param message the button message.
+     * @param callback the callback of the button, gets called when the button activates.
      */
     public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message, Callback<Button> callback) {
         super(x, y, width, height);
@@ -72,7 +77,7 @@ public class Button extends GuiComponent {
         int x = this.x;
         int y = this.y;
         int u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
-        int v = this.isPressed() ? 21 : 0;
+        int v = this.enabled ? this.isPressed() ? 21 : 0 : 42;
 
         renderer.setTextureColor(this.color == null ? Color.WHITE : this.color);
         renderer.blit(texture, x, y, 7, 7, u, v, 7, 7);
@@ -86,7 +91,7 @@ public class Button extends GuiComponent {
         renderer.blit(texture, x+ this.width -7, y + this.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
         renderer.setTextureColor(Color.rgb(0xffffff));
 
-        renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.textColor);
+        renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
     }
 
     @Override
@@ -94,7 +99,10 @@ public class Button extends GuiComponent {
         return !this.click();
     }
 
+    @ApiStatus.OverrideOnly
     public boolean click() {
+        if (!this.enabled) return false;
+
         Callback<Button> callback = this.callback;
         if (callback == null) {
             return true;
@@ -105,6 +113,8 @@ public class Button extends GuiComponent {
 
     @Override
     public boolean mousePress(int x, int y, int button) {
+        if (!this.enabled) return false;
+
         this.pressed = true;
         return super.mousePress(x, y, button);
     }
@@ -116,7 +126,7 @@ public class Button extends GuiComponent {
     }
 
     public boolean isPressed() {
-        return this.pressed;
+        return this.pressed && this.enabled;
     }
 
     public void setTextColor(Color textColor) {

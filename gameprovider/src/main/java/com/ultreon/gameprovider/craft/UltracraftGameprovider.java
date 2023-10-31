@@ -306,7 +306,8 @@ public class UltracraftGameprovider implements GameProvider {
             System.setProperty("io.netty.tryReflectionSetAccessible", "false");
 
             var classifier = new LibClassifier<>(GameLibrary.class, this.envType, this);
-            var gameLib = GameLibrary.ULTREONCRAFT_CLIENT;
+            var clientLib = GameLibrary.ULTREONCRAFT_CLIENT;
+            var serverLib = GameLibrary.ULTREONCRAFT_SERVER;
             var gameJar = GameProviderHelper.getCommonGameJar();
             var commonGameJarDeclared = gameJar != null;
 
@@ -336,7 +337,11 @@ public class UltracraftGameprovider implements GameProvider {
                 this.gameJars.add(this.libGdxJar);
             }
 
-            this.entrypoint = classifier.getClassName(gameLib);
+            this.entrypoint = classifier.getClassName(clientLib);
+            if (this.entrypoint == null) this.entrypoint = classifier.getClassName(serverLib);
+            if (this.entrypoint == null) {
+                throw new IllegalArgumentException("Can't find game entrypoint.");
+            }
             this.log4jAvailable = classifier.has(GameLibrary.LOG4J_API) && classifier.has(GameLibrary.LOG4J_CORE);
             this.slf4jAvailable = classifier.has(GameLibrary.SLF4J_API) && classifier.has(GameLibrary.SLF4J_CORE);
             var hasLogLib = this.log4jAvailable || this.slf4jAvailable;

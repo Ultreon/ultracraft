@@ -346,7 +346,7 @@ public final class ServerWorld extends World {
     @Override
     protected void checkThread() {
         if (!UltracraftServer.isOnServerThread())
-            throw new InvalidThreadException("Should be on tick thread.");
+            throw new InvalidThreadException("Should be on server thread.");
     }
 
     @Override
@@ -509,7 +509,7 @@ public final class ServerWorld extends World {
      */
     @ApiStatus.Internal
     public void save(boolean silent) throws IOException {
-        if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getName());
+        if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getFileName());
 
         var entitiesData = new ListType<MapType>();
         for (var entity : this.entities.values()) {
@@ -530,7 +530,7 @@ public final class ServerWorld extends World {
 
         WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
 
-        if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getName());
+        if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getFileName());
     }
 
     /**
@@ -879,9 +879,25 @@ public final class ServerWorld extends World {
                         throw new RuntimeException(e);
                     }
 
-                    chunk.ready = true;
+                    builtChunk.ready = true;
 
                     this.generatingChunks.remove(globalPos);
+
+
+                    UltracraftServer.invoke(() -> {
+                        var players = this.world.getServer().getPlayersInChunk(globalPos);
+                        players.forEach(player -> {
+                            try {
+                                BlockPos globalTpPos = player.blockPosition();
+                                BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
+                                int x = localTpPos.x();
+                                int z = localTpPos.z();
+                                player.teleportTo(globalTpPos.x(), builtChunk.ascend(x, (int) player.getY(), z), globalTpPos.z());
+                            } catch (Exception e) {
+                                World.LOGGER.error("Failed to teleport player outside unloaded chunk:", e);
+                            }
+                        });
+                    });
                 } catch (Throwable t) {
                     this.generatingChunks.remove(globalPos);
                     World.LOGGER.error("Failed to build chunk at %s:".formatted(chunk.getPos()), t);

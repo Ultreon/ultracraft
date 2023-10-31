@@ -3,6 +3,8 @@ package com.ultreon.craft.client.world;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
@@ -16,17 +18,10 @@ public final class ClientChunk extends Chunk {
     public ChunkMesh transparentMesh;
     public boolean dirty;
 
-    public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, byte[] data) throws IOException {
-        super(world, size, height, pos);
+    public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+        super(world, size, height, pos, storage);
         this.clientWorld = world;
         this.active = true;
-        
-        this.deserializeChunk(data);
-    }
-
-    @Override
-    public void deserializeChunk(byte[] bytes) throws IOException {
-        super.deserializeChunk(bytes);
     }
 
     @Override

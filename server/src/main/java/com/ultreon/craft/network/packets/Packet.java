@@ -11,5 +11,5 @@ public abstract class Packet<T extends PacketHandler> {
 
     public abstract void toBytes(PacketBuffer buffer);
 
-    public abstract void handle(PacketContext ctx, T listener);
+    public abstract void handle(PacketContext ctx, T handler);
 }

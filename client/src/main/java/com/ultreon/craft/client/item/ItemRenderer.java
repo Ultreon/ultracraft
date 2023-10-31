@@ -38,7 +38,7 @@ public class ItemRenderer {
     private final Vector3 scale = new Vector3(20, 20, 20);
     protected final Vector3 tmp = new Vector3();
 
-    public ItemRenderer(UltracraftClient client, Environment environment) {
+    public ItemRenderer(UltracraftClient client) {
         this.client = client;
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));

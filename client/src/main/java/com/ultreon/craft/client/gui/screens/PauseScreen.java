@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.widget.Button;
@@ -28,10 +29,10 @@ public class PauseScreen extends Screen {
     public void init() {
         super.init();
 
-        ServerWorld world = this.client.getSingleplayerServer().getWorld();
-        if (world != null) {
+        IntegratedServer server = this.client.getSingleplayerServer();
+        ServerWorld world = server != null ? server.getWorld() : null;
+        if (world != null)
             this.client.addFuture(world.saveAsync(false));
-        }
 
         this.backToGameButton = this.add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
         this.optionsButton = this.add(new Button(this.width / 2 - 100, this.height / 3 - 25, 95, Language.translate("craft.screen.title.options"), caller -> UltracraftClient.get().showScreen(new LanguageScreen())));

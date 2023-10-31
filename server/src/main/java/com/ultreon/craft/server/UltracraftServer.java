@@ -1,20 +1,22 @@
 package com.ultreon.craft.server;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CChunkPartPacket;
+import com.ultreon.craft.network.packets.s2c.S2CPlayerPositionPacket;
+import com.ultreon.craft.network.packets.s2c.S2CChunkDataPacket;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.Hashing;
 import com.ultreon.craft.util.PollingExecutorService;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.loader.api.QuiltLoader;
@@ -24,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 @ApiStatus.NonExtendable
@@ -36,18 +40,20 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private static UltracraftServer instance;
     private final List<ServerDisposable> disposables = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final Queue<Pair<ServerPlayer, Packet<? extends ClientPacketHandler>>> chunkNetworkQueue = new ArrayDeque<>();
+    private final Queue<Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>>> chunkNetworkQueue = new ArrayDeque<>();
     private final Map<UUID, ServerPlayer> players = new HashMap<>();
     private final ServerConnections connection;
     private final WorldStorage storage;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 8;
+    protected int entityRenderDistance = 6;
     private int chunkRefresh;
     private long onlineTicks;
-    private boolean running = true;
+    protected volatile boolean running = true;
     private int currentTps;
     private boolean sendingChunk;
+    protected int maxPlayers = 10;
 
     public UltracraftServer(WorldStorage storage) {
         super();
@@ -89,7 +95,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public static boolean isOnServerThread() {
         UltracraftServer instance = UltracraftServer.instance;
-        if (instance == null) return false;
+        if (instance == null) throw new IllegalStateException("Server closed!");
         return instance.thread.getId() == Thread.currentThread().getId();
     }
 
@@ -162,6 +168,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         ServerLifecycleEvents.SERVER_STOPPING.factory().onServerStopping(this);
 
+        this.connection.stop();
+
         this.running = false;
 
         for (ServerPlayer player : this.players.values()) {
@@ -170,6 +178,12 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.players.clear();
         this.world.dispose();
+
+        try {
+            this.thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         UltracraftServer.instance = null;
 
@@ -181,6 +195,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.pollAll();
 
+        this.connection.tick();
+
         var world = this.world;
         if (world != null) {
             WorldEvents.PRE_TICK.factory().onPreTick(world);
@@ -189,15 +205,16 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
 
         // Tick chunk refresh time.
-        if (this.world != null && this.chunkRefresh-- == 0) {
-            this.chunkRefresh = UltracraftServer.seconds2tick(40);
+        if (this.world != null && this.chunkRefresh-- <= 0) {
+            this.chunkRefresh = UltracraftServer.seconds2tick(2);
 
             // Refresh chunks.
             ChunkRefresher refresher = new ChunkRefresher();
             for (ServerPlayer player : this.players.values()) {
                 player.refreshChunks(refresher);
-                world.doRefresh(refresher);
             }
+            refresher.freeze();
+            world.doRefresh(refresher);
         }
 
         this.pollChunkPacket();
@@ -218,13 +235,12 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private void pollChunkPacket() {
         if (this.sendingChunk) return;
 
-        Pair<ServerPlayer, Packet<? extends ClientPacketHandler>> poll = this.chunkNetworkQueue.poll();
+        Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>> poll = this.chunkNetworkQueue.poll();
         if (poll != null) {
             this.sendingChunk = true;
             ServerPlayer first = poll.getFirst();
-            Packet<? extends ClientPacketHandler> second = poll.getSecond();
-
-            first.connection.send(second, PacketResult.onEither(() -> this.sendingChunk = false));
+            Packet<? extends ClientPacketHandler> second = poll.getSecond().get();
+            first.connection.send(second);
         }
     }
 
@@ -265,12 +281,25 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.renderDistance;
     }
 
+    public int getEntityRenderDistance() {
+        return this.entityRenderDistance;
+    }
+
     public String getGameVersion() {
         return QuiltLoader.getNormalizedGameVersion();
     }
 
     public ServerPlayer getPlayerByUuid(UUID uuid) {
         return this.players.get(uuid);
+    }
+
+    public ServerPlayer getPlayerByName(String name) {
+        for (ServerPlayer player : this.players.values()) {
+            if (player.getName().equals(name)) {
+                return player;
+            }
+        }
+        return null;
     }
 
     public void placePlayer(ServerPlayer player) {
@@ -295,20 +324,23 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public void sendChunk(ChunkPos globalPos, Chunk chunk) throws IOException {
         for (ServerPlayer player : this.players.values()) {
-            Vec3d chunkCenter = globalPos.getChunkOrigin().add(World.CHUNK_SIZE / 2f, World.CHUNK_HEIGHT / 2f, World.CHUNK_SIZE / 2f);
-            Vec2d map = new Vec2d(chunkCenter.x, chunkCenter.z);
-            Vec2d position = new Vec2d(player.getX(), player.getZ());
-            double dst = map.dst(position);
+            Vec3d chunkPos3D = globalPos.getChunkOrigin().add(World.CHUNK_SIZE / 2f, World.CHUNK_HEIGHT / 2f, World.CHUNK_SIZE / 2f);
+            Vec2d chunkPos2D = new Vec2d(chunkPos3D.x, chunkPos3D.z);
+            Vec2d playerPos2D = new Vec2d(player.getX(), player.getZ());
+            double dst = chunkPos2D.dst(playerPos2D);
             if (dst < this.getRenderDistance() * World.CHUNK_SIZE) {
                 this._sendChunk(player, globalPos, chunk);
             }
         }
     }
 
-    private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) throws IOException {
-        byte[] bytes = chunk.serializeChunk();
+    private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) {
         player.onChunkPending(pos);
-        this.chunkNetworkQueue.offer(new Pair<>(player, new S2CChunkPartPacket(pos, Hashing.hashMD5(bytes), bytes)));
+        player.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+
+        List<Vec3d> list = this.players.values().stream().map(Entity::getPosition).filter(position -> position.dst(player.getPosition()) < this.entityRenderDistance).toList();
+        player.connection.send(new S2CPlayerPositionPacket(list));
+        player.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     public int getCurrentTps() {
@@ -317,5 +349,17 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public void onDisconnected(ServerPlayer player, String message) {
         UltracraftServer.LOGGER.info("Player '" + player.getName() + "' disconnected with message: " + message);
+    }
+
+    public Stream<ServerPlayer> getPlayersInChunk(ChunkPos pos) {
+        return this.players.values().stream().filter(player -> player.getChunkPos().equals(pos));
+    }
+
+    public int getMaxPlayers() {
+        return this.maxPlayers;
+    }
+
+    public int getPlayerCount() {
+        return this.players.size();
     }
 }

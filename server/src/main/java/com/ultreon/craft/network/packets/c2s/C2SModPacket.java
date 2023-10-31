@@ -32,8 +32,8 @@ public class C2SModPacket extends Packet<InGameServerPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameServerPacketHandler listener) {
-        listener.onModPacket(this.channel, this.packet);
+    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
+        handler.onModPacket(this.channel, this.packet);
     }
 
     public NetworkChannel getChannel() {

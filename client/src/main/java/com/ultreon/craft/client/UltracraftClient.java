@@ -12,10 +12,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.math.GridPoint2;
@@ -32,7 +29,6 @@ import com.ultreon.craft.CrashHandler;
 import com.ultreon.craft.ModInit;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.audio.ClientSound;
@@ -61,6 +57,7 @@ import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
+import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.rpc.RpcHandler;
 import com.ultreon.craft.client.shader.Shaders;
 import com.ultreon.craft.client.sound.ClientSoundRegistry;
@@ -93,6 +90,7 @@ import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
@@ -144,6 +142,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static ArgParser arguments;
     public Connection connection;
     public ServerData serverData;
+    public List<Vec3d> remotePlayers = new CopyOnWriteArrayList<>();
     private Duration bootTime;
     private String allUnicode;
     private GarbageCollector garbageCollector;
@@ -184,7 +183,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final SpriteBatch spriteBatch;
     public final ModelBatch modelBatch;
     public final GameCamera camera;
-    private Environment env;
     public final PlayerInput playerInput = new PlayerInput(this);
     private boolean isDevMode;
     @Nullable
@@ -200,7 +198,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private Vec3i breaking;
     @Nullable
     private Block breakingBlock;
-    public boolean showDebugHud = true;
+    public boolean showDebugHud = false;
 
     // Public Flags
     public boolean renderWorld = false;
@@ -474,15 +472,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         });
         Gdx.input.setInputProcessor(this.input);
 
-        UltracraftClient.LOGGER.info("Setting up world environment");
-        this.env = new Environment();
-        this.env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
-        this.env.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
-        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
-        this.env.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
-        this.env.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
-        this.env.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
-
         UltracraftClient.LOGGER.info("Setting up HUD");
         this.hud = UltracraftClient.invokeAndWait(() -> new Hud(this));
 
@@ -527,7 +516,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.loadingOverlay.setProgress(0.98F);
 
-        this.itemRenderer = UltracraftClient.invokeAndWait(() -> new ItemRenderer(this, this.env));
+        this.itemRenderer = UltracraftClient.invokeAndWait(() -> new ItemRenderer(this));
 
         UltracraftClient.LOGGER.info("Initializing sounds");
         this.soundRegistry.registerSounds();
@@ -554,7 +543,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         //*************//
         UltracraftClient.LOGGER.info("Opening title screen");
 
-        UltracraftClient.worldStorage = new WorldStorage(UltracraftClient.data("world").file());
+        UltracraftClient.worldStorage = new WorldStorage(UltracraftClient.data("world").path());
 
         ImGuiOverlay.setupImGui();
 
@@ -697,6 +686,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void registerModels() {
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side")));
+        BlockModelRegistry.registerDefault(Blocks.ERROR);
         BlockModelRegistry.registerDefault(Blocks.DIRT);
         BlockModelRegistry.registerDefault(Blocks.SAND);
         BlockModelRegistry.registerDefault(Blocks.WATER);
@@ -955,7 +945,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 this.modelBatch.begin(this.camera);
                 this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
                 this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
-                this.modelBatch.render(worldRenderer, this.env);
+                this.modelBatch.render(worldRenderer, worldRenderer.getEnvironment());
                 this.modelBatch.end();
             }
 
@@ -1281,7 +1271,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.connection.disconnect("User self-disconnected");
         }
 
-        this.integratedServer.shutdown();
+        if (this.integratedServer != null) {
+            this.integratedServer.shutdown();
+        }
 
         CompletableFuture.runAsync(() -> {
             try {
@@ -1348,7 +1340,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         var eventResult = ClientLifecycleEvents.WINDOW_CLOSED.factory().onWindowClose();
         if (!eventResult.isCanceled()) {
             if (this.world != null) {
-                this.exitWorldAndThen(() -> Gdx.app.postRunnable(Gdx.app::exit));
+                this.exitWorldAndThen(() -> {
+                    try {
+                        this.connection.close();
+                    } catch (Exception e) {
+                        UltracraftClient.LOGGER.warn("Error occurred while closing connection:", e);
+                    }
+                    Gdx.app.postRunnable(Gdx.app::exit);
+                });
                 return false;
             }
         }
@@ -1469,11 +1468,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void connectToServer(String host, int port) {
-        this.integratedServer.start();
-
         this.connection = new Connection(PacketDestination.SERVER);
         ChannelFuture future = ClientConnections.connectTo(new InetSocketAddress(host, port), this.connection);
-        future.addListener(future1 -> UltracraftClient.this.connection.initiate(host, port, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name())));
+        future.syncUninterruptibly();
+        this.connection.initiate(host, port, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
     }
 
     public int getCurrentTps() {

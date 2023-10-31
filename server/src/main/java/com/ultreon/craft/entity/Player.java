@@ -73,13 +73,6 @@ public abstract class Player extends LivingEntity {
         super.tick();
     }
 
-    @Override
-    public void move(double deltaX, double deltaY, double deltaZ) {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-
-        super.move(deltaX, deltaY, deltaZ);
-    }
-
     protected void onVoidDamage() {
 
     }

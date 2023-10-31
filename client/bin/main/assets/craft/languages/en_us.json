@@ -16,7 +16,7 @@
   "craft.screen.death.title": "You Died",
   "craft.screen.pause.back_to_game": "Back to the game",
   "craft.screen.pause.exit_world": "Exit World",
-  "craft.screen.title.start_world": "Start New World",
+  "craft.screen.title.singleplayer": "Singleplayer",
   "craft.screen.title.reset_world": "Reset World",
   "craft.screen.title.options": "Options...",
   "craft.screen.title.quit": "Quit"

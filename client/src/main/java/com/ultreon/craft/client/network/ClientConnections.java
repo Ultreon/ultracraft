@@ -3,21 +3,19 @@ package com.ultreon.craft.client.network;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.compression.Bzip2Encoder;
-import io.netty.handler.codec.http.websocketx.extensions.compression.PerMessageDeflateClientExtensionHandshaker;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-
-import static com.ultreon.craft.network.Connection.NETWORK_WORKER_GROUP;
+import java.util.function.Supplier;
 
 public class ClientConnections implements Runnable {
 
@@ -41,10 +39,20 @@ public class ClientConnections implements Runnable {
     }
 
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
+        Class<? extends SocketChannel> channelClass;
+        Supplier<? extends EventLoopGroup> group;
+        if (Epoll.isAvailable()) {
+            channelClass = EpollSocketChannel.class;
+            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
+        } else {
+            channelClass = NioSocketChannel.class;
+            group = Connection.NETWORK_WORKER_GROUP;
+        }
+
         return new Bootstrap()
-                .group(Connection.NETWORK_WORKER_GROUP.get())
+                .group(group.get())
                 .handler(new MultiplayerChannelInitializer(connection))
-                .channel(NioSocketChannel.class)
+                .channel(channelClass)
                 .connect(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
     }
 
@@ -87,10 +95,12 @@ public class ClientConnections implements Runnable {
             Connection.setInitAttributes(channel);
 
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+            channel.config().setRecvByteBufAllocator(new AdaptiveRecvByteBufAllocator(64, 1024, 2097152));
 
             ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
             this.connection.setup(pipeline);
             this.connection.setupPacketHandler(pipeline);
+            this.connection.setHandler(new LoginClientPacketHandlerImpl(this.connection));
         }
     }
 

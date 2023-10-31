@@ -2,7 +2,7 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.network.packets.C2SChunkStatusPacket;
+import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
@@ -11,7 +11,6 @@ import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,26 +85,16 @@ public final class ClientWorld extends World implements Disposable {
         return this.chunks;
     }
 
-    public void loadChunk(ChunkPos pos, byte[] data) {
-        var chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
-        if (chunk == null) chunk = this.createChunk(pos, data);
+    public void loadChunk(ChunkPos pos, ClientChunk data) {
+        var _chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
+        if (_chunk == null) _chunk = data;
         else throw new IllegalStateException("Chunk already loaded.");
 
-        UltracraftClient.invoke(chunk::ready);
+        UltracraftClient.invoke(_chunk::ready);
+
+        this.chunks.put(pos, data);
 
         this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
-    }
-
-    @NotNull
-    private ClientChunk createChunk(ChunkPos pos, byte[] data) {
-        ClientChunk chunk;
-        try {
-            chunk = new ClientChunk(this, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.chunks.put(pos, chunk);
-        return chunk;
     }
 
     public void tick() {

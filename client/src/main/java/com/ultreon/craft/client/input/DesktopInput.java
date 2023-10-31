@@ -120,6 +120,9 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean keyTyped(char character) {
+        Screen currentScreen = this.client.screen;
+        if (currentScreen != null) currentScreen.charType(character);
+
         return true;
     }
 

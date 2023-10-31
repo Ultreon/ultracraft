@@ -4,11 +4,11 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.debug.DebugFlags;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
-import com.ultreon.data.DataIo;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
@@ -18,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +49,7 @@ public abstract class Chunk implements ServerDisposable {
     protected List<Palette.@NotNull Index> blockData = new ArrayList<>();
     Block[] blocks = new Block[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     //	protected final Palette<Block> palette = new Palette<>(this::encodeBlock, this::decodeBlock);
-    protected final PaletteStorage<Block> storage;
+    public final PaletteStorage<Block> storage;
 
     protected Chunk(World world, int size, int height, ChunkPos pos) {
         this(world, size, height, pos, new PaletteStorage<>(size * height * size));
@@ -68,80 +66,77 @@ public abstract class Chunk implements ServerDisposable {
         this.storage = storage;
     }
 
-    protected static void encodeBlock(MapType outputData, Block block) {
-        MapType blockData = new MapType();
-        blockData.putString("id", block.getId().toString());
-        outputData.put("Data", blockData);
-    }
+    public static Block decodeBlock(MapType inputData) {
+        @Nullable String stringId = inputData.getString("id");
+        if (stringId == null) {
+            LOGGER.error("Unable to decode block, missing ID.");
+            return Blocks.ERROR;
+        }
 
-    protected static Block decodeBlock(MapType inputData) {
-        @NotNull MapType blockData = inputData.getMap("Data", new MapType());
-        @Nullable String stringId = blockData.getString("id");
         @Nullable Identifier id = Identifier.tryParse(stringId);
 
-        if (id == null) return Blocks.AIR;
+        if (id == null) {
+            LOGGER.error("Unknown block: " + stringId);
+            return Blocks.AIR;
+        }
         return Registries.BLOCK.getValue(id);
     }
 
     // Serialize the chunk to a byte array
-    public byte[] serializeChunk() throws IOException {
+    public void serializeChunk(PacketBuffer buffer) {
         synchronized (this.lock) {
-            var data = new MapType();
+            this.storage.write(buffer);
 
-            this.storage.save(data);
+            try {
+                if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
+                    Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/before/");
+                    if (Files.notExists(readDir)) Files.createDirectories(readDir);
 
-            var bos = new ByteArrayOutputStream();
-            DataIo.writeCompressed(data, bos);
+                    Files.writeString(readDir.resolve("before_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                }
+            } catch (IOException ignored) {
 
-            if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-                Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/before/");
-                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-
-                Files.writeString(readDir.resolve("before_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
             }
-
-            bos.flush();
-            byte[] byteArray = bos.toByteArray();
-            bos.close();
 
             // Debug network packet dump.
-            if (DebugFlags.CHUNK_PACKET_DUMP) {
-                Path readDir = Path.of(".cache/ultracraft/_debug/packet/written/");
-                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-                Files.write(readDir.resolve("written_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), byteArray, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-            }
-            return byteArray;
+//            if (DebugFlags.CHUNK_PACKET_DUMP) {
+//                Path readDir = Path.of(".cache/ultracraft/_debug/packet/written/");
+//                if (Files.notExists(readDir)) Files.createDirectories(readDir);
+//                Files.write(readDir.resolve("written_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), buffer, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+//            }
+//            return byteArray;
         }
     }
 
     // Deserialize the chunk from a byte array
-    public void deserializeChunk(byte[] bytes) throws IOException {
-        // Debug network packet dump.
-        if (DebugFlags.CHUNK_PACKET_DUMP) {
-            var readDir = Path.of(".cache/ultracraft/_debug/packet/read/");
-            if (Files.notExists(readDir)) Files.createDirectories(readDir);
-            Files.write(readDir.resolve("read_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-        }
+    public void deserializeChunk(PacketBuffer buffer) {
+//        // Debug network packet dump.
+//        if (DebugFlags.CHUNK_PACKET_DUMP) {
+//            var readDir = Path.of(".cache/ultracraft/_debug/packet/read/");
+//            if (Files.notExists(readDir)) Files.createDirectories(readDir);
+//            Files.write(readDir.resolve("read_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+//        }
 
-        var bis = new ByteArrayInputStream(bytes);
-        MapType data = DataIo.readCompressed(bis);
+        this.storage.read(buffer, Chunk::decodeBlock);
 
-        this.storage.load(data, Chunk::decodeBlock);
+        try {
+            if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
+                Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/after/");
+                if (Files.notExists(readDir)) Files.createDirectories(readDir);
+                Files.writeString(readDir.resolve("after_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+        } catch (IOException ignored) {
 
-        if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-            Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/after/");
-            if (Files.notExists(readDir)) Files.createDirectories(readDir);
-            Files.writeString(readDir.resolve("after_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         }
     }
 
     public Block get(Vec3i pos) {
-        if (this.disposed) return Blocks.AIR;
+        if (this.disposed) return Blocks.BARRIER;
         return this.get(pos.x, pos.y, pos.z);
     }
 
     public Block get(int x, int y, int z) {
-        if (this.disposed) return Blocks.AIR;
+        if (this.disposed) return Blocks.BARRIER;
         if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
         return this.getFast(x, y, z);
     }
@@ -151,7 +146,7 @@ public abstract class Chunk implements ServerDisposable {
     }
 
     public Block getFast(int x, int y, int z) {
-        if (this.disposed) return Blocks.AIR;
+        if (this.disposed) return Blocks.BARRIER;
         int dataIdx = this.getIndex(x, y, z);
 
         Block block = this.storage.get(dataIdx);
@@ -272,6 +267,26 @@ public abstract class Chunk implements ServerDisposable {
 
     public ChunkPos getPos() {
         return this.pos;
+    }
+
+
+    // TODO: Make faster with heightmaps.
+    public int getHighest(int x, int z) {
+        for (int y = CHUNK_HEIGHT; y > 0; y--) {
+            if (!this.get(x, y, z).isAir()) {
+                return y;
+            }
+        }
+        return 0;
+    }
+
+    public int ascend(int x, int y, int z) {
+        for (; y < CHUNK_HEIGHT; y++) {
+            if (this.getFast(x, y, z).isAir()) {
+                return y;
+            }
+        }
+        return CHUNK_HEIGHT;
     }
 
     public enum Status {

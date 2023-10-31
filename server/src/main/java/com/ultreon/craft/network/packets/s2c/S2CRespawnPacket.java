@@ -23,7 +23,7 @@ public class S2CRespawnPacket extends Packet<InGameClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameClientPacketHandler listener) {
-        listener.onRespawn(this.pos);
+    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
+        handler.onRespawn(this.pos);
     }
 }

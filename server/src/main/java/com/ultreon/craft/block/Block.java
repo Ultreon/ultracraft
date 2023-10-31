@@ -79,12 +79,12 @@ public class Block implements DataWriter<MapType> {
     @Override
     public MapType save() {
         MapType data = new MapType();
-        data.putString("Id", this.getId().toString());
+        data.putString("id", this.getId().toString());
         return data;
     }
 
     public static Block load(MapType data) {
-        Identifier id = Identifier.tryParse(data.getString("Id"));
+        Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
         Block block = Registries.BLOCK.getValue(id);
         return block == null ? Blocks.AIR : block;

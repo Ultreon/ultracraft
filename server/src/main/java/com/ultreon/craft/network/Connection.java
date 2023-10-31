@@ -6,22 +6,26 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.client.ClientPacketHandler;
-import com.ultreon.craft.network.compression.CompressionDecoder;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.c2s.C2SDisconnectPacket;
+import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
 import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.PooledByteBufAllocator;
+import com.ultreon.craft.server.player.ServerPlayer;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.compression.*;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.compression.JZlibDecoder;
+import io.netty.handler.codec.compression.JZlibEncoder;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.quiltmc.loader.api.QuiltLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +54,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String disconnectMsg;
 
     public static final Supplier<NioEventLoopGroup> LOCAL_WORKER_GROUP = Suppliers.memoize(Connection::createLocalWorkerGroup);
+    public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkEpollWorkerGroup);
+
     public static final Supplier<NioEventLoopGroup> NETWORK_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkWorkerGroup);
 
     private PacketHandler handler;
@@ -62,7 +68,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String address;
     private int port;
     private static int packetsSent;
-    private ExecutorService dispatchExecutor = Executors.newFixedThreadPool(8);
+    private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(8);
+    private ServerPlayer player;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -70,11 +77,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private static NioEventLoopGroup createLocalWorkerGroup() {
-        return new NioEventLoopGroup(8, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
+        return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     }
 
     private static NioEventLoopGroup createNetworkWorkerGroup() {
-        return new NioEventLoopGroup(8, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build());
+        return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Client IO #%d").setDaemon(true).build());
+    }
+
+    private static EpollEventLoopGroup createNetworkEpollWorkerGroup() {
+        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Network Client IO #%d").setDaemon(true).build());
     }
 
     public static int getPacketsSent() {
@@ -100,8 +111,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.channel = ctx.channel();
         this.remoteAddress = this.channel.remoteAddress();
 
-        String msg = this.direction.getSourceEnv() == EnvType.CLIENT ? "Connected to: " : "Connected by: ";
-        Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null));
+        if (this.direction.getSourceEnv() == EnvType.CLIENT) {
+            Connection.LOGGER.info("Connected to: " + (this.remoteAddress != null ? this.remoteAddress : "null"));
+        }
 
         if (this.shouldDisconnect()) {
             this.disconnect(this.disconnectMsg);
@@ -120,23 +132,26 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        boolean bl = !this.handlingFault;
-        this.handlingFault = true;
-        if (this.channel != null && this.channel.isOpen()) {
-            if (cause instanceof TimeoutException) {
-                Connection.LOGGER.debug("Timeout", cause);
-                this.disconnect("Timed Out");
-            } else {
-                var message = "Internal Exception: " + cause;
-                if (bl) {
-                    Connection.LOGGER.debug("Failed to send packet", cause);
-                    this.disconnect(message);
-                    this.setReadOnly();
+        try {
+            boolean handlingFault = !this.handlingFault;
+            this.handlingFault = true;
+
+            Channel channel = this.channel;
+            if (channel != null && channel.isOpen()) {
+                if (cause instanceof TimeoutException) {
+                    Connection.LOGGER.debug("Timeout", cause);
+                    this.disconnect("Timed Out");
                 } else {
-                    Connection.LOGGER.debug("Double fault", cause);
-                    this.disconnect(message);
+                    Connection.LOGGER.error("Exception:", cause);
+                    this.disconnect("Internal Exception: " + cause);
+                    if (handlingFault) {
+                        Connection.LOGGER.error("Double fault detected, force closing connection.");
+                        channel.close();
+                    }
                 }
             }
+        } catch (Exception e) {
+            Connection.LOGGER.error("Failed to handle exception", e);
         }
     }
 
@@ -154,10 +169,18 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         if (this.channel == null || !this.channel.isOpen()) return;
 
         @NotNull String msg = this.direction.getSourceEnv() == EnvType.CLIENT ? "Disconnected by: " : "Disconnected: ";
-        Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null));
+        Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null) + " (" + message + ")");
 
-        this.handler.onDisconnect(message);
+        switch (this.direction.getSourceEnv()) {
+            case SERVER -> this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::close));
+            case CLIENT -> this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::close));
+        }
+
+        this.disconnectMsg = message;
+        this.handleDisconnect();
+
         this.setReadOnly();
+        this.channel = null;
     }
 
     public void send(@NotNull Packet<?> packet) {
@@ -194,72 +217,62 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private void _send(@NotNull Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) throws ClosedChannelException {
-        if (this.channel == null) return;
+//        System.out.printf("Sending packet: %s%n", packet);
+
+        if (this.channel == null) {
+            return;
+        }
         if (!this.channel.isOpen()) throw new ClosedChannelException();
 
         if (this.channel.eventLoop().inEventLoop()) {
-            this._sendInEventLoop(packet, stateListener, flush);
+            this._actuallySend(packet, stateListener, flush);
         } else {
-            this.channel.eventLoop().execute(() -> this._sendInEventLoop(packet, stateListener, flush));
+            this.channel.eventLoop().execute(() -> {
+                try {
+                    this._actuallySend(packet, stateListener, flush);
+                } catch (Exception e) {
+                    Connection.LOGGER.error("Failed to send packet:", e);
+                }
+            });
         }
     }
 
-    private void _sendInEventLoop(Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
+    private void _actuallySend(Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
         try {
             Preconditions.checkNotNull(packet, "packet");
             if (this.channel == null) {
-                Connection.LOGGER.warn("Can send packet as the channel is closed.");
+                Connection.LOGGER.warn("Can't send packet because the channel isn't available.");
                 return;
             }
             if (!this.channel.isOpen()) throw new ClosedChannelException();
 
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
+            sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+
             Connection.packetsSent++;
 
-            if (stateListener == null) {
+            if (stateListener != null) {
                 sent.addListener(future -> {
-                    if (future.isSuccess()) return;
+                    try {
+                        if (future.isSuccess()) {
+                            stateListener.onSuccess();
+                            return;
+                        }
 
-                    Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
-                    this.disconnect(("""
-                            Internal Error
-
-                            %s
-                            %s
-                            
-                            Check logs for more information""").formatted(future.cause().getClass().getName(), future.cause().getMessage()));
+                        Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
+                        Packet<?> failPacket = stateListener.onFailure();
+                        if (failPacket != null) {
+                            ChannelFuture finalAttempt = this.channel.writeAndFlush(failPacket);
+                            finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                        }
+                    } catch (Exception e) {
+                        Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName());
+                    }
                 });
-                return;
             }
-
-            sent.addListener(future -> {
-                try {
-                    if (future.isSuccess()) {
-                        stateListener.onSuccess();
-                        return;
-                    }
-
-                    Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
-                    this.disconnect(("""
-                            Internal Error
-
-                            %s
-                            %s
-                            
-                            Check logs for more information""").formatted(future.cause().getClass().getName(), future.cause().getMessage()));
-
-                    Packet<?> failPacket = stateListener.onFailure();
-                    if (failPacket != null) {
-                        ChannelFuture finalAttempt = this.channel.writeAndFlush(failPacket);
-                        finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-                    }
-                } catch (Exception e) {
-                    Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName());
-                }
-            });
         } catch (Exception e) {
-            Connection.LOGGER.error("Failed to sent packet: " + packet.getClass().getName());
+            Connection.LOGGER.error("Failed to send packet: " + packet.getClass().getName());
         }
     }
 
@@ -332,7 +345,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.LOGIN.getClientBoundData());
         channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.LOGIN.getServerData());
 
-        channel.config().setAllocator(new UnpooledByteBufAllocator(false, true));
+        channel.config().setRecvByteBufAllocator(new AdaptiveRecvByteBufAllocator(64, 8192, 1024 * 1024 * 2));
     }
 
     public void moveToInGame() {
@@ -348,10 +361,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             var ourData = Connection.getDataKey(this.direction);
             var theirData = Connection.getDataKey(oppositeDirection);
 
-            pipeline.addLast("encoder", new PacketEncoder(ourData));
-            pipeline.addLast("decoder", new PacketDecoder(theirData));
-            pipeline.addLast("decompress", new JZlibDecoder());
-            pipeline.addLast("compress", new JZlibEncoder(9));
+            pipeline.addLast("field_decoder", new LengthFieldBasedFrameDecoder(1024 * 1024 * 8, 0, 4, 0, 4))
+                    .addLast("field_prepender", new LengthFieldPrepender(4))
+                    .addLast("decoder", new PacketDecoder(theirData))
+                    .addLast("encoder", new PacketEncoder(ourData))
+            ;
         } catch (Throwable t) {
             Connection.LOGGER.error("Failed to setup:", t);
             throw t;
@@ -385,6 +399,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.disconnectHandler = handler;
         this.address = address;
         this.port = port;
+        System.out.println("Initiated connection to " + address + ":" + port);
         this.runOnceConnected(() -> {
             this.setHandler(handler);
             this.send(loginPacket, true);
@@ -421,7 +436,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public void handleDisconnect() {
-        if (this.channel != null && !this.channel.isOpen() && !this.disconnected) {
+        if (!this.disconnected) {
             this.disconnected = true;
             PacketHandler handler = this.handler;
             PacketHandler finalHandler = handler != null ? handler : this.disconnectHandler;
@@ -431,7 +446,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (message == null) message = "Connection lost";
 
             finalHandler.onDisconnect(message);
-
         }
     }
 
@@ -441,5 +455,20 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     public int getPort() {
         return this.port;
+    }
+
+    public void close() {
+        Channel channel = this.channel;
+        if (channel != null && channel.isOpen()) {
+            channel.close();
+        }
+    }
+
+    public void setPlayer(ServerPlayer player) {
+        this.player = player;
+    }
+
+    public ServerPlayer getPlayer() {
+        return player;
     }
 }

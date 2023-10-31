@@ -44,7 +44,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-
+        Connection.LOGGER.info("Player " + this.player.getName() + " disconnected: " + message);
+        this.connection.close();
     }
 
     public boolean shouldHandlePacket(Packet<?> packet) {

@@ -12,6 +12,12 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+/**
+ * Represents a collection of packets.
+ * Also contains methods for encoding, decoding and handling packets.
+ *
+ * @param <H> the packet handler type.
+ */
 public class PacketCollection<H extends PacketHandler> {
     private int id;
     private final Map<Class<? extends Packet<?>>, BiConsumer<Packet<?>, PacketBuffer>> encoders = new HashMap<>();
@@ -19,6 +25,15 @@ public class PacketCollection<H extends PacketHandler> {
     private final Map<Class<? extends Packet<?>>, BiConsumer<Packet<H>, Pair<PacketContext, H>>> handlers = new HashMap<>();
     private final Map<Class<? extends Packet<?>>, Integer> packet2id = new HashMap<>();
 
+    /**
+     * Adds a packet to this collection.
+     *
+     * @param type the type of the packet to add.
+     * @param encoder the encoder to use.
+     * @param decoder the decoder to use.
+     * @param handler the handler to use.
+     * @return the ID of the packet.
+     */
     public int add(Class<? extends Packet<?>> type, BiConsumer<Packet<?>, PacketBuffer> encoder, Function<PacketBuffer, Packet<H>> decoder, BiConsumer<Packet<H>, Pair<PacketContext, H>> handler) {
         this.encoders.put(type, encoder);
         this.decoders.put(this.id, decoder);
@@ -27,6 +42,13 @@ public class PacketCollection<H extends PacketHandler> {
         return this.id++;
     }
 
+    /**
+     * Encodes a packet to a buffer.
+     *
+     * @param packet the packet to encode.
+     * @param buffer the buffer to encode to.
+     * @throws PacketException if the packet is not registered.
+     */
     public void encode(Packet<?> packet, PacketBuffer buffer) {
         Preconditions.checkNotNull(packet, "packet");
         Preconditions.checkNotNull(buffer, "buffer");
@@ -36,6 +58,14 @@ public class PacketCollection<H extends PacketHandler> {
         encoder.accept(packet, buffer);
     }
 
+    /**
+     * Decodes a packet from a buffer
+     *
+     * @param id the ID of the packet to decode.
+     * @param buffer the buffer to decode from.
+     * @return the decoded packet.
+     * @throws PacketException if the packet ID is unknown.
+     */
     public Packet<H> decode(int id, PacketBuffer buffer) {
         Preconditions.checkNotNull(buffer, "buffer");
 
@@ -44,6 +74,13 @@ public class PacketCollection<H extends PacketHandler> {
         return decoder.apply(buffer);
     }
 
+    /**
+     * Handles a packet.
+     *
+     * @param packet the packet to handle.
+     * @param params the parameters of the packet.
+     * @throws PacketException if the packet is not registered.
+     */
     public void handle(Packet<H> packet, Pair<PacketContext, H> params) {
         Preconditions.checkNotNull(packet, "packet");
         Preconditions.checkNotNull(params, "params");
@@ -53,6 +90,13 @@ public class PacketCollection<H extends PacketHandler> {
         handler.accept(packet, params);
     }
 
+    /**
+     * Gets the ID of a packet.
+     *
+     * @param packet the packet to get the ID of.
+     * @return the ID of the packet.
+     * @throws PacketException if the packet is not registered.
+     */
     public int getId(Packet<?> packet) {
         Preconditions.checkNotNull(packet, "packet");
 

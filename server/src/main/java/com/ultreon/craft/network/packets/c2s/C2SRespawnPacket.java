@@ -20,7 +20,7 @@ public class C2SRespawnPacket extends Packet<InGameServerPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameServerPacketHandler listener) {
-        listener.onRespawn();
+    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
+        handler.onRespawn();
     }
 }

@@ -22,7 +22,7 @@ public class S2CPlayerHealthPacket extends Packet<InGameClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameClientPacketHandler listener) {
-        listener.onPlayerHealth(this.newHealth);
+    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
+        handler.onPlayerHealth(this.newHealth);
     }
 }

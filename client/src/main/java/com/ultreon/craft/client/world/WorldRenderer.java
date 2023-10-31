@@ -2,13 +2,12 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.*;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
@@ -22,7 +21,9 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
@@ -37,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
+import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements RenderableProvider, Disposable {
@@ -46,8 +48,12 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     private final Material material;
     private final Material transparentMaterial;
     private final Texture breakingTex;
+    private final Mesh playerMesh;
+    private final Material playerMaterial;
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
+    //    private final Cubemap cubemap;
+    private final Environment environment;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -129,8 +135,20 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             this.cursor = renderable;
         }
 
+        // Simple player model (just bounding box of the player entity colored #808080)
+        {
+            MeshBuilder builder = new MeshBuilder();
+            builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked()), GL20.GL_TRIANGLES);
+
+            EntitySize size = EntityTypes.PLAYER.getSize();
+            BoxShapeBuilder.build(builder, size.width(), size.height(), size.width());
+
+            this.playerMesh = builder.end();
+            this.playerMaterial = new Material(ColorAttribute.createDiffuse(0.5f, 0.5f, 0.5f, 1f));
+        }
+
         // Breaking animation meshes.
-        this.breakingTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/break_stages.png"));
+        this.breakingTex = this.client.getTextureManager().getTexture(id("textures/break_stages.png"));
         this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
         this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
         this.breakingMaterial.set(new BlendingAttribute(0.8f));
@@ -151,6 +169,31 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             BakedCubeModel bakedCubeModel = new BakedCubeModel(breakingTexRegions.get(i));
             this.breakingMeshes.add(bakedCubeModel.getMesh());
         }
+
+        // Load textures
+        Pixmap[] skyboxTextures = new Pixmap[6];
+        skyboxTextures[0] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
+        skyboxTextures[1] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
+        skyboxTextures[2] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_top.png")));
+        skyboxTextures[3] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_bottom.png")));
+        skyboxTextures[4] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
+        skyboxTextures[5] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
+
+//        this.cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
+
+        UltracraftClient.LOGGER.info("Setting up world environment");
+        this.environment = new Environment();
+        this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
+//        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
+        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
+        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
+        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
+    }
+
+    public Environment getEnvironment() {
+        return this.environment;
     }
 
     public static long getChunkMeshFrees() {
@@ -282,6 +325,21 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
 
             this.cursor.worldTransform.setToTranslation(renderOffset);
             output.add(this.verifyOutput(this.cursor));
+        }
+
+        for (Vec3d remotePlayer : this.client.remotePlayers) {
+            Vec3f renderOffsetCL = remotePlayer.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f(); //* CoreLibs vector.
+            Vector3 renderOffset = new Vector3(renderOffsetCL.x, renderOffsetCL.y, renderOffsetCL.z);
+
+            Renderable renderable = renderablePool.obtain();
+            renderable.meshPart.mesh = this.playerMesh;
+            renderable.meshPart.size = this.playerMesh.getMaxIndices();
+            renderable.meshPart.offset = 0;
+            renderable.meshPart.primitiveType = GL_TRIANGLES;
+            renderable.worldTransform.setToTranslation(renderOffset);
+            renderable.material = this.playerMaterial;
+
+            output.add(this.verifyOutput(renderable));
         }
     }
 

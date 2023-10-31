@@ -32,7 +32,7 @@ public class S2CModPacket extends Packet<InGameClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameClientPacketHandler listener) {
-        listener.onModPacket(this.channel, this.packet);
+    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
+        handler.onModPacket(this.channel, this.packet);
     }
 }

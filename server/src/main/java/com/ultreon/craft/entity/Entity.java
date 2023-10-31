@@ -349,6 +349,9 @@ public class Entity {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.ox = x;
+        this.oy = y;
+        this.oz = z;
     }
 
     public BlockPos blockPosition() {

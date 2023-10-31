@@ -1,16 +1,8 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.data.types.ListType;
-import com.ultreon.data.types.MapType;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.BitSet;
-
-import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public final class BuilderChunk extends Chunk {
     private final ServerWorld world;
@@ -23,12 +15,12 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public byte[] serializeChunk() {
+    public void serializeChunk(PacketBuffer buffer) {
         throw new UnsupportedOperationException("Can't serialize builder chunk.");
     }
 
     @Override
-    public void deserializeChunk(byte[] bytes) {
+    public void deserializeChunk(PacketBuffer buffer) {
         throw new UnsupportedOperationException("Can't deserialize builder chunk.");
     }
 
