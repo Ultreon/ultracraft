@@ -17,16 +17,19 @@ public class WaterTerrainLayer extends TerrainLayer {
 
     @Override
     public boolean handle(World world, Chunk chunk, int x, int y, int z, int height) {
-        if (y > height && y <= this.waterLevel + 2 && y == height + 1) {
-            chunk.set(x, height, z, Blocks.SAND);
-            chunk.set(x, height - 1, z, Blocks.SAND);
-            chunk.set(x, height - 2, z, Blocks.SAND);
-            chunk.set(x, height - 3, z, Blocks.SAND);
-        }
-        if (y > height && y <= this.waterLevel) {
+        // Set water layer from height up to water level y
+        if (y <= this.waterLevel && y > height) {
             chunk.set(x, y, z, Blocks.WATER);
             return true;
         }
+
+        // Set sand layer from the height - 3 up to water level + 2
+        if (y <= this.waterLevel + 2 && y <= height && y >= height - 3) {
+            chunk.set(x, y, z, Blocks.SAND);
+            return true;
+        }
+
         return false;
+
     }
 }

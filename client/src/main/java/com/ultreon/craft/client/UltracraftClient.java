@@ -48,10 +48,7 @@ import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
-import com.ultreon.craft.client.model.BakedCubeModel;
-import com.ultreon.craft.client.model.BakedModelRegistry;
-import com.ultreon.craft.client.model.BlockModelRegistry;
-import com.ultreon.craft.client.model.CubeModel;
+import com.ultreon.craft.client.model.*;
 import com.ultreon.craft.client.network.ClientConnections;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
@@ -67,6 +64,7 @@ import com.ultreon.craft.client.util.DeferredDisposable;
 import com.ultreon.craft.client.util.GG;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.client.world.FaceProperties;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
@@ -688,7 +686,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void registerModels() {
-        BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side")));
+        BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.registerDefault(Blocks.ERROR);
         BlockModelRegistry.registerDefault(Blocks.DIRT);
         BlockModelRegistry.registerDefault(Blocks.SAND);

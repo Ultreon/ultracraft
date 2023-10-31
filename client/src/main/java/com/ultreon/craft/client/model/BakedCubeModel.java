@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.world.FaceProperties;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -24,6 +25,7 @@ public final class BakedCubeModel implements Disposable {
     private final TextureRegion front;
     private final TextureRegion back;
     private final Mesh mesh;
+    public final ModelProperties properties;
 
     public BakedCubeModel(TextureRegion all) {
         this(all, all, all, all, all, all);
@@ -32,6 +34,16 @@ public final class BakedCubeModel implements Disposable {
     public BakedCubeModel(TextureRegion top, TextureRegion bottom,
                           TextureRegion left, TextureRegion right,
                           TextureRegion front, TextureRegion back) {
+        this(top, bottom, left, right, front, back, ModelProperties.builder().build());
+    }
+
+    public BakedCubeModel(TextureRegion all, ModelProperties properties) {
+        this(all, all, all, all, all, all, properties);
+    }
+
+    public BakedCubeModel(TextureRegion top, TextureRegion bottom,
+                          TextureRegion left, TextureRegion right,
+                          TextureRegion front, TextureRegion back, ModelProperties properties) {
         this.top = top;
         this.bottom = bottom;
         this.left = left;
@@ -40,6 +52,7 @@ public final class BakedCubeModel implements Disposable {
         this.back = back;
         this.mesh = this.createMesh();
         this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
+        this.properties = new ModelProperties(new FaceProperties());
 
         UltracraftClient.get().deferDispose(this);
     }

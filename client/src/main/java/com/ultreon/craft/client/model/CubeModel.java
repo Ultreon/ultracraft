@@ -11,7 +11,6 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
-import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 
 public final class CubeModel {
@@ -21,46 +20,58 @@ public final class CubeModel {
     private final Identifier right;
     private final Identifier front;
     private final Identifier back;
+    private final ModelProperties properties;
 
     private CubeModel(Identifier top, Identifier bottom,
                       Identifier left, Identifier right,
-                      Identifier front, Identifier back) {
+                      Identifier front, Identifier back, ModelProperties properties) {
         this.top = top;
         this.bottom = bottom;
         this.left = left;
         this.right = right;
         this.front = front;
         this.back = back;
+        this.properties = properties;
     }
 
     public static CubeModel of(Identifier all) {
-        return of(all, all, all);
+        return CubeModel.of(all, all, all);
     }
 
     public static CubeModel of(Identifier top, Identifier bottom, Identifier side) {
-        return of(top, bottom, side, side, side, side);
+        return CubeModel.of(top, bottom, side, side, side, side);
     }
 
     public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front) {
-        return of(top, bottom, side, side, front, side);
+        return CubeModel.of(top, bottom, side, side, front, side);
     }
 
     public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back) {
-        return of(top, bottom, side, side, front, back);
+        return CubeModel.of(top, bottom, side, side, front, back);
     }
 
     public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back) {
-        return new CubeModel(top, bottom, left, right, front, back);
+        return new CubeModel(top, bottom, left, right, front, back, ModelProperties.builder().build());
     }
 
-    @Deprecated
-    public BakedCubeModel bake(Texture texture) {
-//        return new BakedCubeModel(
-//                top.bake(texture), bottom.bake(texture),
-//                left.bake(texture), right.bake(texture),
-//                front.bake(texture), back.bake(texture)
-//        );
-        return null;
+    public static CubeModel of(Identifier all, ModelProperties properties) {
+        return CubeModel.of(all, all, all, properties);
+    }
+
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side,  ModelProperties properties) {
+        return CubeModel.of(top, bottom, side, side, side, side, properties);
+    }
+
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, ModelProperties properties) {
+        return CubeModel.of(top, bottom, side, side, front, side, properties);
+    }
+
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back, ModelProperties properties) {
+        return CubeModel.of(top, bottom, side, side, front, back, properties);
+    }
+
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back, ModelProperties properties) {
+        return new CubeModel(top, bottom, left, right, front, back, properties);
     }
 
     public BakedCubeModel bake(TextureAtlas texture) {
@@ -74,7 +85,8 @@ public final class CubeModel {
         return new BakedCubeModel(
                 topTex, bottomTex,
                 leftTex, rightTex,
-                frontTex, backTex
+                frontTex, backTex,
+                this.properties
         );
     }
 

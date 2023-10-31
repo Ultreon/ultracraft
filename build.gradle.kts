@@ -45,9 +45,9 @@ apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 apply(plugin = "gameutils")
 
-//****************************//
-// Setting up main properties //
-//****************************//
+//********************************//
+// Setting up the main properties //
+//********************************//
 extensions.configure<GameUtilsExt> {
     projectName = "Ultracraft"
     projectVersion = "0.1.0"

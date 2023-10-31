@@ -7,6 +7,7 @@ import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screen.ModListScreen;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.rpc.Activity;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
@@ -60,13 +61,12 @@ public class TitleScreen extends Screen {
 
         int y = this.height / 2 +- 35;
 
-        this.singleplayerButton = this.add(new Button(this.width / 2 - 100, y, 200, Language.translate("craft.screen.title.singleplayer"), this::openSingleplayer));
+        this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("craft.screen.title.singleplayer"), this::openSingleplayer));
+        this.multiplayerButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
 
-        this.multiplayerButton = this.add(new Button(this.width / 2 - 100, y += 25, 200, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
-
-        this.modListButton = this.add(new Button(this.width / 2 - 100, y += 25, 200, Language.translate("craft.screen.mod_list"), this::showModList));
-        this.optionsButton = this.add(new Button(this.width / 2 - 100, y += 25, 95, Language.translate("craft.screen.title.options"), this::showOptions));
-        this.quitButton = this.add(new Button(this.width / 2 + 5, y, 95, Language.translate("craft.screen.title.quit"), TitleScreen::quitGame));
+        this.modListButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.mod_list"), this::showModList));
+        this.optionsButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.options"), this::showOptions));
+        this.quitButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.quit"), TitleScreen::quitGame));
     }
 
     @Override
@@ -81,13 +81,15 @@ public class TitleScreen extends Screen {
         float drawX = (this.width - drawWidth) / 2;
         float drawY = (this.height - drawHeight) / 2;
         renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1880, 812, 1880, 812);
+
+        renderer.fill(0, 0, 250, this.height, Color.argb(0x80000000));
     }
 
     @Override
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        renderer.drawCenteredTextScaled("Ultracraft", 3, (int) ((float) this.width / 2), (int) (float) 40);
+        renderer.drawCenteredTextScaled("Ultracraft", 3, (int) ((float) 125), (int) (float) 40);
     }
 
     public Button getSingleplayerButton() {
