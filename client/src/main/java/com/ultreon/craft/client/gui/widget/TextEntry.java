@@ -48,10 +48,10 @@ public class TextEntry extends GuiComponent {
     public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         final int u = this.enabled ? this.focused ? 12 : 0 : 24;
         final int v = 0;
-        final int tx = this.x - 1;
-        final int ty = this.y - 4;
-        final int tw = this.width + 2;
-        final int th = this.height + 5;
+        final int tx = this.x;
+        final int ty = this.y - 2;
+        final int tw = this.width;
+        final int th = this.height + 3;
 
         Texture texture = this.client.getTextureManager().getTexture(id("textures/gui/text_entry.png"));
         renderer.setTextureColor(Color.WHITE);
@@ -65,9 +65,9 @@ public class TextEntry extends GuiComponent {
         renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
         renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawText(this.text, this.x + 3, this.y + 6, false, this.width - 6, "...");
+        renderer.drawText(this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
         if (this.text.isEmpty()) {
-            renderer.drawText(this.hint, this.x + 3, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
+            renderer.drawText(this.hint, this.x + 5, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
         }
 
         if (this.focused) {

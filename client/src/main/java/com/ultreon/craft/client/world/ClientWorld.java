@@ -88,7 +88,7 @@ public final class ClientWorld extends World implements Disposable {
     public void loadChunk(ChunkPos pos, ClientChunk data) {
         var _chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
         if (_chunk == null) _chunk = data;
-        else throw new IllegalStateException("Chunk already loaded.");
+        else return; // FIXME Should fix duplicated chunk packets.
 
         UltracraftClient.invoke(_chunk::ready);
 

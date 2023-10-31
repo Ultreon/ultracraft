@@ -76,6 +76,8 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             player.resurrect();
         }
         this.client.showScreen(null);
+
+        UltracraftClient.LOGGER.debug("Player respawned at %s".formatted(pos)); //! DEBUG
     }
 
     @Override

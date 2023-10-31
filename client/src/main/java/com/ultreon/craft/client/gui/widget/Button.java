@@ -79,7 +79,7 @@ public class Button extends GuiComponent {
         int u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
         int v = this.enabled ? this.isPressed() ? 21 : 0 : 42;
 
-        renderer.setTextureColor(this.color == null ? Color.WHITE : this.color);
+        renderer.setTextureColor(Color.WHITE);
         renderer.blit(texture, x, y, 7, 7, u, v, 7, 7);
         renderer.blit(texture, x+7, y, this.width - 14, 7, 7 + u, v, 7, 7);
         renderer.blit(texture, x+ this.width -7, y, 7, 7, 14 + u, v, 7, 7);
@@ -89,7 +89,6 @@ public class Button extends GuiComponent {
         renderer.blit(texture, x, y + this.height - 7, 7, 7, u, 14 + v, 7, 7);
         renderer.blit(texture, x+7, y + this.height - 7, this.width - 14, 7, 7 + u, 14 + v, 7, 7);
         renderer.blit(texture, x+ this.width -7, y + this.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
-        renderer.setTextureColor(Color.rgb(0xffffff));
 
         renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
     }

@@ -90,6 +90,7 @@ import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
@@ -242,6 +243,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     double time = System.currentTimeMillis();
     private Activity activity = null;
     private Activity oldActivity = null;
+    private Vec2i oldMode;
+    private boolean isInThirdPerson;
 
 
     public UltracraftClient(String[] argv) throws Throwable {
@@ -1480,6 +1483,35 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public void setActivity(Activity activity) {
         this.activity = activity;
+    }
+
+    public void setFullScreen(boolean fullScreen) {
+        if (Gdx.graphics.isFullscreen()!= fullScreen) {
+            if (fullScreen) {
+                this.oldMode = new Vec2i(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+                Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+            } else {
+                Gdx.graphics.setWindowedMode(this.oldMode.x, this.oldMode.y);
+            }
+        }
+    }
+
+    public boolean isFullScreen() {
+        return Gdx.graphics.isFullscreen();
+    }
+
+    /**
+     * @return true if the player is in the third person, false otherwise.
+     */
+    public boolean isInThirdPerson() {
+        return this.isInThirdPerson;
+    }
+
+    /**
+     * @param thirdPerson true to set the player to be in the third person, false for first person.
+     */
+    public void setInThirdPerson(boolean thirdPerson) {
+        this.isInThirdPerson = thirdPerson;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

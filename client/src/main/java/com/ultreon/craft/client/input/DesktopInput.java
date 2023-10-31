@@ -7,17 +7,17 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.events.ItemEvents;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ScreenEvents;
-import com.ultreon.craft.item.Item;
-import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
+import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.ItemEvents;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -36,10 +36,8 @@ public class DesktopInput extends GameInput {
     public int debugHudKey = Input.Keys.F3;
     public int screenshotKey = Input.Keys.F2;
     public int inventoryKey = Input.Keys.E;
-    private int xPos;
-    private int yPos;
-    private int deltaX;
-    private int deltaY;
+    public int fullscreenKey = Input.Keys.F11;
+    public int thirdPersonKey = Input.Keys.F5;
     private boolean isCaptured;
     private boolean wasCaptured;
 
@@ -72,8 +70,16 @@ public class DesktopInput extends GameInput {
             pixmap.dispose();
         }
 
+        if (keycode == this.fullscreenKey) {
+            this.client.setFullScreen(!this.client.isFullScreen());
+        }
+
+        if (keycode == this.thirdPersonKey) {
+            this.client.setInThirdPerson(!this.client.isInThirdPerson());
+        }
+
         if (Gdx.input.isCursorCatched()) {
-            if (isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
+            if (GameInput.isKeyDown(this.pauseKey) && Gdx.input.isCursorCatched()) {
                 this.client.showScreen(new PauseScreen());
                 return true;
             }
@@ -129,20 +135,6 @@ public class DesktopInput extends GameInput {
     private void updatePlayerMovement(int screenX, int screenY) {
         if (this.client.player == null) return;
 
-        if (this.isCaptured && !this.wasCaptured) {
-            this.deltaX = 0;
-            this.deltaY = 0;
-        } else if (this.isCaptured) {
-            this.deltaX = this.xPos - screenX;
-            this.deltaY = this.yPos - screenY;
-        }
-
-        this.xPos = screenX;
-        this.yPos = screenY;
-
-//        Vector2 rotation = this.game.player.getRotation();
-//        rotation.add(this.deltaX * DEG_PER_PIXEL, this.deltaY * DEG_PER_PIXEL);
-//        this.game.player.setRotation(rotation);
     }
 
     @Override

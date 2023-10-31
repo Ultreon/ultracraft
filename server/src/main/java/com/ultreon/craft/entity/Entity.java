@@ -265,14 +265,23 @@ public class Entity {
         }
     }
 
+    /**
+     * Handles the entity movement.
+     */
     protected void onMoved() {
 
     }
 
+    /**
+     * Handles the entity ground hit.
+     */
     protected void hitGround() {
 
     }
 
+    /**
+     * @return true if the entity is in the void, false otherwise.
+     */
     public boolean isInVoid() {
         return this.y < World.WORLD_DEPTH - 64;
     }
@@ -283,12 +292,16 @@ public class Entity {
 
     @ApiStatus.OverrideOnly
     public BoundingBox getBoundingBox(EntitySize size) {
-        double x1 = this.x - size.width() / 2;
-        double y1 = this.y;
-        double z1 = this.z - size.width() / 2;
-        double x2 = this.x + size.width() / 2;
-        double y2 = this.y + size.height();
-        double z2 = this.z + size.width() / 2;
+        return Entity.getBoundingBox(this.getPosition(), size);
+    }
+
+    public static BoundingBox getBoundingBox(Vec3d pos, EntitySize size) {
+        double x1 = pos.x - size.width() / 2;
+        double y1 = pos.y;
+        double z1 = pos.z - size.width() / 2;
+        double x2 = pos.x + size.width() / 2;
+        double y2 = pos.y + size.height();
+        double z2 = pos.z + size.width() / 2;
         return new BoundingBox(new Vec3d(x1, y1, z1), new Vec3d(x2, y2, z2));
     }
 

@@ -102,10 +102,6 @@ public final class ServerPlayer extends Player {
             this.connection.send(new S2CPlayerHealthPacket(this.health));
             this.oldHealth = this.health;
         }
-
-//        this.onGround = this.y % 1.0 == 0.0 && this.world.get(this.blockPosition().below()).hasCollider();
-//        if (!this.onGround && this.groundCheck-- <= 0) this.connection.disconnect("Flying is not allowed!");
-//        else if (this.onGround) this.groundCheck = 100;
     }
 
     @Override
@@ -117,17 +113,20 @@ public final class ServerPlayer extends Player {
     protected void onMoved() {
         super.onMoved();
 
+        // Send new position to client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
             this.setPosition(this.ox, this.oy, this.oz);
             this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
 
-        double maxDistance = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 2.3;
+        // Limit player speed server-side.
+        double maxDistance = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 3;
         if (this.getPosition().dst(this.ox, this.oy, this.oz) > maxDistance) {
             UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max: " + maxDistance + ")");
             this.teleportTo(this.ox, this.oy, this.oz);
         }
 
+        // Set old position.
         this.ox = this.x;
         this.oy = this.y;
         this.oz = this.z;

@@ -141,7 +141,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked()), GL20.GL_TRIANGLES);
 
             EntitySize size = EntityTypes.PLAYER.getSize();
-            BoxShapeBuilder.build(builder, size.width(), size.height(), size.width());
+            BoxShapeBuilder.build(builder, 0, size.height() / 2, 0, -size.width() * 2, -size.height(), -size.width() * 2);
 
             this.playerMesh = builder.end();
             this.playerMaterial = new Material(ColorAttribute.createDiffuse(0.5f, 0.5f, 0.5f, 1f));
