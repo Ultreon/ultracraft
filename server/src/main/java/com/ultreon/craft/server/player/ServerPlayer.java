@@ -3,6 +3,7 @@ package com.ultreon.craft.server.player;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -17,10 +18,12 @@ import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ChunkRefresher;
 import com.ultreon.craft.world.ServerWorld;
+import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,9 +42,11 @@ public final class ServerPlayer extends Player {
     private final UltracraftServer server = UltracraftServer.get();
     private final Object2IntMap<ChunkPos> retryChunks = Object2IntMaps.synchronize(new Object2IntArrayMap<>());
     private final Cache<ChunkPos, S2CChunkCancelPacket> pendingChunks = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).removalListener(notification -> { }).build();
-    private final Cache<ChunkPos, Unit> failedChunks = CacheBuilder.newBuilder().expireAfterWrite(90, TimeUnit.SECONDS).build();
+    private final Cache<ChunkPos, Unit> failedChunks = CacheBuilder.newBuilder().expireAfterWrite(90, TimeUnit.SECONDS).removalListener(notification -> {
+    }).build();
     private final Set<ChunkPos> activeChunks = new HashSet<>();
-    private int groundCheck = 100;
+    private final Set<ChunkPos> skippedChunks = new HashSet<>();
+    private ChunkPos oldChunkPos = new ChunkPos(0, 0);
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name) {
         super(entityType, world);
@@ -163,6 +168,7 @@ public final class ServerPlayer extends Player {
                     this.failedChunks.put(pos, Unit.INSTANCE);
                 }
             }
+            case SKIP -> this.skippedChunks.add(pos);
             case SUCCESS -> this.activeChunks.add(pos);
         }
     }
@@ -172,27 +178,44 @@ public final class ServerPlayer extends Player {
     }
 
     public void refreshChunks(ChunkRefresher refresher) {
-        Vec3d pos = this.getPosition();
+        var pos = this.getPosition();
+        var chunkPos = this.getChunkPos();
         var needed = this.world.getChunksAround(pos);
         var toLoad = this.getChunksToLoad(needed);
         var toUnload = this.getChunksToUnload(needed);
+
+        // Invalidate all pending chunks that are to be unloaded.
         this.pendingChunks.invalidateAll(toUnload);
+
+        // Remove skipped chunks if the player didn't move in between chunks.
+        if (this.oldChunkPos.equals(chunkPos)) toLoad.removeAll(this.skippedChunks);
+        else this.oldChunkPos = chunkPos;
+
+        // Remove all failed chunks.
         toLoad.removeAll(this.failedChunks.asMap().keySet());
 
-        refresher.addLoading(toLoad);
+        // Add all loading/unloading chunks.
+        refresher.addLoading(toLoad.stream().sorted((o1, o2) -> {
+            // Compare against player position.
+            Vec2d playerPos = new Vec2d(chunkPos.x(), chunkPos.z());
+            Vec2d cPos1 = new Vec2d(o1.x(), o1.z());
+            Vec2d cPos2 = new Vec2d(o2.x(), o2.z());
+
+            return Double.compare(cPos1.dst(playerPos), cPos2.dst(playerPos));
+        }).toList());
         refresher.addUnloading(toUnload);
     }
 
-    private Set<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
+    private ListOrderedSet<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
         return this.activeChunks.stream()
                 .filter(pos -> !needed.contains(pos))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(ListOrderedSet::new));
     }
 
-    private Set<ChunkPos> getChunksToLoad(List<ChunkPos> needed) {
+    private ListOrderedSet<ChunkPos> getChunksToLoad(List<ChunkPos> needed) {
         return needed.stream()
                 .filter(chunkPos -> !this.activeChunks.contains(chunkPos))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(ListOrderedSet::new));
     }
 
     public void teleportTo(int x, int y, int z) {

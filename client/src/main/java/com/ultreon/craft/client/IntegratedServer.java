@@ -4,7 +4,9 @@ import com.ultreon.craft.client.network.ClientConnections;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.WorldStorage;
 
+import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.file.Files;
 
 public class IntegratedServer extends UltracraftServer {
     private final UltracraftClient client = UltracraftClient.get();
@@ -12,11 +14,14 @@ public class IntegratedServer extends UltracraftServer {
 
     public IntegratedServer(WorldStorage storage) {
         super(storage);
-    }
 
-    @Override
-    public void run() {
-        super.run();
+        if (Files.notExists(storage.getDirectory())) {
+            try {
+                storage.createWorld();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override

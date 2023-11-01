@@ -16,14 +16,17 @@ public class TimeProcessor {
         return (int) (UltracraftServer.TPS * (hours * 86400));
     }
 
+    //? Should we still have this?
     public static int hoursToTicks(double hours) {
         return (int) (UltracraftServer.TPS * (hours * 3600));
     }
 
+    //? Should we still have this?
     public static int minutesToTicks(double minutes) {
         return (int) (UltracraftServer.TPS * (minutes * 60));
     }
 
+    //? Should we still have this?
     public static int secondsToTicks(double seconds) {
         return (int) (UltracraftServer.TPS * seconds);
     }

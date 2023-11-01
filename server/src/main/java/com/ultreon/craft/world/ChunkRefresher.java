@@ -1,13 +1,12 @@
 package com.ultreon.craft.world;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.apache.commons.collections4.set.ListOrderedSet;
+
+import java.util.*;
 
 public class ChunkRefresher {
-    protected final Set<ChunkPos> toLoad = new HashSet<>();
-    protected final Set<ChunkPos> toUnload = new HashSet<>();
+    protected final List<ChunkPos> toLoad = new ArrayList<>();
+    protected final List<ChunkPos> toUnload = new ArrayList<>();
     private boolean frozen = false;
 
     public ChunkRefresher() {
@@ -16,8 +15,12 @@ public class ChunkRefresher {
 
     public void addLoading(Collection<ChunkPos> toLoad) {
         if (this.frozen) return;
-        this.toLoad.addAll(toLoad);
-        toLoad.forEach(this.toUnload::remove);
+        for (ChunkPos pos : toLoad) {
+            if (this.toLoad.contains(pos)) continue;
+
+            this.toLoad.add(pos);
+            this.toUnload.remove(pos);
+        }
     }
 
     public void addUnloading(Collection<ChunkPos> toLoad) {

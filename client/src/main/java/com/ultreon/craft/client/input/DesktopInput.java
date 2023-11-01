@@ -60,14 +60,7 @@ public class DesktopInput extends GameInput {
         }
 
         if (keycode == this.screenshotKey) {
-            Gdx.gl.glPixelStorei(GL20.GL_PACK_ALIGNMENT, 1);
-
-            final Pixmap pixmap = new Pixmap(this.client.getWidth(), this.client.getHeight(), Pixmap.Format.RGB888);
-            ByteBuffer pixels = pixmap.getPixels();
-            Gdx.gl.glReadPixels(this.client.getDrawOffset().x, this.client.getDrawOffset().y, this.client.getWidth(), this.client.getHeight(), GL20.GL_RGB, GL20.GL_UNSIGNED_BYTE, pixels);
-
-            PixmapIO.writePNG(UltracraftClient.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
-            pixmap.dispose();
+            this.client.screenshot();
         }
 
         if (keycode == this.fullscreenKey) {

@@ -73,7 +73,7 @@ public class ImGuiOverlay {
 
             ImGui.newFrame();
             ImGui.setNextWindowPos(0, 0);
-            ImGui.setNextWindowSize(Gdx.graphics.getWidth(), 18);
+            ImGui.setNextWindowSize(client.getWidth(), 18);
             ImGui.setNextWindowCollapsed(true);
 
             if (Gdx.input.isCursorCatched()) {

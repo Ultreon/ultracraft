@@ -29,7 +29,7 @@ public class TitleScreen extends Screen {
     public TitleScreen() {
         super("Title Screen");
 
-        this.resizer = new Resizer(1880, 812);
+        this.resizer = new Resizer(7680, 4320);
     }
 
     private static void quitGame(Button caller) {
@@ -80,7 +80,7 @@ public class TitleScreen extends Screen {
 
         float drawX = (this.width - drawWidth) / 2;
         float drawY = (this.height - drawHeight) / 2;
-        renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1880, 812, 1880, 812);
+        renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, this.resizer.getSourceWidth(), this.resizer.getSourceHeight(), (int) this.resizer.getSourceWidth(), (int) this.resizer.getSourceHeight());
 
         renderer.fill(0, 0, 250, this.height, Color.argb(0x80000000));
     }

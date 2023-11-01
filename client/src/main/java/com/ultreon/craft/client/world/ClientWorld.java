@@ -2,12 +2,14 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.vector.Vec2d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,6 +91,11 @@ public final class ClientWorld extends World implements Disposable {
         var _chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
         if (_chunk == null) _chunk = data;
         else return; // FIXME Should fix duplicated chunk packets.
+        ClientPlayer player = this.client.player;
+        if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            return;
+        }
 
         UltracraftClient.invoke(_chunk::ready);
 

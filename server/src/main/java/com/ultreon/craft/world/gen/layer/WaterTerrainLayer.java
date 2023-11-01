@@ -18,7 +18,7 @@ public class WaterTerrainLayer extends TerrainLayer {
     @Override
     public boolean handle(World world, Chunk chunk, int x, int y, int z, int height) {
         // Set water layer from height up to water level y
-        if (y <= this.waterLevel && y > height) {
+        if (y <= this.waterLevel + 1 && y > height) {
             chunk.set(x, y, z, Blocks.WATER);
             return true;
         }

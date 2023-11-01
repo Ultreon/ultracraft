@@ -610,12 +610,12 @@ public final class ServerWorld extends World {
             return oldRegion;
         }
 
-        if (this.storage.regionExists(rx, rz)) {
-            try {
+        try {
+            if (this.storage.regionExists(rx, rz)) {
                 return this.openRegion(rx, rz);
-            } catch (IOException e) {
-                World.LOGGER.error("Region at %s,%s failed to load:".formatted(rx, rz), e);
             }
+        } catch (IOException e) {
+            World.LOGGER.error("Region at %s,%s failed to load:".formatted(rx, rz), e);
         }
 
         var region = new Region(this, regionPos);
@@ -669,6 +669,9 @@ public final class ServerWorld extends World {
         }
     }
 
+    /**
+     * @return the server this world belongs to.
+     */
     public UltracraftServer getServer() {
         return server;
     }
@@ -692,6 +695,13 @@ public final class ServerWorld extends World {
         region.generateChunk(localPos, globalPos);
     }
 
+    /**
+     * The region class.
+     * Note: This class is not thread safe.
+     *
+     * @author XyperCode
+     * @since 0.1.0
+     */
     @NotThreadSafe
     public static class Region implements ServerDisposable {
         private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
@@ -704,59 +714,108 @@ public final class ServerWorld extends World {
         private final List<ChunkPos> generatingChunks = new CopyOnWriteArrayList<>();
         private final Object buildLock = new Object();
 
+        /**
+         * Constructs a new region with the given world and position.
+         *
+         * @param world the world this region belongs to.
+         * @param pos the position of the region.
+         */
         public Region(ServerWorld world, RegionPos pos) {
             this.world = world;
             this.pos = pos;
         }
 
+        /**
+         * Constructs a new region with the given world and position. It also preloads all chunks.
+         *
+         * @param world the world this region belongs to.
+         * @param pos the position of the region.
+         * @param chunks the chunks to load into the region.
+         */
         public Region(ServerWorld world, RegionPos pos, Map<ChunkPos, ServerChunk> chunks) {
             this.world = world;
             this.pos = pos;
             this.chunks = chunks;
         }
 
+        /**
+         * @return all loaded chunks within the region.
+         */
         public Collection<ServerChunk> getChunks() {
             return Collections.unmodifiableCollection(this.chunks.values());
         }
 
+        /**
+         * @return the position of the region.
+         */
         public RegionPos pos() {
             return this.getPos();
         }
 
+        /**
+         * Dispose the region, clearing up chunk data for the garbage collector to free up memory.
+         * Note: Internal API.
+         * Should only be called if you know what you are doing.
+         */
         @ApiStatus.Internal
         public void dispose() {
             this.validateThread();
             if (this.disposed) return;
             this.disposed = true;
+
             for (Chunk value : this.chunks.values()) {
                 value.dispose();
             }
+
             this.chunks.clear();
         }
 
+        /**
+         * Deactivates the chunk at the given position.
+         * The chunk will still be loaded in memory for reuse.
+         *
+         * @param chunkPos the local position of the chunk to deactivate.
+         * @return the deactivated chunk, or null if the chunk wasn't loaded.
+         */
         @Nullable
         public Chunk deactivate(@NotNull ChunkPos chunkPos) {
+            // TODO remove chunk when deactivated for a certain time.
+
             this.validateLocalPos(chunkPos);
             this.validateThread();
             Chunk chunk = this.chunks.get(chunkPos);
-            if (chunk == null) return null;
-            if (!this.activeChunks.remove(chunkPos)) {
+
+            if (chunk == null)
+                return null;
+
+            if (!this.activeChunks.remove(chunkPos))
                 throw new IllegalStateError("Can't deactivate an already inactive chunk.");
-            }
+
             chunk.active = false;
             return chunk;
         }
 
+        /**
+         * Activate the chunk at the given position.
+         *
+         * @param chunkPos the local position of the chunk to activate.
+         * @param globalPos the global position of the chunk to activate.
+         * @return the acivated chunk, or null if the chunk wasn't loaded.
+         */
         @Nullable
         @CanIgnoreReturnValue
         public Chunk activate(@NotNull ChunkPos chunkPos, ChunkPos globalPos) {
             this.validateLocalPos(chunkPos);
             this.validateThread();
+
             @Nullable Chunk chunk = this.chunks.get(chunkPos);
-            if (chunk == null) return null;
-            if (this.activeChunks.contains(chunkPos)) {
+
+            if (chunk == null)
+                return null;
+
+            if (this.activeChunks.contains(chunkPos))
                 return chunk;
-            }
+
             this.activeChunks.add(chunkPos);
             chunk.active = true;
 
@@ -824,6 +883,7 @@ public final class ServerWorld extends World {
         public Chunk putChunk(@NotNull ChunkPos pos, @NotNull ServerChunk chunk) {
             this.validateLocalPos(pos);
             this.validateThread();
+
             if (this.chunks.containsKey(pos))
                 throw new IllegalStateError("Chunk is already loaded");
 
@@ -849,18 +909,30 @@ public final class ServerWorld extends World {
             this.buildChunkAsync(globalPos);
         }
 
+        /**
+         * Build the chunk at the specified chunk position local to the region.
+         * Note: this method is asynchronous.
+         *
+         * @param globalPos the global position of the chunk to generate.
+         */
         private void buildChunkAsync(ChunkPos globalPos) {
             if (DebugFlags.WARN_CHUNK_BUILD_OVERLOAD && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
                 World.LOGGER.warn("Chunk building is being overloaded!");
             }
+
+            // Add the chunk to the list of generating chunks.
+            // Will return immediately if the chunk is already being built.
             synchronized (this.buildLock) {
                 if (this.generatingChunks.contains(globalPos)) return;
                 this.generatingChunks.add(globalPos);
             }
+
+            // Build the chunk asynchronously.
             CompletableFuture.runAsync(() -> {
                 var localPos = World.toLocalChunkPos(globalPos);
                 var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, localPos);
                 try {
+                    // Generate terrain of the chunk in columns.
                     for (var bx = 0; bx < World.CHUNK_SIZE; bx++) {
                         for (var by = 0; by < World.CHUNK_SIZE; by++) {
                             this.world.generator.processColumn(chunk, bx, by);
@@ -869,9 +941,11 @@ public final class ServerWorld extends World {
 
                     WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
 
+                    // Put the chunk into the list of loaded chunks.
                     ServerChunk builtChunk = chunk.build();
                     this.chunks.put(localPos, builtChunk);
 
+                    // Send the chunk to all connections.
                     try {
                         this.world.server.sendChunk(globalPos, builtChunk);
                     } catch (IOException e) {
@@ -879,8 +953,10 @@ public final class ServerWorld extends World {
                         throw new RuntimeException(e);
                     }
 
+                    // Mark the chunk as ready.
                     builtChunk.ready = true;
 
+                    // Chunk isn't generating anymore.
                     this.generatingChunks.remove(globalPos);
 
 
@@ -935,17 +1011,35 @@ public final class ServerWorld extends World {
         }
     }
 
+    /**
+     * Represents a collection of regions.
+     *
+     * @author XyperCode
+     * @since 0.1.0
+     */
     public static class RegionStorage {
         private final Map<RegionPos, Region> regions = new ConcurrentHashMap<>();
 
+        /**
+         * Saves a region to an output stream.
+         *
+         * @param region the region to save.
+         * @param stream the output stream to save to.
+         * @param dispose if true, the region will be disposed after saving.
+         * @throws IOException if an I/O error occurs.
+         */
+        @ApiStatus.Internal
         public void save(Region region, DataOutputStream stream, boolean dispose) throws IOException {
             var pos = region.pos();
 
+            // Write region metadata.
             stream.writeInt(region.dataVersion);
             stream.writeUTF(region.lastPlayedIn);
             stream.writeInt(pos.x());
             stream.writeInt(pos.z());
             stream.writeInt(World.REGION_SIZE);
+
+            // Write chunks to the region file.
             var chunks = region.getChunks();
             stream.writeShort(chunks.size());
             var idx = 0;
@@ -961,13 +1055,23 @@ public final class ServerWorld extends World {
 
             stream.flush();
 
+            // Dispose the region if requested.
             if (dispose) {
                 this.regions.remove(region.getPos());
                 UltracraftServer.invokeAndWait(region::dispose);
             }
         }
 
+        /**
+         * Loads a region from an input stream.
+         *
+         * @param world the world to load the region in.
+         * @param stream the input stream to load from.
+         * @return the loaded region.
+         * @throws IOException if an I/O error occurs.
+         */
         public Region load(ServerWorld world, DataInputStream stream) throws IOException {
+            // Read region metadata.
             var dataVersion = stream.readInt();
             var lastPlayedIn = stream.readUTF();
             var x = stream.readInt();
@@ -976,31 +1080,47 @@ public final class ServerWorld extends World {
             var worldOffsetX = x * World.REGION_SIZE;
             var worldOffsetZ = z * World.REGION_SIZE;
 
+            // Read chunks from region file.
             Map<ChunkPos, ServerChunk> chunkMap = new HashMap<>();
             var maxIdx = stream.readUnsignedShort();
             for (var idx = 0; idx <= maxIdx; idx++) {
+                // Read local chunk pos.
                 var chunkX = stream.readUnsignedByte();
                 var chunkZ = stream.readUnsignedByte();
-                var localChunkPos = new ChunkPos(chunkX, chunkZ);
+
+                // Validate chunk coordinates.
                 Preconditions.checkElementIndex(chunkX, World.REGION_SIZE, "Invalid chunk X position");
                 Preconditions.checkElementIndex(chunkZ, World.REGION_SIZE, "Invalid chunk Z position");
+
+                // Create local and global chunk coordinates.
+                var localChunkPos = new ChunkPos(chunkX, chunkZ);
                 var globalChunkPos = new ChunkPos(chunkX + x * World.REGION_SIZE * World.REGION_SIZE, chunkZ + z * World.REGION_SIZE);
 
+                // Load server chunk.
                 var chunk = ServerChunk.load(world, globalChunkPos, MapType.read(stream));
                 chunkMap.put(localChunkPos, chunk);
             }
 
             var regionPos = new RegionPos(x, z);
+
+            // Chceck if region already exists, if so, then throw an error.
             var oldRegion = this.regions.get(regionPos);
             if (oldRegion != null) {
                 throw new OverwriteError("Tried to overwrite region %s".formatted(regionPos));
             }
 
+            // Create region instance.
             var region = new Region(world, regionPos, chunkMap);
             this.regions.put(regionPos, region);
             return region;
         }
 
+        /**
+         * Gets a loaded region from the storage map based on the given chunk position.
+         *
+         * @param chunkPos the chunk position.
+         * @return the loaded region, or null if it isn't loaded.
+         */
         @Nullable
         public Region getRegionAt(ChunkPos chunkPos) {
             var regionX = chunkPos.x() / 32;
@@ -1009,11 +1129,24 @@ public final class ServerWorld extends World {
             return this.getRegion(regionX, regionZ);
         }
 
+        /**
+         * Gets a loaded region from the storage map.
+         *
+         * @param regionX the X-coordinate of the region.
+         * @param regionZ the Z-coordinate of the region.
+         * @return the loaded region, or null if it isn't loaded.
+         */
         @Nullable
         private Region getRegion(int regionX, int regionZ) {
             return this.getRegion(new RegionPos(regionX, regionZ));
         }
 
+        /**
+         * Gets a loaded region from the storage map.
+         *
+         * @param regionPos the region position.
+         * @return the loaded region, or null if it isn't loaded.
+         */
         @Nullable
         private Region getRegion(RegionPos regionPos) {
             return this.regions.get(regionPos);

@@ -36,7 +36,7 @@ public final class WorldStorage {
         DataIo.writeCompressed(data, this.validatePath(path).toFile());
     }
 
-    public boolean exists(String path) {
+    public boolean exists(String path) throws IOException {
         Path worldPath = this.validatePath(path);
         return Files.exists(worldPath);
     }
@@ -51,7 +51,7 @@ public final class WorldStorage {
         }
     }
 
-    private Path validatePath(String path) {
+    private Path validatePath(String path) throws IOException {
         // Check if the path is in the world directory based on the absolute path.
         if (Paths.get(path).isAbsolute())
             throw new IllegalArgumentException("Path is absolute: " + path);
@@ -64,6 +64,11 @@ public final class WorldStorage {
                 throw new IllegalArgumentException("Path contains symbolic links: " + path);
             }
         }
+
+        // Create parent directories if necessary
+        if (Files.notExists(worldPath.getParent(), LinkOption.NOFOLLOW_LINKS)) {
+            Files.createDirectories(worldPath.getParent());
+        }
         
         return worldPath;
     }
@@ -72,7 +77,7 @@ public final class WorldStorage {
         return this.directory;
     }
 
-    public boolean regionExists(int x, int z) {
+    public boolean regionExists(int x, int z) throws IOException {
         return this.exists("regions/" + x + "." + z + ".ucregion");
     }
 

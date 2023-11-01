@@ -915,7 +915,7 @@ public class Renderer {
         if (rect.width < 1) return false;
         if (rect.height < 1) return false;
 
-        rect.y = Gdx.graphics.getHeight() - rect.y - rect.height;
+        rect.y = client.getHeight() - rect.y - rect.height;
 
         this.flush();
         return ScissorStack.pushScissors(rect);

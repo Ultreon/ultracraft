@@ -21,6 +21,7 @@ import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler {
@@ -91,18 +93,26 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
-        ClientWorld world = this.client.world;
-
-        PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
-
-        if (world == null) {
-            UltracraftClient.LOGGER.warn("World is not available when chunk load packet got received.");
-            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+        ClientPlayer player = this.client.player;
+        if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
 
-        UltracraftClient.LOGGER.debug("Chunk %s finished".formatted(pos));
-        world.loadChunk(pos, new ClientChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage));
+        CompletableFuture.runAsync(() -> {
+            ClientWorld world = this.client.world;
+
+            PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
+
+            if (world == null) {
+                UltracraftClient.LOGGER.warn("World is not available when chunk load packet got received.");
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                return;
+            }
+
+            UltracraftClient.LOGGER.debug("Chunk %s finished".formatted(pos));
+            world.loadChunk(pos, new ClientChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage));
+        }, this.client.chunkLoadingExecutor);
     }
 
     @Override
