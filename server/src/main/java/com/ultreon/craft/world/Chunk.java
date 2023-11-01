@@ -292,6 +292,7 @@ public abstract class Chunk implements ServerDisposable {
     public enum Status {
         SUCCESS,
         SKIP,
+        UNLOADED,
         FAILED
     }
 }

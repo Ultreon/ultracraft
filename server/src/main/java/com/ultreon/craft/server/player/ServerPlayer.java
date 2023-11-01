@@ -170,6 +170,7 @@ public final class ServerPlayer extends Player {
             }
             case SKIP -> this.skippedChunks.add(pos);
             case SUCCESS -> this.activeChunks.add(pos);
+            case UNLOADED -> this.activeChunks.remove(pos);
         }
     }
 

@@ -603,7 +603,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.loadingOverlay.setProgress(1.0F);
 
         this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltracraftClient.BOOT_TIMESTAMP);
-        UltracraftClient.LOGGER.info("Game booted in " + this.bootTime + "ms");
+        UltracraftClient.LOGGER.info("Game booted in " + this.bootTime.toSimpleString() + ".");
 
         UltracraftClient.invoke(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
         this.loadingOverlay = null;

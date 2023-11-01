@@ -1,8 +1,12 @@
 package com.ultreon.craft.world;
 
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
@@ -11,10 +15,7 @@ import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.util.OverwriteError;
-import com.ultreon.craft.util.Task;
-import com.ultreon.craft.util.ValidationError;
+import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
@@ -779,8 +780,6 @@ public final class ServerWorld extends World {
          */
         @Nullable
         public Chunk deactivate(@NotNull ChunkPos chunkPos) {
-            // TODO remove chunk when deactivated for a certain time.
-
             this.validateLocalPos(chunkPos);
             this.validateThread();
             Chunk chunk = this.chunks.get(chunkPos);

@@ -49,8 +49,9 @@ public class Hud implements GameRenderable {
         this.renderHealth(renderer, player);
 
         GameInput input = this.client.input;
-        if (input instanceof MobileInput) {
-            this.renderMobileHud(renderer, player, (MobileInput) input);
+        //noinspection deprecation
+        if (input instanceof MobileInput mobileInput) {
+            this.renderMobileHud(renderer, player, mobileInput);
         } else {
             this.renderCrosshair(renderer, player);
         }
@@ -96,7 +97,6 @@ public class Hud implements GameRenderable {
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
 
-        //TODO use item renderer
         List<ItemSlot> allowed = player.inventory.getHotbarSlots();
         for (int i = 0, allowedLength = allowed.size(); i < allowedLength; i++) {
             ItemStack item = allowed.get(i).getItem();

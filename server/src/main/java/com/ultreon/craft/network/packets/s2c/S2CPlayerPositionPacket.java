@@ -8,7 +8,6 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.List;
 
-// FIXME optimize this by only sending positions of players that have moved.
 public class S2CPlayerPositionPacket extends Packet<InGameClientPacketHandler> {
     private final List<Vec3d> list;
 

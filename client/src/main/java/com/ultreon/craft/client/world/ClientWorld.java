@@ -21,6 +21,8 @@ public final class ClientWorld extends World implements Disposable {
     @NotNull
     private final UltracraftClient client;
     private final Map<ChunkPos, ClientChunk> chunks = new ConcurrentHashMap<>();
+    private int chunkRefresh;
+    private ChunkPos oldChunkPos = new ChunkPos(0, 0);
 
     public ClientWorld(@NotNull UltracraftClient client) {
         super();
@@ -105,6 +107,22 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     public void tick() {
+        if (this.chunkRefresh-- <= 0) {
+            this.chunkRefresh = 40;
 
+            ClientPlayer player = this.client.player;
+            if (player != null) {
+                if (this.oldChunkPos.equals(player.getChunkPos())) return;
+                this.oldChunkPos = player.getChunkPos();
+                this.chunks.forEach((chunkPos, clientChunk) -> {
+                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
+                        this.chunks.remove(chunkPos);
+                        clientChunk.dispose();
+
+                        this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.UNLOADED));
+                    }
+                });
+            }
+        }
     }
 }

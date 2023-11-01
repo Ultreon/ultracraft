@@ -223,39 +223,31 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 if (player.isCrouching()) speed *= player.crouchModifier;
                 else if (player.isRunning()) speed *= player.runModifier;
 
-                if (!player.topView) {
-                    Vec3d tmp = new Vec3d();
-                    this.client.playerInput.tick(speed);
-                    Vector3 velocity = this.client.playerInput.getVelocity();
-                    this.vel.set(velocity.x, velocity.y, velocity.z);
+                Vec3d tmp = new Vec3d();
+                this.client.playerInput.tick(speed);
+                Vector3 velocity = this.client.playerInput.getVelocity();
+                this.vel.set(velocity.x, velocity.y, velocity.z);
 
-                    if (player.isInWater() && this.client.playerInput.up) {
+                if (player.isInWater() && this.client.playerInput.up) {
+                    tmp.set(0, 1, 0).nor().mul(speed);
+                    this.vel.add(tmp);
+                }
+                if (player.isFlying()) {
+                    if (this.client.playerInput.up) {
                         tmp.set(0, 1, 0).nor().mul(speed);
                         this.vel.add(tmp);
                     }
-                    if (player.isFlying()) {
-                        if (this.client.playerInput.up) {
-                            tmp.set(0, 1, 0).nor().mul(speed);
-                            this.vel.add(tmp);
-                        }
-                        if (this.client.playerInput.down) {
-                            tmp.set(0, 1, 0).nor().mul(-speed);
-                            this.vel.add(tmp);
-                        }
+                    if (this.client.playerInput.down) {
+                        tmp.set(0, 1, 0).nor().mul(-speed);
+                        this.vel.add(tmp);
                     }
-
-                    this.vel.x *= deltaTime * UltracraftServer.TPS;
-                    this.vel.y *= deltaTime * UltracraftServer.TPS;
-                    this.vel.z *= deltaTime * UltracraftServer.TPS;
-
-                    player.setVelocity(player.getVelocity().add(this.vel));
-                } else {
-                    player.setX(0);
-                    player.setZ(0);
-                    player.setY(120);
-                    player.xRot = 45;
-                    player.yRot =  -45;
                 }
+
+                this.vel.x *= deltaTime * UltracraftServer.TPS;
+                this.vel.y *= deltaTime * UltracraftServer.TPS;
+                this.vel.z *= deltaTime * UltracraftServer.TPS;
+
+                player.setVelocity(player.getVelocity().add(this.vel));
             }
         }
     }

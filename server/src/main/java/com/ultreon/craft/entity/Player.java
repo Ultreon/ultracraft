@@ -27,9 +27,6 @@ public abstract class Player extends LivingEntity {
     private boolean flying;
     private boolean crouching;
     private boolean spectating;
-    // TODO: @DEBUG START
-    public boolean topView = false;
-    // TODO: @DEBUG END
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
@@ -62,12 +59,6 @@ public abstract class Player extends LivingEntity {
 
     @Override
     public void tick() {
-        if (this.topView) {
-            this.noGravity = true;
-            this.flying = true;
-            this.spectating = true;
-        }
-
         if (this.jumping && !this.flying) this.swimUp();
 
         super.tick();
@@ -152,7 +143,6 @@ public abstract class Player extends LivingEntity {
         this.spectating = data.getBoolean("spectating", this.spectating);
         this.crouching = data.getBoolean("crouching", this.crouching);
         this.running = data.getBoolean("running", this.running);
-        this.topView = data.getBoolean("crouching", this.topView);
         this.walkingSpeed = data.getFloat("walkingSpeed", this.walkingSpeed);
         this.flyingSpeed = data.getFloat("flyingSpeed", this.flyingSpeed);
         this.crouchModifier = data.getFloat("crouchingModifier", this.crouchModifier);
@@ -168,7 +158,6 @@ public abstract class Player extends LivingEntity {
         data.putBoolean("spectating", this.spectating);
         data.putBoolean("crouching", this.crouching);
         data.putBoolean("running", this.running);
-        data.putBoolean("crouching", this.topView);
         data.putFloat("walkingSpeed", this.walkingSpeed);
         data.putFloat("flyingSpeed", this.flyingSpeed);
         data.putFloat("crouchingModifier", this.crouchModifier);
