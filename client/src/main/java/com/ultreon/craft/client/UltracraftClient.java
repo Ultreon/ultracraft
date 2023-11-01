@@ -50,7 +50,7 @@ import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.*;
-import com.ultreon.craft.client.network.ClientConnections;
+import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
@@ -1196,6 +1196,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.cursor = this.world.rayCast(new Ray(this.player.getPosition().add(0, this.player.getEyeHeight(), 0), this.player.getLookVector()));
         }
 
+        Connection connection = this.connection;
+        if (connection != null) connection.tick();
+
         if (this.player != null) this.player.tick();
         if (this.world != null) this.world.tick();
 
@@ -1571,13 +1574,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.integratedServer.start();
 
         SocketAddress localServer = this.integratedServer.getConnections().startMemoryServer();
-        this.connection = ClientConnections.connectToLocalServer(localServer);
+        this.connection = ClientConnection.connectToLocalServer(localServer);
         this.connection.initiate(localServer.toString(), 0, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
     }
 
     public void connectToServer(String host, int port) {
         this.connection = new Connection(PacketDestination.SERVER);
-        ChannelFuture future = ClientConnections.connectTo(new InetSocketAddress(host, port), this.connection);
+        ChannelFuture future = ClientConnection.connectTo(new InetSocketAddress(host, port), this.connection);
         future.syncUninterruptibly();
         this.connection.initiate(host, port, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
     }

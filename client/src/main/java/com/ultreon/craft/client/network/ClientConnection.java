@@ -2,6 +2,7 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
+import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -17,12 +18,12 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.function.Supplier;
 
-public class ClientConnections implements Runnable {
+public class ClientConnection implements Runnable {
 
     private final String host;
     private final int port;
 
-    public ClientConnections(String host, int port) {
+    public ClientConnection(String host, int port) {
         this.host = host;
         this.port = port;
     }
@@ -54,6 +55,12 @@ public class ClientConnections implements Runnable {
                 .handler(new MultiplayerChannelInitializer(connection))
                 .channel(channelClass)
                 .connect(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
+    }
+
+    public void tick(Connection connection) {
+        if (connection.tickKeepAlive()) {
+            connection.send(new S2CKeepAlivePacket());
+        }
     }
 
     @Override

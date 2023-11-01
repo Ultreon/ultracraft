@@ -2,12 +2,8 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalCause;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
@@ -16,7 +12,10 @@ import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.*;
+import com.ultreon.craft.util.InvalidThreadException;
+import com.ultreon.craft.util.OverwriteError;
+import com.ultreon.craft.util.Task;
+import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
@@ -123,7 +122,7 @@ public final class ServerWorld extends World {
         if (!chunk.getPos().equals(pos)) {
             throw new ValidationError("Chunk position (" + chunk.getPos() + ") and provided position (" + pos + ") don't match.");
         }
-        if (!this.unloadChunk(pos, true, false))
+        if (!this.unloadChunk(pos, true))
             World.LOGGER.warn(World.MARKER, "Failed to unload chunk at " + pos);
 
         WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.getPos(), chunk);
@@ -227,6 +226,13 @@ public final class ServerWorld extends World {
         this.chunkLock.unlock();
     }
 
+    /**
+     * Loads/unloads chunks requested by the given refresher.
+     * Note: Internal API: Do not call when you don't know what you are doing.
+     *
+     * @param refresher The refresher that requested the chunks.
+     */
+    @ApiStatus.Internal
     public void doRefresh(ChunkRefresher refresher) {
         if (!refresher.isFrozen()) return;
 
@@ -266,21 +272,13 @@ public final class ServerWorld extends World {
     }
 
     @Deprecated
-    public void refreshChunks(Vec3d vec) {
-//        var worldGenInfo = this.getWorldGenInfo(vec);
-//        this.tasks.offer(() -> {
-//            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
-//            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
-//        });
+    public void refreshChunks(Vec3d ignoredVec) {
+
     }
 
     @Deprecated
-    public void refreshChunks(Player player) {
-//        var worldGenInfo = this.getWorldGenInfo(player.getPosition());
-//        this.tasks.offer(() -> {
-//            for (var chunkPos : worldGenInfo.toRemove) this.deferUnloadChunk(chunkPos);
-//            for (var chunkPos : worldGenInfo.toLoad) this.deferLoadChunk(chunkPos);
-//        });
+    public void refreshChunks(Player ignoredPlayer) {
+
     }
 
     private void deferLoadChunk(ChunkPos chunkPos) {
@@ -305,7 +303,28 @@ public final class ServerWorld extends World {
         this.chunkLock.unlock();
     }
 
-    public boolean unloadChunk(ChunkPos chunkPos, boolean save, boolean force) {
+    /**
+     * Unloads a chunk from the world.
+     *
+     * @param chunkPos the position of the chunk to unload
+     * @param save if true, the chunk will be saved to disk.
+     * @param ignoredForce deprecated.
+     * @return true if the chunk was successfully unloaded.
+     * @deprecated use {@link #unloadChunk(ChunkPos, boolean)} instead.
+     */
+    @Deprecated
+    public boolean unloadChunk(ChunkPos chunkPos, boolean save, @Deprecated boolean ignoredForce) {
+        return this.unloadChunk(chunkPos, save);
+    }
+
+    /**
+     * Unloads a chunk from the world.
+     *
+     * @param chunkPos the position of the chunk to unload
+     * @param save if true, the chunk will be saved to disk.
+     * @return true if the chunk was successfully unloaded.
+     */
+    public boolean unloadChunk(ChunkPos chunkPos, boolean save) {
         this.checkThread();
 
         var region = this.regionStorage.getRegionAt(chunkPos);
@@ -332,13 +351,6 @@ public final class ServerWorld extends World {
 
         ServerWorld.chunkUnloads++;
         return true;
-    }
-
-    @CanIgnoreReturnValue
-    public boolean unloadChunk(ChunkPos localChunkPos, boolean save) {
-        this.checkThread();
-
-        return this.unloadChunk(localChunkPos, save, false);
     }
 
     public int getPlayTime() {
@@ -481,6 +493,7 @@ public final class ServerWorld extends World {
             }
         }
 
+        // TODO: Player data loading/saving.
 //        if (this.storage.exists("data/player.ubo")) {
 //			MapType playerData = this.worldStorage.read("data/player.ubo");
 //			Player player = EntityTypes.PLAYER.create(this);
@@ -675,7 +688,7 @@ public final class ServerWorld extends World {
      * @return the server this world belongs to.
      */
     public UltracraftServer getServer() {
-        return server;
+        return this.server;
     }
 
     /**
@@ -697,6 +710,10 @@ public final class ServerWorld extends World {
         region.generateChunk(localPos, globalPos);
     }
 
+    /**
+     * Sets the spawn point for the world.<br>
+     * The spawn point is set randomly.
+     */
     public void setupSpawn() {
         int spawnChunkX = MathUtils.random(-32, 31);
         int spawnChunkZ = MathUtils.random(-32, 31);

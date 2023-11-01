@@ -7,6 +7,7 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.Chunk;
@@ -90,5 +91,9 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onChunkStatus(ServerPlayer player, ChunkPos pos, Chunk.Status status) {
         player.onChunkStatus(pos, status);
+    }
+
+    public void onKeepAlive() {
+        // Do not need to do anything since it's a keep-alive packet.
     }
 }

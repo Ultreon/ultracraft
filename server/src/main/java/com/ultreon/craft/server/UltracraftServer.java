@@ -518,18 +518,12 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             Vec2d playerPos2D = new Vec2d(player.getX(), player.getZ());
             double dst = chunkPos2D.dst(playerPos2D);
             if (dst < this.getRenderDistance() * World.CHUNK_SIZE) {
-                this._sendChunk(player, globalPos, chunk);
+                player.sendChunk(globalPos, chunk);
             }
         }
     }
 
     private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) {
-        player.onChunkPending(pos);
-        player.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
-
-        List<Vec3d> list = this.players.values().stream().map(Entity::getPosition).filter(position -> position.dst(player.getPosition()) < this.entityRenderDistance).toList();
-        player.connection.send(new S2CPlayerPositionPacket(list));
-        player.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     /**

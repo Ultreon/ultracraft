@@ -12,20 +12,17 @@ import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
 import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.player.ServerPlayer;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.compression.JZlibDecoder;
-import io.netty.handler.codec.compression.JZlibEncoder;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import net.fabricmc.api.EnvType;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.loader.api.QuiltLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +67,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private static int packetsSent;
     private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(8);
     private ServerPlayer player;
+    private int keepAlive = 100;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -272,7 +270,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 });
             }
         } catch (Exception e) {
-            Connection.LOGGER.error("Failed to send packet: " + packet.getClass().getName());
+            Connection.LOGGER.error("Failed to send packet: " + packet.getClass().getName(), e);
         }
     }
 
@@ -470,5 +468,17 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     public ServerPlayer getPlayer() {
         return player;
+    }
+
+    /**
+     * Tick the keep-alive timer, and returns true if the keep-alive packet should be sent.
+     *
+     * @return true, if the keep-alive packet should be sent.
+     */
+    @ApiStatus.Internal
+    public boolean tickKeepAlive() {
+        boolean doKeepAlive = this.keepAlive-- <= 0;
+        if (doKeepAlive) this.keepAlive = 100;
+        return doKeepAlive;
     }
 }

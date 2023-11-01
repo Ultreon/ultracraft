@@ -26,4 +26,6 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onChunkData(ChunkPos pos, short[] palette, List<Block> data);
 
     void onPlayerPositions(PacketContext ctx, List<Vec3d> list);
+
+    void onKeepAlive();
 }

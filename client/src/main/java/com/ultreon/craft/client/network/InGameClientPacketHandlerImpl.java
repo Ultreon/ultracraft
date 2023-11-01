@@ -180,4 +180,9 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     public void onPlayerPositions(PacketContext ctx, List<Vec3d> list) {
         this.client.remotePlayers = list; //! Unoptimized system.
     }
+
+    @Override
+    public void onKeepAlive() {
+        // Do not need to do anything since it's a keep-alive packet.
+    }
 }

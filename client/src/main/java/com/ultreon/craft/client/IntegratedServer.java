@@ -1,11 +1,9 @@
 package com.ultreon.craft.client;
 
-import com.ultreon.craft.client.network.ClientConnections;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.WorldStorage;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.nio.file.Files;
 
 public class IntegratedServer extends UltracraftServer {

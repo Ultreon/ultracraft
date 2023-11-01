@@ -37,7 +37,8 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
                 UltracraftClient.crash(e);
             }
 
-            this.client.setActivity(Activity.SINGLEPLAYER);
+            if (this.client.integratedServer != null) this.client.setActivity(Activity.SINGLEPLAYER);
+            else this.client.setActivity(Activity.MULTIPLAYER);
         });
     }
 

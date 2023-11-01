@@ -4,33 +4,28 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.network.Connection;
-import com.ultreon.craft.network.packets.s2c.S2CChunkCancelPacket;
-import com.ultreon.craft.network.packets.s2c.S2CPlayerHealthPacket;
-import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
-import com.ultreon.craft.network.packets.s2c.S2CRespawnPacket;
+import com.ultreon.craft.network.PacketResult;
+import com.ultreon.craft.network.packets.s2c.*;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.Unit;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.ChunkRefresher;
-import com.ultreon.craft.world.ServerWorld;
+import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import org.apache.commons.collections4.set.ListOrderedSet;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,6 +42,7 @@ public final class ServerPlayer extends Player {
     private final Set<ChunkPos> activeChunks = new HashSet<>();
     private final Set<ChunkPos> skippedChunks = new HashSet<>();
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
+    private boolean sendingChunk;
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name) {
         super(entityType, world);
@@ -195,16 +191,30 @@ public final class ServerPlayer extends Player {
 
         // Remove all failed chunks.
         toLoad.removeAll(this.failedChunks.asMap().keySet());
+        toLoad.removeAll(toUnload);
 
-        // Add all loading/unloading chunks.
-        refresher.addLoading(toLoad.stream().sorted((o1, o2) -> {
+        List<ChunkPos> load = toLoad.stream().sorted((o1, o2) -> {
             // Compare against player position.
             Vec2d playerPos = new Vec2d(chunkPos.x(), chunkPos.z());
             Vec2d cPos1 = new Vec2d(o1.x(), o1.z());
             Vec2d cPos2 = new Vec2d(o2.x(), o2.z());
 
             return Double.compare(cPos1.dst(playerPos), cPos2.dst(playerPos));
-        }).toList());
+        }).toList();
+
+        for (ChunkPos loadingChunk : load) {
+            ServerChunk chunk = this.world.getChunk(loadingChunk);
+            if (chunk != null) {
+                try {
+                    this.server.sendChunk(loadingChunk, chunk);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        // Add all loading/unloading chunks.
+        refresher.addLoading(load);
         refresher.addUnloading(toUnload);
     }
 
@@ -228,5 +238,16 @@ public final class ServerPlayer extends Player {
     public void teleportTo(double x, double y, double z) {
         this.setPosition(x, y, z);
         this.connection.send(new S2CPlayerSetPosPacket(x, y, z));
+    }
+
+    public void sendChunk(ChunkPos pos, Chunk chunk) {
+        if (this.sendingChunk) return;
+
+        this.onChunkPending(pos);
+        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+
+        List<Vec3d> list = this.server.getPlayers().stream().map(Entity::getPosition).filter(position -> position.dst(this.getPosition()) < this.server.getEntityRenderDistance()).toList();
+        this.connection.send(new S2CPlayerPositionPacket(list));
+        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 }

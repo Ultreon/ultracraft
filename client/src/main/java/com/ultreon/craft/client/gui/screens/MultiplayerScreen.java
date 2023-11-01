@@ -3,13 +3,8 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.TextEntry;
-import com.ultreon.craft.client.network.ClientConnections;
-import com.ultreon.craft.network.Connection;
-import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.Nullable;
-
-import java.net.InetSocketAddress;
 
 public class MultiplayerScreen extends Screen {
     private TextEntry entry;
