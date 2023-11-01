@@ -1285,7 +1285,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 this.futures.removeIf(CompletableFuture::isDone);
             }
 
-            if (this.integratedServer.isRunning()) this.integratedServer.shutdown();
+            if (this.integratedServer != null && this.integratedServer.isRunning()) this.integratedServer.shutdown();
 
             if (this.scheduler != null) this.scheduler.shutdownNow().clear();
             if (this.garbageCollector != null) this.garbageCollector.shutdown();

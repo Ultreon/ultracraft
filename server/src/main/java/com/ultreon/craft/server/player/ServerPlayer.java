@@ -97,6 +97,7 @@ public final class ServerPlayer extends Player {
         this.world.prepareSpawn(this);
         this.world.spawn(this);
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
+        System.out.println("position = " + position);
     }
 
     @Override

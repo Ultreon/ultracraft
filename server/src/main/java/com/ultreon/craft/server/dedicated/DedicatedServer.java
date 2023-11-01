@@ -43,6 +43,8 @@ public class DedicatedServer extends UltracraftServer {
         }
 
         this.maxPlayers = config.maxPlayers;
+
+        this.world.setupSpawn();
     }
 
     /**

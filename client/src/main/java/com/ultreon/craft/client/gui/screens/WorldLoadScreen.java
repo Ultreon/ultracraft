@@ -7,6 +7,7 @@ import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.GuiComponent;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.craft.world.World;
@@ -68,16 +69,15 @@ public class WorldLoadScreen extends Screen {
 
             WorldLoadScreen.LOGGER.debug("Set spawn point");
 
-            int spawnChunkX = MathUtils.random(-32, 31);
-            int spawnChunkZ = MathUtils.random(-32, 31);
-            int spawnX = MathUtils.random(spawnChunkX * 16, spawnChunkX * 16 + 15);
-            int spawnZ = MathUtils.random(spawnChunkX * 16, spawnChunkX * 16 + 15);
-
-            this.world.setSpawnPoint(spawnX, spawnZ);
+            this.world.setupSpawn();
 
             UltracraftServer.invoke(() -> {
                 try {
                     WorldLoadScreen.LOGGER.info("Loading spawn chunks...");
+
+                    ChunkPos spawnChunk = World.toChunkPos(this.world.getSpawnPoint());
+                    int spawnChunkX = spawnChunk.x();
+                    int spawnChunkZ = spawnChunk.z();
 
                     for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
                         for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {

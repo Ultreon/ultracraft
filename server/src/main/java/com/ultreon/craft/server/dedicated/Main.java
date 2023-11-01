@@ -2,6 +2,7 @@ package com.ultreon.craft.server.dedicated;
 
 import com.google.gson.Gson;
 import com.ultreon.craft.server.ServerConstants;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.ApiStatus;
@@ -26,7 +27,17 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger("ServerMain");
     private static DedicatedServer server;
+    private static ServerLoader serverLoader;
 
+    /**
+     * Main entry point for the server.
+     * WARNING: Do not invoke.
+     * This will be called by the QuiltMC game provider.
+     *
+     * @param args command line arguments
+     * @throws IOException if an I/O error occurs
+     * @throws InterruptedException if the current thread was interrupted
+     */
     @ApiStatus.Internal
     public static void main(String[] args) throws IOException, InterruptedException {
         try {
@@ -35,6 +46,9 @@ public class Main {
 
             // Set default namespace in CoreLibs identifier.
             Identifier.setDefaultNamespace(ServerConstants.NAMESPACE);
+
+            Main.serverLoader = new ServerLoader();
+            Main.serverLoader.load();
 
             // First-initialize the server configuration.
             Gson gson = new Gson();
@@ -84,6 +98,12 @@ public class Main {
         }
     }
 
+    /**
+     * Gets the server instance.
+     * Not recommended to use this method, use {@link UltracraftServer#get()} instead.
+     *
+     * @return the server instance
+     */
     @ApiStatus.Internal
     public static DedicatedServer getServer() {
         return Main.server;

@@ -1,5 +1,6 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -694,6 +695,15 @@ public final class ServerWorld extends World {
         region.activeChunks.remove(localPos);
         region.chunks.remove(localPos);
         region.generateChunk(localPos, globalPos);
+    }
+
+    public void setupSpawn() {
+        int spawnChunkX = MathUtils.random(-32, 31);
+        int spawnChunkZ = MathUtils.random(-32, 31);
+        int spawnX = MathUtils.random(spawnChunkX * 16, spawnChunkX * 16 + 15);
+        int spawnZ = MathUtils.random(spawnChunkZ * 16, spawnChunkZ * 16 + 15);
+
+        this.setSpawnPoint(spawnX, spawnZ);
     }
 
     /**

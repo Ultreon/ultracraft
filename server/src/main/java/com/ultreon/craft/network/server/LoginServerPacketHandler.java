@@ -104,6 +104,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
             this.connection.setHandler(new InGameServerPacketHandler(this.server, player, this.connection));
 
             BlockPos spawnPoint = UltracraftServer.invokeAndWait(() -> this.server.getWorld().getSpawnPoint());
+            System.out.println("spawnPoint = " + spawnPoint);
 
             player.spawn(spawnPoint.vec().d().add(0.5, 0, 0.5), this.connection);
         }), true);

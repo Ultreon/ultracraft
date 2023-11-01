@@ -1,5 +1,6 @@
 package com.ultreon.craft.world;
 
+import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
@@ -87,6 +88,22 @@ public abstract class World implements ServerDisposable {
         }
 
         return toCreate;
+    }
+
+    public static ChunkPos blockToChunkPos(Vector3 pos) {
+        return new ChunkPos(Math.floorDiv((int) pos.x, CHUNK_SIZE), Math.floorDiv((int) pos.z, CHUNK_SIZE));
+    }
+
+    public static ChunkPos blockToChunkPos(Vec3d pos) {
+        return new ChunkPos(Math.floorDiv((int) pos.x, CHUNK_SIZE), Math.floorDiv((int) pos.z, CHUNK_SIZE));
+    }
+
+    public static ChunkPos blockToChunkPos(Vec3i pos) {
+        return new ChunkPos(Math.floorDiv(pos.x, CHUNK_SIZE), Math.floorDiv(pos.z, CHUNK_SIZE));
+    }
+
+    public static ChunkPos toChunkPos(BlockPos pos) {
+        return new ChunkPos(Math.floorDiv(pos.x(), CHUNK_SIZE), Math.floorDiv(pos.z(), CHUNK_SIZE));
     }
 
     public List<ChunkPos> getChunksAround(Vec3d pos) {
