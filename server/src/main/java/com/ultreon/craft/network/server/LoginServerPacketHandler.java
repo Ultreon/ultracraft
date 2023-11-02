@@ -93,15 +93,16 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         }
 
         ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.server.getWorld(), finalUuid, name);
-        this.server.placePlayer(player);
+        player.connection = this.connection;
+        this.connection.setPlayer(player);
 
         Connection.LOGGER.info(name + " joined the server.");
-
-        this.connection.setPlayer(player);
 
         this.connection.send(new S2CLoginAcceptedPacket(finalUuid), PacketResult.onEither(() -> {
             this.connection.moveToInGame();
             this.connection.setHandler(new InGameServerPacketHandler(this.server, player, this.connection));
+
+            this.server.placePlayer(player);
 
             BlockPos spawnPoint = UltracraftServer.invokeAndWait(() -> this.server.getWorld().getSpawnPoint());
             System.out.println("spawnPoint = " + spawnPoint);

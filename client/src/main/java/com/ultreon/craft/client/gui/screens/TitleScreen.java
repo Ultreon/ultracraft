@@ -9,22 +9,16 @@ import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Resizer;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.translations.v1.Language;
-import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.IOException;
 
 public class TitleScreen extends Screen {
     private Button singleplayerButton;
-    private Button multiplayerButton;
-    private Button modListButton;
+
     private Button optionsButton;
     private Button quitButton;
-    private final GlyphLayout layout = new GlyphLayout();
-    private static int hiddenClicks = 0;
-    private boolean activitySet = false;
     private final Resizer resizer;
 
     public TitleScreen() {
@@ -56,17 +50,16 @@ public class TitleScreen extends Screen {
 
         super.init();
 
-        if (!this.activitySet) {
+        boolean activitySet = false;
+        if (!activitySet) {
             this.client.setActivity(Activity.MAIN_MENU);
         }
 
-        int y = this.height / 2 +- 35;
+        int y = this.height / 2 - 35;
 
         this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("craft.screen.title.singleplayer"), this::openSingleplayer));
-        this.multiplayerButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
-        this.multiplayerButton.enabled = QuiltLoader.isDevelopmentEnvironment(); //! Multiplayer not working yet.
-
-        this.modListButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.mod_list"), this::showModList));
+        this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
+        this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.mod_list"), this::showModList));
         this.optionsButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.options"), this::showOptions));
         this.quitButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.quit"), TitleScreen::quitGame));
     }

@@ -9,6 +9,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onModPacket(NetworkChannel channel, ModPacket<?> packet);
@@ -25,9 +26,13 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkData(ChunkPos pos, short[] palette, List<Block> data);
 
-    void onPlayerPositions(PacketContext ctx, List<Vec3d> list);
+    void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 
     void onKeepAlive();
 
     void onPlaySound(Identifier sound, float volume);
+
+    void onAddPlayer(UUID uuid, String name, Vec3d position);
+
+    void onRemovePlayer(UUID u);
 }

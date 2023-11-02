@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
-import com.ultreon.craft.client.player.ClientPlayer;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,7 @@ public class GameRenderer {
         var world = this.client.world;
         var worldRenderer = this.client.worldRenderer;
 
-        ClientPlayer player = this.client.player;
+        LocalPlayer player = this.client.player;
 
         if (player != null) {
             if (this.client.screen == null && !ImGuiOverlay.isShowingImGui()) {

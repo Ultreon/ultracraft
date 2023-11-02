@@ -11,6 +11,7 @@ import com.ultreon.craft.network.packets.c2s.C2SDisconnectPacket;
 import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
 import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -444,6 +445,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (message == null) message = "Connection lost";
 
             finalHandler.onDisconnect(message);
+
+            if (this.player != null) {
+                UltracraftServer server = this.player.getWorld().getServer();
+                server.onDisconnected(this.player, message);
+            }
         }
     }
 
@@ -467,7 +473,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public ServerPlayer getPlayer() {
-        return player;
+        return this.player;
     }
 
     /**

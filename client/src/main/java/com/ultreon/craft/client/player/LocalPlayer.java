@@ -17,12 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class ClientPlayer extends Player {
+public class LocalPlayer extends Player {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
     private UUID uuid;
 
-    public ClientPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
+    public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
         this.world = world;
         this.uuid = uuid;

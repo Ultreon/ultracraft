@@ -4,7 +4,8 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
-import com.ultreon.craft.client.player.ClientPlayer;
+import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.player.RemotePlayer;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
@@ -27,21 +28,17 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler {
     private final Connection connection;
     private final Map<Identifier, NetworkChannel> channels = new HashMap<>();
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
-    private final Map<ChunkPos, ByteArrayOutputStream> chunkParts = new ConcurrentHashMap<>();
-    private final Map<ChunkPos, byte[]> chunkHashes = new ConcurrentHashMap<>();
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -73,7 +70,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onRespawn(Vec3d pos) {
-        ClientPlayer player = this.client.player;
+        LocalPlayer player = this.client.player;
         if (this.client.player != null) {
             player.setPosition(pos);
             player.resurrect();
@@ -85,7 +82,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onPlayerSetPos(Vec3d pos) {
-        ClientPlayer player = this.client.player;
+        LocalPlayer player = this.client.player;
         if (player != null) {
             player.setPosition(pos);
             player.setVelocity(new Vec3d());
@@ -94,7 +91,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
-        ClientPlayer player = this.client.player;
+        LocalPlayer player = this.client.player;
         if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
@@ -117,14 +114,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onChunkCancel(ChunkPos pos) {
-        try {
-            this.chunkParts.remove(pos).close();
-        } catch (IOException ignored) {
-
-        }
-
-        this.chunkHashes.remove(pos);
-
         this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
     }
 
@@ -177,8 +166,13 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onPlayerPositions(PacketContext ctx, List<Vec3d> list) {
-        this.client.remotePlayers = list; //! Unoptimized system.
+    public void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos) {
+        // Update the remote player's position in the local multiplayer data.
+        var data = this.client.getMultiplayerData();
+        RemotePlayer remotePlayer = data.getRemotePlayerByUuid(player);
+        if (remotePlayer == null) return;
+
+        remotePlayer.setPosition(pos);
     }
 
     @Override
@@ -189,5 +183,15 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     @Override
     public void onPlaySound(Identifier sound, float volume) {
         this.client.playSound(Registries.SOUND_EVENTS.getValue(sound), volume);
+    }
+
+    @Override
+    public void onAddPlayer(UUID uuid, String name, Vec3d position) {
+        this.client.getMultiplayerData().addPlayer(uuid, name, position);
+    }
+
+    @Override
+    public void onRemovePlayer(UUID uuid) {
+        this.client.getMultiplayerData().removePlayer(uuid);
     }
 }

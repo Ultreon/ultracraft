@@ -102,7 +102,7 @@ public class LivingEntity extends Entity {
     @Override
     protected void hitGround() {
         if (!this.noGravity && !this.isInWater()) {
-            int damage = (int) (this.fallDistance - 0.2f) - 3;
+            int damage = (int) (this.fallDistance - 2.2f);
             if (damage > 0) {
                 this.hurt(damage, DamageSource.FALLING);
             }

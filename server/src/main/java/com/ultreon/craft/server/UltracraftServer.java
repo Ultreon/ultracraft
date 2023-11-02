@@ -1,14 +1,12 @@
 package com.ultreon.craft.server;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.events.WorldEvents;
-import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CPlayerPositionPacket;
-import com.ultreon.craft.network.packets.s2c.S2CChunkDataPacket;
+import com.ultreon.craft.network.packets.s2c.S2CAddPlayerPacket;
+import com.ultreon.craft.network.packets.s2c.S2CRemovePlayerPacket;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.PollingExecutorService;
@@ -16,7 +14,6 @@ import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
@@ -49,13 +46,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final List<ServerDisposable> disposables = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Queue<Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>>> chunkNetworkQueue = new ArrayDeque<>();
-    private final Map<UUID, ServerPlayer> players = new HashMap<>();
+    private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 16;
-    protected int entityRenderDistance = 6;
+    protected int entityRenderDistance = 6 * World.CHUNK_SIZE;
     private int chunkRefresh;
     private long onlineTicks;
     protected volatile boolean running = false;
@@ -473,7 +470,23 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      */
     @ApiStatus.Internal
     public void placePlayer(ServerPlayer player) {
+        // Put the player into the player list.
         this.players.put(player.getUuid(), player);
+
+        // Send player to all other players within the render distance.
+        var players = this.getPlayers()
+                .stream()
+//                .filter(other -> other.getPosition().dst(player.getPosition()) < this.getEntityRenderDistance())
+                .toList();
+
+        for (ServerPlayer other : players) {
+            if (other == player) continue;
+//            if (other.getPosition().dst(player.getPosition()) < this.getEntityRenderDistance()) {
+            System.out.println("Player " + player.getName() + " is within the render distance of " + this.getEntityRenderDistance() + "!");
+            other.connection.send(new S2CAddPlayerPacket(player.getUuid(), player.getName(), player.getPosition()));
+            player.connection.send(new S2CAddPlayerPacket(other.getUuid(), other.getName(), other.getPosition()));
+//            }
+        }
     }
 
     /**
@@ -542,6 +555,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     @ApiStatus.Internal
     public void onDisconnected(ServerPlayer player, String message) {
         UltracraftServer.LOGGER.info("Player '" + player.getName() + "' disconnected with message: " + message);
+        this.players.remove(player.getUuid());
+        for (ServerPlayer other : this.players.values()) {
+            other.connection.send(new S2CRemovePlayerPacket(other.getUuid()));
+        }
     }
 
     /**

@@ -3,7 +3,6 @@ package com.ultreon.craft.server.player;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -39,8 +39,8 @@ public final class ServerPlayer extends Player {
     private final Cache<ChunkPos, S2CChunkCancelPacket> pendingChunks = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).removalListener(notification -> { }).build();
     private final Cache<ChunkPos, Unit> failedChunks = CacheBuilder.newBuilder().expireAfterWrite(90, TimeUnit.SECONDS).removalListener(notification -> {
     }).build();
-    private final Set<ChunkPos> activeChunks = new HashSet<>();
-    private final Set<ChunkPos> skippedChunks = new HashSet<>();
+    private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
+    private final Set<ChunkPos> skippedChunks = new CopyOnWriteArraySet<>();
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
     private boolean sendingChunk;
 
@@ -85,18 +85,6 @@ public final class ServerPlayer extends Player {
     public boolean onHurt(float damage, @NotNull DamageSource source) {
         if (this.damageImmunity > 0) return true;
         boolean doDamage = super.onHurt(damage, source);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
-        System.out.println("doDamage = " + doDamage);
         if (!doDamage) this.playSound(this.getHurtSound(), 1.0f);
         return doDamage;
     }
@@ -134,11 +122,16 @@ public final class ServerPlayer extends Player {
     protected void onMoved() {
         super.onMoved();
 
-        // Send new position to the client.
+        // Send the new position to the client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
             this.setPosition(this.ox, this.oy, this.oz);
             this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
+
+        if (Math.abs(this.x - this.ox) < 0.001 &&
+                Math.abs(this.y - this.oy) < 0.001 &&
+                Math.abs(this.z - this.oz) < 0.001)
+            return;
 
         // Limit player speed server-side.
         double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 2.5;
@@ -156,6 +149,14 @@ public final class ServerPlayer extends Player {
         this.ox = this.x;
         this.oy = this.y;
         this.oz = this.z;
+
+        for (var player : this.server.getPlayers()) {
+            if (player == this) continue;
+
+            if (player.getPosition().dst(this.getPosition()) < this.server.getEntityRenderDistance()) {
+                player.connection.send(new S2CPlayerPositionPacket(this.getUuid(), this.getPosition()));
+            }
+        }
     }
 
     @Override
@@ -269,15 +270,16 @@ public final class ServerPlayer extends Player {
 
         this.onChunkPending(pos);
         this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
-
-        List<Vec3d> list = this.server.getPlayers().stream().map(Entity::getPosition).filter(position -> position.dst(this.getPosition()) < this.server.getEntityRenderDistance()).toList();
-        this.connection.send(new S2CPlayerPositionPacket(list));
-        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
     public void playSound(@Nullable SoundEvent sound, float volume) {
         if (sound == null) return;
         this.connection.send(new S2CPlaySoundPacket(sound.getId(), volume));
+    }
+
+    @Override
+    public ServerWorld getWorld() {
+        return this.world;
     }
 }

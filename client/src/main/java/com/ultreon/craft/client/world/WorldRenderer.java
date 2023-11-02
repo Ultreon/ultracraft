@@ -327,8 +327,8 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             output.add(this.verifyOutput(this.cursor));
         }
 
-        for (Vec3d remotePlayer : this.client.remotePlayers) {
-            Vec3f renderOffsetCL = remotePlayer.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f(); //* CoreLibs vector.
+        for (var remotePlayer : this.client.getMultiplayerData().getRemotePlayers()) {
+            Vec3f renderOffsetCL = remotePlayer.getPosition().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f(); //* CoreLibs vector.
             Vector3 renderOffset = new Vector3(renderOffsetCL.x, renderOffsetCL.y, renderOffsetCL.z);
 
             Renderable renderable = renderablePool.obtain();

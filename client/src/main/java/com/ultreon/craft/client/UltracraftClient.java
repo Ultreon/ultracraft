@@ -51,9 +51,10 @@ import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.*;
+import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
-import com.ultreon.craft.client.player.ClientPlayer;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.rpc.Activity;
@@ -147,6 +148,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static ArgParser arguments;
     public Connection connection;
     public ServerData serverData;
+    @Deprecated
     public List<Vec3d> remotePlayers = new CopyOnWriteArrayList<>();
     public ExecutorService chunkLoadingExecutor = Executors.newFixedThreadPool(4);
     private Duration bootTime;
@@ -184,7 +186,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @SuppressWarnings("GDXJavaStaticResource")
     private static UltracraftClient instance;
     @Nullable
-    public ClientPlayer player;
+    public LocalPlayer player;
     @NotNull
     private final SpriteBatch spriteBatch;
     public final ModelBatch modelBatch;
@@ -257,6 +259,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private FrameBuffer fbo;
     private int width;
     private int height;
+    private MultiplayerData multiplayerData;
 
     UltracraftClient(String[] argv) {
         UltracraftClient.LOGGER.info("Booting game!");
@@ -460,6 +463,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return QuiltLoader.getGameDir();
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private void load() throws Throwable {
         Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
 
@@ -1581,6 +1585,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         SocketAddress localServer = this.integratedServer.getConnections().startMemoryServer();
         this.connection = ClientConnection.connectToLocalServer(localServer);
+
+        // Initialize (memory) connection.
+        this.multiplayerData = new MultiplayerData(this);
         this.connection.initiate(localServer.toString(), 0, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
     }
 
@@ -1588,6 +1595,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.connection = new Connection(PacketDestination.SERVER);
         ChannelFuture future = ClientConnection.connectTo(new InetSocketAddress(host, port), this.connection);
         future.syncUninterruptibly();
+
+        // Initialize connection.
+        this.multiplayerData = new MultiplayerData(this);
         this.connection.initiate(host, port, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
     }
 
@@ -1630,6 +1640,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public void setGuiScale(float guiScale) {
         this.guiScale = guiScale;
+    }
+
+    public MultiplayerData getMultiplayerData() {
+        return this.multiplayerData;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {
