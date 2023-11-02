@@ -2,23 +2,38 @@ package com.ultreon.craft.menu;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
-import org.checkerframework.checker.units.qual.C;
+import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class Inventory extends ContainerMenu {
     private final ItemSlot[] hotbar = new ItemSlot[9];
+    private Player holder;
 
-    public Inventory() {
+    public Inventory(Player holder) {
+        this(MenuTypes.INVENTORY, holder.getWorld(), holder, null);
+        this.holder = holder;
+    }
 
+    public Inventory(MenuType<?> type, World world, Entity entity, @Nullable BlockPos pos) {
+        super(type, world, entity, pos);
+
+        if (!(entity instanceof Player)) {
+            throw new IllegalArgumentException("Entity must be a player!");
+        }
     }
 
     @Override
     protected void buildContainer(List<ItemSlot> slots) {
         for (int x = 0; x < 9; x++) {
+            int idx = slots.size();
             ItemSlot itemSlot = new ItemSlot(this, new ItemStack(), x * 19 + 6, 83);
-            this.hotbar[x] = itemSlot;
+            this.hotbar[idx] = itemSlot;
             slots.add(itemSlot);
         }
 
@@ -68,8 +83,10 @@ public class Inventory extends ContainerMenu {
                 int maxStackSize = stack.getItem().getMaxStackSize();
                 int transferAmount = Math.min(stack.getCount(), maxStackSize);
                 stack.transferTo(slotItem, transferAmount);
+                this.onItemChanged(slot);
             } else if (slotItem.isSameItemSameTag(stack)) {
                 stack.transferTo(slotItem, stack.getCount());
+                this.onItemChanged(slot);
             }
 
             // If the stack is fully distributed, exit the loop
@@ -80,5 +97,9 @@ public class Inventory extends ContainerMenu {
 
         // If the loop completes and there's still some stack remaining, it means it couldn't be fully added to slots.
         return stack.isEmpty();
+    }
+
+    public Player getHolder() {
+        return this.holder;
     }
 }

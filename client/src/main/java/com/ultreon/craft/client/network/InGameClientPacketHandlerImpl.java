@@ -10,6 +10,8 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -19,6 +21,7 @@ import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -193,5 +196,33 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     @Override
     public void onRemovePlayer(UUID uuid) {
         this.client.getMultiplayerData().removePlayer(uuid);
+    }
+
+    @Override
+    public void onBlockSet(BlockPos pos, Identifier blockId) {
+        var block = Registries.BLOCKS.getValue(blockId);
+
+        ClientWorld world = this.client.world;
+        if (this.client.world != null) {
+            this.client.submit(() -> world.set(pos, block));
+        }
+    }
+
+    @Override
+    public void onMenuItemChanged(int index, ItemStack stack) {
+        LocalPlayer player = this.client.player;
+
+        if (player != null) player.openMenu.setItem(index, stack);
+    }
+
+    @Override
+    public void onMenuCursorChanged(ItemStack cursor) {
+        LocalPlayer player = this.client.player;
+        if (this.client.player != null) {
+            ContainerMenu openMenu = player.getOpenMenu();
+            if (openMenu != null) {
+                this.client.player.setCursor(cursor);
+            }
+        }
     }
 }

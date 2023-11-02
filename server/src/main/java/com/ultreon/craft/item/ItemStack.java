@@ -2,8 +2,12 @@ package com.ultreon.craft.item;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.registry.Registries;
+import com.ultreon.data.types.IType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -51,6 +55,28 @@ public class ItemStack {
         this.count = count;
         this.tag = tag;
         this.checkCount(); // Note: used method so mods can use @Redirect to remove stack limits.
+    }
+
+    public static ItemStack load(MapType data) {
+        @Nullable Identifier id = Identifier.tryParse(data.getString("item"));
+        if (id == null) return new ItemStack();
+
+        Item item = Registries.ITEMS.getValue(id);
+        if (item == null || item == Items.AIR) return new ItemStack();
+
+        int count = data.getInt("count", 0);
+        if (count <= 0) return new ItemStack();
+
+        MapType tag = data.getMap("Tag", new MapType());
+        return new ItemStack(item, count, tag);
+    }
+
+    public MapType save() {
+        MapType data = new MapType();
+        data.putString("item", this.item.getId().toString());
+        data.putInt("count", this.count);
+        data.put("Tag", this.tag);
+        return data;
     }
 
     private void checkCount() {
@@ -236,7 +262,7 @@ public class ItemStack {
     }
 
     /**
-     * Transfers 1 item to another item stack.
+     * Transfers one item to another item stack.
      *
      * @param target the item stack to receive the item.
      * @return the amount remaining.

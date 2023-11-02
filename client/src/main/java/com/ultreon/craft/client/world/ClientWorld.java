@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
@@ -75,6 +76,30 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     @Override
+    public void startBreaking(@NotNull BlockPos breaking, @NotNull Player breaker) {
+        if (breaker == this.client.player) {
+            this.client.connection.send(new C2SBlockBreakPacket(breaking, C2SBlockBreakPacket.BlockStatus.START));
+        }
+        super.startBreaking(breaking, breaker);
+    }
+
+    @Override
+    public BreakResult continueBreaking(@NotNull BlockPos breaking, float amount, @NotNull Player breaker) {
+        if (breaker == this.client.player) {
+            this.client.connection.send(new C2SBlockBreakPacket(breaking, C2SBlockBreakPacket.BlockStatus.CONTINUE));
+        }
+        return super.continueBreaking(breaking, amount, breaker);
+    }
+
+    @Override
+    public void stopBreaking(@NotNull BlockPos breaking, @NotNull Player breaker) {
+        if (breaker == this.client.player) {
+            this.client.connection.send(new C2SBlockBreakPacket(breaking, C2SBlockBreakPacket.BlockStatus.STOP));
+        }
+        super.stopBreaking(breaking, breaker);
+    }
+
+    @Override
     public void onChunkUpdated(@NotNull Chunk chunk) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException("Should be on rendering thread.");
@@ -84,7 +109,7 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     @Override
-    public void playSound(SoundEvent sound, double x, double y, double z) {
+    public void playSound(@NotNull SoundEvent sound, double x, double y, double z) {
         float range = sound.getRange();
         Player player = this.client.player;
         if (player != null) {

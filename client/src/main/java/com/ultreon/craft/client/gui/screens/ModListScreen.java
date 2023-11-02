@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.gui.screen;
+package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -7,7 +7,6 @@ import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v1.Language;

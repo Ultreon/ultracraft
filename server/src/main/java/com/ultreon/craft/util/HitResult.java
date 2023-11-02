@@ -27,6 +27,7 @@ public class HitResult {
 
     public HitResult(Ray ray, float distanceMax) {
         this.ray = ray;
+        this.distanceMax = distanceMax;
     }
 
     public HitResult setInput(Ray ray){

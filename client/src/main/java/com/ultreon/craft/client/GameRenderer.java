@@ -1,6 +1,7 @@
 package com.ultreon.craft.client;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Quaternion;
@@ -66,6 +67,14 @@ public class GameRenderer {
         renderer.translate(this.client.getDrawOffset().x, this.client.getDrawOffset().y);
         renderer.scale(this.client.getGuiScale(), this.client.getGuiScale());
         this.renderGame(renderer, screen, world, deltaTime);
+
+        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) &&
+                Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) &&
+                Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
+            this.client.crashOverlay.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
+        } else {
+            this.client.crashOverlay.reset();
+        }
         renderer.popMatrix();
 
         this.spriteBatch.end();

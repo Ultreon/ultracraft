@@ -92,8 +92,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
             return;
         }
 
-        ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.server.getWorld(), finalUuid, name);
-        player.connection = this.connection;
+        ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.server.getWorld(), finalUuid, name, this.connection);
         this.connection.setPlayer(player);
 
         Connection.LOGGER.info(name + " joined the server.");

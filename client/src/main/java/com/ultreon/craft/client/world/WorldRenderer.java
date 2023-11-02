@@ -6,7 +6,10 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.*;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
@@ -25,6 +28,7 @@ import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -276,9 +280,9 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
             output.add(this.verifyOutput(chunk.transparentMesh.renderable));
 
             for (var entry : chunk.getBreaking().entrySet()) {
-                Vec3i key = entry.getKey();
+                BlockPos key = entry.getKey();
                 this.tmp.set(chunk.renderOffset);
-                this.tmp.add(key.x + 1, key.y, key.z);
+                this.tmp.add(key.x() + 1, key.y(), key.z());
 
                 Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
                 int numIndices = breakingMesh.getMaxIndices();

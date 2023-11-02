@@ -31,7 +31,8 @@ import static com.ultreon.craft.world.World.*;
 public abstract class Chunk implements ServerDisposable {
     public static final int VERTEX_SIZE = 6;
     private final ChunkPos pos;
-    final Map<Vec3i, Float> breaking = new HashMap<>();
+    final Map<BlockPos, Float> breaking = new HashMap<>();
+    final Map<BlockPos, Integer> breakingId = new HashMap<>();
     protected final Object lock = new Object();
     protected boolean active;
     protected boolean modifiedByPlayer;
@@ -79,7 +80,7 @@ public abstract class Chunk implements ServerDisposable {
             LOGGER.error("Unknown block: " + stringId);
             return Blocks.AIR;
         }
-        return Registries.BLOCK.getValue(id);
+        return Registries.BLOCKS.getValue(id);
     }
 
     // Serialize the chunk to a byte array
@@ -158,20 +159,22 @@ public abstract class Chunk implements ServerDisposable {
         this.set(pos.x, pos.y, pos.z, block);
     }
 
-    public void set(int x, int y, int z, Block block) {
-        if (this.isOutOfBounds(x, y, z)) return;
-        this.setFast(x, y, z, block);
+    public boolean set(int x, int y, int z, Block block) {
+        if (this.isOutOfBounds(x, y, z)) return false;
+        return this.setFast(x, y, z, block);
     }
 
     public void setFast(Vec3i pos, Block block) {
         this.setFast(pos.x, pos.y, pos.z, block);
     }
 
-    public void setFast(int x, int y, int z, Block block) {
-        if (this.disposed) return;
+    public boolean setFast(int x, int y, int z, Block block) {
+        if (this.disposed) return false;
         int index = this.getIndex(x, y, z);
 
+        this.breaking.remove(new BlockPos(x, y, z));
         this.storage.set(index, block);
+        return true;
     }
 
     private int getIndex(int x, int y, int z) {
@@ -208,7 +211,7 @@ public abstract class Chunk implements ServerDisposable {
     }
 
     float getBreakProgress(float x, float y, float z) {
-        Vec3i pos = new Vec3i((int) x, (int) y, (int) z);
+        BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
         Float v = this.breaking.get(pos);
         if (v != null) {
             return v;
@@ -217,24 +220,24 @@ public abstract class Chunk implements ServerDisposable {
     }
 
     public void startBreaking(int x, int y, int z) {
-        this.breaking.put(new Vec3i(x, y, z), 0.0F);
+        this.breaking.put(new BlockPos(x, y, z), 0.0F);
     }
 
     public void stopBreaking(int x, int y, int z) {
-        this.breaking.remove(new Vec3i(x, y, z));
+        this.breaking.remove(new BlockPos(x, y, z));
     }
 
-    public boolean continueBreaking(int x, int y, int z, float amount) {
-        Vec3i pos = new Vec3i(x, y, z);
+    public BreakResult continueBreaking(int x, int y, int z, float amount) {
+        BlockPos pos = new BlockPos(x, y, z);
         Float v = this.breaking.computeIfPresent(pos, (pos1, cur) -> Mth.clamp(cur + amount, 0, 1));
         if (v != null && v == 1.0F) {
-            this.set(new Vec3i(x, y, z), Blocks.AIR);
-            return true;
+            this.breaking.remove(pos);
+            return BreakResult.BROKEN;
         }
-        return false;
+        return BreakResult.CONTINUE;
     }
 
-    public Map<Vec3i, Float> getBreaking() {
+    public Map<BlockPos, Float> getBreaking() {
         return Collections.unmodifiableMap(this.breaking);
     }
 
@@ -295,4 +298,5 @@ public abstract class Chunk implements ServerDisposable {
         UNLOADED,
         FAILED
     }
+
 }

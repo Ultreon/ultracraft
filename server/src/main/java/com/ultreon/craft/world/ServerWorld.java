@@ -4,10 +4,17 @@ import com.badlogic.gdx.math.MathUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.tool.ToolItem;
+import com.ultreon.craft.network.client.ClientPacketHandler;
+import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
 import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -127,6 +134,25 @@ public final class ServerWorld extends World {
 
         WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.getPos(), chunk);
         return true;
+    }
+
+    @Override
+    public boolean set(int x, int y, int z, @NotNull Block block) {
+        boolean isBlockSet = super.set(x, y, z, block);
+        if (isBlockSet) {
+            this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getId()));
+        }
+        return isBlockSet;
+    }
+
+    public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
+        for (var player : this.server.getPlayers()) {
+            if (player.getWorld() != this) continue;
+
+            if (player.isChunkActive(World.toChunkPos(x, y, z))) {
+                player.connection.send(packet);
+            }
+        }
     }
 
     @Nullable
@@ -420,6 +446,25 @@ public final class ServerWorld extends World {
         this.generator.dispose();
     }
 
+    @Override
+    public BreakResult continueBreaking(@NotNull BlockPos breaking, float amount, @NotNull Player breaker) {
+        BreakResult b = super.continueBreaking(breaking, amount, breaker);
+
+        if (b == BreakResult.BROKEN) {
+            ItemStack stack = breaker.getSelectedItem();
+            Block block = this.get(breaking);
+            this.set(breaking, Blocks.AIR);
+            System.out.println("breaking = " + breaking + ", amount = " + amount + ", breaker = " + breaker);
+
+            if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
+                return BreakResult.BROKEN;
+            }
+
+            breaker.inventory.addItems(block.getItemDrops());
+        }
+        return b;
+    }
+
     /**
      * Play a sound at a specific position.
      *
@@ -429,7 +474,7 @@ public final class ServerWorld extends World {
      * @param z the Z-position.
      */
     @Override
-    public void playSound(SoundEvent sound, double x, double y, double z) {
+    public void playSound(@NotNull SoundEvent sound, double x, double y, double z) {
         float range = sound.getRange();
         var playersWithinRange = this.getPlayersWithinRange(x, y, z, range);
         for (Player player : playersWithinRange) {
@@ -477,7 +522,7 @@ public final class ServerWorld extends World {
     /**
      * Loads the world from the disk.
      *
-     * @throws IOException when loading the world fails.
+     * @throws IOException when world loading fails.
      */
     @ApiStatus.Internal
     public void load() throws IOException {
@@ -485,20 +530,12 @@ public final class ServerWorld extends World {
         this.storage.createDir("regions/");
 
         if (this.storage.exists("data/entities.ubo")) {
-            ListType<MapType> entitiesData = this.storage.read("data/entities.ubo");
-            for (var entityData : entitiesData) {
+            ListType<MapType> entityListData = this.storage.read("data/entities.ubo");
+            for (var entityData : entityListData) {
                 var entity = Entity.loadFrom(this, entityData);
                 this.entities.put(entity.getId(), entity);
             }
         }
-
-        // TODO: Player data loading/saving.
-//        if (this.storage.exists("data/player.ubo")) {
-//			MapType playerData = this.worldStorage.read("data/player.ubo");
-//			Player player = EntityTypes.PLAYER.create(this);
-//			player.loadWithPos(playerData);
-//			UltreonCraft.get().player = player;
-//        }
 
         WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
 

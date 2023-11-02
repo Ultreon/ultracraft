@@ -8,8 +8,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
-import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.tool.ToolItem;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.util.Utils;
@@ -18,6 +17,7 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.CrashCategory;
@@ -60,6 +60,7 @@ public abstract class World implements ServerDisposable {
     final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new HashSet<>();
+    private final List<ContainerMenu> menus = new ArrayList<>();
 
     public World() {
     }
@@ -91,19 +92,31 @@ public abstract class World implements ServerDisposable {
     }
 
     public static ChunkPos blockToChunkPos(Vector3 pos) {
-        return new ChunkPos(Math.floorDiv((int) pos.x, CHUNK_SIZE), Math.floorDiv((int) pos.z, CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos blockToChunkPos(Vec3d pos) {
-        return new ChunkPos(Math.floorDiv((int) pos.x, CHUNK_SIZE), Math.floorDiv((int) pos.z, CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos blockToChunkPos(Vec3i pos) {
-        return new ChunkPos(Math.floorDiv(pos.x, CHUNK_SIZE), Math.floorDiv(pos.z, CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos toChunkPos(BlockPos pos) {
-        return new ChunkPos(Math.floorDiv(pos.x(), CHUNK_SIZE), Math.floorDiv(pos.z(), CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
+    }
+
+    public static ChunkPos toChunkPos(int x, int y, int z) {
+        return new ChunkPos(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
+    }
+
+    public static Vec2i toChunkVec(BlockPos pos) {
+        return new Vec2i(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
+    }
+
+    public static Vec2i toChunkVec(int x, int y, int z) {
+        return new Vec2i(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
     }
 
     public List<ChunkPos> getChunksAround(Vec3d pos) {
@@ -194,16 +207,16 @@ public abstract class World implements ServerDisposable {
         this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
     }
 
-    public void set(int x, int y, int z, Block block) {
+    public boolean set(int x, int y, int z, Block block) {
         this.checkThread();
 
         BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
 
         Chunk chunk = this.getChunkAt(x, y, z);
-        if (chunk == null) return;
+        if (chunk == null) return false;
 
         BlockPos cp = World.toLocalBlockPos(x, y, z);
-        chunk.set(cp.x(), cp.y(), cp.z(), block);
+        return chunk.set(cp.x(), cp.y(), cp.z(), block);
     }
 
     public Block get(BlockPos pos) {
@@ -462,30 +475,25 @@ public abstract class World implements ServerDisposable {
         return false;
     }
 
-    public void startBreaking(BlockPos breaking) {
+    public void startBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return;
-        BlockPos localBlockPos = this.toLocalBlockPos(breaking);
+        BlockPos localBlockPos = World.toLocalBlockPos(breaking);
         chunk.startBreaking(localBlockPos.x(), localBlockPos.y(), localBlockPos.z());
     }
 
-    public boolean continueBreaking(BlockPos breaking, float amount, Player player) {
+    public BreakResult continueBreaking(BlockPos breaking, float amount, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
-        if (chunk == null) return false;
+        if (chunk == null) return BreakResult.FAILED;
         BlockPos localBlockPos = World.toLocalBlockPos(breaking);
         Block block = this.get(breaking);
-        if (!chunk.continueBreaking(localBlockPos.x(), localBlockPos.y(), localBlockPos.z(), amount))
-            return true;
-        ItemStack stack = player.getSelectedItem();
-        if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool()))
-            return true;
-        if (player.inventory.addItems(block.getItemDrops()))
-            return true;
 
-        return true;
+        if (block.isAir()) return BreakResult.FAILED;
+
+        return chunk.continueBreaking(localBlockPos.x(), localBlockPos.y(), localBlockPos.z(), amount);
     }
 
-    public void stopBreaking(BlockPos breaking) {
+    public void stopBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return;
         BlockPos localBlockPos = World.toLocalBlockPos(breaking);
@@ -537,5 +545,15 @@ public abstract class World implements ServerDisposable {
 
     public void playSound(SoundEvent hurtSound, double x, double y, double z) {
 
+    }
+
+    public void closeMenu(ContainerMenu containerMenu) {
+        if (!this.menus.contains(containerMenu)) return;
+        this.menus.remove(containerMenu);
+    }
+
+    public void openMenu(ContainerMenu containerMenu) {
+        if (this.menus.contains(containerMenu)) return;
+        this.menus.add(containerMenu);
     }
 }

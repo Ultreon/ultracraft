@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.backends.lwjgl3.*;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
@@ -41,7 +42,7 @@ import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.font.FontRegistry;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.screen.ModIconOverrides;
+import com.ultreon.craft.client.gui.screens.ModIconOverrides;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
@@ -84,10 +85,7 @@ import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.util.*;
-import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.SoundEvent;
-import com.ultreon.craft.world.World;
-import com.ultreon.craft.world.WorldStorage;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
@@ -146,6 +144,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
     private static ArgParser arguments;
+    private final Cursor normalCursor;
+    private final Cursor hoverCursor;
     public Connection connection;
     public ServerData serverData;
     @Deprecated
@@ -260,6 +260,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private int width;
     private int height;
     private MultiplayerData multiplayerData;
+    ManualCrashOverlay crashOverlay;
 
     UltracraftClient(String[] argv) {
         UltracraftClient.LOGGER.info("Booting game!");
@@ -303,6 +304,11 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.logoRevealSound = Gdx.audio.newSound(Gdx.files.internal("assets/craft/sounds/logo_reveal.mp3"));
 
         this.resizer = new Resizer(this.ultreonLogoTex.getWidth(), this.ultreonLogoTex.getHeight());
+        
+        this.normalCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/craft/textures/cursors/normal.png")), 0, 0);
+        this.hoverCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/craft/textures/cursors/click.png")), 0, 0);
+        
+        Gdx.graphics.setCursor(this.normalCursor);
     }
 
     /**
@@ -516,6 +522,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.unifont = UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true));
         this.font = new Font(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.fnt"), true)));
+
+        this.crashOverlay = new ManualCrashOverlay(this);
 
         this.loadingOverlay.setProgress(0.7F);
 
@@ -1135,7 +1143,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private void fillGameInfo(CrashLog crashLog) {
+    @ApiStatus.Internal
+    public void fillGameInfo(CrashLog crashLog) {
         if (this.world != null) {
             this.world.fillCrashInfo(crashLog);
         }
@@ -1238,7 +1247,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 efficiency = toolItem.getEfficiency();
             }
 
-            if (!world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * UltracraftServer.TPS / efficiency, 0) + 1), this.player)) {
+            if (world.continueBreaking(breaking, 1.0F / (Math.max(this.breakingBlock.getHardness() * UltracraftServer.TPS / efficiency, 0) + 1), this.player) != BreakResult.CONTINUE) {
                 this.stopBreaking();
             } else {
                 if (this.oldSelected != this.player.selected) {
@@ -1250,17 +1259,22 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void resetBreaking(HitResult hitResult) {
+        LocalPlayer player = this.player;
+
         if (this.world == null) return;
         if (this.breaking == null) return;
-        this.world.stopBreaking(new BlockPos(this.breaking));
+        if (player == null) return;
+
+        this.world.stopBreaking(new BlockPos(this.breaking), player);
         Block block = hitResult.getBlock();
+
         if (block == null || block.isAir()) {
             this.breaking = null;
             this.breakingBlock = null;
         } else {
             this.breaking = hitResult.getPos();
             this.breakingBlock = block;
-            this.world.startBreaking(new BlockPos(hitResult.getPos()));
+            this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         }
     }
 
@@ -1491,26 +1505,33 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public void resetBreaking() {
         HitResult hitResult = this.hitResult;
+        Player player = this.player;
         if (hitResult == null || this.world == null || this.breaking == null) return;
-        this.world.stopBreaking(new BlockPos(hitResult.getPos()));
-        this.world.startBreaking(new BlockPos(hitResult.getPos()));
+        if (player == null) return;
+        this.world.stopBreaking(new BlockPos(hitResult.getPos()), player);
+        this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = hitResult.getPos();
         this.breakingBlock = hitResult.getBlock();
     }
 
     public void startBreaking() {
         HitResult hitResult = this.hitResult;
+        LocalPlayer player = this.player;
         if (hitResult == null || this.world == null) return;
         if (this.world.getBreakProgress(new BlockPos(hitResult.getPos())) >= 0.0F) return;
-        this.world.startBreaking(new BlockPos(hitResult.getPos()));
+        if (player == null) return;
+        this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = hitResult.getPos();
         this.breakingBlock = hitResult.getBlock();
     }
 
     public void stopBreaking() {
         HitResult hitResult = this.hitResult;
+        LocalPlayer player = this.player;
         if (hitResult == null || this.world == null) return;
-        this.world.stopBreaking(new BlockPos(hitResult.getPos()));
+        if (player == null) return;
+
+        this.world.stopBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = null;
         this.breakingBlock = null;
     }

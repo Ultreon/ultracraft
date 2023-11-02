@@ -31,9 +31,9 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public void setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, Block block) {
         if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
-        super.setFast(x, y, z, block);
+        return super.setFast(x, y, z, block);
     }
 
     @Override

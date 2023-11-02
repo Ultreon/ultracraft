@@ -6,11 +6,14 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.entity.EntityTypes;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.craft.world.World;
+import com.ultreon.data.types.MapType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

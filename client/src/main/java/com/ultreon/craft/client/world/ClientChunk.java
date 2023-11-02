@@ -4,12 +4,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.collection.PaletteStorage;
-import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
-
-import java.io.*;
 
 public final class ClientChunk extends Chunk {
     private final ClientWorld clientWorld;
@@ -44,15 +41,16 @@ public final class ClientChunk extends Chunk {
     }
 
     @Override
-    public void setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, Block block) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException("Should be on rendering thread.");
         }
 
-        super.setFast(x, y, z, block);
+        boolean isBlockSet = super.setFast(x, y, z, block);
 
         this.dirty = true;
         this.clientWorld.updateChunkAndNeighbours(this);
+        return isBlockSet;
     }
 
     public void setDirty(boolean ignoredB) {

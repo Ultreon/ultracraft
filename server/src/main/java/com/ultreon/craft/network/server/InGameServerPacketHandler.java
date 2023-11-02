@@ -1,5 +1,10 @@
 package com.ultreon.craft.network.server;
 
+import com.ultreon.craft.block.Block;
+import com.ultreon.craft.item.Item;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.tool.ToolItem;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -7,11 +12,13 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
+import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.api.EnvType;
 
@@ -95,5 +102,33 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onKeepAlive() {
         // Do not need to do anything since it's a keep-alive packet.
+    }
+
+    public void onBlockBreaking(BlockPos pos, C2SBlockBreakPacket.BlockStatus status) {
+        this.server.submit(() -> {
+            ServerWorld world = this.player.getWorld();
+            Block block = world.get(pos);
+            float efficiency = 1.0F;
+            ItemStack stack = this.player.getSelectedItem();
+            Item item = stack.getItem();
+            if (item instanceof ToolItem toolItem && block.getEffectiveTool() == ((ToolItem) item).getToolType()) {
+                efficiency = toolItem.getEfficiency();
+            }
+
+            switch (status) {
+                case START -> world.startBreaking(pos, this.player);
+                case CONTINUE -> world.continueBreaking(pos, 1.0F / (Math.max(block.getHardness() * UltracraftServer.TPS / efficiency, 0) + 1), this.player);
+                case STOP -> world.stopBreaking(pos, this.player);
+            }
+        });
+    }
+
+    public void onTakeItem(int index, boolean split) {
+        this.server.submit(() -> {
+            ContainerMenu openMenu = this.player.getOpenMenu();
+            if (openMenu != null) {
+                openMenu.onTakeItem(this.player, index, split);
+            }
+        });
     }
 }

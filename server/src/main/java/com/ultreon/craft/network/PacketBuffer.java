@@ -1,6 +1,7 @@
 package com.ultreon.craft.network;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.TypeRegistry;
@@ -1579,6 +1580,15 @@ public class PacketBuffer extends ByteBuf {
     public <F, S> ByteBuf writePair(Pair<F, S> pair, BiConsumer<PacketBuffer, F> firstEncoder, BiConsumer<PacketBuffer, S> secondEncoder) {
         firstEncoder.accept(this, pair.getFirst());
         secondEncoder.accept(this, pair.getSecond());
+        return this.buf;
+    }
+
+    public ItemStack readItemStack() {
+        return ItemStack.load(this.readUbo());
+    }
+
+    public ByteBuf writeItemStack(ItemStack stack) {
+        this.writeUbo(stack.save());
         return this.buf;
     }
 }

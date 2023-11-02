@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.gui.screen;
+package com.ultreon.craft.client.gui.screens;
 
 import com.ultreon.libs.commons.v0.Identifier;
 

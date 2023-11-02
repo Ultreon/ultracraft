@@ -585,4 +585,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public boolean isRunning() {
         return running;
     }
+
+    public boolean isIntegrated() {
+        return false;
+    }
+
+    @Nullable
+    public UUID getHost() {
+        return null;
+    }
 }

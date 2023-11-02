@@ -10,6 +10,7 @@ import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class LocalPlayer extends Player {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
+    public ContainerMenu openMenu;
     private UUID uuid;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {

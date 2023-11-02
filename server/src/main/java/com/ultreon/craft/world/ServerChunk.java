@@ -8,7 +8,6 @@ import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.data.types.MapType;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
 
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -23,11 +22,11 @@ public final class ServerChunk extends Chunk {
     }
 
     @Override
-    public void setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, Block block) {
         if (!UltracraftServer.isOnServerThread()) {
             throw new InvalidThreadException("Should be on server thread.");
         }
-        super.setFast(x, y, z, block);
+        return super.setFast(x, y, z, block);
     }
 
 

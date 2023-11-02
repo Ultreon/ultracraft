@@ -44,7 +44,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public Identifier getId() {
-        Identifier key = Registries.BLOCK.getKey(this);
+        Identifier key = Registries.BLOCKS.getKey(this);
         return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
     }
 
@@ -86,7 +86,7 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCK.getValue(id);
+        Block block = Registries.BLOCKS.getValue(id);
         return block == null ? Blocks.AIR : block;
     }
 
@@ -96,7 +96,7 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        Identifier key = Registries.BLOCK.getKey(this);
+        Identifier key = Registries.BLOCKS.getKey(this);
         return key == null ? "craft.block.air.name" : key.location() + ".block." + key.path() + ".name";
     }
 

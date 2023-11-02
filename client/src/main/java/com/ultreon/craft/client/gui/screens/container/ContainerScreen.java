@@ -1,8 +1,10 @@
 package com.ultreon.craft.client.gui.screens.container;
 
 import com.badlogic.gdx.Input;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
@@ -10,6 +12,7 @@ import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.GuiComponent;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public abstract class ContainerScreen extends Screen {
     private final int maxSlots;
     private final ContainerMenu container;
+    private final LocalPlayer player;
 
     public ContainerScreen(ContainerMenu container, String title, int maxSlots) {
         this(container, UltracraftClient.get().screen, title, maxSlots);
@@ -27,6 +31,9 @@ public abstract class ContainerScreen extends Screen {
         super(back, title);
         this.container = container;
         this.maxSlots = maxSlots;
+
+        this.player = this.client.player;
+        Preconditions.checkNotNull(this.player, "Local player is null");
     }
 
     public int left() {
@@ -85,8 +92,10 @@ public abstract class ContainerScreen extends Screen {
         if (slotAt != null && !slotAt.getItem().isEmpty()) {
             this.renderTooltip(renderer, mouseX + 4, mouseY + 4, slotAt.getItem().getItem().getTranslation(), slotAt.getItem().getDescription(), slotAt.getItem().getItem().getId().toString());
         }
-        if (!this.container.getCursor().isEmpty()) {
-            this.client.itemRenderer.render(this.container.getCursor().getItem(), renderer, mouseX - 8, mouseY - 8);
+
+        ItemStack cursor = this.player.getCursor();
+        if (!cursor.isEmpty()) {
+            this.client.itemRenderer.render(cursor.getItem(), renderer, mouseX - 8, mouseY - 8);
         }
     }
 
@@ -135,23 +144,21 @@ public abstract class ContainerScreen extends Screen {
         ItemSlot slot = this.getSlotAt(x, y);
         if (slot == null) return super.mouseClick(x, y, button, count);
         if (button == Input.Buttons.LEFT) {
-            ItemStack cursor = this.container.getCursor();
+            ItemStack cursor = this.player.getCursor();
             ItemStack slotItem = slot.getItem();
             if (!cursor.isEmpty() && cursor.isSameItemSameTag(slotItem)) {
                 cursor.transferTo(slotItem, cursor.getCount());
                 return true;
             }
             slot.setItem(cursor);
-            this.container.setCursor(slotItem);
+            this.client.connection.send(new C2SMenuTakeItemPacket(slot.getIndex(), false));
             return true;
         }
         if (button == Input.Buttons.RIGHT) {
-            if (this.container.getCursor().isEmpty()) {
-                ItemStack item = slot.getItem().split();
-                this.container.setCursor(item);
-            } else {
-                this.container.getCursor().transferTo(slot.getItem());
-            }
+            if (this.player.getCursor().isEmpty())
+                this.client.connection.send(new C2SMenuTakeItemPacket(slot.getIndex(), true));
+            else
+                this.player.getCursor().transferTo(slot.getItem());
             return true;
         }
 

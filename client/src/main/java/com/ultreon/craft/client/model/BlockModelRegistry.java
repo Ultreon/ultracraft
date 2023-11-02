@@ -7,9 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.client.model.BakedCubeModel;
-import com.ultreon.craft.client.model.BakedModelRegistry;
-import com.ultreon.craft.client.model.CubeModel;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -42,14 +39,14 @@ public class BlockModelRegistry {
     }
 
     public static void registerDefault(Block block) {
-        Identifier key = Registries.BLOCK.getKey(block);
+        Identifier key = Registries.BLOCKS.getKey(block);
         Preconditions.checkNotNull(key, "Block is not registered");
         register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
     }
 
     public static void registerDefault(Supplier<Block> block) {
         register(block, Suppliers.memoize(() -> {
-            Identifier key = Registries.BLOCK.getKey(block.get());
+            Identifier key = Registries.BLOCKS.getKey(block.get());
             Preconditions.checkNotNull(key, "Block is not registered");
             return CubeModel.of(key.mapPath(path -> "blocks/" + path));
         }));

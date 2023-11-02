@@ -1,8 +1,8 @@
 package com.ultreon.craft.entity;
 
-import com.ultreon.craft.events.PlayerEvents;
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.Items;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.util.HitResult;
@@ -18,32 +18,24 @@ import java.util.UUID;
 public abstract class Player extends LivingEntity {
     @ApiStatus.Internal
     public int selected;
-    public Inventory inventory = new Inventory();
-    private boolean running;
+    public Inventory inventory;
+    private boolean running = false;
     private float walkingSpeed = .09F;
     private float flyingSpeed = 0.5F;
     public float runModifier = 1.5F;
     public float crouchModifier = 0.5F;
-    private boolean flying;
-    private boolean crouching;
-    private boolean spectating;
+    private boolean flying = false;
+    private boolean allowFlight = false;
+    private boolean crouching = false;
+    private boolean spectating = false;
+    @Nullable private ContainerMenu openMenu;
+    private ItemStack cursor = new ItemStack();
 
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
 
+        this.inventory = new Inventory(this);
         this.inventory.build();
-        this.setInitialItems();
-
-        this.setFlying(true);
-    }
-
-    private void setInitialItems() {
-        if (PlayerEvents.INITIAL_ITEMS.factory().onPlayerInitialItems(this, this.inventory).isCanceled()) {
-            return;
-        }
-
-        this.inventory.getHotbarSlot(0).setItem(Items.WOODEN_PICKAXE.defaultStack());
-        this.inventory.getHotbarSlot(1).setItem(Items.WOODEN_SHOVEL.defaultStack());
     }
 
     public void selectBlock(int i) {
@@ -173,4 +165,45 @@ public abstract class Player extends LivingEntity {
     public void playSound(@Nullable SoundEvent sound, float volume) {
 
     }
+
+    public boolean isAllowFlight() {
+        return this.allowFlight;
+    }
+
+    public void setAllowFlight(boolean allowFlight) {
+        this.allowFlight = allowFlight;
+    }
+
+    public @Nullable ContainerMenu getOpenMenu() {
+        return this.openMenu;
+    }
+
+    public void openMenu(ContainerMenu menu) {
+        this.openMenu = menu;
+        menu.addPlayer(this);
+    }
+
+    public void closeMenu() {
+        if (this.openMenu == null) return;
+
+        this.openMenu.removePlayer(this);
+        this.openMenu = null;
+    }
+
+
+    public ItemStack getCursor() {
+        return this.cursor;
+    }
+
+    /**
+     * Set the item cursor for menu containers.
+     * <p color="red"><b>Not recommended to be called on client side, only do it when you know what you're doing.</b></p>
+     *
+     * @param cursor the item stack to set.
+     */
+    public void setCursor(ItemStack cursor) {
+        Preconditions.checkNotNull(cursor, "cursor");
+        this.cursor = cursor;
+    }
+
 }

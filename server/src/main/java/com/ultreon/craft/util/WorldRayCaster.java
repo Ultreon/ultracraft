@@ -24,13 +24,13 @@ public class WorldRayCaster {
 
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
 	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
-	public static HitResult rayCast(HitResult result, World map) {
-		return rayCast(result, map, BlockPredicate.SOLID);
+	public static HitResult rayCast(HitResult result, World world) {
+		return rayCast(result, world, BlockPredicate.SOLID);
 	}
 
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
 	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
-	public static HitResult rayCast(HitResult result, World map, BlockPredicate predicate) {
+	public static HitResult rayCast(HitResult result, World world, BlockPredicate predicate) {
 		result.collide = false;
 
 		final Ray ray = result.ray;
@@ -65,7 +65,7 @@ public class WorldRayCaster {
 			if(abs.dst(origin) > result.distanceMax) return result;
 
 			if(chunk == null || chunk.isDisposed()){
-				chunk = map.getChunkAt(abs.x, abs.y, abs.z);
+				chunk = world.getChunkAt(abs.x, abs.y, abs.z);
 				if(chunk == null || chunk.isDisposed()) return result;
 			}
 			loc.set(abs).sub(chunk.getOffset().x, chunk.getOffset().y, chunk.getOffset().z);
@@ -83,6 +83,7 @@ public class WorldRayCaster {
 					result.collide = true;
 					result.distance = dst;
 					result.position.set(intersection);
+					result.pos.set(abs);
 					result.block = block;
 
 					computeFace(result);

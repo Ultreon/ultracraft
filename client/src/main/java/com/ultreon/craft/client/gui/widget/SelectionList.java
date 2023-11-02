@@ -261,10 +261,8 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
             ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;
             if (itemRenderer != null) {
                 if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
-                    if (selected) {
-                        System.out.println("this.y = " + this.y);
-                        renderer.box(this.x, this.y, this.width - 2, this.height - 2, Color.rgb(0xffffff));
-                    }
+                    if (selected) renderer.box(this.x, this.y, this.width - 2, this.height - 2, Color.rgb(0xffffff));
+
                     itemRenderer.render(renderer, this.value, this.y, mouseX, mouseY, selected, deltaTime);
                     renderer.popScissors();
                 }

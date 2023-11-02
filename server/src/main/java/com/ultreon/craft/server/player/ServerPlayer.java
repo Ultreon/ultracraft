@@ -6,13 +6,19 @@ import com.google.common.cache.CacheBuilder;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.events.PlayerEvents;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.Items;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
+import com.ultreon.craft.network.packets.S2CMenuCursorPacket;
 import com.ultreon.craft.network.packets.s2c.*;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -44,11 +50,13 @@ public final class ServerPlayer extends Player {
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
     private boolean sendingChunk;
 
-    public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name) {
+    public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name, Connection connection) {
         super(entityType, world);
         this.world = world;
         this.uuid = uuid;
         this.name = name;
+
+        this.connection = connection;
     }
 
     public void kick(String kick) {
@@ -100,7 +108,8 @@ public final class ServerPlayer extends Player {
         this.world.prepareSpawn(this);
         this.world.spawn(this);
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
-        System.out.println("position = " + position);
+
+        this.setInitialItems();
     }
 
     @Override
@@ -134,8 +143,8 @@ public final class ServerPlayer extends Player {
             return;
 
         // Limit player speed server-side.
-        double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 2.5;
-        double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * (this.fallDistance * this.gravity + 2);
+        double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 12.5;
+        double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed() * 5) * Math.max(this.fallDistance * this.gravity, 2);
         if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ) {
             UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max xz: " + maxDistanceXZ + ")");
             this.teleportTo(this.ox, this.oy, this.oz);
@@ -279,7 +288,29 @@ public final class ServerPlayer extends Player {
     }
 
     @Override
-    public ServerWorld getWorld() {
+    public void setCursor(@NotNull ItemStack cursor) {
+        this.connection.send(new S2CMenuCursorPacket(cursor));
+    }
+
+    @Override
+    public @NotNull ServerWorld getWorld() {
         return this.world;
+    }
+
+    public Vec2i getChunkVec() {
+        return World.toChunkVec(this.blockPosition());
+    }
+
+    public boolean isChunkActive(ChunkPos chunkPos) {
+        return this.activeChunks.contains(chunkPos);
+    }
+
+    private void setInitialItems() {
+        if (PlayerEvents.INITIAL_ITEMS.factory().onPlayerInitialItems(this, this.inventory).isCanceled()) {
+            return;
+        }
+
+        this.inventory.getHotbarSlot(0).setItem(Items.WOODEN_PICKAXE.defaultStack());
+        this.inventory.getHotbarSlot(1).setItem(Items.WOODEN_SHOVEL.defaultStack());
     }
 }

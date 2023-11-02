@@ -6,9 +6,11 @@ import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.LoginClientPacketHandler;
+import com.ultreon.data.types.MapType;
 
 import java.util.UUID;
 
@@ -27,7 +29,11 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
         ClientWorld clientWorld = new ClientWorld(this.client);
         this.client.world = clientWorld;
-        this.client.player = new LocalPlayer(EntityTypes.PLAYER, clientWorld, uuid);
+        var player = this.client.player = new LocalPlayer(EntityTypes.PLAYER, clientWorld, uuid);
+
+        if (this.client.integratedServer != null) {
+            this.client.integratedServer.loadPlayer(player);
+        }
 
         this.client.submit(() -> {
             try {

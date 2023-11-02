@@ -1,10 +1,8 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.screen.ModListScreen;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.util.Color;
