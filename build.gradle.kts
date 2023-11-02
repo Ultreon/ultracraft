@@ -225,7 +225,7 @@ commonProperties
                         programParameters = "--gameDir=."
                         beforeRun {
                             create("Clear Quilt Cache", GradleTask::class.java) {
-                                this.task = tasks.named("clearClientQuiltCache").get()
+                                this.task = tasks.named("clearClientMainQuiltCache").get()
                             }
                         }
                     }
@@ -241,7 +241,7 @@ commonProperties
                         programParameters = "--gameDir=."
                         beforeRun {
                             create("Clear Quilt Cache", GradleTask::class.java) {
-                                this.task = tasks.named("clearClientQuiltCache").get()
+                                this.task = tasks.named("clearClientAltQuiltCache").get()
                             }
                         }
                     }

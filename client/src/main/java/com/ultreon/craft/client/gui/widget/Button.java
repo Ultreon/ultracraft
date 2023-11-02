@@ -76,8 +76,8 @@ public class Button extends GuiComponent {
 
         int x = this.x;
         int y = this.y;
-        int u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
-        int v = this.enabled ? this.isPressed() ? 21 : 0 : 42;
+        int u = this.enabled ? this.isWithinBounds(mouseX, mouseY) ? 21 : 0 : 42;
+        int v = this.isPressed() ? 21 : 0;
 
         renderer.setTextureColor(Color.WHITE);
         renderer.blit(texture, x, y, 7, 7, u, v, 7, 7);

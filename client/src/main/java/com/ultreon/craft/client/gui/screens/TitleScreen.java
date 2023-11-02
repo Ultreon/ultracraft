@@ -12,6 +12,7 @@ import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.translations.v1.Language;
+import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.IOException;
 
@@ -63,6 +64,7 @@ public class TitleScreen extends Screen {
 
         this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("craft.screen.title.singleplayer"), this::openSingleplayer));
         this.multiplayerButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
+        this.multiplayerButton.enabled = QuiltLoader.isDevelopmentEnvironment(); //! Multiplayer not working yet.
 
         this.modListButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.mod_list"), this::showModList));
         this.optionsButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.options"), this::showOptions));
