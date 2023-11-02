@@ -34,9 +34,9 @@ public class PauseScreen extends Screen {
         if (world != null)
             this.client.addFuture(world.saveAsync(false));
 
-        this.backToGameButton = this.add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
-        this.optionsButton = this.add(new Button(this.width / 2 - 100, this.height / 3 - 25, 95, Language.translate("craft.screen.title.options"), caller -> UltracraftClient.get().showScreen(new LanguageScreen())));
-        this.exitWorldButton = this.add(new Button(this.width / 2 + 5, this.height / 3 - 25, 95, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.backToGameButton = this.add(new Button(this.width / 2 - 100, this.height / 3 - 25, 200, Language.translate("craft.screen.pause.back_to_game"), this::resumeGame));
+        this.optionsButton = this.add(new Button(this.width / 2 - 100, this.height / 3, 95, Language.translate("craft.screen.title.options"), caller -> UltracraftClient.get().showScreen(new LanguageScreen())));
+        this.exitWorldButton = this.add(new Button(this.width / 2 + 5, this.height / 3, 95, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.RED);
         this.exitWorldButton.setTextColor(Color.WHITE);
     }
