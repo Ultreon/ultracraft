@@ -46,10 +46,14 @@ apply plugin: 'java-library'
 // Setting up main properties //
 //****************************//
 
-//projectConfig {
-//    type ProjectType.Common
-//    jarDependTasks({[copyDependencies, copyJar]})
-//}
+tasks.register('runClient', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'com.ultreon.craft.premain.DevMain'
+
+    // arguments to pass to the application
+    workingDir "$rootProject.projectDir/run/"
+}
 
 archivesBaseName = archives_base_name + "-gameprovider"
 
@@ -73,11 +77,11 @@ configurations {
     }
 }
 
-evaluationDependsOn(":core")
+evaluationDependsOn(":client")
 
 dependencies {
     addToJar implementation(project(":gameprovider"))
-    pack implementation(project(":core"))
+    pack implementation(project(":client"))
     pack implementation(project(":desktop"))
 
     pack implementation("com.formdev:flatlaf:3.2.1")
@@ -96,6 +100,9 @@ dependencies {
     pack implementation("com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop")
     pack implementation("com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version")
     pack implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop")
+    pack implementation("org.apache.commons:commons-compress:$commons_compress_version")
+    pack implementation("org.tukaani:xz:$tukaani_xz_version")
+    pack implementation("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
     // Apache Log4J
     pack implementation("org.apache.logging.log4j:log4j:$log4j_version")
@@ -169,7 +176,7 @@ processResources {
 jar {
     dependsOn ":gameprovider:build"
     dependsOn ":desktop:build"
-    dependsOn ":core:build"
+    dependsOn ":client:build"
     //noinspection GroovyAssignabilityCheck
     manifest {
         //noinspection GroovyAssignabilityCheck
@@ -199,7 +206,7 @@ jar {
 
     doLast {
         println "DESK_MERGE FILE: ${file("$projectDir/build/libs/").list().toArrayString()}"
-        println "CORE FILE: ${file("${project(":core")buildDir}/libs/").list().toArrayString()}"
+        println "CORE FILE: ${file("${project(":client")buildDir}/libs/").list().toArrayString()}"
         println "DESKTOP FILE: ${file("${project(":desktop")buildDir}/libs/").list().toArrayString()}"
         println "GAMEPROVIDER FILE: ${file("${project(":gameprovider")buildDir}/libs/").list().toArrayString()}"
     }
@@ -238,7 +245,7 @@ tasks.register('copyJar', Copy) {
 }
 
 tasks.register('package', Zip) {
-    dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
+    dependsOn("build", ":gameprovider:build", ":desktop:build", ":client:build", "copyDependencies", "copyJar")
 
     from fileTree(dir: "$projectDir/build/jars", include: "*.jar")
     archiveFileName = 'package.zip'
@@ -246,7 +253,7 @@ tasks.register('package', Zip) {
 }
 
 jpackage {
-    dependsOn("build", ":gameprovider:build", ":desktop:build", ":core:build", "copyDependencies", "copyJar")
+    dependsOn("build", ":gameprovider:build", ":desktop:build", ":client:build", "copyDependencies", "copyJar")
 
     input  = "$projectDir/build/jars"
     destination = "$projectDir/build/bin"

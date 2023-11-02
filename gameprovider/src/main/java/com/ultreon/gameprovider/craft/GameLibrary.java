@@ -20,8 +20,8 @@ import net.fabricmc.api.EnvType;
 import org.quiltmc.loader.impl.game.LibClassifier.LibraryType;
 
 enum GameLibrary implements LibraryType {
-	ULTREONCRAFT_DESKTOP("com/ultreon/craft/DesktopLauncher.class"),
-	ULTREONCRAFT_CORE("com/ultreon/craft/UltreonCraft.class"),
+	ULTREONCRAFT_CLIENT("com/ultreon/craft/client/UltracraftClient.class"),
+	ULTREONCRAFT_SERVER("com/ultreon/craft/server/dedicated/Main.class"),
 	LIBGDX("com/badlogic/gdx/Gdx.class"),
 	LOG4J_API("org/apache/logging/log4j/LogManager.class"),
 	LOG4J_CORE("META-INF/services/org.apache.logging.log4j.spi.Provider", "META-INF/log4j-provider.properties"),
@@ -30,7 +30,7 @@ enum GameLibrary implements LibraryType {
 	SLF4J_API("org/slf4j/Logger.class"),
 	SLF4J_CORE("META-INF/services/org.slf4j.spi.SLF4JServiceProvider");
 
-	static final GameLibrary[] GAME = {GameLibrary.ULTREONCRAFT_DESKTOP, GameLibrary.ULTREONCRAFT_CORE};
+	static final GameLibrary[] GAME = {GameLibrary.ULTREONCRAFT_CLIENT, GameLibrary.ULTREONCRAFT_SERVER};
 	static final GameLibrary[] LOGGING = {GameLibrary.LOG4J_API, GameLibrary.LOG4J_CORE, GameLibrary.LOG4J_CONFIG, GameLibrary.GSON, GameLibrary.SLF4J_API, GameLibrary.SLF4J_CORE};
 
 	private final EnvType env;

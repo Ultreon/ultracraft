@@ -45,9 +45,9 @@ apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 apply(plugin = "gameutils")
 
-//****************************//
-// Setting up main properties //
-//****************************//
+//********************************//
+// Setting up the main properties //
+//********************************//
 extensions.configure<GameUtilsExt> {
     projectName = "Ultracraft"
     projectVersion = "0.1.0"
@@ -55,7 +55,7 @@ extensions.configure<GameUtilsExt> {
     projectId = "ultracraft"
     production = true
 
-    coreProject = project(":core")
+    coreProject = project(":client")
     desktopProject = project(":desktop")
     packageProject = project(":desktop-merge")
 
@@ -123,12 +123,14 @@ allprojects {
         mavenLocal()
         mavenCentral()
         google()
-        maven("https://jitpack.io")
         maven("https://repo1.maven.org/maven2/")
         maven("https://maven.fabricmc.net/")
         maven("https://maven.quiltmc.org/repository/release/")
         maven("https://oss.sonatype.org/content/repositories/releases")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://github.com/Ultreon/ultreon-data/raw/main/.mvnrepo/")
+        maven("https://github.com/Ultreon/corelibs/raw/main/.mvnrepo/")
+        maven("https://jitpack.io")
         flatDir {
             name = "Project Libraries"
             dirs = setOf(file("${projectDir}/libs"))
@@ -163,8 +165,13 @@ println("Project: $group:$name")
 
 fun setupIdea() {
     mkdir("$projectDir/build/gameutils")
+    mkdir("$projectDir/run")
+    mkdir("$projectDir/run/client")
+    mkdir("$projectDir/run/client/alt")
+    mkdir("$projectDir/run/client/main")
+    mkdir("$projectDir/run/server")
 
-    val ps = System.getProperty("path.separator")!!
+    val ps = File.pathSeparator!!
     val files = configurations["runtimeClasspath"]!!
 
     val classPath = files.asSequence()
@@ -207,18 +214,50 @@ commonProperties
 
                 runConfigurations {
                     create(
-                        "Ultracraft",
+                        "Ultracraft Client",
                         Application::class.java
                     ) {                       // Create new run configuration "MyApp" that will run class foo.App
                         jvmArgs =
-                            "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient"
+                            "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient -Dloader.zipfs.use_temp_file=false"
                         mainClass = "net.fabricmc.devlaunchinjector.Main"
                         moduleName = idea.module.name + ".desktop.main"
-                        workingDirectory = "$projectDir/run/"
+                        workingDirectory = "$projectDir/run/client/main/"
                         programParameters = "--gameDir=."
                         beforeRun {
                             create("Clear Quilt Cache", GradleTask::class.java) {
-                                this.task = tasks.named("clearQuiltCache").get()
+                                this.task = tasks.named("clearClientMainQuiltCache").get()
+                            }
+                        }
+                    }
+                    create(
+                        "Ultracraft Client Alt",
+                        Application::class.java
+                    ) {                       // Create new run configuration "MyApp" that will run class foo.App
+                        jvmArgs =
+                            "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient -Dloader.zipfs.use_temp_file=false"
+                        mainClass = "net.fabricmc.devlaunchinjector.Main"
+                        moduleName = idea.module.name + ".desktop.main"
+                        workingDirectory = "$projectDir/run/client/alt/"
+                        programParameters = "--gameDir=."
+                        beforeRun {
+                            create("Clear Quilt Cache", GradleTask::class.java) {
+                                this.task = tasks.named("clearClientAltQuiltCache").get()
+                            }
+                        }
+                    }
+                    create(
+                        "Ultracraft Server",
+                        Application::class.java
+                    ) {                       // Create new run configuration "MyApp" that will run class foo.App
+                        jvmArgs =
+                            "-Xmx2g -Dloader.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=SERVER -Dfabric.dli.main=org.quiltmc.loader.impl.launch.knot.KnotClient -Dloader.zipfs.use_temp_file=false"
+                        mainClass = "net.fabricmc.devlaunchinjector.Main"
+                        moduleName = idea.module.name + ".server.main"
+                        workingDirectory = "$projectDir/run/server/"
+                        programParameters = "--gameDir=."
+                        beforeRun {
+                            create("Clear Quilt Cache", GradleTask::class.java) {
+                                this.task = tasks.named("clearServerQuiltCache").get()
                             }
                         }
                     }

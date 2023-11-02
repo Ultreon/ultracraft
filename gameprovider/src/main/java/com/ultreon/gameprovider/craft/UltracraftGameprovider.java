@@ -24,7 +24,6 @@ import org.quiltmc.loader.impl.util.log.Log;
 import org.quiltmc.loader.impl.util.log.LogCategory;
 import org.quiltmc.loader.impl.util.log.LogHandler;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
@@ -304,8 +303,11 @@ public class UltracraftGameprovider implements GameProvider {
         this.arguments.parse(args);
 
         try {
+            System.setProperty("io.netty.tryReflectionSetAccessible", "false");
+
             var classifier = new LibClassifier<>(GameLibrary.class, this.envType, this);
-            var gameLib = GameLibrary.ULTREONCRAFT_DESKTOP;
+            var clientLib = GameLibrary.ULTREONCRAFT_CLIENT;
+            var serverLib = GameLibrary.ULTREONCRAFT_SERVER;
             var gameJar = GameProviderHelper.getCommonGameJar();
             var commonGameJarDeclared = gameJar != null;
 
@@ -315,8 +317,8 @@ public class UltracraftGameprovider implements GameProvider {
 
             classifier.process(launcher.getClassPath());
 
-            gameJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_DESKTOP);
-            var coreJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_CORE);
+            gameJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_CLIENT);
+            var coreJar = classifier.getOrigin(GameLibrary.ULTREONCRAFT_SERVER);
             this.libGdxJar = classifier.getOrigin(GameLibrary.LIBGDX);
 
             if (commonGameJarDeclared && gameJar == null) {
@@ -335,7 +337,11 @@ public class UltracraftGameprovider implements GameProvider {
                 this.gameJars.add(this.libGdxJar);
             }
 
-            this.entrypoint = classifier.getClassName(gameLib);
+            this.entrypoint = classifier.getClassName(clientLib);
+            if (this.entrypoint == null) this.entrypoint = classifier.getClassName(serverLib);
+            if (this.entrypoint == null) {
+                throw new IllegalArgumentException("Can't find game entrypoint.");
+            }
             this.log4jAvailable = classifier.has(GameLibrary.LOG4J_API) && classifier.has(GameLibrary.LOG4J_CORE);
             this.slf4jAvailable = classifier.has(GameLibrary.SLF4J_API) && classifier.has(GameLibrary.SLF4J_CORE);
             var hasLogLib = this.log4jAvailable || this.slf4jAvailable;

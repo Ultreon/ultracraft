@@ -42,6 +42,7 @@
         <!--======================-->
         <!--    Logging levels    -->
         <!--======================-->
+        <Logger name="io.netty" level="WARN"/>
         <Root level="all">
             <AppenderRef ref="SysOut" level="TRACE"/>
             <AppenderRef ref="LatestFile" level="INFO"/>
