@@ -1,23 +1,23 @@
-package com.ultreon.craft.network.packets.s2c;
+package com.ultreon.craft.network.packets.ingame;
 
 import com.ultreon.craft.network.*;
 import com.ultreon.craft.network.api.packet.ModPacket;
-import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.server.InGameServerPacketHandler;
 import com.ultreon.libs.commons.v0.Identifier;
 
-public class S2CModPacket extends Packet<InGameClientPacketHandler> {
+public class C2SModPacket extends Packet<InGameServerPacketHandler> {
     private final Identifier channelId;
     private final ModPacket<?> packet;
-    private final NetworkChannel channel;
+    private NetworkChannel channel;
 
-    public S2CModPacket(NetworkChannel channel, ModPacket<?> packet) {
+    public C2SModPacket(NetworkChannel channel, ModPacket<?> packet) {
         this.channel = channel;
         this.channelId = channel.id();
         this.packet = packet;
     }
 
-    public S2CModPacket(PacketBuffer buffer) {
+    public C2SModPacket(PacketBuffer buffer) {
         this.channelId = buffer.readId();
         this.channel = NetworkChannel.getChannel(this.channelId);
         this.packet = this.channel.getDecoder(buffer.readUnsignedShort()).apply(buffer);
@@ -32,7 +32,11 @@ public class S2CModPacket extends Packet<InGameClientPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
+    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
         handler.onModPacket(this.channel, this.packet);
+    }
+
+    public NetworkChannel getChannel() {
+        return this.channel;
     }
 }

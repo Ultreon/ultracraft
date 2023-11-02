@@ -1,11 +1,12 @@
-package com.ultreon.craft.network.packets.c2s;
+package com.ultreon.craft.network.packets.ingame;
 
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.network.PacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 
-public class C2SKeepAlivePacket extends Packet<InGameServerPacketHandler> {
+public class C2SKeepAlivePacket<T extends PacketHandler> extends Packet<T> {
     public C2SKeepAlivePacket() {
 
     }
@@ -20,7 +21,7 @@ public class C2SKeepAlivePacket extends Packet<InGameServerPacketHandler> {
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
-        handler.onKeepAlive();
+    public void handle(PacketContext ctx, PacketHandler handler) {
+
     }
 }

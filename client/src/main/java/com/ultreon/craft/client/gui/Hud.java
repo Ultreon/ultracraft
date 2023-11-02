@@ -51,13 +51,13 @@ public class Hud implements GameRenderable {
         GameInput input = this.client.input;
         //noinspection deprecation
         if (input instanceof MobileInput mobileInput) {
-            this.renderMobileHud(renderer, player, mobileInput);
+            this.renderMobileHud(renderer, mobileInput);
         } else {
-            this.renderCrosshair(renderer, player);
+            this.renderCrosshair(renderer);
         }
     }
 
-    private void renderCrosshair(Renderer renderer, Player player) {
+    private void renderCrosshair(Renderer renderer) {
         renderer.flush();
         renderer.enableInvert();
 
@@ -69,7 +69,8 @@ public class Hud implements GameRenderable {
         renderer.disableInvert();
     }
 
-    private void renderMobileHud(Renderer renderer, Player player, MobileInput input) {
+    @SuppressWarnings("deprecation")
+    private void renderMobileHud(Renderer renderer, MobileInput input) {
         renderer.blit(this.mobileTex, 20, 25, 50, 45, 0, 0);
 
         int joyStickX = 24 - 7 + 21;
@@ -137,6 +138,7 @@ public class Hud implements GameRenderable {
         this.leftY -= 13;
     }
 
+    @SuppressWarnings("deprecation")
     public boolean touchDown(int screenX, int screenY, int pointer) {
         screenX /= (int) this.client.getGuiScale();
         screenY /= (int) this.client.getGuiScale();

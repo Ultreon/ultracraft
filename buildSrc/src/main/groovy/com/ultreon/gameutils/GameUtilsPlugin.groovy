@@ -173,7 +173,7 @@ class GameUtilsPlugin implements Plugin<Project> {
 
         project.tasks.register("prepareRun", PrepareRunTask.class)
         project.tasks.register("clearServerQuiltCache", ClearQuiltCacheTask.class, "server")
-        project.tasks.register("clearClientQuiltCache", ClearQuiltCacheTask.class, "client/main")
+        project.tasks.register("clearClientMainQuiltCache", ClearQuiltCacheTask.class, "client/main")
         project.tasks.register("clearClientAltQuiltCache", ClearQuiltCacheTask.class, "client/alt")
     }
 }

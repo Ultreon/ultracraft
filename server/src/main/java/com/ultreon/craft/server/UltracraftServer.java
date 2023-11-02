@@ -1,14 +1,10 @@
 package com.ultreon.craft.server;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.events.WorldEvents;
-import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CPlayerPositionPacket;
-import com.ultreon.craft.network.packets.s2c.S2CChunkDataPacket;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.PollingExecutorService;
@@ -16,7 +12,6 @@ import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +20,7 @@ import org.quiltmc.loader.api.QuiltLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -62,15 +58,18 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private int currentTps;
     private boolean sendingChunk;
     protected int maxPlayers = 10;
+    private final SecretKey secretKey;
 
     /**
      * Creates a new {@link UltracraftServer} instance.
      *
-     * @param storage the world storage for the world data.
+     * @param storage   the world storage for the world data.
+     * @param secretKey the secret key for the server.
      */
-    public UltracraftServer(WorldStorage storage) {
+    public UltracraftServer(WorldStorage storage, SecretKey secretKey) {
         super();
         this.storage = storage;
+        this.secretKey = secretKey;
 
         UltracraftServer.instance = this;
         this.thread = new Thread(this, "server");
@@ -523,9 +522,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
     }
 
-    private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) {
-    }
-
     /**
      * @return the current TPS.
      */
@@ -569,6 +565,14 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     public boolean isRunning() {
-        return running;
+        return this.running;
+    }
+
+    public boolean verifyHandshake(byte[] hmac) {
+        return false; // TODO support integrated servers.
+    }
+
+    public @Nullable SecretKey getSecretKey() {
+        return secretKey;
     }
 }

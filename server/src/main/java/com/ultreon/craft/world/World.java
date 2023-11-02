@@ -106,16 +106,16 @@ public abstract class World implements ServerDisposable {
         return new ChunkPos(Math.floorDiv(pos.x(), CHUNK_SIZE), Math.floorDiv(pos.z(), CHUNK_SIZE));
     }
 
-    public List<ChunkPos> getChunksAround(Vec3d pos) {
+    public Set<ChunkPos> getChunksAround(Vec3d pos) {
         int startX = (int) (pos.x - this.getRenderDistance() * World.CHUNK_SIZE);
         int startZ = (int) (pos.z - this.getRenderDistance() * World.CHUNK_SIZE);
         int endX = (int) (pos.x + this.getRenderDistance() * World.CHUNK_SIZE);
         int endZ = (int) (pos.z + this.getRenderDistance() * World.CHUNK_SIZE);
 
-        List<ChunkPos> toCreate = new ArrayList<>();
+        var toCreate = new HashSet<ChunkPos>();
         for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
             for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
-                ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
+                var chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
                 toCreate.add(chunkPos);
                 if (x >= pos.x - World.CHUNK_SIZE
                         && x <= pos.x + World.CHUNK_SIZE

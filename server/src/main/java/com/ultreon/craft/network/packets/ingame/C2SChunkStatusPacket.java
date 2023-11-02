@@ -1,4 +1,4 @@
-package com.ultreon.craft.network.packets.c2s;
+package com.ultreon.craft.network.packets.ingame;
 
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;

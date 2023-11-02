@@ -2,7 +2,7 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
+import com.ultreon.craft.network.packets.ingame.S2CKeepAlivePacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;

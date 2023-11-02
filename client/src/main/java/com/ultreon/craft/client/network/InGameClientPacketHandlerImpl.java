@@ -16,7 +16,7 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
-import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.network.packets.ingame.C2SChunkStatusPacket;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;

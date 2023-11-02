@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.world.ClientWorld;
@@ -45,6 +46,7 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
     @Override
     public void onDisconnect(String message) {
         this.connection.close();
+        this.client.showScreen(new DisconnectedScreen(message));
     }
 
     @Override

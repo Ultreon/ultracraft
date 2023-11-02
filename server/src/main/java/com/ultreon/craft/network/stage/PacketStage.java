@@ -5,7 +5,11 @@ import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketCollection;
 import com.ultreon.craft.network.PacketData;
 import com.ultreon.craft.network.client.ClientPacketHandler;
+import com.ultreon.craft.network.packets.C2SDisconnectPacket;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.S2CDisconnectPacket;
+import com.ultreon.craft.network.packets.ingame.C2SKeepAlivePacket;
+import com.ultreon.craft.network.packets.ingame.S2CKeepAlivePacket;
 import com.ultreon.craft.network.server.ServerPacketHandler;
 
 import java.util.function.Function;
@@ -19,7 +23,12 @@ public abstract class PacketStage {
     /**
      * Constructs a new packet stage.
      */
+    @SuppressWarnings("unchecked")
     public PacketStage() {
+        this.addServerBound(C2SDisconnectPacket::new);
+        this.addServerBound(C2SKeepAlivePacket::new);
+        this.addClientBound(S2CDisconnectPacket::new);
+        this.addClientBound(S2CKeepAlivePacket::new);
         this.registerPackets();
         this.clientData = new PacketData<>(this.clientBoundList);
         this.serverData = new PacketData<>(this.serverBoundList);

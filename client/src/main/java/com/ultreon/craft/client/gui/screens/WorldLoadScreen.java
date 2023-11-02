@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class WorldLoadScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldLoadScreen.class);
@@ -34,7 +36,8 @@ public class WorldLoadScreen extends Screen {
     public void init() {
         super.init();
 
-        IntegratedServer server = new IntegratedServer(this.storage);
+        IntegratedServer server = null;
+        server = new IntegratedServer(this.storage);
         this.client.integratedServer = server;
         this.world = server.getWorld();
         new Thread(this::run, "World Loading").start();

@@ -11,7 +11,7 @@ public class IntegratedServer extends UltracraftServer {
     private boolean openToLan = false;
 
     public IntegratedServer(WorldStorage storage) {
-        super(storage);
+        super(storage, null);
 
         if (Files.notExists(storage.getDirectory())) {
             try {
@@ -45,5 +45,9 @@ public class IntegratedServer extends UltracraftServer {
         return "IntegratedServer{" +
                 "openToLan=" + this.openToLan +
                 '}';
+    }
+
+    public UltracraftClient getClient() {
+        return client;
     }
 }

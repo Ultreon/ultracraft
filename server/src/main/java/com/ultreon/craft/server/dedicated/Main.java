@@ -53,7 +53,10 @@ public class Main {
             // First-initialize the server configuration.
             Gson gson = new Gson();
             File configFile = new File("server_config.json");
+            boolean firstInitialization = false;
             if (!configFile.exists()) {
+                firstInitialization = true;
+
                 try (var writer = new FileWriter(configFile)) {
                     gson.toJson(new ServerConfig(), ServerConfig.class, writer);
                 }
@@ -67,6 +70,12 @@ public class Main {
             ServerConfig config;
             try (var reader = new FileReader(configFile)) {
                 config = gson.fromJson(reader, ServerConfig.class);
+            }
+
+            if (!firstInitialization) {
+                try (var writer = new FileWriter(configFile)) {
+                    gson.toJson(config, ServerConfig.class, writer);
+                }
             }
 
             // Start the server.

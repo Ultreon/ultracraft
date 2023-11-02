@@ -3,7 +3,7 @@ package com.ultreon.craft.client.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.ClientPlayer;
-import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.network.packets.ingame.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;

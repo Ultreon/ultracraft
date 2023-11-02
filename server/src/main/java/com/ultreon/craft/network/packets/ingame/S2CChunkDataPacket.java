@@ -1,4 +1,4 @@
-package com.ultreon.craft.network.packets.s2c;
+package com.ultreon.craft.network.packets.ingame;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.network.PacketBuffer;

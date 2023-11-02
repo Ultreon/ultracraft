@@ -4,10 +4,12 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
+import com.ultreon.craft.network.packets.S2CDisconnectPacket;
+import com.ultreon.craft.network.packets.ingame.S2CKeepAlivePacket;
+import com.ultreon.craft.network.server.HandshakeServerPacketHandler;
 import com.ultreon.craft.network.server.LoginServerPacketHandler;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.dedicated.DedicatedServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -187,7 +189,7 @@ public class ServerConnections {
             ServerConnections.this.connections.add(connection);
             connection.setup(pipeline);
             connection.setupPacketHandler(pipeline);
-            connection.setHandler(new LoginServerPacketHandler(ServerConnections.this.server, connection));
+            connection.setHandler(new HandshakeServerPacketHandler((DedicatedServer) ServerConnections.this.server, connection));
         }
     }
 

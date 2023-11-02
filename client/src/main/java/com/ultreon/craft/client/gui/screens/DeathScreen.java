@@ -3,7 +3,7 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Button;
-import com.ultreon.craft.network.packets.c2s.C2SRespawnPacket;
+import com.ultreon.craft.network.packets.ingame.C2SRespawnPacket;
 import com.ultreon.libs.translations.v1.Language;
 
 public class DeathScreen extends Screen {

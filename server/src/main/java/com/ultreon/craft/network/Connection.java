@@ -7,8 +7,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.c2s.C2SDisconnectPacket;
-import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
+import com.ultreon.craft.network.packets.C2SDisconnectPacket;
+import com.ultreon.craft.network.packets.S2CDisconnectPacket;
 import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.player.ServerPlayer;
@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.Queue;
@@ -68,6 +69,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(8);
     private ServerPlayer player;
     private int keepAlive = 100;
+    private SecretKey secretKey;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -340,17 +342,19 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public static void setInitAttributes(Channel channel) {
-        channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.LOGIN.getClientBoundData());
-        channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.LOGIN.getServerData());
+        channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.HANDSHAKE.getClientBoundData());
+        channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.HANDSHAKE.getServerData());
 
         channel.config().setRecvByteBufAllocator(new AdaptiveRecvByteBufAllocator(64, 8192, 1024 * 1024 * 2));
     }
 
     public void moveToInGame() {
-        if (this.channel != null && this.channel.isOpen()) {
-            this.channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.IN_GAME.getClientBoundData());
-            this.channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.IN_GAME.getServerData());
-        }
+        if (this.channel == null || !this.channel.isOpen()) return;
+
+        this.channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.IN_GAME.getClientBoundData());
+        this.channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.IN_GAME.getServerData());
+
+        this.setupCipher(null);
     }
 
     public void setup(ChannelPipeline pipeline) {
@@ -367,6 +371,19 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         } catch (Throwable t) {
             Connection.LOGGER.error("Failed to setup:", t);
             throw t;
+        }
+    }
+
+    public void setupCipher(SecretKey key) {
+        if (this.channel == null || !this.channel.isOpen()) return;
+
+        this.secretKey = key;
+        if (key != null) {
+            this.channel.pipeline().addBefore("encoder", "encrypt", new EncryptionHandler(key));
+            this.channel.pipeline().addBefore("decoder", "decrypt", new DecryptionHandler(key));
+        } else {
+            this.channel.pipeline().remove("encrypt");
+            this.channel.pipeline().remove("decrypt");
         }
     }
 
@@ -467,7 +484,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public ServerPlayer getPlayer() {
-        return player;
+        return this.player;
     }
 
     /**
@@ -480,5 +497,21 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         boolean doKeepAlive = this.keepAlive-- <= 0;
         if (doKeepAlive) this.keepAlive = 100;
         return doKeepAlive;
+    }
+
+    public SecretKey getSecretKey() {
+        return this.secretKey;
+    }
+
+    public void setSecretKey(SecretKey secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public void moveToLogin() {
+        if (this.channel == null || !this.channel.isOpen()) return;
+        if (this.secretKey == null) this.disconnect("Unauthorized connection");
+
+        this.channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.LOGIN.getClientBoundData());
+        this.channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.LOGIN.getServerData());
     }
 }

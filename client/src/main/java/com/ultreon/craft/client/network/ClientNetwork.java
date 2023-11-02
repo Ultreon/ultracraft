@@ -6,7 +6,7 @@ import com.ultreon.craft.network.api.Network;
 import com.ultreon.craft.network.api.PacketRegisterContext;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ServerEndpoint;
-import com.ultreon.craft.network.packets.c2s.C2SModPacket;
+import com.ultreon.craft.network.packets.ingame.C2SModPacket;
 
 public abstract class ClientNetwork extends Network {
     protected ClientNetwork(String modId, String channelName) {

@@ -51,6 +51,7 @@ import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.*;
 import com.ultreon.craft.client.network.ClientConnection;
+import com.ultreon.craft.client.network.HandshakeClientPacketHandlerImpl;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
@@ -76,7 +77,8 @@ import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
+import com.ultreon.craft.network.packets.handshake.C2SHelloPacket;
+import com.ultreon.craft.network.packets.login.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.UltracraftServer;
@@ -115,6 +117,12 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -122,6 +130,10 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -255,6 +267,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private FrameBuffer fbo;
     private int width;
     private int height;
+    private SecretKey secretKey;
 
     UltracraftClient(String[] argv) {
         UltracraftClient.LOGGER.info("Booting game!");
@@ -1105,14 +1118,26 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         renderer.draw9PatchTexture(this.windowTex, 0, 0, width, height, 0, 0, 18, 22, 256, 256);
     }
 
+    /**
+     * Handles a fatal error in the game.
+     *
+     * @param throwable The exception that caused the crash.
+     */
     public static void crash(Throwable throwable) {
+        // Oh no! The game crashed!
         UltracraftClient.LOGGER.error("Game crash triggered:", throwable);
         try {
             var crashLog = new CrashLog("An unexpected error occurred", throwable);
             UltracraftClient.crash(crashLog);
         } catch (Throwable t) {
+            // Failed to handle game crash.
             UltracraftClient.LOGGER.error(UltracraftClient.FATAL_ERROR_MSG, t);
-            Gdx.app.exit();
+            try {
+                //* Might break the JVM if disposed wrong.
+                Gdx.app.exit();
+            } catch (Throwable t1) {
+                Runtime.getRuntime().halt(1); //! Fatal error in handling the crash,
+            }
         }
     }
 
@@ -1390,10 +1415,19 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             try {
                 GameInput.cancelVibration();
 
-                world.dispose();
-                this.worldRenderer = null;
+                // Dispose world and world renderer.
+                if (this.world != null)
+                    this.world.dispose();
                 this.world = null;
+
+                if (this.worldRenderer != null)
+                    this.worldRenderer.dispose();
+                this.worldRenderer = null;
+
+                // Run garbage collector.
                 System.gc();
+
+                // Invoke the runnable on the main thread.
                 UltracraftClient.invokeAndWait(runnable);
             } catch (Exception e) {
                 UltracraftClient.crash(e);
@@ -1575,14 +1609,34 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         SocketAddress localServer = this.integratedServer.getConnections().startMemoryServer();
         this.connection = ClientConnection.connectToLocalServer(localServer);
-        this.connection.initiate(localServer.toString(), 0, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
+        this.connection.initiate(localServer.toString(), 0, new LoginClientPacketHandlerImpl(this.connection), this.getLoginPacket());
     }
 
-    public void connectToServer(String host, int port) {
+    public void connectToServer(String host, int port, String password) {
         this.connection = new Connection(PacketDestination.SERVER);
         ChannelFuture future = ClientConnection.connectTo(new InetSocketAddress(host, port), this.connection);
         future.syncUninterruptibly();
-        this.connection.initiate(host, port, new LoginClientPacketHandlerImpl(this.connection), new C2SLoginPacket(this.user.name()));
+        this.connection.initiate(host, port, new HandshakeClientPacketHandlerImpl(this.connection), this.getHandshakePacket(password));
+    }
+
+    private C2SHelloPacket getHandshakePacket(String password) {
+        try {
+            secretKey = AES256.createKey(password);
+            this.connection.setSecretKey(secretKey);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return new C2SHelloPacket(AES256.encrypt(password.getBytes(StandardCharsets.UTF_8), secretKey));
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException |
+                 InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            throw new EncryptionException(e);
+        }
+    }
+
+    @NotNull
+    private C2SLoginPacket getLoginPacket() {
+        return new C2SLoginPacket(this.user.name());
     }
 
     public int getCurrentTps() {
@@ -1624,6 +1678,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public void setGuiScale(float guiScale) {
         this.guiScale = guiScale;
+    }
+
+    public SecretKey getSecretKey() {
+        return this.secretKey;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

@@ -23,5 +23,6 @@
   "craft.screen.title.quit": "Quit",
   "craft.screen.multiplayer": "Multiplayer",
   "craft.screen.multiplayer.server_ip": "Server IP",
+  "craft.screen.multiplayer.password": "Password",
   "craft.screen.multiplayer.join": "Join"
 }

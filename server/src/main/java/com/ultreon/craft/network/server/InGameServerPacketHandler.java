@@ -7,7 +7,6 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.Chunk;

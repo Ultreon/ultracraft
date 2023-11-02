@@ -21,6 +21,7 @@ public class TextEntry extends GuiComponent {
     private float cursorX;
     private Callback<TextEntry> callback = caller -> {
     };
+    private boolean password;
 
     /**
      * @param x      the X position to create the text entry at
@@ -65,7 +66,7 @@ public class TextEntry extends GuiComponent {
         renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
         renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawText(this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
+        renderer.drawText(this.password ? "·".repeat(this.text.length()) : this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
         if (this.text.isEmpty()) {
             renderer.drawText(this.hint, this.x + 5, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
         }
@@ -115,7 +116,10 @@ public class TextEntry extends GuiComponent {
     }
 
     private void revalidate() {
-        this.cursorX = this.font.width(this.text.substring(0, this.cursorIdx));
+        this.cursorX = this.font.width((this.password ? "·".repeat(this.text.length()) : this.text).substring(0, this.cursorIdx));
+        if (this.password) {
+            this.cursorX += 2;
+        }
 
         this.callback.call(this);
     }
@@ -156,5 +160,13 @@ public class TextEntry extends GuiComponent {
 
     public int getCursorIdx() {
         return this.cursorIdx;
+    }
+
+    public void setPassword(boolean password) {
+        this.password = password;
+    }
+
+    public boolean isPassword() {
+        return this.password;
     }
 }
