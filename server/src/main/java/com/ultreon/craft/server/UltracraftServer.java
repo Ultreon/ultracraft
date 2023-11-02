@@ -476,16 +476,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Send player to all other players within the render distance.
         var players = this.getPlayers()
                 .stream()
-//                .filter(other -> other.getPosition().dst(player.getPosition()) < this.getEntityRenderDistance())
                 .toList();
 
         for (ServerPlayer other : players) {
             if (other == player) continue;
-//            if (other.getPosition().dst(player.getPosition()) < this.getEntityRenderDistance()) {
             System.out.println("Player " + player.getName() + " is within the render distance of " + this.getEntityRenderDistance() + "!");
             other.connection.send(new S2CAddPlayerPacket(player.getUuid(), player.getName(), player.getPosition()));
             player.connection.send(new S2CAddPlayerPacket(other.getUuid(), other.getName(), other.getPosition()));
-//            }
         }
     }
 
