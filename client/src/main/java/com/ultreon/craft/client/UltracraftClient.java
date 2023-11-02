@@ -1401,6 +1401,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         if (this.connection != null) {
             this.connection.disconnect("User self-disconnected");
+            this.connection.close();
         }
 
         if (this.integratedServer != null) {
