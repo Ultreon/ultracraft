@@ -111,9 +111,6 @@ public class ClientPlayer extends Player {
 
 
     public void onHealthUpdate(float newHealth) {
-        if (newHealth < this.health) {
-            this.playSound(this.getHurtSound(), 1f);
-        }
         this.oldHealth = this.health;
         this.health = newHealth;
     }

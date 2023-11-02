@@ -23,6 +23,7 @@ import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -80,6 +81,7 @@ import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.SoundEvent;
@@ -544,6 +546,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         NoiseSettingsInit.nopInit();
         EntityTypes.nopInit();
         Fonts.nopInit();
+        SoundEvents.nopInit();
         UltracraftClient.invokeAndWait(Shaders::nopInit);
 
         for (var registry : Registry.getRegistries()) {
@@ -1562,6 +1565,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void playSound(@NotNull SoundEvent soundEvent, float volume) {
+        Preconditions.checkNotNull(soundEvent);
+        Preconditions.checkArgument(volume >= 0.0F && volume <= 1.0F, "Volume must be between 0.0F and 1.0F");
+
         Sound sound = this.soundRegistry.getSound(soundEvent.getId());
         if (sound == null) {
             UltracraftClient.LOGGER.warn("Unknown sound event: " + soundEvent.getId());

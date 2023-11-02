@@ -17,6 +17,7 @@ import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -110,7 +111,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 return;
             }
 
-            UltracraftClient.LOGGER.debug("Chunk %s finished".formatted(pos));
             world.loadChunk(pos, new ClientChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage));
         }, this.client.chunkLoadingExecutor);
     }
@@ -184,5 +184,10 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     @Override
     public void onKeepAlive() {
         // Do not need to do anything since it's a keep-alive packet.
+    }
+
+    @Override
+    public void onPlaySound(Identifier sound, float volume) {
+        this.client.playSound(Registries.SOUND_EVENTS.getValue(sound), volume);
     }
 }

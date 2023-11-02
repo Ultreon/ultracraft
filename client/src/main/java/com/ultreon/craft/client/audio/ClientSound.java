@@ -15,7 +15,7 @@ public final class ClientSound {
     }
 
     public void register() {
-        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().location(), this.getId().path())));
+        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().location(), this.getId().path().replaceAll("\\.", "/"))));
     }
 
     public Identifier getId() {

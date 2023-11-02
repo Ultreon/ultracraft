@@ -3,7 +3,6 @@ package com.ultreon.craft.server.player;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -23,6 +22,7 @@ import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
@@ -76,10 +76,29 @@ public final class ServerPlayer extends Player {
         }
     }
 
+    /**
+     * @param damage the damage dealt.
+     * @param source the source of the damage.
+     * @return true to cancel the damage.
+     */
     @Override
     public boolean onHurt(float damage, @NotNull DamageSource source) {
         if (this.damageImmunity > 0) return true;
-        return super.onHurt(damage, source);
+        boolean doDamage = super.onHurt(damage, source);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        System.out.println("doDamage = " + doDamage);
+        if (!doDamage) this.playSound(this.getHurtSound(), 1.0f);
+        return doDamage;
     }
 
     @ApiStatus.Internal
@@ -115,16 +134,21 @@ public final class ServerPlayer extends Player {
     protected void onMoved() {
         super.onMoved();
 
-        // Send new position to client.
+        // Send new position to the client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
             this.setPosition(this.ox, this.oy, this.oz);
             this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
 
         // Limit player speed server-side.
-        double maxDistance = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 3;
-        if (this.getPosition().dst(this.ox, this.oy, this.oz) > maxDistance) {
-            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max: " + maxDistance + ")");
+        double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 2.5;
+        double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * (this.fallDistance * this.gravity + 2);
+        if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ) {
+            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max xz: " + maxDistanceXZ + ")");
+            this.teleportTo(this.ox, this.oy, this.oz);
+        }
+        if (Math.abs(this.getY() - this.oy) > maxDistanceY) {
+            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max y: " + maxDistanceY + ")");
             this.teleportTo(this.ox, this.oy, this.oz);
         }
 
@@ -249,5 +273,11 @@ public final class ServerPlayer extends Player {
         List<Vec3d> list = this.server.getPlayers().stream().map(Entity::getPosition).filter(position -> position.dst(this.getPosition()) < this.server.getEntityRenderDistance()).toList();
         this.connection.send(new S2CPlayerPositionPacket(list));
         this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+    }
+
+    @Override
+    public void playSound(@Nullable SoundEvent sound, float volume) {
+        if (sound == null) return;
+        this.connection.send(new S2CPlaySoundPacket(sound.getId(), volume));
     }
 }

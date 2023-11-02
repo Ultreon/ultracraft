@@ -28,4 +28,6 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onPlayerPositions(PacketContext ctx, List<Vec3d> list);
 
     void onKeepAlive();
+
+    void onPlaySound(Identifier sound, float volume);
 }

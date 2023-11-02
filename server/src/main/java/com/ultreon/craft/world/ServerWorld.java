@@ -435,7 +435,6 @@ public final class ServerWorld extends World {
         for (Player player : playersWithinRange) {
             player.playSound(sound, (float) ((range - player.getPosition().dst(x, y, z)) / range));
         }
-
     }
 
     /**

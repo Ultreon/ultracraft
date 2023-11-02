@@ -3,12 +3,10 @@ package com.ultreon.craft.client.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.ClientPlayer;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -83,6 +81,15 @@ public final class ClientWorld extends World implements Disposable {
         }
 
         super.onChunkUpdated(chunk);
+    }
+
+    @Override
+    public void playSound(SoundEvent sound, double x, double y, double z) {
+        float range = sound.getRange();
+        Player player = this.client.player;
+        if (player != null) {
+            player.playSound(sound, (float) ((range - player.getPosition().dst(x, y, z)) / range));
+        }
     }
 
     public Map<ChunkPos, ClientChunk> getChunks() {

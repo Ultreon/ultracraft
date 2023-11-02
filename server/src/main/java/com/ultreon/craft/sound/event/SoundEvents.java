@@ -11,4 +11,8 @@ public class SoundEvents {
         Registries.SOUND_EVENTS.register(new Identifier(name), event);
         return event;
     }
+
+    public static void nopInit() {
+
+    }
 }
