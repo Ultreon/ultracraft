@@ -38,6 +38,10 @@ public class Color {
         this.awtColor = color;
     }
 
+    public Color(float red, float green, float blue, float alpha) {
+        this.awtColor = new java.awt.Color(red, green, blue, alpha);
+    }
+
     public static Color hsb(float h, float s, float b) {
         return new Color(java.awt.Color.getHSBColor(h, s, b));
     }

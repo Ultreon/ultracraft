@@ -46,8 +46,8 @@ public class ModListScreen extends Screen {
         ModMetadata metadata = modContainer.getMetadata();
         var x = this.list.getX();
 
-        renderer.drawText(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
-        renderer.drawText("Version: " + metadata.getVersion().getFriendlyString(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
+        renderer.drawTextLeft(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
+        renderer.drawTextLeft("Version: " + metadata.getVersion().getFriendlyString(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
 
         this.drawIcon(renderer, metadata, x + 7, y + 7, 32);
     }
@@ -97,9 +97,9 @@ public class ModListScreen extends Screen {
 
             int xIcon = x + 84;
             renderer.drawTextScaled(metadata.getName(), 2, xIcon, y);
-            renderer.drawText("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
-            renderer.drawText("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
-            renderer.drawText(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
+            renderer.drawTextLeft("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
+            renderer.drawTextLeft("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
+            renderer.drawTextLeft(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
 
             y += 84;
             renderer.multiLineText(metadata.getDescription(), x, y, Color.rgb(0x808080));

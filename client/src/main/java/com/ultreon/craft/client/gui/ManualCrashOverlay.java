@@ -34,9 +34,9 @@ public class ManualCrashOverlay extends GuiComponent {
         renderer.fill(0, 0, this.width, 2, Color.rgb(0xff0000));
 
         renderer.drawCenteredTextScaled("Manual Initiating Crash", 3, this.width / 2, this.height / 2 - 100);
-        renderer.drawCenteredText("Crashing the game in " + (this.endTime - millis) / 1000 + " seconds.", this.width / 2, this.height / 2 - 50);
-        renderer.drawCenteredText("If you didn't meant to trigger this, release any ctrl, alt or shift key.", this.width / 2, this.height / 2 - 35);
-        renderer.drawCenteredText("If you continue, it will crash the game with all thread states in the crash log.", this.width / 2, this.height / 2 - 10);
+        renderer.drawTextCenter("Crashing the game in " + (this.endTime - millis) / 1000 + " seconds.", this.width / 2, this.height / 2 - 50);
+        renderer.drawTextCenter("If you didn't meant to trigger this, release any ctrl, alt or shift key.", this.width / 2, this.height / 2 - 35);
+        renderer.drawTextCenter("If you continue, it will crash the game with all thread states in the crash log.", this.width / 2, this.height / 2 - 10);
     }
 
     private void crash() {

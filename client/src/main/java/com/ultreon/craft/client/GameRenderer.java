@@ -34,7 +34,7 @@ public class GameRenderer {
         LocalPlayer player = this.client.player;
 
         if (player != null) {
-            if (this.client.screen == null && !ImGuiOverlay.isShowingImGui()) {
+            if (this.client.screen == null && !ImGuiOverlay.isShown()) {
                 player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
             }
 

@@ -1,22 +1,23 @@
 package com.ultreon.craft.client.gui.screens;
 
-import static com.badlogic.gdx.math.MathUtils.ceil;
-
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.GuiComponent;
 import com.ultreon.craft.client.gui.GuiContainer;
+import com.ultreon.craft.client.gui.Renderer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static com.badlogic.gdx.math.MathUtils.ceil;
+
 public class Screen extends GuiContainer {
     @Nullable private final Screen back;
-    @NotNull protected final String title;
+    @NotNull
+    protected String title;
 
     /**
      * Constructs a new screen with the given title.
@@ -127,6 +128,10 @@ public class Screen extends GuiContainer {
      */
     public @NotNull String getTitle() {
         return this.title;
+    }
+
+    public void setTitle(@NotNull String title) {
+        this.title = title;
     }
 
     /**

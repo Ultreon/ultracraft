@@ -29,7 +29,7 @@ public class DisconnectedScreen extends Screen {
 
         int lineY = 0;
         for (String line : this.message.lines().toList()) {
-            renderer.drawCenteredText(line, this.width / 2, this.height / 3 + 30 + lineY * (this.font.lineHeight + 1) - 1, Color.WHITE, false);
+            renderer.drawTextCenter(line, this.width / 2, this.height / 3 + 30 + lineY * (this.font.lineHeight + 1) - 1, Color.WHITE, false);
             lineY++;
         }
 

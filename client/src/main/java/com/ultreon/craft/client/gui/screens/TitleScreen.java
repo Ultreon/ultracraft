@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Button;
+import com.ultreon.craft.client.gui.widget.Panel;
 import com.ultreon.craft.client.rpc.Activity;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.translations.v1.Language;
@@ -18,6 +18,7 @@ public class TitleScreen extends Screen {
     private Button optionsButton;
     private Button quitButton;
     private final Resizer resizer;
+    private boolean activitySet = false;
 
     public TitleScreen() {
         super("Title Screen");
@@ -48,13 +49,13 @@ public class TitleScreen extends Screen {
 
         super.init();
 
-        boolean activitySet = false;
-        if (!activitySet) {
+        if (!this.activitySet) {
             this.client.setActivity(Activity.MAIN_MENU);
         }
 
         int y = this.height / 2 - 35;
 
+        this.add(new Panel(0, 0, 350, this.height)).setBackgroundColor(0x80000000);
         this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("ultracraft.screen.title.singleplayer"), this::openSingleplayer));
         this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.multiplayer"), this::openMultiplayer));
         this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.mod_list"), this::showModList));
@@ -74,8 +75,6 @@ public class TitleScreen extends Screen {
         float drawX = (this.width - drawWidth) / 2;
         float drawY = (this.height - drawHeight) / 2;
         renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, this.resizer.getSourceWidth(), this.resizer.getSourceHeight(), (int) this.resizer.getSourceWidth(), (int) this.resizer.getSourceHeight());
-
-        renderer.fill(0, 0, 250, this.height, Color.argb(0x80000000));
     }
 
     @Override

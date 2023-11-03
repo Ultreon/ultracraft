@@ -7,8 +7,9 @@ import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.init.Fonts;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
-
 import org.checkerframework.common.value.qual.IntRange;
+
+import java.nio.file.Path;
 
 /**
  * Controllable widget, a widget that can be controlled by the user.
@@ -18,6 +19,7 @@ import org.checkerframework.common.value.qual.IntRange;
  */
 @SuppressWarnings("unused")
 public abstract class GuiComponent implements GuiStateListener, Widget {
+    private static final Path ROOT = Path.of("/");
     protected int x;
     protected int y;
     protected int width;
@@ -26,18 +28,20 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     public boolean visible = true;
     public boolean focused = false;
     private boolean valid;
-    protected Color backgroundColor;
+    protected Color backgroundColor = Color.TRANSPARENT;
     protected final UltracraftClient client = UltracraftClient.get();
     public final Font font = Fonts.DEFAULT;
     private boolean hovered = false;
     private int lastMouseX;
     private int lastMouseY;
+    private final long creationTime = System.nanoTime();
+    GuiComponent parent;
 
     /**
-     * @param x      position create the widget
-     * @param y      position create the widget
-     * @param width  size create the widget
-     * @param height size create the widget
+     * @param x      the x position of the widget
+     * @param y      the y position of the widget
+     * @param width  the width of the widget
+     * @param height the height of the widget
      */
     @SuppressWarnings("ConstantValue")
     public GuiComponent(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
@@ -57,7 +61,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * @param x      the x position when clicked.
      * @param y      the y position when clicked.
      * @param button the button used.
-     * @param count  the amount create sequential clicks.
+     * @param count  the number of sequential clicks.
      */
     public boolean mouseClick(int x, int y, int button, int count) {
         return false;
@@ -95,8 +99,8 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * @param y the y position where the mouse moved to.
      */
     public void mouseMove(int x, int y) {
-        lastMouseX = x;
-        lastMouseY = y;
+        this.lastMouseX = x;
+        this.lastMouseY = y;
     }
 
     /**
@@ -117,7 +121,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * Called when the mouse exits the widget.
      */
     public void mouseExit() {
-        hovered = false;
+        this.hovered = false;
     }
 
     /**
@@ -127,7 +131,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * @param y y position where it entered.
      */
     public void mouseEnter(int x, int y) {
-        hovered = true;
+        this.hovered = true;
     }
 
     public boolean mouseWheel(int x, int y, double rotation) {
@@ -137,12 +141,12 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     /**
      * Key press handler.
      *
-     * @param keyCode   the code for the key pressed.
-     * @return to cancel out other usage create this method.
+     * @param keyCode the code for the key pressed.
+     * @return to cancel out other usage of this method.
      */
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE && client.screen != null && client.screen.canClose()) {
-            client.showScreen(null);
+        if (keyCode == Input.Keys.ESCAPE && this.client.screen != null && this.client.screen.canClose()) {
+            this.client.showScreen(null);
             return true;
         }
 
@@ -152,8 +156,8 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     /**
      * Key release handler.
      *
-     * @param keyCode   the code for the key released.
-     * @return to cancel out other usage create this method.
+     * @param keyCode the code for the key released.
+     * @return to cancel out other usage of this method.
      */
     public boolean keyRelease(int keyCode) {
         return false;
@@ -163,14 +167,14 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      * Key type handler.
      *
      * @param character the character typed.
-     * @return to cancel out other usage create this method.
+     * @return to cancel out other usage of this method.
      */
     public boolean charType(char character) {
         return false;
     }
 
     public int getX() {
-        return x;
+        return this.x;
     }
 
     public void setX(int x) {
@@ -178,7 +182,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     }
 
     public int getY() {
-        return y;
+        return this.y;
     }
 
     public void setY(int y) {
@@ -186,7 +190,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     }
 
     public int getWidth() {
-        return width;
+        return this.width;
     }
 
     public void setWidth(int width) {
@@ -197,49 +201,49 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     }
 
     public int getHeight() {
-        return height;
+        return this.height;
     }
 
     public void setHeight(int height) {
-        if (width < 0) {
+        if (this.width < 0) {
             throw new IllegalArgumentException("Height should be positive.");
         }
         this.height = height;
     }
 
     public Vec2i getPos() {
-        return new Vec2i(x, y);
+        return new Vec2i(this.x, this.y);
     }
 
     public void setPos(int x, int y) {
-        setX(x);
-        setY(y);
+        this.setX(x);
+        this.setY(y);
     }
 
     public void setPos(Vec2i pos) {
-        setPos(pos.x, pos.y);
+        this.setPos(pos.x, pos.y);
     }
 
     public Vec2i getSize() {
-        return new Vec2i(width, height);
+        return new Vec2i(this.width, this.height);
     }
 
     public void setSize(Vec2i size) {
-        setSize(size.x, size.y);
+        this.setSize(size.x, size.y);
     }
 
     public void setSize(int width, int height) {
-        setWidth(width);
-        setHeight(height);
+        this.setWidth(width);
+        this.setHeight(height);
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, width, height);
+        return new Rectangle(this.x, this.y, this.width, this.height);
     }
 
     public void setBounds(int x, int y, int width, int height) {
-        setPos(x, y);
-        setSize(width, height);
+        this.setPos(x, y);
+        this.setSize(width, height);
     }
 
     public void setBounds(Rectangle bounds) {
@@ -250,7 +254,7 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     }
 
     public Color getBackgroundColor() {
-        return backgroundColor;
+        return this.backgroundColor;
     }
 
     public void setBackgroundColor(Color backgroundColor) {
@@ -286,20 +290,20 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
      *
      * @param x position to check for.
      * @param y position to check for.
-     * @return true if the x and y position given is withing the bounds create the widget
+     * @return true, if the x and y position given is withing, the bounds create the widget
      */
     public boolean isWithinBounds(int x, int y) {
-        return x >= this.getX() && y >= this.getY() && x <= this.getX() + getWidth() && y <= this.getY() + getHeight();
+        return x >= this.getX() && y >= this.getY() && x <= this.getX() + this.getWidth() && y <= this.getY() + this.getHeight();
     }
 
     /**
      * Check if a position is withing the bounds create the widget
      *
      * @param pos position to check for.
-     * @return true if the x and y position given is withing the bounds create the widget
+     * @return true, if the x and y position given is withing, the bounds create the widget
      */
     public boolean isWithinBounds(Vec2i pos) {
-        return pos.getX() >= this.getX() && pos.getY() >= this.getY() && pos.getX() <= this.getX() + getWidth() && pos.getY() <= this.getY() + getHeight();
+        return pos.getX() >= this.getX() && pos.getY() >= this.getY() && pos.getX() <= this.getX() + this.getWidth() && pos.getY() <= this.getY() + this.getHeight();
     }
 
     public void renderComponent(Renderer renderer) {
@@ -312,17 +316,17 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
 
     @Override
     public void make() {
-        valid = true;
+        this.valid = true;
     }
 
     @Override
     public void destroy() {
-        valid = false;
+        this.valid = false;
     }
 
     @Override
     public boolean isValid() {
-        return valid;
+        return this.valid;
     }
 
     protected boolean isWithinBounds(float x, float y) {
@@ -330,11 +334,11 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     }
 
     protected final int getLastMouseX() {
-        return lastMouseX;
+        return this.lastMouseX;
     }
 
     protected final int getLastMouseY() {
-        return lastMouseY;
+        return this.lastMouseY;
     }
 
 
@@ -346,5 +350,15 @@ public abstract class GuiComponent implements GuiStateListener, Widget {
     public static void fill(Renderer renderer, int x, int y, int width, int height, Color color) {
         renderer.setColor(color);
         renderer.rect(x, y, width, height);
+    }
+
+    /**
+     * Should only be overridden when the component is dynamically created.
+     *
+     * @return the path to the component
+     */
+    public Path path() {
+        Path path = this.parent == null ? GuiComponent.ROOT : this.parent.path();
+        return path.resolve("%s[%d]".formatted(this.getClass().getSimpleName(), this.creationTime));
     }
 }

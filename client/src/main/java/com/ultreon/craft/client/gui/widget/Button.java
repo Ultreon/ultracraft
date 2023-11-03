@@ -2,10 +2,10 @@ package com.ultreon.craft.client.gui.widget;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
-import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.util.Color;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -90,7 +90,7 @@ public class Button extends GuiComponent {
         renderer.blit(texture, x+7, y + this.height - 7, this.width - 14, 7, 7 + u, 14 + v, 7, 7);
         renderer.blit(texture, x+ this.width -7, y + this.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
 
-        renderer.drawCenteredText(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
+        renderer.drawTextCenter(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
     }
 
     @Override

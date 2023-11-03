@@ -3,8 +3,6 @@ package com.ultreon.craft.client.imgui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.gui.GuiComponent;
-import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.ChunkPos;
@@ -35,6 +33,7 @@ public class ImGuiOverlay {
     private static ImGuiImplGl3 imGuiGl3;
     private static boolean isImplCreated;
     private static boolean isContextCreated;
+    private static final GuiEditor guiEditor = new GuiEditor();
 
     public static void setupImGui() {
         UltracraftClient.LOGGER.info("Setting up ImGui");
@@ -107,7 +106,7 @@ public class ImGuiOverlay {
             }
 
             if (ImGuiOverlay.SHOW_PLAYER_UTILS.get()) ImGuiOverlay.showPlayerUtilsWindow(client);
-            if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiUtilsWindow(client);
+            if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiEditor(client);
             if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
             if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
 
@@ -139,17 +138,17 @@ public class ImGuiOverlay {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (client.player != null && ImGui.begin("Player Utils", ImGuiOverlay.getDefaultFlags())) {
-            ImGuiEx.text("Id:", () -> client.player.getId());
-            ImGuiEx.text("Dead:", () -> client.player.isDead());
-            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", client.player.getWalkingSpeed(), v -> client.player.setWalkingSpeed(v));
-            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", client.player.getFlyingSpeed(), v -> client.player.setFlyingSpeed(v));
-            ImGuiEx.editFloat("Gravity:", "PlayerGravity", client.player.gravity, v -> client.player.gravity = v);
-            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", client.player.jumpVel, v -> client.player.jumpVel = v);
-            ImGuiEx.editFloat("Health:", "PlayerHealth", client.player.getHealth(), v -> client.player.setHealth(v));
-            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", client.player.getMaxHeath(), v -> client.player.setMaxHeath(v));
-            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", client.player.noGravity, v -> client.player.noGravity = v);
-            ImGuiEx.editBool("Flying:", "PlayerFlying", client.player.isFlying(), v -> client.player.setFlying(v));
-            ImGuiEx.editBool("Spectating:", "PlayerSpectating", client.player.isSpectating(), v -> client.player.setSpectating(v));
+            ImGuiEx.text("Id:", client.player::getId);
+            ImGuiEx.text("Dead:", client.player::isDead);
+            ImGuiEx.editFloat("Walking Speed:", "PlayerWalkingSpeed", client.player::getWalkingSpeed, client.player::setWalkingSpeed);
+            ImGuiEx.editFloat("Flying Speed:", "PlayerFlyingSpeed", client.player::getFlyingSpeed, client.player::setFlyingSpeed);
+            ImGuiEx.editFloat("Gravity:", "PlayerGravity", () -> client.player.gravity, v -> client.player.gravity = v);
+            ImGuiEx.editFloat("Jump Velocity:", "PlayerJumpVelocity", () -> client.player.jumpVel, v -> client.player.jumpVel = v);
+            ImGuiEx.editFloat("Health:", "PlayerHealth", client.player::getHealth, client.player::setHealth);
+            ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", client.player::getMaxHeath, client.player::setMaxHeath);
+            ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", () -> client.player.noGravity, v -> client.player.noGravity = v);
+            ImGuiEx.editBool("Flying:", "PlayerFlying", client.player::isFlying, client.player::setFlying);
+            ImGuiEx.editBool("Spectating:", "PlayerSpectating", client.player::isSpectating, client.player::setSpectating);
             ImGuiEx.bool("On Ground:", () -> client.player.onGround);
             ImGuiEx.bool("Colliding:", () -> client.player.isColliding);
             ImGuiEx.bool("Colliding X:", () -> client.player.isCollidingX);
@@ -158,22 +157,22 @@ public class ImGuiOverlay {
 
             if (ImGui.collapsingHeader("Position")) {
                 ImGui.treePush();
-                ImGuiEx.editDouble("X:", "PlayerX", client.player.getX(), v -> client.player.setX(v));
-                ImGuiEx.editDouble("Y:", "PlayerY", client.player.getY(), v -> client.player.setY(v));
-                ImGuiEx.editDouble("Z:", "PlayerZ", client.player.getZ(), v -> client.player.setZ(v));
+                ImGuiEx.editDouble("X:", "PlayerX", client.player::getX, v -> client.player.setX(v));
+                ImGuiEx.editDouble("Y:", "PlayerY", client.player::getY, v -> client.player.setY(v));
+                ImGuiEx.editDouble("Z:", "PlayerZ", client.player::getZ, v -> client.player.setZ(v));
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Velocity")) {
                 ImGui.treePush();
-                ImGuiEx.editDouble("X:", "PlayerVelocityX", client.player.velocityX, v -> client.player.velocityX = v);
-                ImGuiEx.editDouble("Y:", "PlayerVelocityY", client.player.velocityY, v -> client.player.velocityY = v);
-                ImGuiEx.editDouble("Z:", "PlayerVelocityZ", client.player.velocityZ, v -> client.player.velocityZ = v);
+                ImGuiEx.editDouble("X:", "PlayerVelocityX", () -> client.player.velocityX, v -> client.player.velocityX = v);
+                ImGuiEx.editDouble("Y:", "PlayerVelocityY", () -> client.player.velocityY, v -> client.player.velocityY = v);
+                ImGuiEx.editDouble("Z:", "PlayerVelocityZ", () -> client.player.velocityZ, v -> client.player.velocityZ = v);
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Rotation")) {
                 ImGui.treePush();
-                ImGuiEx.editFloat("X:", "PlayerXRot", client.player.getXRot(), v -> client.player.setXRot(v));
-                ImGuiEx.editFloat("Y:", "PlayerYRot", client.player.getYRot(), v -> client.player.setYRot(v));
+                ImGuiEx.editFloat("X:", "PlayerXRot", client.player::getXRot, v -> client.player.setXRot(v));
+                ImGuiEx.editFloat("Y:", "PlayerYRot", client.player::getYRot, v -> client.player.setYRot(v));
                 ImGui.treePop();
             }
             if (ImGui.collapsingHeader("Player Input")) {
@@ -190,23 +189,11 @@ public class ImGuiOverlay {
         }
     }
 
-    private static void showGuiUtilsWindow(UltracraftClient client) {
+    private static void showGuiEditor(UltracraftClient client) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("GUI Utils", ImGuiOverlay.getDefaultFlags())) {
-            Screen currentScreen = client.screen;
-            ImGuiEx.text("Classname:", () -> currentScreen == null ? null : currentScreen.getClass().getSimpleName());
-            if (currentScreen != null) {
-                GuiComponent exactWidgetAt = currentScreen.getExactWidgetAt((int) (Gdx.input.getX() / client.getGuiScale()), (int) (Gdx.input.getY() / client.getGuiScale()));
-                if (exactWidgetAt != null) {
-                    client.shapes.setColor(1.0F, 0.0F, 1.0F, 1.0F);
-                    client.shapes.rectangle(
-                            exactWidgetAt.getX() * client.getGuiScale(), exactWidgetAt.getY() * client.getGuiScale(),
-                            exactWidgetAt.getWidth() * client.getGuiScale(), exactWidgetAt.getHeight() * client.getGuiScale()
-                    );
-                }
-                ImGuiEx.text("Widget:", () -> exactWidgetAt == null ? null : exactWidgetAt.getClass().getSimpleName());
-            }
+        if (ImGui.begin("GUI Editor", ImGuiOverlay.getDefaultFlags())) {
+            ImGuiOverlay.guiEditor.render(client);
         }
         ImGui.end();
     }
@@ -227,7 +214,7 @@ public class ImGuiOverlay {
         return flags;
     }
 
-    public static boolean isShowingImGui() {
+    public static boolean isShown() {
         return ImGuiOverlay.SHOW_IM_GUI.get();
     }
 

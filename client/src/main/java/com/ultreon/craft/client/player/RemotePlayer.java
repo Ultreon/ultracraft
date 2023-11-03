@@ -2,13 +2,12 @@ package com.ultreon.craft.client.player;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.entity.EntityTypes;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class RemotePlayer extends Player {
+public class RemotePlayer extends ClientPlayer {
     @LazyInit private UUID uuid;
     private String name = "<Player>";
 

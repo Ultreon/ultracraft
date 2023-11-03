@@ -1,26 +1,20 @@
 package com.ultreon.craft.client.imgui;
 
-import com.ultreon.libs.functions.v0.consumer.BooleanConsumer;
-import com.ultreon.libs.functions.v0.consumer.ByteConsumer;
+import com.ultreon.craft.client.util.Color;
+import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.functions.v0.consumer.DoubleConsumer;
-import com.ultreon.libs.functions.v0.consumer.FloatConsumer;
-import com.ultreon.libs.functions.v0.consumer.ShortConsumer;
-
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-import java.util.function.LongConsumer;
-import java.util.function.Supplier;
-
+import com.ultreon.libs.functions.v0.consumer.*;
+import com.ultreon.libs.functions.v0.supplier.FloatSupplier;
 import imgui.ImGui;
 import imgui.flag.ImGuiDataType;
-import imgui.type.ImBoolean;
-import imgui.type.ImDouble;
-import imgui.type.ImFloat;
-import imgui.type.ImInt;
-import imgui.type.ImLong;
-import imgui.type.ImShort;
-import imgui.type.ImString;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.type.*;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
+import java.util.function.*;
 
 public class ImGuiEx {
     public static void text(String label, Supplier<Object> value) {
@@ -35,73 +29,97 @@ public class ImGuiEx {
         ImGui.text(String.valueOf(o));
     }
 
-    public static void editString(String label, String id, String value, Consumer<String> setter) {
+    public static void editString(String label, String id, Supplier<String> value, Consumer<String> setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImString i = new ImString(value);
-        if (ImGui.inputText("##" + id, i)) {
-            setter.accept(i.get());
+        try {
+            ImString i = new ImString(value.get(), 256);
+            if (ImGui.inputText("##" + id, i, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                setter.accept(i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
     public static void editByte(String label, String id, byte value, ByteConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImShort i = new ImShort(value);
-        if (ImGui.inputScalar("##" + id, ImGuiDataType.U8, i)) {
-            setter.accept((byte) i.get());
+        try {
+            ImShort i = new ImShort(value);
+            if (ImGui.inputScalar("##" + id, ImGuiDataType.U8, i)) {
+                setter.accept((byte) i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
     public static void editShort(String label, String id, short value, ShortConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImShort i = new ImShort(value);
-        if (ImGui.inputScalar("##" + id, ImGuiDataType.S16, i)) {
-            setter.accept(i.get());
+        try {
+            ImShort i = new ImShort(value);
+            if (ImGui.inputScalar("##" + id, ImGuiDataType.S16, i)) {
+                setter.accept(i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
-    public static void editInt(String label, String id, int value, IntConsumer setter) {
+    public static void editInt(String label, String id, IntSupplier value, IntConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImInt i = new ImInt(value);
-        if (ImGui.inputInt("##" + id, i)) {
-            setter.accept(i.get());
+        try {
+            ImInt i = new ImInt(value.getAsInt());
+            if (ImGui.inputInt("##" + id, i)) {
+                setter.accept(i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
-    public static void editLong(String label, String id, long value, LongConsumer setter) {
+    public static void editLong(String label, String id, LongSupplier value, LongConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImLong i = new ImLong(value);
-        if (ImGui.inputScalar("##" + id, ImGuiDataType.S64, i)) {
-            setter.accept(i.get());
+        try {
+            ImLong i = new ImLong(value.getAsLong());
+            if (ImGui.inputScalar("##" + id, ImGuiDataType.S64, i)) {
+                setter.accept(i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
-    public static void editFloat(String label, String id, float value, FloatConsumer setter) {
+    public static void editFloat(String label, String id, FloatSupplier value, FloatConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImFloat i = new ImFloat(value);
-        if (ImGui.inputFloat("##" + id, i)) {
-            setter.accept(i.get());
+        try {
+            ImFloat i = new ImFloat(value.getFloat());
+            if (ImGui.inputFloat("##" + id, i)) {
+                setter.accept(i.get());
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 
-    public static void editDouble(String label, String id, double value, DoubleConsumer setter) {
+    public static void editDouble(String label, String id, DoubleSupplier value, DoubleConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImDouble i = new ImDouble(value);
+        ImDouble i = new ImDouble(value.getAsDouble());
         if (ImGui.inputDouble("##" + id, i)) {
             setter.accept(i.get());
         }
     }
 
-    public static void editBool(String label, String id, boolean value, BooleanConsumer setter) {
+    public static void editBool(String label, String id, BooleanSupplier value, BooleanConsumer setter) {
         ImGui.text(label);
         ImGui.sameLine();
-        ImBoolean i = new ImBoolean(value);
+        ImBoolean i = new ImBoolean(value.getAsBoolean());
         if (ImGui.checkbox("##" + id, i)) {
             setter.accept(i.get());
         }
@@ -120,9 +138,67 @@ public class ImGuiEx {
     public static void slider(String label, String id, int value, int min, int max, IntConsumer onChange) {
         ImGui.text(label);
         ImGui.sameLine();
-        int[] v = new int[]{value};
-        if (ImGui.sliderInt("##" + id, v, min, max)) {
-            onChange.accept(v[0]);
+        try {
+            int[] v = new int[]{value};
+            if (ImGui.sliderInt("##" + id, v, min, max)) {
+                onChange.accept(v[0]);
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
+        }
+    }
+
+    public static void button(String label, String id, Runnable func) {
+        ImGui.text(label);
+        ImGui.sameLine();
+        try {
+            if (ImGui.button("##" + id)) {
+                func.run();
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
+        }
+    }
+
+    public static void editColor3(String color, String s, Supplier<@NotNull Color> getter, Consumer<@NotNull Color> setter) {
+        ImGui.text(color);
+        ImGui.sameLine();
+        try {
+            Color c = getter.get();
+            float[] floats = {c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1f};
+            if (ImGui.colorEdit3("##" + s, floats)) {
+                setter.accept(new Color(floats[0], floats[1], floats[2], 1f));
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
+        }
+    }
+
+    public static void editColor4(String color, String s, Supplier<Color> getter, Consumer<Color> setter) {
+        ImGui.text(color);
+        ImGui.sameLine();
+        try {
+            Color c = getter.get();
+            float[] floats = {c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f};
+            if (ImGui.colorEdit4("##" + s, floats)) {
+                setter.accept(new Color(floats[0], floats[1], floats[2], floats[3]));
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
+        }
+    }
+
+    public static <T extends Enum<T>> void editEnum(String s, String s1, Supplier<T> getter, Consumer<T> setter) {
+        ImGui.text(s);
+        ImGui.sameLine();
+        try {
+            T e = getter.get();
+            ImInt index = new ImInt(e.ordinal());
+            if (ImGui.combo("##" + s1, index, Arrays.stream(e.getClass().getEnumConstants()).map(Enum::name).toArray(String[]::new))) {
+                setter.accept(EnumUtils.byOrdinal(index.get(), e));
+            }
+        } catch (Throwable t) {
+            ImGui.text(String.valueOf(t));
         }
     }
 }

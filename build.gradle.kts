@@ -3,6 +3,7 @@ import org.jetbrains.gradle.ext.Application
 import org.jetbrains.gradle.ext.GradleTask
 import org.jetbrains.gradle.ext.runConfigurations
 import org.jetbrains.gradle.ext.settings
+import java.lang.System.getenv
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 
@@ -45,12 +46,18 @@ apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 apply(plugin = "gameutils")
 
+val gameVersion = "0.1.0"
+val ghBuildNumber: String? = getenv("GH_BUILD_NUMBER")
+
 //********************************//
 // Setting up the main properties //
 //********************************//
 extensions.configure<GameUtilsExt> {
     projectName = "Ultracraft"
-    projectVersion = "0.1.0"
+
+    projectVersion =
+        if (ghBuildNumber != null) "$gameVersion+build.$ghBuildNumber"
+        else gameVersion
     projectGroup = "com.ultreon.craft"
     projectId = "ultracraft"
     production = true

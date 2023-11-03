@@ -2,12 +2,12 @@ package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.client.util.GameRenderable;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.MobileInput;
+import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.client.util.GameRenderable;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.registry.Registries;
@@ -106,14 +106,14 @@ public class Hud implements GameRenderable {
             int count = item.getCount();
             if (!item.isEmpty() && count > 1) {
                 String text = Integer.toString(count);
-                renderer.drawText(text, ix + 18 - this.client.font.width(text), this.client.getScaledHeight() - 7 - this.client.font.lineHeight, Color.WHITE, false);
+                renderer.drawTextLeft(text, ix + 18 - this.client.font.width(text), this.client.getScaledHeight() - 7 - this.client.font.lineHeight, Color.WHITE, false);
             }
         }
 
         if (key != null && !selectedItem.isEmpty()) {
             if (renderer.pushScissors((int) ((float) this.client.getScaledWidth() / 2) - 84, this.leftY - 44, 168, 12)) {
                 String name = selectedItem.getItem().getTranslation();
-                renderer.drawCenteredText(name, (int) ((float) this.client.getScaledWidth()) / 2, this.leftY - 41);
+                renderer.drawTextCenter(name, (int) ((float) this.client.getScaledWidth()) / 2, this.leftY - 41);
                 renderer.popScissors();
             }
         }

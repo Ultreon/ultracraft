@@ -3,6 +3,7 @@ package com.ultreon.craft.client.network;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.RemotePlayer;
@@ -135,6 +136,11 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onDisconnect(String message) {
+        LocalPlayer player = this.client.player;
+        if (player != null) {
+            ClientPlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(player, message);
+        }
+
         this.client.connection.close();
 
         this.client.submit(() -> {

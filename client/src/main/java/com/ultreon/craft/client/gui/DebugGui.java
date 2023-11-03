@@ -1,18 +1,20 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Mesh;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.world.ChunkMesh;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.util.HitResult;
-import com.badlogic.gdx.graphics.Mesh;
-import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.client.world.ChunkMesh;
-import com.ultreon.craft.client.world.WorldRenderer;
-import com.ultreon.craft.world.*;
+import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,11 +93,11 @@ public class DebugGui {
 
     public void drawLine(Renderer renderer, String name, Object value) {
         this.y += 10;
-        renderer.drawText(name + ": " + value, DebugGui.OFFSET, this.y);
+        renderer.drawTextLeft(name + ": " + value, DebugGui.OFFSET, this.y);
     }
 
     public void drawLine(Renderer renderer, String text) {
         this.y += 10;
-        renderer.drawText(text, DebugGui.OFFSET, this.y);
+        renderer.drawTextLeft(text, DebugGui.OFFSET, this.y);
     }
 }

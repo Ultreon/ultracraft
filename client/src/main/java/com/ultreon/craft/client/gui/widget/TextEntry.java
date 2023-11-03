@@ -65,9 +65,9 @@ public class TextEntry extends GuiComponent {
         renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
         renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawText(this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
+        renderer.drawTextLeft(this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
         if (this.text.isEmpty()) {
-            renderer.drawText(this.hint, this.x + 5, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
+            renderer.drawTextLeft(this.hint, this.x + 5, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
         }
 
         if (this.focused) {

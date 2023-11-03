@@ -3,17 +3,14 @@ package com.ultreon.craft.client.gui.screens;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
-import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.GuiComponent;
-import com.ultreon.craft.entity.EntityTypes;
-import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.craft.world.World;
-import com.ultreon.data.types.MapType;
+import com.ultreon.craft.world.WorldStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,14 +112,14 @@ public class WorldLoadScreen extends Screen {
         GuiComponent.fill(renderer, 0, 0, this.width, this.height, 0xff202020);
 
         renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawCenteredText(this.title, this.width / 2, this.height / 3);
+        renderer.drawTextCenter(this.title, this.width / 2, this.height / 3);
 
         ServerWorld world = this.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                renderer.drawCenteredText(this.message, this.width / 2, this.height / 3 + 20);
+                renderer.drawTextCenter(this.message, this.width / 2, this.height / 3 + 20);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;

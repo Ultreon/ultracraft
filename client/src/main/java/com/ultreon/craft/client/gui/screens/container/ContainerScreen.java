@@ -4,14 +4,14 @@ import com.badlogic.gdx.Input;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
-import com.ultreon.craft.client.util.Color;
-import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.GuiComponent;
-import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +69,7 @@ public abstract class ContainerScreen extends Screen {
 
             if (!slotItem.isEmpty() && slotItem.getCount() > 1) {
                 String text = Integer.toString(slotItem.getCount());
-                renderer.drawText(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
+                renderer.drawTextLeft(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
             }
         }
     }
@@ -118,16 +118,16 @@ public abstract class ContainerScreen extends Screen {
         renderer.fill(x, y + 1, textWidth + 6, textHeight + 4, Color.rgb(0x202020));
         renderer.box(x + 1, y + 1, textWidth + 4, textHeight + 4, Color.rgb(0x303030));
 
-        renderer.drawText(title, x + 3, y + 3, Color.WHITE);
+        renderer.drawTextLeft(title, x + 3, y + 3, Color.WHITE);
 
         int lineNr = 0;
         for (String line : description) {
-            renderer.drawText(line, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0xa0a0a0));
+            renderer.drawTextLeft(line, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0xa0a0a0));
             lineNr++;
         }
 
         if (subTitle != null)
-            renderer.drawText(subTitle, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0x606060));
+            renderer.drawTextLeft(subTitle, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0x606060));
     }
 
     protected @Nullable ItemSlot getSlotAt(int mouseX, int mouseY) {

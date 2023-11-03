@@ -1,8 +1,8 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Input;
-import com.ultreon.craft.item.Items;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.item.Items;
 
 public class ItemRenderTestScreen extends Screen {
     private static final int MAX_STATE = 8;
@@ -19,9 +19,9 @@ public class ItemRenderTestScreen extends Screen {
     protected void renderBackground(Renderer renderer) {
         if (this.bg) super.renderBackground(renderer);
 
-        renderer.drawCenteredText("STATE [" + this.state + "]", this.width / 2, this.height - 20);
-        renderer.drawCenteredText("BG [" + this.bg + "]", this.width / 2, this.height - 30);
-        renderer.drawCenteredText("X [" + this.mx + "]" + "Y [" + this.my + "]", this.width / 2, this.height - 40);
+        renderer.drawTextCenter("STATE [" + this.state + "]", this.width / 2, this.height - 20);
+        renderer.drawTextCenter("BG [" + this.bg + "]", this.width / 2, this.height - 30);
+        renderer.drawTextCenter("X [" + this.mx + "]" + "Y [" + this.my + "]", this.width / 2, this.height - 40);
 
         if (this.state == 0) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, 16);
         if (this.state == 1) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, -16);

@@ -38,6 +38,7 @@ import com.ultreon.craft.client.audio.ClientSound;
 import com.ultreon.craft.client.config.GameSettings;
 import com.ultreon.craft.client.events.ClientLifecycleEvents;
 import com.ultreon.craft.client.events.ScreenEvents;
+import com.ultreon.craft.client.events.WindowEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.font.FontRegistry;
 import com.ultreon.craft.client.gui.Renderer;
@@ -398,26 +399,38 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @NotNull
     private static Lwjgl3ApplicationConfiguration createConfig() {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-        config.useVsync(true);
-        config.setForegroundFPS(120);
+        config.useVsync(false);
+        config.setForegroundFPS(1032);
         config.setIdleFPS(10);
-        config.setBackBufferConfig(8, 8, 8, 8, 8, 0, 0);
+        config.setBackBufferConfig(8, 8, 8, 8, 8, 8, 0);
         config.setInitialVisible(false);
         config.setTitle("Ultracraft");
         config.setWindowIcon(UltracraftClient.getIcons());
         config.setWindowedMode(1280, 720);
         config.setWindowListener(new Lwjgl3WindowAdapter() {
+            private Lwjgl3Window window;
+
             @Override
             public void created(Lwjgl3Window window) {
                 Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.NOTIFICATION, false);
                 Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.LOW, false);
                 Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.MEDIUM, true);
                 Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.HIGH, true);
+
+                WindowEvents.WINDOW_CREATED.factory().onWindowCreated(window);
+                this.window = window;
             }
 
             @Override
             public void focusLost() {
                 UltracraftClient.get().pause();
+
+                WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, false);
+            }
+
+            @Override
+            public void focusGained() {
+                WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, true);
             }
 
             @Override
@@ -428,6 +441,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             @Override
             public void filesDropped(String[] files) {
                 UltracraftClient.get().filesDropped(files);
+
+                WindowEvents.WINDOW_FILES_DROPPED.factory().onWindowFilesDropped(this.window, files);
             }
 
         });
@@ -1349,7 +1364,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public boolean isShowingImGui() {
-        return ImGuiOverlay.isShowingImGui();
+        return ImGuiOverlay.isShown();
     }
 
     public void setShowingImGui(boolean value) {

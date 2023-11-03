@@ -1,16 +1,15 @@
 package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.LoginClientPacketHandler;
-import com.ultreon.data.types.MapType;
 
 import java.util.UUID;
 
@@ -34,6 +33,8 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         if (this.client.integratedServer != null) {
             this.client.integratedServer.loadPlayer(player);
         }
+
+        ClientPlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
 
         this.client.submit(() -> {
             try {

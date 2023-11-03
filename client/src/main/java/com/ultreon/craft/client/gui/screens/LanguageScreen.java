@@ -1,10 +1,10 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.SelectionList;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 
@@ -87,7 +87,7 @@ public class LanguageScreen extends Screen {
         }
         String text = locale.getDisplayLanguage(new Locale("en")) + " (" + locale.getDisplayCountry(new Locale("en")) + ")";
         text += " - " + locale.getDisplayLanguage(locale) + " (" + locale.getDisplayCountry(locale) + ")";
-        renderer.drawCenteredText(text, this.width / 2f, y + 4f);
+        renderer.drawTextCenter(text, this.width / 2f, y + 4f);
     }
 
     private void updateTexts() {

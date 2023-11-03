@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: chmod +x ./gradlew && ./gradlew pack
         env:
-          GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+          GH_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:

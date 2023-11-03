@@ -3,9 +3,6 @@ package com.ultreon.craft.client.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
@@ -13,6 +10,7 @@ import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
+import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.item.Item;
@@ -23,11 +21,6 @@ import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.translations.v1.Language;
-
-import java.nio.ByteBuffer;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.zip.Deflater;
 
 public class DesktopInput extends GameInput {
     public int pauseKey = Input.Keys.ESCAPE;
@@ -235,6 +228,8 @@ public class DesktopInput extends GameInput {
     @Override
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = this.client.screen;
+
+        if (ImGuiOverlay.isShown()) return false;
 
         Player player = this.client.player;
         if (currentScreen == null && player != null) {

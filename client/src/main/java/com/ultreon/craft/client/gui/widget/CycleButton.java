@@ -5,7 +5,7 @@ import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Function;
 
-public class CycleButton<T> extends Button {
+public class CycleButton<T extends Enum<T>> extends Button {
     private final String name;
     private T[] values;
     private Function<T, String> formatter;
@@ -51,5 +51,9 @@ public class CycleButton<T> extends Button {
 
     public void setIndex(int index) {
         this.cur = Mth.clamp(index, 0, this.values.length - 1);
+    }
+
+    public void setValue(T o) {
+        this.cur = o.ordinal();
     }
 }

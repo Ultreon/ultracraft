@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class LocalPlayer extends Player {
+public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
     public ContainerMenu openMenu;

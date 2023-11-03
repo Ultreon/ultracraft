@@ -50,12 +50,15 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
      */
     public <T extends GuiComponent> T add(T child) {
         this.children.add(child);
+        child.parent = this;
         child.make();
         return child;
     }
 
     public void remove(GuiComponent child) {
         this.children.remove(child);
+        child.parent = null;
+        child.destroy();
     }
 
     @Nullable
