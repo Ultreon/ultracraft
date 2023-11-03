@@ -14,11 +14,11 @@ import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -432,7 +432,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     /**
-     * @return the normalized game version, use {@link FabricLoader#getRawGameVersion()} for the raw version.
+     * @return the game's version.
      */
     public String getGameVersion() {
         return FabricLoader.getInstance().getModContainer(ServerConstants.NAMESPACE).get().getMetadata().getVersion().getFriendlyString();
