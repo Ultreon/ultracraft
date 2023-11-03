@@ -108,7 +108,7 @@ public class DesktopInput extends GameInput {
         } else if (keycode == this.debugHudKey) {
             this.client.showDebugHud = !this.client.showDebugHud;
         } else if (currentScreen == null && player != null) {
-            if (keycode == this.inventoryKey && this.client.showScreen(new InventoryScreen(player.inventory, Language.translate("craft.screen.inventory")))) {
+            if (keycode == this.inventoryKey && this.client.showScreen(new InventoryScreen(player.inventory, Language.translate("ultracraft.screen.inventory")))) {
                 return true;
             }
         }

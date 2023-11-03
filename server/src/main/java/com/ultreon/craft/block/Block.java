@@ -97,7 +97,7 @@ public class Block implements DataWriter<MapType> {
     @NotNull
     public String getTranslationId() {
         Identifier key = Registries.BLOCKS.getKey(this);
-        return key == null ? "craft.block.air.name" : key.location() + ".block." + key.path() + ".name";
+        return key == null ? "ultracraft.block.air.name" : key.location() + ".block." + key.path() + ".name";
     }
 
     public float getHardness() {

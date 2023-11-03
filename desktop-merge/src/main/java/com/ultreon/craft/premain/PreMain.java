@@ -6,7 +6,7 @@ import com.ultreon.craft.premain.win32.CLibrary;
 import com.ultreon.craft.premain.win32.Kernel32;
 import com.ultreon.gameprovider.craft.UltracraftGameprovider;
 import org.jetbrains.annotations.NotNull;
-import org.quiltmc.loader.impl.launch.knot.KnotClient;
+import net.fabricmc.loader.impl.launch.knot.KnotClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,42 +30,6 @@ public class PreMain {
             Kernel32.INSTANCE.SetCurrentDirectoryW(launchPath.toString().toCharArray());
         } else if (SharedLibraryLoader.isLinux || SharedLibraryLoader.isMac) {
             CLibrary.INSTANCE.chdir(launchPath.toString());
-        }
-    }
-
-    private static void relaunch(List<String> argv) throws IOException, InterruptedException {
-        @NotNull Path launchPath = UltracraftGameprovider.getDataDir();
-        Files.createDirectories(launchPath);
-
-        if (SharedLibraryLoader.isWindows) {
-            File executable;
-            if (new File(".").getCanonicalFile().getAbsoluteFile().getName().equals("bin")) {
-                executable = new File("Ultracraft.exe");
-            } else {
-                executable = new File("bin/Ultracraft.exe");
-            }
-
-            if (!executable.exists())
-                throw new IOException("Can't relaunch application since the executable doesn't exists: " + executable.getAbsolutePath());
-
-            argv.add(0, executable.getAbsolutePath());
-            System.out.println("Relaunching with command line: " + argv);
-            System.exit(new ProcessBuilder(argv).directory(launchPath.toFile()).inheritIO().start().waitFor());
-        }
-        if (SharedLibraryLoader.isLinux) {
-            File executable;
-            if (new File(".").getCanonicalFile().getAbsoluteFile().getName().equals("bin")) {
-                executable = new File("Ultracraft");
-            } else {
-                executable = new File("bin/Ultracraft");
-            }
-
-            if (!executable.exists())
-                throw new IOException("Can't relaunch application since the executable doesn't exists: " + executable.getAbsolutePath());
-
-            argv.add(0, executable.getAbsolutePath());
-            System.out.println("Relaunching with command line: " + argv);
-            System.exit(new ProcessBuilder(argv).directory(launchPath.toFile()).inheritIO().start().waitFor());
         }
     }
 }

@@ -10,10 +10,11 @@ import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v1.Language;
+import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.fabricmc.loader.api.metadata.ModOrigin;
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.loader.api.ModMetadata;
-import org.quiltmc.loader.api.QuiltLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class ModListScreen extends Screen {
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
     public ModListScreen(Screen back) {
-        super(back, Language.translate("craft.screen.mod_list"));
+        super(back, Language.translate("ultracraft.screen.mod_list"));
     }
 
     @Override
@@ -36,25 +37,25 @@ public class ModListScreen extends Screen {
         this.list = this.add(new SelectionList<>(0, 0, 200, this.height, 48));
         this.list.setItemRenderer(this::renderItem);
         this.list.setSelectable(true);
-        QuiltLoader.getAllMods().stream().sorted(Comparator.comparing(o -> o.metadata().name()))
-                .filter(modContainer -> modContainer.getSourceType() != ModContainer.BasicSourceType.OTHER)
+        FabricLoader.getInstance().getAllMods().stream().sorted(Comparator.comparing(o -> o.getMetadata().getName()))
+                .filter(modContainer -> modContainer.getOrigin().getKind() != ModOrigin.Kind.NESTED)
                 .forEachOrdered(this.list::addEntry);
     }
 
     private void renderItem(Renderer renderer, ModContainer modContainer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
-        ModMetadata metadata = modContainer.metadata();
+        ModMetadata metadata = modContainer.getMetadata();
         var x = this.list.getX();
 
-        renderer.drawText(metadata.name(), x + 50, y + this.list.getItemHeight() - 34);
-        renderer.drawText("Version: " + metadata.version().raw(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
+        renderer.drawText(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
+        renderer.drawText("Version: " + metadata.getVersion().getFriendlyString(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
 
         this.drawIcon(renderer, metadata, x + 7, y + 7, 32);
     }
 
     private void drawIcon(Renderer renderer, ModMetadata metadata, int x, int y, int size) {
         Identifier iconId;
-        @Nullable String iconPath = metadata.icon(128);
-        Identifier overrideId = ModIconOverrides.get(metadata.id());
+        @Nullable String iconPath = metadata.getIconPath(128).orElse(null);
+        Identifier overrideId = ModIconOverrides.get(metadata.getId());
         TextureManager textureManager = this.client.getTextureManager();
         if (overrideId != null) {
             textureManager.registerTexture(overrideId);
@@ -62,13 +63,14 @@ public class ModListScreen extends Screen {
         } else if (iconPath != null) {
             FileHandle iconFileHandle = Gdx.files.internal(iconPath);
             if (!iconFileHandle.exists()) return;
-            if (!ModListScreen.TEXTURES.containsKey(metadata.id())) {
+            if (!ModListScreen.TEXTURES.containsKey(metadata.getId())) {
                 Texture texture = new Texture(iconFileHandle);
                 texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-                ModListScreen.TEXTURES.put(metadata.icon(128), texture);
+
+                ModListScreen.TEXTURES.put(iconPath, texture);
             }
-            Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.id(), s -> new Texture(Gdx.files.classpath(metadata.icon(128))));
-            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.id() + ".png");
+            Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.getId(), s -> new Texture(Gdx.files.classpath(metadata.getIconPath(128).orElse(null))));
+            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.getId() + ".png");
             if (!textureManager.isTextureLoaded(iconId)) textureManager.registerTexture(iconId, texture);
             if (!textureManager.isTextureLoaded(iconId)) iconId = ModListScreen.DEFAULT_MOD_ICON;
         } else {
@@ -87,20 +89,20 @@ public class ModListScreen extends Screen {
 
         ModContainer selected = this.list.getSelected();
         if (selected != null) {
-            ModMetadata metadata = selected.metadata();
+            ModMetadata metadata = selected.getMetadata();
             int x = 220;
             int y = 20;
 
             this.drawIcon(renderer, metadata, x, y, 64);
 
             int xIcon = x + 84;
-            renderer.drawTextScaled(metadata.name(), 2, xIcon, y);
-            renderer.drawText("ID: " + metadata.id(), xIcon, y + 24, Color.rgb(0x808080));
-            renderer.drawText("Version: " + metadata.version().raw(), xIcon, y + 36, Color.rgb(0x808080));
-            renderer.drawText(metadata.contributors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.name()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
+            renderer.drawTextScaled(metadata.getName(), 2, xIcon, y);
+            renderer.drawText("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
+            renderer.drawText("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
+            renderer.drawText(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
 
             y += 84;
-            renderer.multiLineText(metadata.description(), x, y, Color.rgb(0x808080));
+            renderer.multiLineText(metadata.getDescription(), x, y, Color.rgb(0x808080));
         }
     }
 

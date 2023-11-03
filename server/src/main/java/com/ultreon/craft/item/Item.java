@@ -27,7 +27,7 @@ public class Item {
     @NotNull
     public String getTranslationId() {
         Identifier id = this.getId();
-        return id == null ? "craft.item.air.name" : id.location() + ".item." + id.path() + ".name";
+        return id == null ? "ultracraft.item.air.name" : id.location() + ".item." + id.path() + ".name";
     }
 
     public Identifier getId() {

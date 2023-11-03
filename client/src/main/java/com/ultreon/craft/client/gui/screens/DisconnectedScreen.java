@@ -17,7 +17,7 @@ public class DisconnectedScreen extends Screen {
     public void init() {
         this.clearWidgets();
 
-        this.add(new Button(this.width / 2 - 75, this.height / 2 - 10, 150, Language.translate("craft.ui.backToTitle"), caller -> {
+        this.add(new Button(this.width / 2 - 75, this.height / 2 - 10, 150, Language.translate("ultracraft.ui.backToTitle"), caller -> {
             this.client.showScreen(new TitleScreen());
         }));
     }

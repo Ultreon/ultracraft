@@ -42,7 +42,6 @@ import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.font.FontRegistry;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.screens.ModIconOverrides;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
@@ -103,14 +102,14 @@ import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.Language;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import io.netty.channel.ChannelFuture;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModOrigin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.lwjgl.glfw.GLFW;
-import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.loader.api.QuiltLoader;
-import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MarkerFactory;
@@ -130,7 +129,8 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.zip.Deflater;
 
-import static com.badlogic.gdx.graphics.GL20.*;
+import static com.badlogic.gdx.graphics.GL20.GL_CULL_FACE;
+import static com.badlogic.gdx.graphics.GL20.GL_FRONT;
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
 @SuppressWarnings("UnusedReturnValue")
@@ -298,15 +298,15 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.gameRenderer = new GameRenderer(this, this.modelBatch, this.spriteBatch);
 
         // Textures
-        this.ultreonBgTex = new Texture("assets/craft/textures/gui/loading_overlay_bg.png");
-        this.ultreonLogoTex = new Texture("assets/craft/logo.png");
-        this.libGDXLogoTex = new Texture("assets/craft/libgdx_logo.png");
-        this.logoRevealSound = Gdx.audio.newSound(Gdx.files.internal("assets/craft/sounds/logo_reveal.mp3"));
+        this.ultreonBgTex = new Texture("assets/ultracraft/textures/gui/loading_overlay_bg.png");
+        this.ultreonLogoTex = new Texture("assets/ultracraft/logo.png");
+        this.libGDXLogoTex = new Texture("assets/ultracraft/libgdx_logo.png");
+        this.logoRevealSound = Gdx.audio.newSound(Gdx.files.internal("assets/ultracraft/sounds/logo_reveal.mp3"));
 
         this.resizer = new Resizer(this.ultreonLogoTex.getWidth(), this.ultreonLogoTex.getHeight());
         
-        this.normalCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/craft/textures/cursors/normal.png")), 0, 0);
-        this.hoverCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/craft/textures/cursors/click.png")), 0, 0);
+        this.normalCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/ultracraft/textures/cursors/normal.png")), 0, 0);
+        this.hoverCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/ultracraft/textures/cursors/click.png")), 0, 0);
         
         Gdx.graphics.setCursor(this.normalCursor);
     }
@@ -374,7 +374,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     /**
      * <h2 style="color:red;"><b>Note: This method should not be called.</b></h2>
      * Launches the game.
-     * This method gets invoked dynamically by the QuiltMC game provider.
+     * This method gets invoked dynamically by the FabricMC game provider.
      *
      * @param argv the arguments to pass to the game
      */
@@ -466,7 +466,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @return the game directory.
      */
     public static Path getGameDir() {
-        return QuiltLoader.getGameDir();
+        return FabricLoader.getInstance().getGameDir();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -474,9 +474,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
 
         var argList = Arrays.asList(this.argv);
-        this.isDevMode = argList.contains("--dev") && QuiltLoader.isDevelopmentEnvironment();
+        this.isDevMode = argList.contains("--dev") && FabricLoader.getInstance().isDevelopmentEnvironment();
 
-        if (QuiltLoader.isDevelopmentEnvironment())
+        if (FabricLoader.getInstance().isDevelopmentEnvironment())
             this.gameEnv = GameEnvironment.DEVELOPMENT;
         else if (Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
             this.gameEnv = GameEnvironment.PACKAGED;
@@ -520,8 +520,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (resource == null) throw new FileNotFoundException("Unicode resource not found!");
         this.allUnicode = new String(resource.loadOrGet(), StandardCharsets.UTF_16);
 
-        this.unifont = UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/unifont/unifont.fnt"), true));
-        this.font = new Font(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/craft/font/dogica/dogicapixel.fnt"), true)));
+        this.unifont = UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/ultracraft/font/unifont/unifont.fnt"), true));
+        this.font = new Font(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/ultracraft/font/dogica/dogicapixel.fnt"), true)));
 
         this.crashOverlay = new ManualCrashOverlay(this);
 
@@ -625,11 +625,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void importModResources(ResourceManager resourceManager) {
-        for (ModContainer mod : QuiltLoader.getAllMods()) {
-            for (Path rootPath : mod.getSourcePaths().stream().reduce(new ArrayList<>(), (objects, paths) -> {
-                objects.addAll(paths);
-                return objects;
-            })) {
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            if (mod.getOrigin().getKind() != ModOrigin.Kind.PATH) continue;
+            for (Path rootPath : mod.getRootPaths()) {
                 // Try to import a resource package for the given mod path.
                 try {
                     resourceManager.importPackage(rootPath);
@@ -642,12 +640,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void setupMods() {
         // Set mod icon overrides.
-        ModIconOverrides.set("craft", UltracraftClient.id("icon.png"));
+        ModIconOverrides.set("ultracraft", UltracraftClient.id("icon.png"));
         ModIconOverrides.set("libgdx", new Identifier("libgdx", "icon.png"));
 
         // Invoke entry points.
-        EntrypointUtil.invoke(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
-        EntrypointUtil.invoke(ClientModInit.ENTRYPOINT_KEY, ClientModInit.class, ClientModInit::onInitializeClient);
+        FabricLoader.getInstance().invokeEntrypoints(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
+        FabricLoader.getInstance().invokeEntrypoints(ClientModInit.ENTRYPOINT_KEY, ClientModInit.class, ClientModInit::onInitializeClient);
     }
 
     @CanIgnoreReturnValue
@@ -762,7 +760,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void loadLanguages() {
-        var internal = Gdx.files.internal("assets/craft/languages.json");
+        var internal = Gdx.files.internal("assets/ultracraft/languages.json");
         List<String> languages;
         try (var reader = internal.reader()) {
             languages = UltracraftClient.GSON.fromJson(reader, LanguageData.class);
@@ -931,7 +929,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             {
                 if (Gdx.graphics.getFrameId() == 2) {
                     UltracraftClient.firstRender();
-                    Gdx.graphics.setTitle("Ultracraft " + QuiltLoader.getRawGameVersion());
+                    Gdx.graphics.setTitle("Ultracraft " + getGameVersion());
                 }
 
                 this.updateActivity();
@@ -1050,6 +1048,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         Gdx.gl.glDisable(GL_CULL_FACE);
     }
 
+    public static String getGameVersion() {
+        return FabricLoader.getInstance().getModContainer("ultracraft").orElseThrow().getMetadata().getVersion().getFriendlyString();
+    }
+
     private void tryClientTick() {
         var canTick = false;
 
@@ -1088,10 +1090,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (this.activity != this.oldActivity) {
             this.oldActivity = this.activity;
             if (this.activity == null) {
-                Gdx.graphics.setTitle("Ultracraft " + QuiltLoader.getRawGameVersion());
+                Gdx.graphics.setTitle("Ultracraft " + UltracraftClient.getGameVersion());
             } else {
                 var name = this.activity.getDisplayName();
-                Gdx.graphics.setTitle("Ultracraft " + QuiltLoader.getRawGameVersion() + " - " + name);
+                Gdx.graphics.setTitle("Ultracraft " + UltracraftClient.getGameVersion() + " - " + name);
             }
 
             RpcHandler.setActivity(this.activity);
@@ -1576,10 +1578,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static GameEnvironment getGameEnv() {
         if (UltracraftClient.instance == null) return GameEnvironment.UNKNOWN;
         return UltracraftClient.instance.gameEnv;
-    }
-
-    public String getGaveVersion() {
-        return QuiltLoader.getNormalizedGameVersion();
     }
 
     public IntegratedServer getSingleplayerServer() {

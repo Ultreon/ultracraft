@@ -144,7 +144,7 @@ dependencies {
     pack implementation("org.apache.logging.log4j:log4j-core:$log4j_version")
     pack implementation("org.apache.logging.log4j:log4j-api:$log4j_version")
 
-    // quilt-loader dependencies
+    // fabric-loader dependencies
     pack implementation("org.ow2.asm:asm:${project.asm_version}")
     pack implementation("org.ow2.asm:asm-analysis:${project.asm_version}")
     pack implementation("org.ow2.asm:asm-commons:${project.asm_version}")
@@ -163,7 +163,7 @@ dependencies {
     pack implementation('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     pack implementation('net.fabricmc:access-widener:2.1.0')
 
-    pack compileOnly("org.quiltmc:quilt-loader:$quilt_version")
+    pack compileOnly("net.fabricmc:fabric-loader:$fabric_version")
 }
 
 processResources {
@@ -271,7 +271,7 @@ jpackage {
 
     licenseFile = "$rootProject.projectDir/package/LICENSE.txt"
 
-    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged","-Dloader.skipMcProvider=true" ]
+    javaOptions = [ "-Dfile.encoding=UTF-8", "-Dultracraft.environment=packaged","-Dfabric.skipMcProvider=true" ]
     arguments = [ "--packaged" ]
 
     aboutUrl = "https://github.com/Ultreon/ultreon-craft"

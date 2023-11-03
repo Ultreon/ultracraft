@@ -1,8 +1,8 @@
 package com.ultreon.craft.network;
 
 import com.google.errorprone.annotations.CheckReturnValue;
-import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ClientEndpoint;
+import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.c2s.C2SModPacket;
 import com.ultreon.craft.network.packets.s2c.S2CModPacket;
@@ -12,7 +12,8 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import org.quiltmc.loader.api.minecraft.ClientOnly;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,7 @@ public class NetworkChannel {
     private final Int2ReferenceMap<Function<PacketBuffer, ? extends ModPacket<?>>> decoders = new Int2ReferenceArrayMap<>();
     private final Map<Class<? extends ModPacket<?>>, BiConsumer<? extends ModPacket<?>, Supplier<ModPacketContext>>> consumers = new HashMap<>();
 
-    @ClientOnly
+    @Environment(EnvType.CLIENT)
     private Connection c2sConnection;
 
     private NetworkChannel(Identifier key) {
@@ -48,7 +49,7 @@ public class NetworkChannel {
         return NetworkChannel.CHANNELS.get(channelId);
     }
 
-    @ClientOnly
+    @Environment(EnvType.CLIENT)
     public void setC2sConnection(Connection connection) {
         this.c2sConnection = connection;
     }

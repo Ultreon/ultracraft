@@ -25,7 +25,7 @@ public class LoadingOverlay implements Drawable {
 
     public LoadingOverlay(Texture background) {
         this.background = background;
-        this.ultreonLogoTex = new Texture("assets/craft/logo.png");
+        this.ultreonLogoTex = new Texture("assets/ultracraft/logo.png");
 
         this.resizer = new Resizer(this.ultreonLogoTex.getWidth(), this.ultreonLogoTex.getHeight());
     }

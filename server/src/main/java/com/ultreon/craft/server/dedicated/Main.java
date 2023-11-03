@@ -5,8 +5,8 @@ import com.ultreon.craft.server.ServerConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
-import org.quiltmc.loader.api.entrypoint.EntrypointUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ public class Main {
     /**
      * Main entry point for the server.
      * WARNING: Do not invoke.
-     * This will be called by the QuiltMC game provider.
+     * This will be called by the FabricMC game provider.
      *
      * @param args command line arguments
      * @throws IOException if an I/O error occurs
@@ -41,8 +41,8 @@ public class Main {
     @ApiStatus.Internal
     public static void main(String[] args) throws IOException, InterruptedException {
         try {
-            // Invoke QuiltMC entrypoint for dedicated server.
-            EntrypointUtil.invoke("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
+            // Invoke FabricMC entrypoint for dedicated server.
+            FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
             // Set default namespace in CoreLibs identifier.
             Identifier.setDefaultNamespace(ServerConstants.NAMESPACE);

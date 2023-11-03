@@ -55,11 +55,11 @@ public class TitleScreen extends Screen {
 
         int y = this.height / 2 - 35;
 
-        this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("craft.screen.title.singleplayer"), this::openSingleplayer));
-        this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.multiplayer"), this::openMultiplayer));
-        this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.mod_list"), this::showModList));
-        this.optionsButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.options"), this::showOptions));
-        this.quitButton = this.add(new Button(50, y += 25, 150, Language.translate("craft.screen.title.quit"), TitleScreen::quitGame));
+        this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("ultracraft.screen.title.singleplayer"), this::openSingleplayer));
+        this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.multiplayer"), this::openMultiplayer));
+        this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.mod_list"), this::showModList));
+        this.optionsButton = this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.title.options"), this::showOptions));
+        this.quitButton = this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.title.quit"), TitleScreen::quitGame));
     }
 
     @Override

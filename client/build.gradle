@@ -113,7 +113,7 @@ dependencies {
     implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
     implementation api("com.formdev:flatlaf:3.2.1")
-    // quilt-loader dependencies
+    // fabric-loader dependencies
     implementation api("org.ow2.asm:asm:$project.asm_version")
     implementation api("org.ow2.asm:asm-analysis:$project.asm_version")
     implementation api("org.ow2.asm:asm-commons:$project.asm_version")
@@ -132,7 +132,7 @@ dependencies {
     implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     implementation api('net.fabricmc:access-widener:2.1.0')
 
-    implementation api("org.quiltmc:quilt-loader:$quilt_version")
+    implementation api("net.fabricmc:fabric-loader:$fabric_version")
 
     //noinspection GradleDynamicVersion
     implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
@@ -141,10 +141,7 @@ dependencies {
     implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     implementation api('net.fabricmc:access-widener:2.1.0')
 
-    implementation api("org.quiltmc:quilt-loader:$quilt_version")
-    implementation api("org.quiltmc:quilt-json5:1.0.4+final")
-    implementation api("org.quiltmc:quilt-config:1.1.0-beta.3")
-    implementation api("org.quiltmc.qup:gson:0.2.0")
+    implementation api("net.fabricmc:fabric-loader:$fabric_version")
 
     runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")

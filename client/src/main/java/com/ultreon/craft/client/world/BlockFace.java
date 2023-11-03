@@ -24,6 +24,6 @@ public enum BlockFace {
     }
 
     public void getDisplayName() {
-        Language.translate("craft.misc.blockFace." + this.name().toLowerCase(Locale.ROOT));
+        Language.translate("ultracraft.misc.blockFace." + this.name().toLowerCase(Locale.ROOT));
     }
 }

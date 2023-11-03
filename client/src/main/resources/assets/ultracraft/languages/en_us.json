@@ -9,6 +9,7 @@
   "ultracraft.item.wooden_pickaxe.name": "Wooden Pickaxe",
   "ultracraft.item.wooden_shovel.name": "Wooden Shovel",
   "ultracraft.item.air.name": "Air",
+  "ultracraft.ui.backToTitle": "Go back to the title",
   "ultracraft.screen.world_load.loading_world": "Loading World",
   "ultracraft.screen.language.back": "Back",
   "ultracraft.screen.mod_list": "Mod List",
@@ -19,5 +20,8 @@
   "ultracraft.screen.title.singleplayer": "Singleplayer",
   "ultracraft.screen.title.reset_world": "Reset World",
   "ultracraft.screen.title.options": "Options...",
-  "ultracraft.screen.title.quit": "Quit"
+  "ultracraft.screen.title.quit": "Quit",
+  "ultracraft.screen.multiplayer": "Multiplayer",
+  "ultracraft.screen.multiplayer.server_ip": "Server IP",
+  "ultracraft.screen.multiplayer.join": "Join"
 }

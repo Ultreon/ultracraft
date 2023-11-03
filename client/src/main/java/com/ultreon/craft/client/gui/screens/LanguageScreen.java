@@ -42,7 +42,7 @@ public class LanguageScreen extends Screen {
         List<Locale> locales = LanguageManager.INSTANCE.getLocales().stream().sorted((o1, o2) -> o1.getDisplayLanguage().compareToIgnoreCase(o2.getDisplayLanguage())).collect(Collectors.toList());
         this.list.addEntries(locales);
 
-        this.backButton = this.add(new Button(this.width / 2 - 100, this.height - 30, 200, Language.translate("craft.screen.language.back"), caller -> {
+        this.backButton = this.add(new Button(this.width / 2 - 100, this.height - 30, 200, Language.translate("ultracraft.screen.language.back"), caller -> {
             if (this.client.world != null) {
                 this.client.showScreen(new PauseScreen());
             } else {
@@ -70,7 +70,7 @@ public class LanguageScreen extends Screen {
                 this.client.settings.save();
                 this.updateTexts();
             }));
-            this.backButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 - 42 - 25, 200 + 10 * 2 + 21 * 2, Language.translate("craft.screen.language.back"), caller -> {
+            this.backButton = this.add(new Button(this.width / 2 - 100 - 10 - 21, this.height / 2 - 42 - 25, 200 + 10 * 2 + 21 * 2, Language.translate("ultracraft.screen.language.back"), caller -> {
                 if (this.client.world != null) {
                     this.client.showScreen(new PauseScreen());
                 } else {
@@ -91,7 +91,7 @@ public class LanguageScreen extends Screen {
     }
 
     private void updateTexts() {
-        this.backButton.setMessage(Language.translate("craft.screen.language.back"));
+        this.backButton.setMessage(Language.translate("ultracraft.screen.language.back"));
     }
 
     public Button getBackButton() {

@@ -25,6 +25,8 @@ buildscript {
 plugins {
     id "groovy"
     id "eclipse"
+    id "java"
+    id "java-library"
 }
 
 version project_version
@@ -54,20 +56,21 @@ configurations {
 }
 
 dependencies {
-    compileOnly "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
+    implementation api("org.jetbrains:annotations:24.0.1")
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
 
-    compileOnly "it.unimi.dsi:fastutil-core:8.5.9"
-    compileOnly "com.google.code.findbugs:jsr305:$jsr_version"
+    implementation "it.unimi.dsi:fastutil-core:8.5.9"
+    implementation "com.google.code.findbugs:jsr305:$jsr_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 
-    compileOnly "org.xbib.elasticsearch:joptsimple:6.3.2.1"
-    compileOnly "org.apache.logging.log4j:log4j:$log4j_version"
-    compileOnly "org.apache.logging.log4j:log4j-core:$log4j_version"
-    compileOnly "org.apache.logging.log4j:log4j-api:$log4j_version"
-    compileOnly "com.formdev:flatlaf:3.2.1"
+    implementation api("org.xbib.elasticsearch:joptsimple:6.3.2.1")
+    implementation api("org.apache.logging.log4j:log4j:$log4j_version")
+    implementation api("org.apache.logging.log4j:log4j-core:$log4j_version")
+    implementation api("org.apache.logging.log4j:log4j-api:$log4j_version")
+    implementation api("com.formdev:flatlaf:3.2.1")
 
-    compileOnly("org.quiltmc:quilt-loader:$quilt_version") {
+    compileOnly("net.fabricmc:fabric-loader:$fabric_version") {
         exclude group: "org.ow2.asm"
         exclude group: "org.ow2.sat4j"
     }
@@ -102,7 +105,7 @@ jar {
         attributes 'Implementation-Title': 'QBubbles',
                 'Implementation-Vendor': 'Ultreon Team',
                 project_version: "1.0-indev1",
-                'Main-Class': 'org.quiltmc.impl.launch.knot.KnotClient',
+                'Main-Class': 'net.fabricmc.impl.launch.knot.KnotClient',
                 'Multi-Release': 'true'
     }
     from(configurations.addToJar.collect {

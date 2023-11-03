@@ -11,7 +11,7 @@ public class DeathScreen extends Screen {
     private Button exitWorldButton;
 
     public DeathScreen() {
-        super(Language.translate("craft.screen.death.title"));
+        super(Language.translate("ultracraft.screen.death.title"));
     }
 
     @Override
@@ -26,8 +26,8 @@ public class DeathScreen extends Screen {
     public void init() {
         super.init();
 
-        this.respawnButton = add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("craft.screen.death.respawn"), this::respawn));
-        this.exitWorldButton = add(new Button(this.width / 2 - 100, this.height / 3 - 25, 200, Language.translate("craft.screen.pause.exit_world"), this::exitWorld));
+        this.respawnButton = add(new Button(this.width / 2 - 100, this.height / 3 + 5, 200, Language.translate("ultracraft.screen.death.respawn"), this::respawn));
+        this.exitWorldButton = add(new Button(this.width / 2 - 100, this.height / 3 - 25, 200, Language.translate("ultracraft.screen.pause.exit_world"), this::exitWorld));
         this.exitWorldButton.setColor(Color.RED);
         this.exitWorldButton.setTextColor(Color.WHITE);
     }

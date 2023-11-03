@@ -18,7 +18,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.loader.api.QuiltLoader;
+import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -432,10 +432,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     /**
-     * @return the normalized game version, use {@link QuiltLoader#getRawGameVersion()} for the raw version.
+     * @return the normalized game version, use {@link FabricLoader#getRawGameVersion()} for the raw version.
      */
     public String getGameVersion() {
-        return QuiltLoader.getNormalizedGameVersion();
+        return FabricLoader.getInstance().getModContainer(ServerConstants.NAMESPACE).get().getMetadata().getVersion().getFriendlyString();
     }
 
     /**

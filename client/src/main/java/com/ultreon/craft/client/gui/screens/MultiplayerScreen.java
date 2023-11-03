@@ -11,16 +11,16 @@ public class MultiplayerScreen extends Screen {
     private Button joinButton;
 
     public MultiplayerScreen() {
-        super(Language.translate("craft.screen.multiplayer"));
+        super(Language.translate("ultracraft.screen.multiplayer"));
     }
 
     public MultiplayerScreen(@Nullable Screen back) {
-        super(back, Language.translate("craft.screen.multiplayer"));
+        super(back, Language.translate("ultracraft.screen.multiplayer"));
     }
 
     @Override
     public void init() {
-        this.entry = this.add(new TextEntry(this.width / 2 - 100, this.height / 2 - 10, 200, 21, Language.translate("craft.screen.multiplayer.server_ip")));
+        this.entry = this.add(new TextEntry(this.width / 2 - 100, this.height / 2 - 10, 200, 21, Language.translate("ultracraft.screen.multiplayer.server_ip")));
         this.entry.setCallback(caller -> {
             var text = caller.getText();
             boolean matches = text.matches("[^:]+:\\d{1,5}");
@@ -39,7 +39,7 @@ public class MultiplayerScreen extends Screen {
 
             this.joinButton.enabled = true;
         });
-        this.joinButton = this.add(new Button(this.width / 2 - 100, this.height / 2 + 15, 200, Language.translate("craft.screen.multiplayer.join"), caller -> {
+        this.joinButton = this.add(new Button(this.width / 2 - 100, this.height / 2 + 15, 200, Language.translate("ultracraft.screen.multiplayer.join"), caller -> {
             caller.enabled = false;
             MessageScreen messageScreen = new MessageScreen("Joining server");
             this.client.showScreen(messageScreen);
