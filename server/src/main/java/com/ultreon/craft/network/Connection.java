@@ -266,7 +266,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                             finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                         }
                     } catch (Exception e) {
-                        Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName());
+                        Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName(), e);
                     }
                 });
             }
