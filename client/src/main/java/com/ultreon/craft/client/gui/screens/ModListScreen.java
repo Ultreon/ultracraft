@@ -3,18 +3,18 @@ package com.ultreon.craft.client.gui.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
-import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.SelectionList;
+import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.translations.v1.Language;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.fabricmc.loader.api.metadata.ModOrigin;
 import org.jetbrains.annotations.Nullable;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -70,7 +70,7 @@ public class ModListScreen extends Screen {
                 ModListScreen.TEXTURES.put(iconPath, texture);
             }
             Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.getId(), s -> new Texture(Gdx.files.classpath(metadata.getIconPath(128).orElse(null))));
-            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.getId() + ".png");
+            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.getId().replaceAll("-", "_") + ".png");
             if (!textureManager.isTextureLoaded(iconId)) textureManager.registerTexture(iconId, texture);
             if (!textureManager.isTextureLoaded(iconId)) iconId = ModListScreen.DEFAULT_MOD_ICON;
         } else {
