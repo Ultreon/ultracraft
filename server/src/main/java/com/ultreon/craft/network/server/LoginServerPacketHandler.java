@@ -1,6 +1,7 @@
 package com.ultreon.craft.network.server;
 
 import com.ultreon.craft.entity.EntityTypes;
+import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -103,10 +104,14 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
 
             this.server.placePlayer(player);
 
+            PlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
+
             BlockPos spawnPoint = UltracraftServer.invokeAndWait(() -> this.server.getWorld().getSpawnPoint());
             System.out.println("spawnPoint = " + spawnPoint);
 
             player.spawn(spawnPoint.vec().d().add(0.5, 0, 0.5), this.connection);
+
+            PlayerEvents.PLAYER_SPAWNED.factory().onPlayerSpawned(player);
         }), true);
     }
 }

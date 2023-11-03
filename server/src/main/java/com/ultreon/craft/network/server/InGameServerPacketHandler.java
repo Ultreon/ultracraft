@@ -1,6 +1,7 @@
 package com.ultreon.craft.network.server;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolItem;
@@ -53,6 +54,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     @Override
     public void onDisconnect(String message) {
         Connection.LOGGER.info("Player " + this.player.getName() + " disconnected: " + message);
+        PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
+
         this.connection.close();
     }
 
