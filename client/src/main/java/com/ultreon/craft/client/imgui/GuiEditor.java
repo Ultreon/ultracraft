@@ -29,9 +29,8 @@ public class GuiEditor {
                         client.shapes.setColor(Color.MAGENTA);
                     }
                     client.shapes.rectangle(
-                            widget.getX() * client.getGuiScale(), widget.getY() * client.getGuiScale(),
-                            widget.getWidth() * client.getGuiScale(), widget.getHeight() * client.getGuiScale()
-                    );
+                            widget.getX() * client.getGuiScale(), widget.getY() * client.getGuiScale() - 1,
+                            widget.getWidth() * client.getGuiScale() + 1, widget.getHeight() * client.getGuiScale() + 1);
                     client.shapes.getBatch().end();
                 }
             }

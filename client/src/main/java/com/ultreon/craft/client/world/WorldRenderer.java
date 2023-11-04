@@ -6,10 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
@@ -56,8 +53,8 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     private final Material playerMaterial;
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
-    //    private final Cubemap cubemap;
     private final Environment environment;
+    private final Cubemap cubemap;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -183,13 +180,13 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         skyboxTextures[4] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
         skyboxTextures[5] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
 
-//        this.cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
+        this.cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
 
         UltracraftClient.LOGGER.info("Setting up world environment");
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
-//        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
+        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
         this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
         this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
         this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));

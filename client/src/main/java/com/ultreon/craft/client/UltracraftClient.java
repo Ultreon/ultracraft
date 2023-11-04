@@ -1407,6 +1407,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.showScreen(new WorldLoadScreen(UltracraftClient.getSavedWorld()));
     }
 
+    public void startWorld(WorldStorage storage) {
+        this.showScreen(new WorldLoadScreen(storage));
+    }
+
+    public void startWorld(Path path) {
+        this.showScreen(new WorldLoadScreen(new WorldStorage(path)));
+    }
+
     public static WorldStorage getSavedWorld() {
         return UltracraftClient.worldStorage;
     }
