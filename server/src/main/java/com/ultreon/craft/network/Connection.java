@@ -461,11 +461,12 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return this.port;
     }
 
-    public void close() {
+    public ChannelFuture close() {
         Channel channel = this.channel;
-        if (channel != null && channel.isOpen()) {
-            channel.close();
-        }
+        if (channel != null)
+            return channel.isOpen() ? channel.close() : channel.newSucceededFuture();
+
+        return null;
     }
 
     public void setPlayer(ServerPlayer player) {

@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Input;
+import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.item.Items;
 
@@ -16,21 +17,30 @@ public class ItemRenderTestScreen extends Screen {
     }
 
     @Override
+    public void build(GuiBuilder builder) {
+
+    }
+
+    @Override
     protected void renderBackground(Renderer renderer) {
         if (this.bg) super.renderBackground(renderer);
 
-        renderer.drawTextCenter("STATE [" + this.state + "]", this.width / 2, this.height - 20);
-        renderer.drawTextCenter("BG [" + this.bg + "]", this.width / 2, this.height - 30);
-        renderer.drawTextCenter("X [" + this.mx + "]" + "Y [" + this.my + "]", this.width / 2, this.height - 40);
+        renderer.drawTextCenter("STATE [" + this.state + "]", this.size.width / 2, this.size.height - 20);
+        renderer.drawTextCenter("BG [" + this.bg + "]", this.size.width / 2, this.size.height - 30);
+        renderer.drawTextCenter("X [" + this.mx + "]" + "Y [" + this.my + "]", this.size.width / 2, this.size.height - 40);
 
         if (this.state == 0) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, 16);
         if (this.state == 1) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, 16, -16);
         if (this.state == 2) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, -16, -16);
         if (this.state == 3) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, -16, 16);
-        if (this.state == 4) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - this.getLastMouseY());
-        if (this.state == 5) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, this.getLastMouseX(), this.height - -this.getLastMouseY());
-        if (this.state == 6) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - -this.getLastMouseY());
-        if (this.state == 7) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, -this.getLastMouseX(), this.height - this.getLastMouseY());
+        if (this.state == 4) {
+        }
+        if (this.state == 5) {
+        }
+        if (this.state == 6) {
+        }
+        if (this.state == 7) {
+        }
         if (this.state == 8) this.client.itemRenderer.render(Items.GRASS_BLOCK, renderer, mx, my);
     }
 

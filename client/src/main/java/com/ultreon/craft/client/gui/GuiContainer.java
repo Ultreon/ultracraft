@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui;
 
+import com.ultreon.craft.client.gui.old.Widget;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
 

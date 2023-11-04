@@ -6,13 +6,12 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.client.gui.Hud;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.World;
-
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.Nullable;

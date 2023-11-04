@@ -4,6 +4,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
+import com.ultreon.craft.client.gui.old.Widget;
 import com.ultreon.craft.client.init.Fonts;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
  *
  * @author XyperCode
  */
+@Deprecated
 @SuppressWarnings("unused")
 public abstract class GuiComponent implements GuiStateListener, Widget {
     private static final Path ROOT = Path.of("/");

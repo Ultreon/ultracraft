@@ -1,29 +1,32 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.badlogic.gdx.utils.Array;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.GuiComponent;
-import com.ultreon.craft.client.gui.IGuiContainer;
+import com.ultreon.craft.client.gui.Size;
+import com.ultreon.craft.client.util.Color;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class SelectionList<T> extends GuiComponent implements IGuiContainer {
+@ApiStatus.NonExtendable
+public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     private static final int SCROLLBAR_WIDTH = 5;
-    private final List<Entry> entries = new ArrayList<>();
+    private final Array<Entry<T>> entries = new Array<>();
     private float scrollY = 0;
     private final int itemHeight;
-    private Entry selected;
+    private Entry<T> selected;
     private boolean selectable;
-    protected GuiComponent hoveredWidget;
-    protected GuiComponent pressingWidget;
+    protected Entry<T> hoveredWidget;
+    protected @Nullable Entry<T> pressingWidget;
     int innerXOffset;
     int innerYOffset;
 
@@ -37,54 +40,56 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         this.itemHeight = itemHeight;
     }
 
-    public void setItemRenderer(ItemRenderer<T> itemRenderer) {
+    public SelectionList(Position position, Size size, int itemHeight) {
+        this(position.x, position.y, size.width, size.height, itemHeight);
+    }
+
+    public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
         this.itemRenderer = itemRenderer;
+        return this;
     }
 
     public boolean isSelectable() {
         return this.selectable;
     }
 
-    public void setSelectable(boolean selectable) {
+    public SelectionList<T> selectable(boolean selectable) {
         this.selectable = selectable;
+        return this;
     }
 
     @Override
-    public void renderComponent(Renderer renderer) {
-        renderer.fill(this.x, this.y, this.width, this.height, Color.argb(0x40000000));
-    }
-
-    @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        this.renderComponent(renderer);
-
+    public void renderWidget(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        renderer.fill(this.pos.x, this.pos.y, this.size.width, this.size.height, Color.argb(0x40000000));
 
         renderer.pushMatrix();
-//        renderer.translate(0, this.scrollY);
-        if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
+
+        if (renderer.pushScissors(this.getBounds())) {
             this.renderChildren(renderer, mouseX, mouseY, deltaTime);
             renderer.popScissors();
         }
         renderer.popMatrix();
     }
 
-    @Override
-    public void renderChildren(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        for (Entry entry : this.entries) {
+    public void renderChildren(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        for (Entry<T> entry : this.entries) {
             if (entry.visible) {
                 entry.render(renderer, 0, mouseX, mouseY - (int) this.scrollY, this.selectable && this.selected == entry, deltaTime);
             }
         }
     }
 
+    @Override
+    public String getName() {
+        return "SelectionList";
+    }
+
     @Nullable
-    public Entry getEntryAt(int x, int y) {
-        y += this.y;
+    public Entry<T> getEntryAt(int x, int y) {
         if (!this.isWithinBounds(x, y)) return null;
-        y -= (int) this.scrollY;
-        List<Entry> entries = this.entries;
-        for (int i = entries.size() - 1; i >= 0; i--) {
-            Entry entry = entries.get(i);
+        Array<Entry<T>> entries = this.entries;
+        for (int i = entries.size - 1; i >= 0; i--) {
+            Entry<T> entry = entries.get(i);
             if (!entry.enabled || !entry.visible) continue;
             if (entry.isWithinBounds(x, y)) return entry;
         }
@@ -94,7 +99,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
     @Override
     public boolean mouseClick(int x, int y, int button, int count) {
         if (this.selectable) {
-            Entry entryAt = this.getEntryAt(x, y);
+            Entry<T> entryAt = this.getEntryAt(x, y);
 
             if (entryAt != null) {
                 this.selected = entryAt;
@@ -102,30 +107,26 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
                 return true;
             }
         }
-        GuiComponent widgetAt = this.getEntryAt(x, y);
+        @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         return widgetAt != null && widgetAt.mouseClick(x - widgetAt.getX(), y - widgetAt.getY(), button, count);
     }
 
     @Override
     public boolean mousePress(int x, int y, int button) {
-        GuiComponent widgetAt = this.getEntryAt(x, y);
-        x -= this.x + this.innerXOffset;
-        y -= this.y + this.innerYOffset;
+        @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         this.pressingWidget = widgetAt;
         return widgetAt != null && widgetAt.mousePress(x - widgetAt.getX(), y - widgetAt.getY(), button);
     }
 
     @Override
     public boolean mouseRelease(int x, int y, int button) {
-        GuiComponent widgetAt = this.pressingWidget;
-        x -= this.x + this.innerXOffset;
-        y -= this.y + this.innerYOffset;
+        @Nullable Entry<T> widgetAt = this.pressingWidget;
         return widgetAt != null && widgetAt.mouseRelease(x - widgetAt.getX(), y - widgetAt.getY(), button);
     }
 
     @Override
     public void mouseMove(int x, int y) {
-        GuiComponent widgetAt = this.getEntryAt(x, y);
+        @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         boolean widgetChanged = false;
         if (this.hoveredWidget != null && !this.hoveredWidget.isWithinBounds(x, y)) {
             this.hoveredWidget.mouseExit();
@@ -135,8 +136,6 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         this.hoveredWidget = widgetAt;
 
         if (this.hoveredWidget != null) {
-            x -= this.x + this.innerXOffset;
-            y -= this.y + this.innerYOffset;
             this.hoveredWidget.mouseMove(x - widgetAt.getX(), y - widgetAt.getY());
 
             if (widgetChanged) {
@@ -148,7 +147,7 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public void mouseEnter(int x, int y) {
-        GuiComponent widgetAt = this.getEntryAt(x, y);
+        @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         boolean widgetChanged = false;
         if (this.hoveredWidget != null && !this.hoveredWidget.isWithinBounds(x, y)) {
             this.hoveredWidget.mouseExit();
@@ -158,8 +157,8 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
         this.hoveredWidget = widgetAt;
 
         if (this.hoveredWidget != null) {
-            x -= this.x + this.innerXOffset;
-            y -= this.y + this.innerYOffset;
+            x -= this.pos.x + this.innerXOffset;
+            y -= this.pos.y + this.innerYOffset;
             if (widgetChanged) {
                 this.hoveredWidget.mouseEnter(x - widgetAt.getX(), y - widgetAt.getY());
             }
@@ -168,13 +167,14 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
     }
 
     @Override
-    public void mouseDrag(int x, int y, int nx, int ny, int button) {
-        GuiComponent widgetAt = this.getEntryAt(x, y);
-        x -= this.x + this.innerXOffset;
-        y -= this.y + this.innerYOffset;
-        nx -= this.x + this.innerXOffset;
-        ny -= this.y + this.innerYOffset;
-        if (widgetAt != null) widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), nx, ny, button);
+    public boolean mouseDrag(int x, int y, int drawX, int dragY, int button) {
+        @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
+        x -= this.pos.x + this.innerXOffset;
+        y -= this.pos.y + this.innerYOffset;
+        drawX -= this.pos.x + this.innerXOffset;
+        dragY -= this.pos.y + this.innerYOffset;
+        if (widgetAt != null) return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), drawX, dragY, button);
+        return super.mouseDrag(x, y, drawX, dragY, button);
     }
 
     @Override
@@ -187,12 +187,12 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
     @Override
     public boolean mouseWheel(int x, int y, double rotation) {
-        this.scrollY = this.getContentHeight() > this.height ? Mth.clamp((float) (this.scrollY + rotation * 10), 0, this.getContentHeight() - this.height) : 0;
+        this.scrollY = this.getContentHeight() > this.size.height ? Mth.clamp((float) (this.scrollY + rotation * 10), 0, this.getContentHeight() - this.size.height) : 0;
         return true;
     }
 
     public int getContentHeight() {
-        return this.itemHeight * this.entries.size();
+        return this.itemHeight * this.entries.size;
     }
 
     public int getItemHeight() {
@@ -205,65 +205,76 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
     }
 
     @CanIgnoreReturnValue
-    public Entry addEntry(T value) {
-        Entry entry = new Entry(value);
+    public Entry<T> addEntry(T value) {
+        Entry<T> entry = new Entry<>(value, this);
         this.entries.add(entry);
         return entry;
     }
 
     @CanIgnoreReturnValue
-    public Entry removeEntry(Entry entry) {
-        this.entries.remove(entry);
+    public Entry<T> removeEntry(Entry<T> entry) {
+        this.entries.removeValue(entry, true);
         return entry;
     }
 
     public void removeEntry(T value) {
-        this.entries.removeIf(entry -> entry.value == value);
+        this.removeEntryIf(Predicate.isEqual(value));
     }
 
     public void removeEntryIf(Predicate<T> predicate) {
-        this.entries.removeIf(entry -> predicate.test(entry.value));
+        Preconditions.checkNotNull(predicate, "predicate");
+
+        int found = -1;
+        int idx = 0;
+        for (Entry<T> entry : this.entries) {
+            if (predicate.test(entry.value)) {
+                found = idx;
+                break;
+            }
+            idx++;
+        }
+
+        if (found == -1) return;
+        this.entries.removeIndex(found);
     }
 
     @Override
-    public List<Entry> children() {
+    public Array<Entry<T>> children() {
         return this.entries;
     }
 
-    public void addEntries(Collection<? extends T> values) {
+    public SelectionList<T> addEntries(Collection<? extends T> values) {
         values.forEach(this::addEntry);
+        return this;
     }
 
-    public void setOnSelected(Consumer<T> onSelected) {
+    public SelectionList<T> setOnSelected(Consumer<T> onSelected) {
         this.onSelected = onSelected;
+        return this;
     }
 
-    public class Entry extends GuiComponent {
+    public static class Entry<T> extends Widget<Entry<T>> {
         private final T value;
         private final SelectionList<T> list;
 
-        public Entry(T value) {
-            super(SelectionList.this.x, SelectionList.this.y, SelectionList.this.width, SelectionList.this.itemHeight);
+        public Entry(T value, SelectionList<T> list) {
+            super(list.pos.x, list.pos.y, list.size.width, list.itemHeight);
             this.value = value;
-            this.list = SelectionList.this;
-        }
-
-        @Override
-        public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-
+            this.list = list;
         }
 
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
-            this.x = this.list.x;
-            this.y = (int) (this.list.y - this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
-            this.width = this.list.width - SelectionList.SCROLLBAR_WIDTH;
-            this.height = this.list.itemHeight;
-            ItemRenderer<T> itemRenderer = SelectionList.this.itemRenderer;
+            this.pos.x = this.list.pos.x;
+            this.pos.y = (int) (this.list.pos.y - this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this, true));
+            this.size.width = this.list.size.width - SelectionList.SCROLLBAR_WIDTH;
+            this.size.height = this.list.itemHeight;
+            ItemRenderer<T> itemRenderer = this.list.itemRenderer;
             if (itemRenderer != null) {
-                if (renderer.pushScissors(this.x, this.y, this.width, this.height)) {
-                    if (selected) renderer.box(this.x, this.y, this.width - 2, this.height - 2, Color.rgb(0xffffff));
+                if (renderer.pushScissors(this.pos.x, this.pos.y, this.size.width, this.size.height)) {
+                    if (selected)
+                        renderer.box(this.pos.x, this.pos.y, this.size.width - 2, this.size.height - 2, Color.rgb(0xffffff));
 
-                    itemRenderer.render(renderer, this.value, this.y, mouseX, mouseY, selected, deltaTime);
+                    itemRenderer.render(renderer, this.value, this.pos.y, mouseX, mouseY, selected, deltaTime);
                     renderer.popScissors();
                 }
             }
@@ -271,6 +282,11 @@ public class SelectionList<T> extends GuiComponent implements IGuiContainer {
 
         public T getValue() {
             return this.value;
+        }
+
+        @Override
+        public String getName() {
+            return "SelectionListEntry";
         }
     }
 

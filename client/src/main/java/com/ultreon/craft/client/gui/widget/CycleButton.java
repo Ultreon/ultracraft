@@ -5,21 +5,23 @@ import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Function;
 
-public class CycleButton<T extends Enum<T>> extends Button {
+public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
     private final String name;
     private T[] values;
     private Function<T, String> formatter;
     private int cur;
 
     public CycleButton(int x, int y, @IntRange(from = 21) int width, String name) {
-        super(x, y, width, name);
+        super(x, y, width);
 
         this.name = name;
+        this.text(name);
     }
 
     public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String name) {
-        super(x, y, width, height, name);
+        super(x, y, width, height);
 
+        this.text(name);
         this.name = name;
     }
 
@@ -37,7 +39,7 @@ public class CycleButton<T extends Enum<T>> extends Button {
     @Override
     public boolean click() {
         this.cur = (this.cur + 1) % this.values.length;
-        this.setMessage(this.name + ": " + this.formatter.apply(this.values[this.cur]));
+        this.text(this.name + ": " + this.formatter.apply(this.values[this.cur]));
         return true;
     }
 

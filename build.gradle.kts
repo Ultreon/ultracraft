@@ -119,13 +119,14 @@ allprojects {
 
     ext.also {
         it["app_name"] = "Ultracraft"
-        it["gdx_version"] = "1.11.0"
+        it["gdx_version"] = property("gdx_version")
         it["robo_vm_version"] = "2.3.16"
         it["box_2d_lights_version"] = "1.5"
         it["ashley_version"] = "1.7.4"
         it["ai_version"] = "1.8.2"
         it["gdx_controllers_version"] = "2.2.3"
     }
+
     repositories {
         mavenLocal()
         mavenCentral()

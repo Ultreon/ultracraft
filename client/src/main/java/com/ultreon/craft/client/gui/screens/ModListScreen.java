@@ -4,42 +4,62 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v1.Language;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.fabricmc.loader.api.metadata.ModOrigin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModListScreen extends Screen {
     private static final Identifier DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
+    private Button<?> configButton;
+    private Button<?> backButton;
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
     public ModListScreen(Screen back) {
-        super(back, Language.translate("ultracraft.screen.mod_list"));
+        super(TextObject.translation("ultracraft.screen.mod_list"), back);
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void build(GuiBuilder builder) {
+        this.list = builder.<ModContainer>selectionList(48, () -> new Bounds(0, 0, 200, this.size.height - 52))
+                .itemRenderer(this::renderItem)
+                .selectable(true)
+                .addEntries(FabricLoader.getInstance()
+                        .getAllMods()
+                        .stream()
+                        .sorted((a, b) -> a.getMetadata().getName().compareToIgnoreCase(b.getMetadata().getName()))
+                        .filter(modContainer -> modContainer.getOrigin().getKind() != ModOrigin.Kind.NESTED)
+                        .toList());
 
-        this.clearWidgets();
-        this.list = this.add(new SelectionList<>(0, 0, 200, this.height, 48));
-        this.list.setItemRenderer(this::renderItem);
-        this.list.setSelectable(true);
-        FabricLoader.getInstance().getAllMods().stream().sorted(Comparator.comparing(o -> o.getMetadata().getName()))
-                .filter(modContainer -> modContainer.getOrigin().getKind() != ModOrigin.Kind.NESTED)
-                .forEachOrdered(this.list::addEntry);
+        this.configButton = builder.button(() -> new Position(5, this.size.height - 51), caller -> {
+                })
+                .width(190)
+                .translation("ultracraft.screen.mod_list.config")
+                .enabled(false);
+
+        this.backButton = builder.button(() -> new Position(5, this.size.height - 26), this::onBack)
+                .translation("ultracraft.ui.back")
+                .width(190);
+    }
+
+    public void onBack(Button<?> button) {
+        this.back();
     }
 
     private void renderItem(Renderer renderer, ModContainer modContainer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
@@ -84,8 +104,8 @@ public class ModListScreen extends Screen {
 
 
     @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        super.render(renderer, mouseX, mouseY, deltaTime);
+    public void renderWidget(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        super.renderWidget(renderer, mouseX, mouseY, deltaTime);
 
         ModContainer selected = this.list.getSelected();
         if (selected != null) {
@@ -96,7 +116,7 @@ public class ModListScreen extends Screen {
             this.drawIcon(renderer, metadata, x, y, 64);
 
             int xIcon = x + 84;
-            renderer.drawTextScaled(metadata.getName(), 2, xIcon, y);
+            renderer.drawTextScaledLeft(metadata.getName(), 2, xIcon, y);
             renderer.drawTextLeft("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
             renderer.drawTextLeft("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
             renderer.drawTextLeft(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
@@ -108,5 +128,13 @@ public class ModListScreen extends Screen {
 
     public SelectionList<ModContainer> getList() {
         return this.list;
+    }
+
+    public Button<?> getConfigButton() {
+        return this.configButton;
+    }
+
+    public Button<?> getBackButton() {
+        return this.backButton;
     }
 }

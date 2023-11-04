@@ -51,12 +51,12 @@ public class Notification {
     public float getMotion() {
         if (this.getLifetime() < 0)
             return 1f;
-        else if (this.getLifetime() < MAX_FADE_IN)
-            return 1f - (float) this.getLifetime() / MAX_FADE_IN;
-        else if (this.getLifetime() < MAX_FADE_IN + this.duration || this.sticky)
+        else if (this.getLifetime() < Notification.MAX_FADE_IN)
+            return 1f - (float) this.getLifetime() / Notification.MAX_FADE_IN;
+        else if (this.getLifetime() < Notification.MAX_FADE_IN + this.duration || this.sticky)
             return 0f;
-        else if (this.getLifetime() < MAX_FADE_IN + this.duration + MAX_FADE_OUT)
-            return (float) (this.getLifetime() - MAX_FADE_IN - this.duration) / MAX_FADE_OUT;
+        else if (this.getLifetime() < Notification.MAX_FADE_IN + this.duration + Notification.MAX_FADE_OUT)
+            return (float) (this.getLifetime() - Notification.MAX_FADE_IN - this.duration) / Notification.MAX_FADE_OUT;
         else
             return 1f;
     }
@@ -71,7 +71,7 @@ public class Notification {
 
     public boolean isDead() {
         if (this.sticky) return false;
-        return this.getLifetime() > MAX_FADE_IN + this.duration + MAX_FADE_OUT;
+        return this.getLifetime() > Notification.MAX_FADE_IN + this.duration + Notification.MAX_FADE_OUT;
     }
 
     public void set(String title, String summary) {

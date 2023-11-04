@@ -3,10 +3,14 @@ package com.ultreon.craft.client.gui.screens;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.Alignment;
+import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
@@ -19,35 +23,49 @@ import java.io.IOException;
 
 public class WorldLoadScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldLoadScreen.class);
+    private Label titleLabel;
+    private Label descriptionLabel;
+    private Label subTitleLabel;
     private final WorldStorage storage;
     private long nextLog;
     private ServerWorld world;
     private DeathScreen closeScreen;
-    private String message = "Loading world...";
 
     public WorldLoadScreen(WorldStorage storage) {
-        super("Loading World");
+        super(TextObject.translation("ultracraft.screen.world_load"));
         this.storage = storage;
     }
 
     @Override
-    public void init() {
-        super.init();
-
+    public void build(GuiBuilder builder) {
         IntegratedServer server = new IntegratedServer(this.storage);
         this.client.integratedServer = server;
         this.world = server.getWorld();
+
+        this.titleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 - 25))
+                .alignment(Alignment.CENTER)
+                .text(this.title)
+                .scale(2);
+
+        this.descriptionLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 3))
+                .alignment(Alignment.CENTER)
+                .text("Preparing");
+
+        this.subTitleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 31))
+                .alignment(Alignment.CENTER)
+                .text("");
+
         new Thread(this::run, "World Loading").start();
     }
 
     @Override
-    public boolean close(@Nullable Screen to) {
+    public boolean onClose(@Nullable Screen next) {
         DeathScreen closeScreen = this.closeScreen;
-        if (to == null && closeScreen != null) {
+        if (next == null && closeScreen != null) {
             this.client.showScreen(closeScreen);
             return false;
         }
-        return super.close(to);
+        return super.onClose(next);
     }
 
     public void run() {
@@ -58,16 +76,16 @@ public class WorldLoadScreen extends Screen {
             this.message("Starting integrated server..");
             this.client.startIntegratedServer();
 
-            WorldLoadScreen.LOGGER.debug("Loading world...");
+            this.message("Loading world...");
             try {
                 this.world.load();
-                WorldLoadScreen.LOGGER.debug("World loaded!");
+                this.message("World loaded!");
             } catch (IOException e) {
                 UltracraftClient.crash(e);
                 return;
             }
 
-            WorldLoadScreen.LOGGER.debug("Set spawn point");
+            this.message("Set spawn point");
 
             this.world.setupSpawn();
 
@@ -82,20 +100,21 @@ public class WorldLoadScreen extends Screen {
                     for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
                         for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
                             this.world.loadChunk(spawnChunkX, spawnChunkZ);
+                            this.message("Loading spawn chunk " + chunkX + ", " + chunkZ);
                         }
                     }
 
-                    WorldLoadScreen.LOGGER.info("Spawn chunks loaded!");
+                    this.message("Spawn chunks loaded!");
                 } catch (Throwable t) {
                     if (t instanceof Error) {
                         UltracraftClient.crash(t);
                         return;
                     }
-                    WorldLoadScreen.LOGGER.error("Failed to load chunks for world.", t);
+                    UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
                 }
             }).join();
 
-            UltracraftClient.LOGGER.debug("Player spawned, enabling world rendering now.");
+            this.message("Waiting for server to finalize...");
         } catch (Throwable throwable) {
             UltracraftClient.LOGGER.error("Failed to load world:", throwable);
             UltracraftClient.crash(throwable);
@@ -104,37 +123,46 @@ public class WorldLoadScreen extends Screen {
 
     private void message(String message) {
         WorldLoadScreen.LOGGER.debug(message);
-        this.message = message;
+        this.descriptionLabel.text(message);
     }
 
     @Override
     protected void renderBackground(Renderer renderer) {
-        GuiComponent.fill(renderer, 0, 0, this.width, this.height, 0xff202020);
-
-        renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawTextCenter(this.title, this.width / 2, this.height / 3);
+        renderer.fill(0, 0, this.size.width, this.size.height, Color.rgb(0x202020));
 
         ServerWorld world = this.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                renderer.drawTextCenter(this.message, this.width / 2, this.height / 3 + 20);
+                this.subTitleLabel.text(s);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;
                     UltracraftClient.LOGGER.info(World.MARKER, "Loading world: " + s);
                 }
+            } else {
+                this.subTitleLabel.text("");
             }
+        } else {
+            this.subTitleLabel.text("");
         }
     }
 
     @Override
     public boolean canClose() {
-        return false;
+        return this.client.renderWorld;
     }
 
     public void setCloseScreen(DeathScreen screen) {
         this.closeScreen = screen;
+    }
+
+    public Label getTitleLabel() {
+        return this.titleLabel;
+    }
+
+    public Label getDescriptionLabel() {
+        return this.descriptionLabel;
     }
 }

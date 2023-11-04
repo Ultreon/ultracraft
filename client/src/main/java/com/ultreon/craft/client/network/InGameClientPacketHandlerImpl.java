@@ -29,6 +29,7 @@ import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import io.netty.channel.ChannelFuture;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
@@ -156,10 +157,18 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 this.client.worldRenderer = null;
             }
 
-            this.connection.close();
+            ChannelFuture close = this.connection.close();
+            if (close != null) {
+                try {
+                    close.sync();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
-            IntegratedServer singleplayerServer = this.client.getSingleplayerServer();
-            singleplayerServer.shutdown();
+            IntegratedServer server = this.client.getSingleplayerServer();
+            IntegratedServer.invokeAndWait(server::shutdown);
+
             this.client.showScreen(new DisconnectedScreen(message));
         });
     }

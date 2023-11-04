@@ -90,7 +90,9 @@ public class GameRenderer {
         }
 
         if (screen != null) {
-            screen.render(renderer, (int) ((Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale()), (int) ((Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale()), deltaTime);
+            float x = (Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale();
+            float y = (Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale();
+            screen.render(renderer, (int) x, (int) y, deltaTime);
         }
     }
 }
