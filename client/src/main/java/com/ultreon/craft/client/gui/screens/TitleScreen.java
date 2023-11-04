@@ -55,7 +55,7 @@ public class TitleScreen extends Screen {
 
         int y = this.height / 2 - 35;
 
-        this.add(new Panel(0, 0, 350, this.height)).setBackgroundColor(0x80000000);
+        this.add(new Panel(0, 0, 250, this.height)).setBackgroundColor(0x80000000);
         this.singleplayerButton = this.add(new Button(50, y, 150, Language.translate("ultracraft.screen.title.singleplayer"), this::openSingleplayer));
         this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.multiplayer"), this::openMultiplayer));
         this.add(new Button(50, y += 25, 150, Language.translate("ultracraft.screen.mod_list"), this::showModList));
@@ -80,6 +80,11 @@ public class TitleScreen extends Screen {
     @Override
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
+    }
+
+    @Override
+    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        super.render(renderer, mouseX, mouseY, deltaTime);
 
         renderer.drawCenteredTextScaled("Ultracraft", 3, (int) ((float) 125), (int) (float) 40);
     }
