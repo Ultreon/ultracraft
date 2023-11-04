@@ -91,7 +91,7 @@ public class GuiEditor {
             if (component instanceof TextEntry entry)
                 ImGuiEx.editString("Hint: ", id + "::hint", () -> entry.getHint().getText(), hint -> entry.hint(TextObject.nullToEmpty(hint)));
             if (component instanceof CycleButton button)
-                ImGuiEx.editEnum("Value: ", id + "::value", button::getValue, button::setValue);
+                ImGuiEx.editEnum("Value: ", id + "::value", button::getValue, button::value);
 
             if (ImGui.collapsingHeader("Position")) {
                 ImGui.treePush();

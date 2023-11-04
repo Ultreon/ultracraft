@@ -8,6 +8,7 @@ import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Resizer;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class TitleScreen extends Screen {
     private final Resizer resizer;
 
     public TitleScreen() {
-        super("Title Screen");
+        super(TextObject.translation("ultracraft.screen.title"));
 
         this.resizer = new Resizer(7680, 4320);
     }

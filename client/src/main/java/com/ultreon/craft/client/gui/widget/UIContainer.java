@@ -119,7 +119,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         return output;
     }
 
-    public <C extends Widget<C>> C add(C widget) {
+    public <C extends Widget<?>> C add(C widget) {
         widget.parent = this;
         widget.root = this.root;
         this.widgets.add(widget);

@@ -3,16 +3,15 @@ package com.ultreon.craft.client.gui.widget;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
-import com.ultreon.craft.client.gui.Bounds;
-import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.Size;
+import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.screens.Screen;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("unchecked")
 public abstract class Widget<T extends Widget<T>> implements StaticWidget {
@@ -33,6 +32,7 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     protected final long createTime = System.nanoTime();
     protected final UltracraftClient client = UltracraftClient.get();
     protected Font font = this.client.font;
+    private final List<Callback<T>> revalidateListeners = new ArrayList<>();
 
     @SafeVarargs
     public Widget(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
@@ -274,7 +274,9 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     }
 
     public void revalidate() {
-
+        for (var listener : this.revalidateListeners) {
+            listener.call((T) this);
+        }
     }
 
     protected void tick() {
@@ -300,5 +302,19 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
      */
     public boolean isClickable() {
         return false;
+    }
+
+    public T onRevalidate(Callback<T> o) {
+        this.revalidateListeners.add(o);
+        return (T) this;
+    }
+
+    @CanIgnoreReturnValue
+    public T bounds(Bounds bounds) {
+        this.pos.x = bounds.pos().x;
+        this.pos.y = bounds.pos().y;
+        this.size.width = bounds.size().width;
+        this.size.height = bounds.size().height;
+        return (T) this;
     }
 }

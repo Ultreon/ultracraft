@@ -3,6 +3,7 @@ package com.ultreon.craft.client.gui.widget;
 import com.badlogic.gdx.utils.Array;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.Size;
@@ -14,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @ApiStatus.NonExtendable
@@ -22,7 +22,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     private static final int SCROLLBAR_WIDTH = 5;
     private final Array<Entry<T>> entries = new Array<>();
     private float scrollY = 0;
-    private final int itemHeight;
+    private int itemHeight = 20;
     private Entry<T> selected;
     private boolean selectable;
     protected Entry<T> hoveredWidget;
@@ -31,17 +31,21 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     int innerYOffset;
 
     private ItemRenderer<T> itemRenderer = null;
-    private Consumer<T> onSelected = value -> {};
+    private Callback<T> onSelected = value -> {
+    };
     private final int gap = 0;
 
-    public SelectionList(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, @IntRange(from = 0) int itemHeight) {
+    public SelectionList(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(x, y, width, height);
 
-        this.itemHeight = itemHeight;
     }
 
-    public SelectionList(Position position, Size size, int itemHeight) {
-        this(position.x, position.y, size.width, size.height, itemHeight);
+    public SelectionList(Position position, Size size) {
+        this(position.x, position.y, size.width, size.height);
+    }
+
+    public SelectionList() {
+        super(0, 0, 400, 500);
     }
 
     public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
@@ -103,7 +107,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
 
             if (entryAt != null) {
                 this.selected = entryAt;
-                this.onSelected.accept(this.selected.value);
+                this.onSelected.call(this.selected.value);
                 return true;
             }
         }
@@ -243,13 +247,18 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.entries;
     }
 
-    public SelectionList<T> addEntries(Collection<? extends T> values) {
+    public SelectionList<T> entries(Collection<? extends T> values) {
         values.forEach(this::addEntry);
         return this;
     }
 
-    public SelectionList<T> setOnSelected(Consumer<T> onSelected) {
+    public SelectionList<T> onSelected(Callback<T> onSelected) {
         this.onSelected = onSelected;
+        return this;
+    }
+
+    public SelectionList<T> itemHeight(int itemHeight) {
+        this.itemHeight = itemHeight;
         return this;
     }
 

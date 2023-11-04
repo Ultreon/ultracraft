@@ -13,6 +13,10 @@ public class Panel extends Widget<Panel> implements BackgroundColorProperty {
         super(x, y, width, height);
     }
 
+    public Panel() {
+        super(0, 0, 0, 0);
+    }
+
     @Override
     public @NotNull Color getBackgroundColor() {
         return this.backgroundColor;

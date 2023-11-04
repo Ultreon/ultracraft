@@ -50,7 +50,7 @@ public class Label extends Widget<Label> implements BackgroundColorProperty, Tex
 
     @Override
     public String getRawText() {
-        return this.text.toString();
+        return this.text.getText();
     }
 
     @Override

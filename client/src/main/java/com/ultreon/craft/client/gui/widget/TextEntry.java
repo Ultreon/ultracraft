@@ -35,6 +35,10 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
         super(x, y, width, height, typeGetter);
     }
 
+    public TextEntry() {
+        super(0, 0, 200, 21);
+    }
+
     @Override
     public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         final int u = this.enabled ? this.focused ? 12 : 0 : 24;

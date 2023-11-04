@@ -181,7 +181,7 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     @Override
-    public <C extends Widget<C>> C add(C widget) {
+    public <C extends Widget<?>> C add(C widget) {
         return super.add(widget);
     }
 

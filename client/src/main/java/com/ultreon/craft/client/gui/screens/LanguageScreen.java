@@ -4,6 +4,7 @@ import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.SelectionList;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.translations.v1.LanguageManager;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class LanguageScreen extends Screen {
     private SelectionList<Locale> list;
 
     public LanguageScreen() {
-        super("Language");
+        super(TextObject.translation("ultracraft.screen.language"));
     }
 
     @Override
@@ -29,13 +30,13 @@ public class LanguageScreen extends Screen {
         this.list = builder.<Locale>selectionList(21, () -> new Bounds(this.size.width / 2 - 200, 50, 400, this.size.height - 90))
                 .selectable(true)
                 .itemRenderer(this::renderItem)
-                .addEntries(locales)
-                .setOnSelected(locale -> {
+                .entries(locales)
+                .onSelected(locale -> {
                     this.client.settings.language.set(locale);
                     this.client.settings.save();
                 });
         this.backButton = builder.button(() -> new Position(this.size.width / 2 - 100, this.size.height - 30), caller -> this.back())
-                .translation("ultracraft.screen.language.back");
+                .translation("ultracraft.ui.back");
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {

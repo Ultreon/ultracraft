@@ -4,10 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.gui.Bounds;
-import com.ultreon.craft.client.gui.GuiBuilder;
-import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.texture.TextureManager;
@@ -40,7 +37,7 @@ public class ModListScreen extends Screen {
         this.list = builder.<ModContainer>selectionList(48, () -> new Bounds(0, 0, 200, this.size.height - 52))
                 .itemRenderer(this::renderItem)
                 .selectable(true)
-                .addEntries(FabricLoader.getInstance()
+                .entries(FabricLoader.getInstance()
                         .getAllMods()
                         .stream()
                         .sorted((a, b) -> a.getMetadata().getName().compareToIgnoreCase(b.getMetadata().getName()))
