@@ -1,9 +1,10 @@
-package com.ultreon.craft.network.packets;
+package com.ultreon.craft.network.packets.s2c;
 
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.Packet;
 
 public class S2CMenuCursorPacket extends Packet<InGameClientPacketHandler> {
     private final ItemStack cursor;

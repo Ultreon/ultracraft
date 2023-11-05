@@ -6,44 +6,57 @@ import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.network.packets.S2CMenuItemChanged;
+import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ContainerMenu {
-    private final MenuType<?> type;
-    private final World world;
-    private final Entity entity;
-    @Nullable private final BlockPos pos;
+    private final @NotNull MenuType<?> type;
+    private final @NotNull World world;
+    private final @NotNull Entity entity;
+    private final @Nullable BlockPos pos;
     @LazyInit
     @ApiStatus.Internal
     public ItemSlot[] slots;
 
-    private final List<Player> players = new ArrayList<>();
+    protected final List<Player> watching = new ArrayList<>();
 
-    public ContainerMenu(MenuType<?> type, World world, Entity entity, @Nullable BlockPos pos) {
+    public ContainerMenu(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable BlockPos pos, int size) {
+        Preconditions.checkNotNull(type, "Menu type cannot be null!");
+        Preconditions.checkNotNull(world, "World cannot be null!");
+        Preconditions.checkNotNull(entity, "Entity cannot be null!");
+        Preconditions.checkArgument(size >= 0, "Size cannot be negative!");
+
         this.type = type;
         this.world = world;
         this.entity = entity;
         this.pos = pos;
+        this.slots = new ItemSlot[size];
     }
 
-    public MenuType<?> getType() {
+    protected final ItemSlot addSlot(ItemSlot slot) {
+        this.slots[slot.index] = slot;
+        return slot;
+    }
+
+    public @NotNull MenuType<?> getType() {
         return this.type;
     }
 
-    public World getWorld() {
+    public @NotNull World getWorld() {
         return this.world;
     }
 
-    public Entity getEntity() {
+    public @NotNull Entity getEntity() {
         return this.entity;
     }
 
@@ -51,19 +64,7 @@ public abstract class ContainerMenu {
         return this.pos;
     }
 
-    public final void build() {
-        List<ItemSlot> slots = new ArrayList<>();
-        this.buildContainer(slots);
-
-        this.slots = new ItemSlot[slots.size()];
-        for (int idx = 0, slotsSize = slots.size(); idx < slotsSize; idx++) {
-            ItemSlot slot = slots.get(idx);
-            slot.index = idx;
-            this.slots[idx] = slot;
-        }
-    }
-
-    protected abstract void buildContainer(List<ItemSlot> slots);
+    public abstract void build();
 
     public ItemSlot get(int index) {
         Preconditions.checkElementIndex(index, this.slots.length, "Slot index out of range");
@@ -71,13 +72,20 @@ public abstract class ContainerMenu {
     }
 
     protected void onItemChanged(ItemSlot slot) {
-        if (this.world instanceof ServerWorld serverWorld) {
-            for (ServerPlayer player : serverWorld.getServer().getPlayers()) {
-                if (player.getOpenMenu() != this) continue;
-
-                player.connection.send(new S2CMenuItemChanged(slot.index, slot.getItem()));
+        for (Player player : this.watching) {
+            if (player instanceof ServerPlayer serverPlayer) {
+                Packet<InGameClientPacketHandler> packet = this.createPacket(serverPlayer, slot);
+                if (packet != null) {
+                    serverPlayer.connection.send(packet);
+                }
             }
         }
+    }
+
+    protected @Nullable Packet<InGameClientPacketHandler> createPacket(ServerPlayer player, ItemSlot slot) {
+        if (player.getOpenMenu() != this) return null;
+
+        return new S2CMenuItemChanged(slot.index, slot.getItem());
     }
 
     @CanIgnoreReturnValue
@@ -93,13 +101,13 @@ public abstract class ContainerMenu {
         return this.slots[index].takeItem();
     }
 
-    public void addPlayer(Player player) {
-        this.players.add(player);
+    public void addWatcher(Player player) {
+        this.watching.add(player);
     }
 
     public void removePlayer(Player player) {
-        this.players.remove(player);
-        if (this.players.isEmpty()) {
+        this.watching.remove(player);
+        if (this.watching.isEmpty()) {
             this.close();
         }
     }

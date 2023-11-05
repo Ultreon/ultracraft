@@ -1,20 +1,21 @@
-package com.ultreon.craft.network.packets;
+package com.ultreon.craft.network.packets.s2c;
 
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.Packet;
 
-public class S2CMenuItemChanged extends Packet<InGameClientPacketHandler> {
+public class S2CInventoryItemChanged extends Packet<InGameClientPacketHandler> {
     private final int index;
     private final ItemStack stack;
 
-    public S2CMenuItemChanged(int index, ItemStack stack) {
+    public S2CInventoryItemChanged(int index, ItemStack stack) {
         this.index = index;
         this.stack = stack;
     }
 
-    public S2CMenuItemChanged(PacketBuffer buffer) {
+    public S2CInventoryItemChanged(PacketBuffer buffer) {
         this.index = buffer.readInt();
         this.stack = buffer.readItemStack();
     }
@@ -27,6 +28,6 @@ public class S2CMenuItemChanged extends Packet<InGameClientPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
-        handler.onMenuItemChanged(this.index, this.stack);
+        handler.onInventoryItemChanged(this.index, this.stack);
     }
 }

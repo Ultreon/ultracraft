@@ -13,6 +13,7 @@ import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -216,14 +217,29 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onMenuItemChanged(int index, ItemStack stack) {
-        LocalPlayer player = this.client.player;
+        var player = this.client.player;
 
-        if (player != null) player.openMenu.setItem(index, stack);
+        if (player != null) {
+            ContainerMenu openMenu = player.openMenu;
+            if (openMenu != null) {
+                openMenu.setItem(index, stack);
+            }
+        }
+    }
+
+    @Override
+    public void onInventoryItemChanged(int index, ItemStack stack) {
+        var player = this.client.player;
+
+        if (player != null) {
+            Inventory inventory = player.inventory;
+            inventory.setItem(index, stack);
+        }
     }
 
     @Override
     public void onMenuCursorChanged(ItemStack cursor) {
-        LocalPlayer player = this.client.player;
+        var player = this.client.player;
         if (this.client.player != null) {
             ContainerMenu openMenu = player.getOpenMenu();
             if (openMenu != null) {

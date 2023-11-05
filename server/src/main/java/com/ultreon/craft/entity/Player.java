@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
+import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
@@ -34,7 +35,7 @@ public abstract class Player extends LivingEntity {
     public Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
 
-        this.inventory = new Inventory(this);
+        this.inventory = new Inventory(MenuTypes.INVENTORY, world, this, null);
         this.inventory.build();
     }
 
@@ -180,7 +181,7 @@ public abstract class Player extends LivingEntity {
 
     public void openMenu(ContainerMenu menu) {
         this.openMenu = menu;
-        menu.addPlayer(this);
+        menu.addWatcher(this);
     }
 
     public void closeMenu() {

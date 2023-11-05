@@ -556,4 +556,10 @@ public abstract class World implements ServerDisposable {
         if (this.menus.contains(containerMenu)) return;
         this.menus.add(containerMenu);
     }
+
+    public abstract boolean isClientSide();
+
+    public boolean isServerSide() {
+        return !this.isClientSide();
+    }
 }

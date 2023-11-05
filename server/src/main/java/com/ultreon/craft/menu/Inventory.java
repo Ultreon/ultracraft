@@ -5,43 +5,53 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CInventoryItemChanged;
+import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class Inventory extends ContainerMenu {
-    private final ItemSlot[] hotbar = new ItemSlot[9];
-    private Player holder;
+    public final ItemSlot[] hotbar = new ItemSlot[9];
+    public final ItemSlot[][] inv = new ItemSlot[9][3];
 
-    public Inventory(Player holder) {
-        this(MenuTypes.INVENTORY, holder.getWorld(), holder, null);
-        this.holder = holder;
-    }
+    private final Player holder;
 
-    public Inventory(MenuType<?> type, World world, Entity entity, @Nullable BlockPos pos) {
-        super(type, world, entity, pos);
+    public Inventory(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable BlockPos pos) {
+        super(type, world, entity, pos, 36);
 
-        if (!(entity instanceof Player)) {
+        if (!(entity instanceof Player player)) {
             throw new IllegalArgumentException("Entity must be a player!");
         }
+
+        this.holder = player;
+        this.addWatcher(this.holder);
     }
 
     @Override
-    protected void buildContainer(List<ItemSlot> slots) {
+    public void build() {
+        int idx = 0;
         for (int x = 0; x < 9; x++) {
-            int idx = slots.size();
-            ItemSlot itemSlot = new ItemSlot(this, new ItemStack(), x * 19 + 6, 83);
-            this.hotbar[idx] = itemSlot;
-            slots.add(itemSlot);
+            this.hotbar[x] = this.addSlot(new ItemSlot(idx++, this, new ItemStack(), x * 19 + 6, 83));
         }
 
         for (int x = 0; x < 9; x++) {
             for (int y = 0; y < 3; y++) {
-                slots.add(new ItemSlot(this, new ItemStack(), x * 19 + 6, y * 19 + 6));
+                this.inv[x][y] = this.addSlot(new ItemSlot(idx++, this, new ItemStack(), x * 19 + 6, y * 19 + 6));
             }
         }
+    }
+
+    @Override
+    protected @Nullable Packet<InGameClientPacketHandler> createPacket(ServerPlayer player, ItemSlot slot) {
+        if (this.holder != player) return null;
+
+        return new S2CInventoryItemChanged(slot.index, slot.getItem());
     }
 
     public ItemSlot getHotbarSlot(int index) {
@@ -76,6 +86,8 @@ public class Inventory extends ContainerMenu {
      */
     @CanIgnoreReturnValue
     public boolean addItem(ItemStack stack) {
+        if (this.getWorld().isClientSide()) return false; // Ignore client side inventory.
+
         for (ItemSlot slot : this.slots) {
             ItemStack slotItem = slot.getItem();
 

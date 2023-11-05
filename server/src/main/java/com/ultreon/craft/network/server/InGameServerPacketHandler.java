@@ -1,9 +1,11 @@
 package com.ultreon.craft.network.server;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
@@ -13,13 +15,10 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
+import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.ServerWorld;
+import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.api.EnvType;
 
@@ -107,7 +106,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         // Do not need to do anything since it's a keep-alive packet.
     }
 
-    public void onBlockBreaking(BlockPos pos, C2SBlockBreakPacket.BlockStatus status) {
+    public void onBlockBreaking(BlockPos pos, C2SBlockBreakingPacket.BlockStatus status) {
         this.server.submit(() -> {
             ServerWorld world = this.player.getWorld();
             Block block = world.get(pos);
@@ -133,5 +132,37 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
                 openMenu.onTakeItem(this.player, index, split);
             }
         });
+    }
+
+    public void onBlockBroken(BlockPos pos) {
+        var world = this.player.getWorld();
+        var chunkPos = World.toChunkPos(pos);
+        if (this.player.isChunkActive(chunkPos)) {
+            // TODO Add reach check.
+            UltracraftServer.invoke(() -> {
+                Block original = world.get(pos);
+                world.set(pos, Blocks.AIR);
+                this.player.inventory.addItems(original.getItemDrops());
+            });
+        } else {
+            UltracraftServer.LOGGER.warn("Player " + this.player.getName() + " attempted to break block that is not loaded.");
+        }
+    }
+
+    public void onHotbarIndex(int hotbarIdx) {
+        if (hotbarIdx < 0 || this.player.inventory.hotbar.length > hotbarIdx)
+            this.connection.disconnect("Invalid packet:\nHotbar index " + hotbarIdx + " is out of bounds.");
+        this.player.selected = hotbarIdx;
+    }
+
+    public void onItemUse() {
+        var player = this.player;
+        var inventory = player.inventory;
+        var stack = inventory.hotbar[player.selected].getItem();
+        var item = stack.getItem();
+
+        if (item == null) return;
+
+        item.use(new UseItemContext(player.getWorld(), player, player.rayCast(), stack));
     }
 }

@@ -216,8 +216,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private void _send(@NotNull Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) throws ClosedChannelException {
-//        System.out.printf("Sending packet: %s%n", packet);
-
         if (this.channel == null) {
             return;
         }

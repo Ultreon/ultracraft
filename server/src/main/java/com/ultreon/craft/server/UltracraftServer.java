@@ -252,15 +252,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             player.kick("Server stopped");
         }
 
-        this.connections.stop();
-
         // Set running flag to make server stop.
         this.running = false;
-
-        // Cleanup any resources allocated.
-        this.players.clear();
-        this.world.dispose();
-        this.scheduler.shutdownNow();
 
         // Stop the server thread.
         this.thread.interrupt();
@@ -274,6 +267,14 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        // Close all connections.
+        this.connections.stop();
+
+        // Cleanup any resources allocated.
+        this.players.clear();
+        this.world.dispose();
+        this.scheduler.shutdownNow();
 
         // Clear the instance.
         UltracraftServer.instance = null;
