@@ -5,13 +5,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
-import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
@@ -448,19 +445,7 @@ public final class ServerWorld extends World {
 
     @Override
     public BreakResult continueBreaking(@NotNull BlockPos breaking, float amount, @NotNull Player breaker) {
-        BreakResult b = super.continueBreaking(breaking, amount, breaker);
-
-        if (b == BreakResult.BROKEN) {
-            ItemStack stack = breaker.getSelectedItem();
-            Block block = this.get(breaking);
-            this.set(breaking, Blocks.AIR);
-            System.out.println("breaking = " + breaking + ", amount = " + amount + ", breaker = " + breaker);
-
-            if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
-                return BreakResult.BROKEN;
-            }
-        }
-        return b;
+        return super.continueBreaking(breaking, amount, breaker);
     }
 
     /**

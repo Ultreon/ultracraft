@@ -11,6 +11,7 @@ import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ public class LocalPlayer extends ClientPlayer {
     private final ClientWorld world;
     public @Nullable ContainerMenu openMenu;
     private UUID uuid;
+    private int oldSelected;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
@@ -35,6 +37,11 @@ public class LocalPlayer extends ClientPlayer {
         this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         super.tick();
+
+        if (this.selected != this.oldSelected) {
+            this.client.connection.send(new C2SHotbarIndexPacket(this.selected));
+            this.oldSelected = this.selected;
+        }
 
         if (this.x != this.ox || this.y != this.oy || this.z != this.oz) {
             if (this.world.getChunk(this.getChunkPos()) == null) {

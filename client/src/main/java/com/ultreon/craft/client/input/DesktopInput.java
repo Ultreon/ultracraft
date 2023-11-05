@@ -12,10 +12,6 @@ import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.events.ItemEvents;
-import com.ultreon.craft.item.Item;
-import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -180,11 +176,7 @@ public class DesktopInput extends GameInput {
                         if (button == Input.Buttons.LEFT) {
                             this.client.startBreaking();
                         } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
-                            ItemStack stack = player.getSelectedItem();
-                            UseItemContext context = new UseItemContext(world, player, hitResult, stack);
-                            Item item = stack.getItem();
-                            ItemEvents.USE.factory().onUseItem(item, context);
-                            item.use(context);
+                            this.useItem(player, world, hitResult);
                         }
                     }
                 }

@@ -11,13 +11,11 @@ import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 public abstract class Player extends LivingEntity {
-    @ApiStatus.Internal
     public int selected;
     public Inventory inventory;
     private boolean running = false;

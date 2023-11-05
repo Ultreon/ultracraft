@@ -22,6 +22,7 @@ import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.UseItemContext;
+import com.ultreon.craft.network.packets.c2s.C2SItemUsePacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
@@ -192,11 +193,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
                         float left = GameInput.TRIGGERS.get(TriggerType.LEFT).value;
                         if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
-                            ItemStack stack = player.getSelectedItem();
-                            UseItemContext context = new UseItemContext(world, player, hitResult, stack);
-                            Item item = stack.getItem();
-                            ItemEvents.USE.factory().onUseItem(item, context);
-                            item.use(context);
+                            this.useItem(player, world, hitResult);
+
                             this.itemUse = System.currentTimeMillis() + 500;
                             this.using = true;
                         } else if (left < 0.3F && this.using) {
@@ -250,6 +248,15 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                 player.setVelocity(player.getVelocity().add(this.vel));
             }
         }
+    }
+
+    public void useItem(Player player, World world, HitResult hitResult) {
+        ItemStack stack = player.getSelectedItem();
+        UseItemContext context = new UseItemContext(world, player, hitResult, stack);
+        Item item = stack.getItem();
+        ItemEvents.USE.factory().onUseItem(item, context);
+        this.client.connection.send(new C2SItemUsePacket(hitResult));
+        item.use(context);
     }
 
     public boolean isControllerConnected() {

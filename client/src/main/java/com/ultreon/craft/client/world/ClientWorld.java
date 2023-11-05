@@ -43,7 +43,7 @@ public final class ClientWorld extends World implements Disposable {
     public boolean set(int x, int y, int z, @NotNull Block block) {
         boolean isBlockSet = super.set(x, y, z, block);
         if (isBlockSet) {
-            this.client.connection.send(new C2SBlockBreakPacket(new BlockPos(x, y, z)));
+//            this.client.connection.send(new C2SBlockBreakPacket(new BlockPos(x, y, z)));
         }
         return isBlockSet;
     }

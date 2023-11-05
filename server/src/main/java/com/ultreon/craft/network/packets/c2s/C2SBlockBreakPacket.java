@@ -24,6 +24,7 @@ public class C2SBlockBreakPacket extends Packet<InGameServerPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
+        System.out.println("pos = " + pos);
         handler.onBlockBroken(this.pos);
     }
 }

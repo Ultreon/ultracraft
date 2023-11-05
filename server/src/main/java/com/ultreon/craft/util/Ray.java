@@ -16,6 +16,7 @@
 
 package com.ultreon.craft.util;
 
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.io.Serializable;
@@ -32,12 +33,22 @@ public class Ray implements Serializable {
 	}
 
 	/** Constructor, sets the starting position of the ray and the direction.
-	 * 
+	 *
 	 * @param origin The starting position
 	 * @param direction The direction */
 	public Ray (Vec3d origin, Vec3d direction) {
 		this.origin.set(origin);
 		this.direction.set(direction).nor();
+	}
+
+	public Ray(PacketBuffer buffer) {
+		this.origin.set(buffer.readVec3d());
+		this.direction.set(buffer.readVec3d()).nor();
+	}
+
+	public void write(PacketBuffer buffer) {
+		buffer.writeVec3d(this.origin);
+		buffer.writeVec3d(this.direction);
 	}
 
 	/** @return a copy of this ray. */
@@ -61,7 +72,7 @@ public class Ray implements Serializable {
 	}
 
 	/** Sets the starting position and the direction of this ray.
-	 * 
+	 *
 	 * @param origin The starting position
 	 * @param direction The direction
 	 * @return this ray for chaining */
@@ -72,7 +83,7 @@ public class Ray implements Serializable {
 	}
 
 	/** Sets this ray from the given starting position and direction.
-	 * 
+	 *
 	 * @param x The x-component of the starting position
 	 * @param y The y-component of the starting position
 	 * @param z The z-component of the starting position
@@ -87,7 +98,7 @@ public class Ray implements Serializable {
 	}
 
 	/** Sets the starting position and direction from the given ray
-	 * 
+	 *
 	 * @param ray The ray
 	 * @return This ray for chaining */
 	public Ray set (Ray ray) {

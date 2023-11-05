@@ -141,11 +141,19 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                     Connection.LOGGER.debug("Timeout", cause);
                     this.disconnect("Timed Out");
                 } else {
-                    Connection.LOGGER.error("Exception:", cause);
+                    Connection.LOGGER.error("Exception: ", cause);
                     this.disconnect("Internal Exception: " + cause);
                     if (handlingFault) {
                         Connection.LOGGER.error("Double fault detected, force closing connection.");
-                        channel.close();
+                        try {
+                            channel.close().addListener(future -> {
+                                if (!(future.cause() instanceof ClosedChannelException)) {
+                                    Connection.LOGGER.error("Failed to close channel", future.cause());
+                                }
+                            });
+                        } catch (Exception e) {
+                            Connection.LOGGER.error("Failed to close channel", e);
+                        }
                     }
                 }
             }
@@ -167,7 +175,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     public void disconnect(@NotNull String message) {
         if (this.channel == null || !this.channel.isOpen()) return;
 
-        @NotNull String msg = this.direction.getSourceEnv() == EnvType.CLIENT ? "Disconnected by: " : "Disconnected: ";
+        @NotNull String msg = "Disconnected: ";
         Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null) + " (" + message + ")");
 
         switch (this.direction.getSourceEnv()) {
@@ -179,7 +187,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.handleDisconnect();
 
         this.setReadOnly();
-        this.channel = null;
     }
 
     public void send(@NotNull Packet<?> packet) {

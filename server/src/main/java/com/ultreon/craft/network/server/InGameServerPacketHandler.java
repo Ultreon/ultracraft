@@ -18,6 +18,7 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.api.EnvType;
@@ -138,10 +139,19 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         var world = this.player.getWorld();
         var chunkPos = World.toChunkPos(pos);
         if (this.player.isChunkActive(chunkPos)) {
+//            System.out.println("chunkPos = " + chunkPos);
             // TODO Add reach check.
             UltracraftServer.invoke(() -> {
                 Block original = world.get(pos);
                 world.set(pos, Blocks.AIR);
+                ItemStack stack = this.player.getSelectedItem();
+                Block block = world.get(pos);
+                world.set(pos, Blocks.AIR);
+
+                if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
+                    return;
+                }
+
                 this.player.inventory.addItems(original.getItemDrops());
             });
         } else {
@@ -150,19 +160,25 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onHotbarIndex(int hotbarIdx) {
-        if (hotbarIdx < 0 || this.player.inventory.hotbar.length > hotbarIdx)
+        if (hotbarIdx < 0 || hotbarIdx > this.player.inventory.hotbar.length) {
             this.connection.disconnect("Invalid packet:\nHotbar index " + hotbarIdx + " is out of bounds.");
+        }
         this.player.selected = hotbarIdx;
     }
 
-    public void onItemUse() {
+    public void onItemUse(HitResult hitResult) {
         var player = this.player;
         var inventory = player.inventory;
         var stack = inventory.hotbar[player.selected].getItem();
         var item = stack.getItem();
 
+        System.out.println("stack = " + stack);
+
         if (item == null) return;
 
-        item.use(new UseItemContext(player.getWorld(), player, player.rayCast(), stack));
+        UltracraftServer.invoke(() -> {
+            System.out.println("Using item now!");
+            item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
+        });
     }
 }

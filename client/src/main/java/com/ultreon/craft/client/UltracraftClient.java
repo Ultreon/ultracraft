@@ -867,12 +867,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             var result = ScreenEvents.CLOSE.factory().onCloseScreen(this.screen);
             if (result.isCanceled()) return false;
 
-            UltracraftClient.LOGGER.debug("Closing screen: " + this.screen.getClass());
-
-            System.out.println("result = " + result);
             if (!cur.onClose(null)) return false;
             cur.onClosed();
-            System.out.println("result = " + result);
             this.screen = null;
             DesktopInput.setCursorCaught(true);
 
@@ -895,13 +891,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
             if (!cur.onClose(next)) return false;
             cur.onClosed();
-            System.out.println("cur = " + cur);
-            UltracraftClient.LOGGER.debug(next != null ? "Changing screen to: " + next.getClass() : "Closing screen: " + cur.getClass());
         } else {
             if (next == null) return false;
 
             DesktopInput.setCursorCaught(false);
-            UltracraftClient.LOGGER.debug("Opening screen: " + next.getClass());
         }
 
         this.screen = next;

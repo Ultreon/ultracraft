@@ -19,6 +19,7 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SBlockBreakingPacket::new);
         this.addServerBound(C2SBlockBreakPacket::new);
         this.addServerBound(C2SHotbarIndexPacket::new);
+        this.addServerBound(C2SItemUsePacket::new);
 
         this.addClientBound(S2CKeepAlivePacket::new);
         this.addClientBound(S2CModPacket::new);
