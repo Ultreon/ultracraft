@@ -139,7 +139,6 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         var world = this.player.getWorld();
         var chunkPos = World.toChunkPos(pos);
         if (this.player.isChunkActive(chunkPos)) {
-//            System.out.println("chunkPos = " + chunkPos);
             // TODO Add reach check.
             UltracraftServer.invoke(() -> {
                 Block original = world.get(pos);
@@ -172,12 +171,9 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         var stack = inventory.hotbar[player.selected].getItem();
         var item = stack.getItem();
 
-        System.out.println("stack = " + stack);
-
         if (item == null) return;
 
         UltracraftServer.invoke(() -> {
-            System.out.println("Using item now!");
             item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
         });
     }
