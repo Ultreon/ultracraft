@@ -16,7 +16,8 @@ public class ItemSlot {
     private final int slotX;
     private final int slotY;
 
-    public ItemSlot(ContainerMenu container, ItemStack item, int slotX, int slotY) {
+    public ItemSlot(int index, ContainerMenu container, ItemStack item, int slotX, int slotY) {
+        this.index = index;
         this.container = container;
         this.item = item;
         this.slotX = slotX;

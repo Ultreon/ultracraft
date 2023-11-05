@@ -459,8 +459,6 @@ public final class ServerWorld extends World {
             if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
                 return BreakResult.BROKEN;
             }
-
-            breaker.inventory.addItems(block.getItemDrops());
         }
         return b;
     }
@@ -480,6 +478,11 @@ public final class ServerWorld extends World {
         for (Player player : playersWithinRange) {
             player.playSound(sound, (float) ((range - player.getPosition().dst(x, y, z)) / range));
         }
+    }
+
+    @Override
+    public boolean isClientSide() {
+        return false;
     }
 
     /**

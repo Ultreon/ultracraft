@@ -21,7 +21,7 @@ import java.util.UUID;
 public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
-    public ContainerMenu openMenu;
+    public @Nullable ContainerMenu openMenu;
     private UUID uuid;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {

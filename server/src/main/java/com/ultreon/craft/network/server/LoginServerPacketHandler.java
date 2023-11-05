@@ -110,6 +110,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
             System.out.println("spawnPoint = " + spawnPoint);
 
             player.spawn(spawnPoint.vec().d().add(0.5, 0, 0.5), this.connection);
+            player.setInitialItems();
 
             PlayerEvents.PLAYER_SPAWNED.factory().onPlayerSpawned(player);
         }), true);

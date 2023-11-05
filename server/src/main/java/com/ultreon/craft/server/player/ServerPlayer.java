@@ -9,10 +9,8 @@ import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
-import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
-import com.ultreon.craft.network.packets.S2CMenuCursorPacket;
 import com.ultreon.craft.network.packets.s2c.*;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.Unit;
@@ -30,7 +28,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 public final class ServerPlayer extends Player {
     public Connection connection;
     private final ServerWorld world;
+    public int hotbarIdx;
     private UUID uuid;
     private final String name;
     private final UltracraftServer server = UltracraftServer.get();
@@ -108,8 +110,6 @@ public final class ServerPlayer extends Player {
         this.world.prepareSpawn(this);
         this.world.spawn(this);
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
-
-        this.setInitialItems();
     }
 
     @Override
@@ -305,12 +305,12 @@ public final class ServerPlayer extends Player {
         return this.activeChunks.contains(chunkPos);
     }
 
-    private void setInitialItems() {
+    public void setInitialItems() {
         if (PlayerEvents.INITIAL_ITEMS.factory().onPlayerInitialItems(this, this.inventory).isCanceled()) {
             return;
         }
 
-        this.inventory.getHotbarSlot(0).setItem(Items.WOODEN_PICKAXE.defaultStack());
-        this.inventory.getHotbarSlot(1).setItem(Items.WOODEN_SHOVEL.defaultStack());
+        this.inventory.addItem(Items.WOODEN_PICKAXE.defaultStack());
+        this.inventory.addItem(Items.WOODEN_SHOVEL.defaultStack());
     }
 }

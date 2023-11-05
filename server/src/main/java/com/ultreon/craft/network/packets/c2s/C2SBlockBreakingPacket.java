@@ -6,24 +6,34 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 import com.ultreon.craft.world.BlockPos;
 
-public class C2SBlockBreakPacket extends Packet<InGameServerPacketHandler> {
+public class C2SBlockBreakingPacket extends Packet<InGameServerPacketHandler> {
     private final BlockPos pos;
+    private final BlockStatus status;
 
-    public C2SBlockBreakPacket(BlockPos pos) {
+    public C2SBlockBreakingPacket(BlockPos pos, BlockStatus status) {
+        this.status = status;
         this.pos = pos;
     }
 
-    public C2SBlockBreakPacket(PacketBuffer buffer) {
+    public C2SBlockBreakingPacket(PacketBuffer buffer) {
+        this.status = BlockStatus.values()[buffer.readByte()];
         this.pos = buffer.readBlockPos();
     }
 
     @Override
     public void toBytes(PacketBuffer buffer) {
+        buffer.writeByte(this.status.ordinal());
         buffer.writeBlockPos(this.pos);
     }
 
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
-        handler.onBlockBroken(this.pos);
+        handler.onBlockBreaking(this.pos, this.status);
+    }
+
+    public enum BlockStatus {
+        START,
+        CONTINUE,
+        STOP,
     }
 }
