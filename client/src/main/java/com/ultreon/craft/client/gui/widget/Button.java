@@ -1,96 +1,73 @@
 package com.ultreon.craft.client.gui.widget;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Callback;
-import com.ultreon.craft.client.gui.GuiComponent;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.properties.CallbackProperty;
+import com.ultreon.craft.client.gui.widget.properties.ColorProperty;
+import com.ultreon.craft.client.gui.widget.properties.TextColorProperty;
+import com.ultreon.craft.client.gui.widget.properties.TextProperty;
 import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class Button extends GuiComponent {
-    private Callback<Button> callback = caller -> {};
+@SuppressWarnings("unchecked")
+public class Button<T extends Button<T>> extends Widget<T> implements ColorProperty, TextProperty<T>, TextColorProperty, CallbackProperty<T> {
+    private Callback<T> callback = caller -> {
+    };
     private @Nullable @IntRange(from = 0, to = 359) Color color = Color.LIGHT_GRAY;
     private boolean pressed;
-    private String message;
+    private TextObject text = TextObject.EMPTY;
     private Color textColor = Color.WHITE;
 
     /**
-     * @param x       the X position of the button
-     * @param y       the Y position of the button
-     * @param width   the width of the button
+     * @param x the X position of the button
+     * @param y the Y position of the button
+     * @param width the width of the button
      */
-    public Button(int x, int y, @IntRange(from = 21) int width,  String message) {
-        this(x, y, width, 21, message);
+    @SafeVarargs
+    public Button(int x, int y, @IntRange(from = 21) int width, T... typeGetter) {
+        this(x, y, width, 21, typeGetter);
     }
 
     /**
-     * @param x       the X position of the button
-     * @param y       the Y position of the button
-     * @param width   the width of the button
-     * @param message the button message.
+     * @param x the X position of the button
+     * @param y the Y position of the button
+     * @param width the width of the button
+     * @param height the height of the button
      */
-    public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message) {
-        super(x, y, width, height);
-        this.message = message;
-    }
-
-    /**
-     * @param x        the X position of the button
-     * @param y        the Y position of the button
-     * @param width    the width of the button
-     * @param callback the callback of the button, gets called when the button activates.
-     */
-    public Button(int x, int y, @IntRange(from = 21) int width,  String message, Callback<Button> callback) {
-        this(x, y, width, 21, message, callback);
-    }
-
-    /**
-     * @param x       the X position of the button
-     * @param y       the Y position of the button
-     * @param width   the width of the button
-     * @param message the button message.
-     * @param callback the callback of the button, gets called when the button activates.
-     */
-    public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String message, Callback<Button> callback) {
-        super(x, y, width, height);
-        this.callback = callback;
-        this.message = message;
-    }
-
-    @Nullable
-    @IntRange(from = 0, to = 359)
-    public Color getColor() {
-        return this.color;
-    }
-
-    public void setColor(@Nullable @IntRange(from = 0, to = 359) Color color) {
-        this.color = color;
+    @SafeVarargs
+    public Button(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, T... typeGetter) {
+        super(x, y, width, height, typeGetter);
     }
 
     @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+    public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         Texture texture = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/widgets.png"));
 
-        int x = this.x;
-        int y = this.y;
+        int x = this.pos.x;
+        int y = this.pos.y;
         int u = this.enabled ? this.isWithinBounds(mouseX, mouseY) ? 21 : 0 : 42;
         int v = this.isPressed() ? 21 : 0;
 
         renderer.setTextureColor(Color.WHITE);
         renderer.blit(texture, x, y, 7, 7, u, v, 7, 7);
-        renderer.blit(texture, x+7, y, this.width - 14, 7, 7 + u, v, 7, 7);
-        renderer.blit(texture, x+ this.width -7, y, 7, 7, 14 + u, v, 7, 7);
-        renderer.blit(texture, x, y+7, 7, this.height - 14, u, 7 + v, 7, 7);
-        renderer.blit(texture, x+7, y+7, this.width - 14, this.height - 14, 7 + u, 7 + v, 7, 7);
-        renderer.blit(texture, x+ this.width -7, y+7, 7, this.height - 14, 14 + u, 7 + v, 7, 7);
-        renderer.blit(texture, x, y + this.height - 7, 7, 7, u, 14 + v, 7, 7);
-        renderer.blit(texture, x+7, y + this.height - 7, this.width - 14, 7, 7 + u, 14 + v, 7, 7);
-        renderer.blit(texture, x+ this.width -7, y + this.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
+        renderer.blit(texture, x + 7, y, this.size.width - 14, 7, 7 + u, v, 7, 7);
+        renderer.blit(texture, x + this.size.width - 7, y, 7, 7, 14 + u, v, 7, 7);
+        renderer.blit(texture, x, y + 7, 7, this.size.height - 14, u, 7 + v, 7, 7);
+        renderer.blit(texture, x + 7, y + 7, this.size.width - 14, this.size.height - 14, 7 + u, 7 + v, 7, 7);
+        renderer.blit(texture, x + this.size.width - 7, y + 7, 7, this.size.height - 14, 14 + u, 7 + v, 7, 7);
+        renderer.blit(texture, x, y + this.size.height - 7, 7, 7, u, 14 + v, 7, 7);
+        renderer.blit(texture, x + 7, y + this.size.height - 7, this.size.width - 14, 7, 7 + u, 14 + v, 7, 7);
+        renderer.blit(texture, x + this.size.width - 7, y + this.size.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
 
-        renderer.drawTextCenter(this.message, x + this.width / 2, y + (this.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
+        renderer.drawTextCenter(this.text, x + this.size.width / 2, y + (this.size.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor : this.textColor.withAlpha(0x80));
     }
 
     @Override
@@ -102,11 +79,11 @@ public class Button extends GuiComponent {
     public boolean click() {
         if (!this.enabled) return false;
 
-        Callback<Button> callback = this.callback;
+        Callback<T> callback = this.callback;
         if (callback == null) {
             return true;
         }
-        callback.call(this);
+        callback.call((T) this);
         return false;
     }
 
@@ -128,19 +105,72 @@ public class Button extends GuiComponent {
         return this.pressed && this.enabled;
     }
 
-    public void setTextColor(Color textColor) {
-        this.textColor = textColor;
+    @Override
+    public String getName() {
+        return "Button";
     }
 
-    public Color getTextColor() {
+    @Override
+    public boolean isClickable() {
+        return true;
+    }
+
+    @Override
+    @Nullable
+    @IntRange(from = 0, to = 359)
+    public Color getColor() {
+        return this.color;
+    }
+
+    @Override
+    public T color(@Nullable @IntRange(from = 0, to = 359) Color color) {
+        this.color = color;
+        return (T) this;
+    }
+
+    @Override
+    @CanIgnoreReturnValue
+    public T textColor(@NotNull Color textColor) {
+        this.textColor = textColor;
+        return (T) this;
+    }
+
+    @Override
+    public @NotNull Color getTextColor() {
         return this.textColor;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    @Override
+    public T text(TextObject text) {
+        this.text = text;
+        return (T) this;
     }
 
-    public String getMessage() {
-        return this.message;
+    @Override
+    public TextObject getText() {
+        return this.text;
+    }
+
+    @Override
+    public T callback(Callback<T> callback) {
+        Preconditions.checkNotNull(callback, "callback");
+        this.callback = callback;
+        return (T) this;
+    }
+
+    @Override
+    public void _callback(Object widget) {
+        CallbackProperty.super._callback(widget);
+        System.out.println("getCallback() = " + this.getCallback());
+    }
+
+    @Override
+    public Callback<T> getCallback() {
+        return this.callback;
+    }
+
+    @Override
+    public String getRawText() {
+        return this.text.getText();
     }
 }

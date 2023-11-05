@@ -80,14 +80,14 @@ public class UltracraftGameprovider implements GameProvider {
     @Override
     public Collection<BuiltinMod> getBuiltinMods() {
         return List.of(
-                new BuiltinMod(List.of(this.libGdxJar), new BuiltinModMetadata.Builder("libgdx", this.versions.getProperty("libgdx"))
+                new BuiltinMod(List.of(this.libGdxJar), new BuiltinModMetadata.Builder("gdx", this.versions.getProperty("gdx"))
                         .setName("LibGDX")
                         .setDescription("A game framework used by Ultracraft (and various other games).")
                         .addLicense("Apache-2.0")
                         .addAuthor("libGDX", Map.of("homepage", "http://www.libgdx.com/", "patreon", "https://patreon.com/libgdx", "github", "https://github.com/libgdx", "sources", "https://github.com/libgdx/libgdx"))
                         .addAuthor("Mario Zechner", Map.of("github", "https://github.com/badlogic", "email", "badlogicgames@gmail.com"))
                         .addAuthor("Nathan Sweet", Map.of("github", "https://github.com/NathanSweet", "email", "nathan.sweet@gmail.com"))
-                        .addIcon(200, "assets/libgdx/icon.png")
+                        .addIcon(200, "assets/gdx/icon.png")
                         .build()),
                 new BuiltinMod(this.gameJars, new BuiltinModMetadata.Builder("ultracraft", this.versions.getProperty("ultreoncraft"))
                         .addLicense("Ultreon-Api-1.1")

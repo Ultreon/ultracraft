@@ -4,7 +4,7 @@ import com.badlogic.gdx.Input;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.player.LocalPlayer;
@@ -14,6 +14,7 @@ import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.libs.commons.v0.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public abstract class ContainerScreen extends Screen {
     }
 
     public ContainerScreen(ContainerMenu container, @Nullable Screen back, String title, int maxSlots) {
-        super(back, title);
+        super(title, back);
         this.container = container;
         this.maxSlots = maxSlots;
 
@@ -36,11 +37,16 @@ public abstract class ContainerScreen extends Screen {
         Preconditions.checkNotNull(this.player, "Local player is null");
     }
 
+    @Override
+    public final void build(GuiBuilder builder) {
+        //* Stub
+    }
+
     public int left() {
-        return (this.width - this.backgroundWidth()) / 2;
+        return (this.size.width - this.backgroundWidth()) / 2;
     }
     public int top() {
-        return (this.height - this.backgroundHeight()) / 2;
+        return (this.size.height - this.backgroundHeight()) / 2;
     }
 
     public abstract int backgroundWidth();
@@ -64,7 +70,7 @@ public abstract class ContainerScreen extends Screen {
             this.client.itemRenderer.render(slotItem.getItem(), renderer, x, y);
 
             if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {
-                GuiComponent.fill(renderer, x, y, 16, 16, 0x60ffffff);
+                renderer.fill(x, y, 16, 16, Color.WHITE.withAlpha(0x60));
             }
 
             if (!slotItem.isEmpty() && slotItem.getCount() > 1) {
@@ -79,11 +85,10 @@ public abstract class ContainerScreen extends Screen {
     }
 
     @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        super.render(renderer, mouseX, mouseY, deltaTime);
+    public void renderWidget(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+        super.renderWidget(renderer, mouseX, mouseY, deltaTime);
 
         this.renderSlots(renderer, mouseX, mouseY);
-
         this.renderForeground(renderer, mouseX, mouseY, deltaTime);
     }
 

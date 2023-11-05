@@ -18,9 +18,9 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
-import com.ultreon.libs.text.v0.TextObject;
 import org.jetbrains.annotations.ApiStatus;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -201,11 +201,11 @@ public class Renderer {
     }
 
     public void rectLine(int x, int y, int width, int height) {
-        this.shapes.rectangle(x + strokeWidth / 2f, y + strokeWidth / 2f, width - strokeWidth, height - strokeWidth, this.strokeWidth);
+        this.shapes.rectangle(x + this.strokeWidth / 2f, y + this.strokeWidth / 2f, width - this.strokeWidth, height - this.strokeWidth, this.strokeWidth);
     }
 
     public void rectLine(float x, float y, float width, float height) {
-        this.shapes.rectangle(x + strokeWidth / 2f, y + strokeWidth / 2f, width - strokeWidth, height - strokeWidth, this.strokeWidth);
+        this.shapes.rectangle(x + this.strokeWidth / 2f, y + this.strokeWidth / 2f, width - this.strokeWidth, height - this.strokeWidth, this.strokeWidth);
     }
 
     public void rect(int x, int y, int width, int height) {
@@ -619,227 +619,283 @@ public class Renderer {
         this.drawTextLeft(text, x - this.font.width(text), y, color, shadow);
     }
 
-    public void drawTextScaled(String text, float scale, int x, int y) {
+    public void drawTextScaledLeft(String text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, int x, int y, Color color) {
+    public void drawTextScaledLeft(String text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, int x, int y, boolean shadow) {
+    public void drawTextScaledLeft(String text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, int x, int y, Color color, boolean shadow) {
+    public void drawTextScaledLeft(String text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, float x, float y) {
+    public void drawTextScaledLeft(String text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, float x, float y, Color color) {
+    public void drawTextScaledLeft(String text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, float x, float y, boolean shadow) {
+    public void drawTextScaledLeft(String text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(String text, float scale, float x, float y, Color color, boolean shadow) {
+    public void drawTextScaledLeft(String text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, int x, int y) {
+    public void drawTextScaledLeft(TextObject text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, int x, int y, Color color) {
+    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, int x, int y, boolean shadow) {
+    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, float x, float y) {
+    public void drawTextScaledLeft(TextObject text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, float x, float y, Color color) {
+    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, float x, float y, boolean shadow) {
+    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawTextScaled(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, int x, int y) {
+    public void drawTextScaledCenter(String text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, int x, int y, Color color) {
+    public void drawTextScaledCenter(String text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, int x, int y, boolean shadow) {
+    public void drawTextScaledCenter(String text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, int x, int y, Color color, boolean shadow) {
+    public void drawTextScaledCenter(String text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, float x, float y) {
+    public void drawTextScaledCenter(String text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, float x, float y, Color color) {
+    public void drawTextScaledCenter(String text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, float x, float y, boolean shadow) {
+    public void drawTextScaledCenter(String text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(String text, float scale, float x, float y, Color color, boolean shadow) {
+    public void drawTextScaledCenter(String text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y) {
+    public void drawTextScaledCenter(TextObject text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, Color color) {
+    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, boolean shadow) {
+    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y) {
+    public void drawTextScaledCenter(TextObject text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, Color color) {
+    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, boolean shadow) {
+    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
-    public void drawCenteredTextScaled(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
         this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(TextObject text, float scale, float x, float value) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(TextObject text, float scale, float x, float value, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(TextObject text, float scale, float x, float value, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(TextObject text, float scale, float x, float value, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(String text, float scale, float x, float value) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(String text, float scale, float x, float value, Color color) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(String text, float scale, float x, float value, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, shadow);
+        this.popMatrix();
+    }
+
+    public void drawTextScaledRight(String text, float scale, float x, float value, Color color, boolean shadow) {
+        this.pushMatrix();
+        this.scale(scale, scale);
+        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
         this.popMatrix();
     }
 
@@ -979,7 +1035,7 @@ public class Renderer {
         if (rect.width < 1) return false;
         if (rect.height < 1) return false;
 
-        rect.y = client.getHeight() - rect.y - rect.height;
+        rect.y = this.client.getHeight() - rect.y - rect.height;
 
         this.flush();
         return ScissorStack.pushScissors(rect);
@@ -1161,5 +1217,9 @@ public class Renderer {
 
     public void drawLine(float x1, int y1, float x2, int y2, Color color) {
         this.shapes.line(x1, y1, x2, y2, color.toGdx(), this.strokeWidth);
+    }
+
+    public boolean pushScissors(Bounds bounds) {
+        return this.pushScissors(bounds.pos().x, bounds.pos().y, bounds.size().width, bounds.size().height);
     }
 }

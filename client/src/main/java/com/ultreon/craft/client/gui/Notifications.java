@@ -10,10 +10,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Notifications implements Renderable {
-    private static final int NOTIFICATION_HEIGHT = 80;
-    private static final int NOTIFICATION_WIDTH = 300;
-    private static final int NOTIFICATION_OFFSET = 20;
-    private static final int NOTIFICATION_GAP = 10;
+    private static final int HEIGHT = 80;
+    private static final int WIDTH = 300;
+    private static final int OFFSET = 20;
+    private static final int GAP = 10;
 
     private final Lock lock = new ReentrantLock(true);
     private final UltracraftClient client;
@@ -28,8 +28,8 @@ public class Notifications implements Renderable {
     public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         if (this.client.isLoading()) return;
 
-        int x = this.client.getWidth() - NOTIFICATION_OFFSET - NOTIFICATION_WIDTH;
-        int y = NOTIFICATION_OFFSET;
+        int x = this.client.getWidth() - Notifications.OFFSET - Notifications.WIDTH;
+        int y = Notifications.OFFSET;
 
         this.lock.lock();
         this.notifications.removeIf(Notification::isDead);
@@ -38,16 +38,16 @@ public class Notifications implements Renderable {
             String summary = notification.getSummary();
             String subText = notification.getSubText();
             float motionRatio = notification.getMotion();
-            int motion = (int) ((NOTIFICATION_WIDTH + NOTIFICATION_OFFSET) * motionRatio);
+            int motion = (int) ((Notifications.WIDTH + Notifications.OFFSET) * motionRatio);
 
-            renderer.fill(x + motion, y, NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT, Color.rgb(0x101010));
-            renderer.box(x + motion + 5, y + 5, NOTIFICATION_WIDTH - 10, NOTIFICATION_HEIGHT - 10, Color.rgb(0x505050));
+            renderer.fill(x + motion, y, Notifications.WIDTH, Notifications.HEIGHT, Color.rgb(0x101010));
+            renderer.box(x + motion + 5, y + 5, Notifications.WIDTH - 10, Notifications.HEIGHT - 10, Color.rgb(0x505050));
 
             renderer.drawTextLeft(title, x + motion + 10, y + 13, Color.rgb(0xd0d0d0));
             renderer.drawTextLeft(summary, x + motion + 10, y + 40, Color.rgb(0xb0b0b0));
             renderer.drawTextLeft(subText == null ? "" : subText, x + motion + 10, y + 60, Color.rgb(0x707070));
 
-            y += NOTIFICATION_HEIGHT + NOTIFICATION_GAP;
+            y += Notifications.HEIGHT + Notifications.GAP;
         }
         this.lock.unlock();
     }

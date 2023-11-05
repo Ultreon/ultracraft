@@ -3,23 +3,26 @@ package com.ultreon.craft.client.gui.widget;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.gui.Callback;
-import com.ultreon.craft.client.gui.GuiComponent;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.properties.CallbackProperty;
+import com.ultreon.craft.client.gui.widget.properties.TextProperty;
 import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
-public class TextEntry extends GuiComponent {
+@SuppressWarnings("unchecked")
+public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements TextProperty<T>, CallbackProperty<T> {
     private String text = "";
-    private String hint;
+    private TextObject hint = TextObject.EMPTY;
     private CharPredicate charPredicate = c -> true;
 
     private int cursorIdx = 0;
     private float cursorX;
-    private Callback<TextEntry> callback = caller -> {
+    private Callback<T> callback = caller -> {
     };
 
     /**
@@ -28,30 +31,22 @@ public class TextEntry extends GuiComponent {
      * @param width  the width of the text entry.
      * @param height the height of the text entry.
      */
-    public TextEntry(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
-        this(x, y, width, height, "");
+    public TextEntry(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
+        super(x, y, width, height, typeGetter);
     }
 
-    /**
-     * @param x      the X position to create the text entry at
-     * @param y      the Y position to create the text entry at
-     * @param width  the width of the text entry.
-     * @param height the height of the text entry.
-     * @param hint   the text shown when there's no text in the entry.
-     */
-    public TextEntry(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, String hint) {
-        super(x, y, width, height);
-        this.hint = hint;
+    public TextEntry() {
+        super(0, 0, 200, 21);
     }
 
     @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+    public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         final int u = this.enabled ? this.focused ? 12 : 0 : 24;
         final int v = 0;
-        final int tx = this.x;
-        final int ty = this.y - 2;
-        final int tw = this.width;
-        final int th = this.height + 3;
+        final int tx = this.pos.x;
+        final int ty = this.pos.y - 2;
+        final int tw = this.size.width;
+        final int th = this.size.height + 3;
 
         Texture texture = this.client.getTextureManager().getTexture(id("textures/gui/text_entry.png"));
         renderer.setTextureColor(Color.WHITE);
@@ -65,13 +60,13 @@ public class TextEntry extends GuiComponent {
         renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
         renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawTextLeft(this.text, this.x + 5, this.y + 6, false, this.width - 6, "...");
+        renderer.drawTextLeft(this.text, this.pos.x + 5, this.pos.y + 6, false);
         if (this.text.isEmpty()) {
-            renderer.drawTextLeft(this.hint, this.x + 5, this.y + 6, Color.WHITE.withAlpha(0x80), false, this.width - 6, "...");
+            renderer.drawTextLeft(this.hint, this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
         }
 
         if (this.focused) {
-            renderer.drawLine(this.x + 3 + this.cursorX, this.y + 5, this.x + 3 + this.cursorX, this.y + this.height - 6, Color.WHITE);
+            renderer.drawLine(this.pos.x + 3 + this.cursorX, this.pos.y + 5, this.pos.x + 3 + this.cursorX, this.pos.y + this.size.height - 6, Color.WHITE);
         }
     }
 
@@ -114,26 +109,40 @@ public class TextEntry extends GuiComponent {
         return super.keyPress(keyCode);
     }
 
-    private void revalidate() {
+    @Override
+    public void revalidate() {
         this.cursorX = this.font.width(this.text.substring(0, this.cursorIdx));
 
-        this.callback.call(this);
+        this.callback.call((T) this);
     }
 
-    public String getText() {
+    @Override
+    public String getName() {
+        return "TextEntry";
+    }
+
+    public TextObject getText() {
+        return TextObject.nullToEmpty(this.text);
+    }
+
+    @Override
+    public T text(TextObject text) {
+        this.text = text.getText();
+        return (T) this;
+    }
+
+    @Override
+    public String getRawText() {
         return this.text;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getHint() {
+    public TextObject getHint() {
         return this.hint;
     }
 
-    public void setHint(String hint) {
+    public T hint(TextObject hint) {
         this.hint = hint;
+        return (T) this;
     }
 
     @ApiStatus.Internal
@@ -146,15 +155,21 @@ public class TextEntry extends GuiComponent {
     }
 
     @ApiStatus.Internal
-    public Callback<TextEntry> getCallback() {
+    public Callback<T> getCallback() {
         return this.callback;
     }
 
-    public void setCallback(Callback<TextEntry> callback) {
+    @Override
+    public T callback(Callback<T> callback) {
         this.callback = callback;
+        return (T) this;
     }
 
     public int getCursorIdx() {
         return this.cursorIdx;
+    }
+
+    public void setCursorIdx(int cursorIdx) {
+        this.cursorIdx = cursorIdx;
     }
 }

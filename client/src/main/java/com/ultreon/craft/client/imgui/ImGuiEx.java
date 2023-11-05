@@ -152,7 +152,7 @@ public class ImGuiEx {
         ImGui.text(label);
         ImGui.sameLine();
         try {
-            if (ImGui.button("##" + id)) {
+            if (ImGui.button("##" + id, 120, 16)) {
                 func.run();
             }
         } catch (Throwable t) {

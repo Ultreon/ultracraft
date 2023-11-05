@@ -34,12 +34,15 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
             this.client.integratedServer.loadPlayer(player);
         }
 
+        System.out.println("Logged in with uuid: " + uuid);
+
         ClientPlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
 
         this.client.submit(() -> {
             try {
                 this.client.worldRenderer = new WorldRenderer(clientWorld);
                 this.client.renderWorld = true;
+                this.client.showScreen(null);
             } catch (Exception e) {
                 UltracraftClient.crash(e);
             }

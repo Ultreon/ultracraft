@@ -11,9 +11,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.input.util.*;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.Player;
@@ -21,7 +22,7 @@ import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.UseItemContext;
-import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.BlockPos;
@@ -30,7 +31,6 @@ import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.ultreon.craft.server.UltracraftServer;
 import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -52,10 +52,10 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     static {
         for (JoystickType type : JoystickType.values()) {
-            JOYSTICKS.put(type, new Joystick());
+            GameInput.JOYSTICKS.put(type, new Joystick());
         }
         for (TriggerType type : TriggerType.values()) {
-            TRIGGERS.put(type, new Trigger());
+            GameInput.TRIGGERS.put(type, new Trigger());
         }
     }
 
@@ -95,29 +95,29 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         }
 
         ControllerMapping mapping = controller.getMapping();
-        if (axisCode == mapping.axisLeftX) JOYSTICKS.get(JoystickType.LEFT).x = -value;
-        if (axisCode == mapping.axisLeftY) JOYSTICKS.get(JoystickType.LEFT).y = -value;
+        if (axisCode == mapping.axisLeftX) GameInput.JOYSTICKS.get(JoystickType.LEFT).x = -value;
+        if (axisCode == mapping.axisLeftY) GameInput.JOYSTICKS.get(JoystickType.LEFT).y = -value;
 
-        if (axisCode == mapping.axisRightX) JOYSTICKS.get(JoystickType.RIGHT).x = -value;
-        if (axisCode == mapping.axisRightY) JOYSTICKS.get(JoystickType.RIGHT).y = -value;
+        if (axisCode == mapping.axisRightX) GameInput.JOYSTICKS.get(JoystickType.RIGHT).x = -value;
+        if (axisCode == mapping.axisRightY) GameInput.JOYSTICKS.get(JoystickType.RIGHT).y = -value;
 
-        if (axisCode == 4) TRIGGERS.get(TriggerType.LEFT).value = value;
-        if (axisCode == 5) TRIGGERS.get(TriggerType.RIGHT).value = value;
+        if (axisCode == 4) GameInput.TRIGGERS.get(TriggerType.LEFT).value = value;
+        if (axisCode == 5) GameInput.TRIGGERS.get(TriggerType.RIGHT).value = value;
 
         return true;
     }
 
     @Override
     public boolean buttonUp(Controller controller, int buttonCode) {
-        CONTROLLER_BUTTONS.put(buttonCode, false);
+        GameInput.CONTROLLER_BUTTONS.put(buttonCode, false);
 
         return false;
     }
 
     @Override
     public boolean buttonDown(Controller controller, int buttonCode) {
-        Screen currentScreen = this.client.screen;
-        CONTROLLER_BUTTONS.put(buttonCode, true);
+        @Nullable Screen currentScreen = this.client.screen;
+        GameInput.CONTROLLER_BUTTONS.put(buttonCode, true);
 
         if (this.client.isPlaying()) {
             Player player = this.client.player;
@@ -140,19 +140,19 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 
     @Override
     public boolean keyDown(int keycode) {
-        keys.add(keycode);
+        GameInput.keys.add(keycode);
 
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        keys.remove(keycode);
+        GameInput.keys.remove(keycode);
         return true;
     }
 
     public static boolean isKeyDown(int keycode) {
-        return keys.contains(keycode);
+        return GameInput.keys.contains(keycode);
     }
 
     @ApiStatus.NonExtendable
@@ -164,13 +164,13 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
         if (this.client.isPlaying()) {
             Player player = this.client.player;
             if (player != null && this.isControllerConnected()) {
-                Joystick joystick = JOYSTICKS.get(JoystickType.RIGHT);
+                Joystick joystick = GameInput.JOYSTICKS.get(JoystickType.RIGHT);
 
                 float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
                 float deltaY = joystick.y * deltaTime * Constants.CTRL_CAMERA_SPEED;
 
                 Vec2f rotation = player.getRotation();
-                rotation.add(deltaX * DEG_PER_PIXEL, deltaY * DEG_PER_PIXEL);
+                rotation.add(deltaX * GameInput.DEG_PER_PIXEL, deltaY * GameInput.DEG_PER_PIXEL);
                 player.setRotation(rotation);
 
                 @Nullable World world = this.client.world;
@@ -179,7 +179,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                     Vec3i pos = hitResult.getPos();
                     Block block = world.get(new BlockPos(pos));
                     if (hitResult.isCollide() && block != null && !block.isAir()) {
-                        float right = TRIGGERS.get(TriggerType.RIGHT).value;
+                        float right = GameInput.TRIGGERS.get(TriggerType.RIGHT).value;
                         if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
                             this.client.startBreaking();
                             this.nextBreak = System.currentTimeMillis() + 500;
@@ -190,7 +190,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
                             this.breaking = false;
                         }
 
-                        float left = TRIGGERS.get(TriggerType.LEFT).value;
+                        float left = GameInput.TRIGGERS.get(TriggerType.LEFT).value;
                         if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
                             ItemStack stack = player.getSelectedItem();
                             UseItemContext context = new UseItemContext(world, player, hitResult, stack);
@@ -257,14 +257,14 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
     }
 
     public static Vector2 getJoystick(JoystickType joystick) {
-        return JOYSTICKS.get(joystick).cpy();
+        return GameInput.JOYSTICKS.get(joystick).cpy();
     }
 
     public static boolean isControllerButtonDown(ControllerButton button) {
         Controller current = Controllers.getCurrent();
         if (current == null) return false;
         ControllerMapping mapping = current.getMapping();
-        return CONTROLLER_BUTTONS.get(button.get(mapping));
+        return GameInput.CONTROLLER_BUTTONS.get(button.get(mapping));
     }
 
     @CanIgnoreReturnValue

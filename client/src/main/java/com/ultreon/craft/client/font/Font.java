@@ -5,9 +5,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.libs.text.v0.TextObject;
+import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
 
 public class Font {
     @SuppressWarnings("GDXJavaStaticResource")
@@ -35,11 +35,11 @@ public class Font {
             BitmapFont currentFont = this.bitmapFont;
             float scale = 1;
             if (!currentFont.getData().hasGlyph(c) || this.isForcingUnicode()) {
-                currentFont = UNIFONT;
+                currentFont = Font.UNIFONT;
                 scale = 0.5F;
             }
-            if (currentFont == UNIFONT) {
-                this.drawTextScaled(renderer, currentFont, renderer.getBatch(), String.valueOf(c), currentX, y + (this.bitmapFont.getLineHeight() - UNIFONT.getLineHeight() * 0.5F) / 2, scale, color, shadow);
+            if (currentFont == Font.UNIFONT) {
+                this.drawTextScaled(renderer, currentFont, renderer.getBatch(), String.valueOf(c), currentX, y + (this.bitmapFont.getLineHeight() - Font.UNIFONT.getLineHeight() * 0.5F) / 2, scale, color, shadow);
             } else {
                 this.drawTextScaled(renderer, currentFont, renderer.getBatch(), String.valueOf(c), currentX, y, scale, color, shadow);
             }
@@ -78,7 +78,7 @@ public class Font {
             BitmapFont currentFont = this.bitmapFont;
             float scale = 1;
             if (!currentFont.getData().hasGlyph(c) || this.isForcingUnicode()) {
-                currentFont = UNIFONT;
+                currentFont = Font.UNIFONT;
                 scale = 0.5F;
             }
             this.layout.setText(currentFont, String.valueOf(c));
@@ -93,13 +93,13 @@ public class Font {
 
     public void setColor(float r, float g, float b, float a) {
         this.bitmapFont.setColor(r, g, b, a);
-        UNIFONT.setColor(r, g, b, a);
+        Font.UNIFONT.setColor(r, g, b, a);
     }
 
     public void setColor(Color color) {
         com.badlogic.gdx.graphics.Color gdx = color.toGdx();
         this.bitmapFont.setColor(gdx);
-        UNIFONT.setColor(gdx);
+        Font.UNIFONT.setColor(gdx);
     }
 
     public float width(TextObject text) {

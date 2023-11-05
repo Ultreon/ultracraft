@@ -1,26 +1,33 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Function;
 
-public class CycleButton<T extends Enum<T>> extends Button {
-    private final String name;
+public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
+    private TextObject label = TextObject.EMPTY;
     private T[] values;
     private Function<T, String> formatter;
     private int cur;
 
-    public CycleButton(int x, int y, @IntRange(from = 21) int width, String name) {
-        super(x, y, width, name);
+    public CycleButton(int x, int y, @IntRange(from = 21) int width, TextObject name) {
+        super(x, y, width);
 
-        this.name = name;
+        this.label = name;
+        this.text(name);
     }
 
-    public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, String name) {
-        super(x, y, width, height, name);
+    public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, TextObject name) {
+        super(x, y, width, height);
 
-        this.name = name;
+        this.text(name);
+        this.label = name;
+    }
+
+    public CycleButton() {
+        super(0, 0, 200, 21);
     }
 
     @SafeVarargs
@@ -37,7 +44,7 @@ public class CycleButton<T extends Enum<T>> extends Button {
     @Override
     public boolean click() {
         this.cur = (this.cur + 1) % this.values.length;
-        this.setMessage(this.name + ": " + this.formatter.apply(this.values[this.cur]));
+        this.text(this.label + ": " + this.formatter.apply(this.values[this.cur]));
         return true;
     }
 
@@ -49,11 +56,36 @@ public class CycleButton<T extends Enum<T>> extends Button {
         return this.cur;
     }
 
-    public void setIndex(int index) {
-        this.cur = Mth.clamp(index, 0, this.values.length - 1);
+    public TextObject getLabel() {
+        return this.label;
     }
 
-    public void setValue(T o) {
+    public String getRawLabel() {
+        return this.label.getText();
+    }
+
+    public CycleButton<T> index(int index) {
+        this.cur = Mth.clamp(index, 0, this.values.length - 1);
+        return this;
+    }
+
+    public CycleButton<T> value(T o) {
         this.cur = o.ordinal();
+        return this;
+    }
+
+    public CycleButton<T> label(TextObject label) {
+        this.label = label;
+        return this;
+    }
+
+    public CycleButton<T> label(String label) {
+        this.label = TextObject.literal(label);
+        return this;
+    }
+
+    public CycleButton<T> labelTranslation(String label, Object... args) {
+        this.label = TextObject.translation(label, args);
+        return this;
     }
 }

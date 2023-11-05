@@ -1,6 +1,8 @@
-package com.ultreon.craft.client.gui;
+package com.ultreon.craft.client.gui.old;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.ultreon.craft.client.gui.GuiComponent;
+import com.ultreon.craft.client.gui.GuiStateListener;
 import com.ultreon.craft.client.util.Drawable;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 
