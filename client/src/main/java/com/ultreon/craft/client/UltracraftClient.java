@@ -169,7 +169,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
     @UnknownNullability
     private static WorldStorage worldStorage;
-    public boolean forceUnicode = true;
+    public boolean forceUnicode = false;
     public ItemRenderer itemRenderer;
     public Notifications notifications = new Notifications(this);
     @SuppressWarnings("FieldMayBeFinal")
