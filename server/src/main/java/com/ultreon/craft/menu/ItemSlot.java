@@ -90,4 +90,9 @@ public class ItemSlot {
         this.item = new ItemStack();
         return copy;
     }
+
+    @Override
+    public String toString() {
+        return "ItemSlot(" + this.index + ')';
+    }
 }

@@ -34,65 +34,76 @@ public class GameRenderer {
         LocalPlayer player = this.client.player;
 
         if (player != null) {
-            if (this.client.screen == null && !ImGuiOverlay.isShown()) {
-                player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
-            }
+            UltracraftClient.PROFILER.section("camera", () -> {
+                if (this.client.screen == null && !ImGuiOverlay.isShown()) {
+                    player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
+                }
 
-            this.client.camera.update(player);
-            this.client.camera.far = (this.client.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
+                this.client.camera.update(player);
+                this.client.camera.far = (this.client.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
 
-            var rotation = player.getRotation();
-            var quaternion = new Quaternion();
-            quaternion.setFromAxis(Vector3.Y, rotation.x);
-            quaternion.mul(new Quaternion(Vector3.X, rotation.y));
-            quaternion.conjugate();
+                var rotation = player.getRotation();
+                var quaternion = new Quaternion();
+                quaternion.setFromAxis(Vector3.Y, rotation.x);
+                quaternion.mul(new Quaternion(Vector3.X, rotation.y));
+                quaternion.conjugate();
+            });
         }
 
         if (this.client.renderWorld && world != null && worldRenderer != null && !worldRenderer.isDisposed()) {
-            ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
-            Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            UltracraftClient.PROFILER.section("world", () -> {
+                ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
+                Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            this.modelBatch.begin(this.client.camera);
-            this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
-            this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
-            this.modelBatch.render(worldRenderer, worldRenderer.getEnvironment());
-            this.modelBatch.end();
+                this.modelBatch.begin(this.client.camera);
+                this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
+                this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
+                this.modelBatch.render(worldRenderer, worldRenderer.getEnvironment());
+                this.modelBatch.end();
+            });
         }
 
         this.spriteBatch.begin();
 
         var screen = this.client.screen;
 
+
         renderer.pushMatrix();
         renderer.translate(this.client.getDrawOffset().x, this.client.getDrawOffset().y);
         renderer.scale(this.client.getGuiScale(), this.client.getGuiScale());
-        this.renderGame(renderer, screen, world, deltaTime);
+        UltracraftClient.PROFILER.section("overlay", () -> {
+            this.renderOverlays(renderer, screen, world, deltaTime);
 
-        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) &&
-                Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) &&
-                Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
-            this.client.crashOverlay.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
-        } else {
-            this.client.crashOverlay.reset();
-        }
+            if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) &&
+                    Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) &&
+                    Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
+                this.client.crashOverlay.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
+            } else {
+                this.client.crashOverlay.reset();
+            }
+        });
         renderer.popMatrix();
 
         this.spriteBatch.end();
     }
 
-    private void renderGame(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
+    private void renderOverlays(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
         if (world != null) {
-            if (this.client.showDebugHud) {
-                this.client.debugRenderer.render(renderer);
-            }
-
-            this.client.hud.render(renderer, deltaTime);
+            UltracraftClient.PROFILER.section("hud", () -> {
+                this.client.hud.render(renderer, deltaTime);
+            });
         }
 
         if (screen != null) {
-            float x = (Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale();
-            float y = (Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale();
-            screen.render(renderer, (int) x, (int) y, deltaTime);
+            UltracraftClient.PROFILER.section("screen", () -> {
+                float x = (Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale();
+                float y = (Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale();
+                screen.render(renderer, (int) x, (int) y, deltaTime);
+            });
         }
+
+        UltracraftClient.PROFILER.section("debug", () -> {
+            this.client.debugRenderer.render(renderer);
+        });
     }
 }

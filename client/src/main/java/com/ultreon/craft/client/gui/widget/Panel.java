@@ -2,7 +2,7 @@ package com.ultreon.craft.client.gui.widget;
 
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.properties.BackgroundColorProperty;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.util.Color;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.NotNull;
 

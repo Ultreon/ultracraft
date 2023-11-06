@@ -10,8 +10,8 @@ import com.ultreon.craft.client.gui.widget.properties.CallbackProperty;
 import com.ultreon.craft.client.gui.widget.properties.ColorProperty;
 import com.ultreon.craft.client.gui.widget.properties.TextColorProperty;
 import com.ultreon.craft.client.gui.widget.properties.TextProperty;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class Button<T extends Button<T>> extends Widget<T> implements ColorPrope
     };
     private @Nullable @IntRange(from = 0, to = 359) Color color = Color.LIGHT_GRAY;
     private boolean pressed;
-    private TextObject text = TextObject.EMPTY;
+    private TextObject text = TextObject.empty();
     private Color textColor = Color.WHITE;
 
     /**

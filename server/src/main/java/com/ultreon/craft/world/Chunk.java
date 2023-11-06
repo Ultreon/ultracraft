@@ -37,7 +37,7 @@ public abstract class Chunk implements ServerDisposable {
     protected boolean active;
     protected boolean modifiedByPlayer;
     protected boolean ready;
-    //	protected Section[] sections;
+    //	protected Node[] sections;
     public final int size;
     public final int height;
     protected final Vec3i offset;

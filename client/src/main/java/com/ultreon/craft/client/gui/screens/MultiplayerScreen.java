@@ -33,7 +33,7 @@ public class MultiplayerScreen extends Screen {
 
     private void joinServer(Button<?> caller) {
         caller.enabled = false;
-        MessageScreen messageScreen = new MessageScreen("Joining server");
+        MessageScreen messageScreen = new MessageScreen(TextObject.translation("ultracraft.screen.message.joining_server"));
         this.client.showScreen(messageScreen);
 
         String[] split = this.entry.getRawText().split(":", 2);

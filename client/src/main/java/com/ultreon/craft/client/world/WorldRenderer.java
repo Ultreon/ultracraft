@@ -54,7 +54,6 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
     private final Environment environment;
-    private final Cubemap cubemap;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -180,13 +179,13 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         skyboxTextures[4] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
         skyboxTextures[5] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
 
-        this.cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
+        Cubemap cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
 
         UltracraftClient.LOGGER.info("Setting up world environment");
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
-        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
+        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
         this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
         this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
         this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
@@ -233,115 +232,126 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         this.loadedChunks = chunks.size();
         this.visibleChunks = 0;
 
-        boolean chunkRendered = false;
-        for (var chunk : chunks) {
-            if (!chunk.isReady()) continue;
-            if (chunk.isDisposed()) {
-                if (chunk.mesh != null || chunk.transparentMesh != null) {
-                    this.free(chunk);
+        var ref = new Object() {
+            boolean chunkRendered = false;
+        };
+
+        UltracraftClient.PROFILER.section("chunks", () -> {
+            for (var chunk : chunks) {
+                if (!chunk.isReady()) continue;
+                if (chunk.isDisposed()) {
+                    if (chunk.mesh != null || chunk.transparentMesh != null) {
+                        this.free(chunk);
+                    }
+                    continue;
                 }
-                continue;
+
+                Vec3i chunkOffset = chunk.getOffset();
+                Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+                chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+                if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
+                    continue;
+                }
+
+
+                if (chunk.dirty && !ref.chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || chunk.getWorld().isChunkInvalidated(chunk) && (chunk.mesh != null || chunk.transparentMesh != null) && !ref.chunkRendered) {
+                    this.free(chunk);
+                    chunk.getWorld().onChunkUpdated(chunk);
+                    ref.chunkRendered = true;
+                }
+
+                chunk.dirty = false;
+
+                if (chunk.mesh == null)
+                    chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
+
+                if (chunk.transparentMesh == null)
+                    chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
+
+                chunk.mesh.chunk = chunk;
+                chunk.mesh.renderable.material = this.material;
+                chunk.mesh.transform.setToTranslation(chunk.renderOffset);
+
+                chunk.transparentMesh.chunk = chunk;
+                chunk.transparentMesh.renderable.material = this.transparentMaterial;
+                chunk.transparentMesh.transform.setToTranslation(chunk.renderOffset);
+
+                output.add(this.verifyOutput(chunk.mesh.renderable));
+                output.add(this.verifyOutput(chunk.transparentMesh.renderable));
+
+                for (var entry : chunk.getBreaking().entrySet()) {
+                    BlockPos key = entry.getKey();
+                    this.tmp.set(chunk.renderOffset);
+                    this.tmp.add(key.x() + 1, key.y(), key.z());
+
+                    Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
+                    int numIndices = breakingMesh.getMaxIndices();
+                    int numVertices = breakingMesh.getMaxVertices();
+
+                    Renderable renderable = renderablePool.obtain();
+                    renderable.meshPart.mesh = breakingMesh;
+                    renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                    renderable.meshPart.primitiveType = GL_TRIANGLES;
+                    renderable.material = this.breakingMaterial;
+                    renderable.worldTransform.setToTranslation(this.tmp);
+
+                    output.add(this.verifyOutput(renderable));
+                }
+
+                if (ImGuiOverlay.isChunkSectionBordersShown()) {
+                    this.tmp.set(chunk.renderOffset);
+                    Mesh mesh = this.sectionBorder;
+
+                    int numIndices = mesh.getNumIndices();
+                    int numVertices = mesh.getNumVertices();
+                    Renderable renderable = renderablePool.obtain();
+                    renderable.meshPart.mesh = mesh;
+                    renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                    renderable.meshPart.offset = 0;
+                    renderable.meshPart.primitiveType = GL_TRIANGLES;
+                    renderable.material = this.sectionBorderMaterial;
+                    Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
+                    renderable.worldTransform.setToTranslation(add);
+
+                    output.add(this.verifyOutput(renderable));
+                }
+
+                this.visibleChunks++;
+
+                this.doPoolStatistics();
             }
-
-            Vec3i chunkOffset = chunk.getOffset();
-            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
-            chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
-            if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
-                continue;
-            }
-
-
-            if (chunk.dirty && !chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || chunk.getWorld().isChunkInvalidated(chunk) && (chunk.mesh != null || chunk.transparentMesh != null) && !chunkRendered) {
-                this.free(chunk);
-                chunk.getWorld().onChunkUpdated(chunk);
-                chunkRendered = true;
-            }
-
-            chunk.dirty = false;
-
-            if (chunk.mesh == null)
-                chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
-
-            if (chunk.transparentMesh == null)
-                chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
-
-            chunk.mesh.chunk = chunk;
-            chunk.mesh.renderable.material = this.material;
-            chunk.mesh.transform.setToTranslation(chunk.renderOffset);
-
-            chunk.transparentMesh.chunk = chunk;
-            chunk.transparentMesh.renderable.material = this.transparentMaterial;
-            chunk.transparentMesh.transform.setToTranslation(chunk.renderOffset);
-
-            output.add(this.verifyOutput(chunk.mesh.renderable));
-            output.add(this.verifyOutput(chunk.transparentMesh.renderable));
-
-            for (var entry : chunk.getBreaking().entrySet()) {
-                BlockPos key = entry.getKey();
-                this.tmp.set(chunk.renderOffset);
-                this.tmp.add(key.x() + 1, key.y(), key.z());
-
-                Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
-                int numIndices = breakingMesh.getMaxIndices();
-                int numVertices = breakingMesh.getMaxVertices();
-
-                Renderable renderable = renderablePool.obtain();
-                renderable.meshPart.mesh = breakingMesh;
-                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                renderable.meshPart.primitiveType = GL_TRIANGLES;
-                renderable.material = this.breakingMaterial;
-                renderable.worldTransform.setToTranslation(this.tmp);
-
-                output.add(this.verifyOutput(renderable));
-            }
-
-            if (ImGuiOverlay.isChunkSectionBordersShown()) {
-                this.tmp.set(chunk.renderOffset);
-                Mesh mesh = this.sectionBorder;
-
-                int numIndices = mesh.getNumIndices();
-                int numVertices = mesh.getNumVertices();
-                Renderable renderable = renderablePool.obtain();
-                renderable.meshPart.mesh = mesh;
-                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                renderable.meshPart.offset = 0;
-                renderable.meshPart.primitiveType = GL_TRIANGLES;
-                renderable.material = this.sectionBorderMaterial;
-                Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
-                renderable.worldTransform.setToTranslation(add);
-
-                output.add(this.verifyOutput(renderable));
-            }
-
-            this.visibleChunks++;
-
-            this.doPoolStatistics();
-        }
+        });
 
         HitResult gameCursor = this.client.cursor;
         if (gameCursor != null && gameCursor.isCollide()) {
-            Vec3i pos = gameCursor.getPos();
-            Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
-            Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+            UltracraftClient.PROFILER.section("cursor", () -> {
+                Vec3i pos = gameCursor.getPos();
+                Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+                Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
-            this.cursor.worldTransform.setToTranslation(renderOffset);
-            output.add(this.verifyOutput(this.cursor));
+                this.cursor.worldTransform.setToTranslation(renderOffset);
+                output.add(this.verifyOutput(this.cursor));
+            });
         }
 
-        for (var remotePlayer : this.client.getMultiplayerData().getRemotePlayers()) {
-            Vec3f renderOffsetCL = remotePlayer.getPosition().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f(); //* CoreLibs vector.
-            Vector3 renderOffset = new Vector3(renderOffsetCL.x, renderOffsetCL.y, renderOffsetCL.z);
+        UltracraftClient.PROFILER.section("players", () -> {
+            for (var remotePlayer : this.client.getMultiplayerData().getRemotePlayers()) {
+                UltracraftClient.PROFILER.section(remotePlayer.getType().getId() + " (" + remotePlayer.getName() + ")", () -> {
+                    Vec3f renderOffsetCL = remotePlayer.getPosition().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f(); //* CoreLibs vector.
+                    Vector3 renderOffset = new Vector3(renderOffsetCL.x, renderOffsetCL.y, renderOffsetCL.z);
 
-            Renderable renderable = renderablePool.obtain();
-            renderable.meshPart.mesh = this.playerMesh;
-            renderable.meshPart.size = this.playerMesh.getMaxIndices();
-            renderable.meshPart.offset = 0;
-            renderable.meshPart.primitiveType = GL_TRIANGLES;
-            renderable.worldTransform.setToTranslation(renderOffset);
-            renderable.material = this.playerMaterial;
+                    Renderable renderable = renderablePool.obtain();
+                    renderable.meshPart.mesh = this.playerMesh;
+                    renderable.meshPart.size = this.playerMesh.getMaxIndices();
+                    renderable.meshPart.offset = 0;
+                    renderable.meshPart.primitiveType = GL_TRIANGLES;
+                    renderable.worldTransform.setToTranslation(renderOffset);
+                    renderable.material = this.playerMaterial;
 
-            output.add(this.verifyOutput(renderable));
-        }
+                    output.add(this.verifyOutput(renderable));
+                });
+            }
+        });
     }
 
     private Renderable verifyOutput(Renderable renderable) {

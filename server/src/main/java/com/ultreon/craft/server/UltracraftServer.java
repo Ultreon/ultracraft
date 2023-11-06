@@ -1,6 +1,9 @@
 package com.ultreon.craft.server;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
+import com.ultreon.craft.debug.Profiler;
+import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
@@ -50,6 +53,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
+    protected final InspectionNode<UltracraftServer> node;
+    private final InspectionNode<Object> playersNode;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 16;
@@ -64,10 +69,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     /**
      * Creates a new {@link UltracraftServer} instance.
      *
-     * @param storage the world storage for the world data.
+     * @param storage    the world storage for the world data.
+     * @param parentNode the parent inspection node. (E.g. the client inspection node)
      */
-    public UltracraftServer(WorldStorage storage) {
-        super();
+    public UltracraftServer(WorldStorage storage, Profiler profiler, InspectionNode<?> parentNode) {
+        super(profiler);
+
+
         this.storage = storage;
 
         UltracraftServer.instance = this;
@@ -75,6 +83,23 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.connections = new ServerConnections(this);
         this.world = new ServerWorld(this, this.storage);
+
+        if (CommonConstants.INSPECTION_ENABLED) {
+            this.node = parentNode.createNode("server", () -> this);
+            this.playersNode = this.node.createNode("players", this.players::values);
+            this.node.createNode("world", () -> this.world);
+            this.node.create("refreshChunks", () -> this.chunkRefresh);
+            this.node.create("renderDistance", () -> this.renderDistance);
+            this.node.create("entityRenderDistance", () -> this.entityRenderDistance);
+            this.node.create("maxPlayers", () -> this.maxPlayers);
+            this.node.create("tps", () -> this.currentTps);
+            this.node.create("onlineTicks", () -> this.onlineTicks);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
     }
 
     /**
@@ -177,7 +202,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             // Send server started event to mods.
             ServerLifecycleEvents.SERVER_STARTED.factory().onServerStarted(this);
 
-            //* Main loop.
+            //* Main-loop.
             while (this.running) {
                 var canTick = false;
 
@@ -284,21 +309,26 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         super.shutdown();
     }
 
-    private void runTick() {
+    @OverridingMethodsMustInvokeSuper
+    protected void runTick() {
+        this.profiler.update();
+
         this.onlineTicks++;
 
         // Poll all the tasks in the queue.
-        this.pollAll();
+        this.profiler.section("taskPolling", this::pollAll);
 
         // Tick connections.
-        this.connections.tick();
+        this.profiler.section("connections", this.connections::tick);
 
         // Tick the world.
         var world = this.world;
         if (world != null) {
-            WorldEvents.PRE_TICK.factory().onPreTick(world);
-            world.tick();
-            WorldEvents.POST_TICK.factory().onPostTick(world);
+            this.profiler.section("world", () -> {
+                WorldEvents.PRE_TICK.factory().onPreTick(world);
+                world.tick();
+                WorldEvents.POST_TICK.factory().onPostTick(world);
+            });
         }
 
         // Tick chunk refresh time.
@@ -315,7 +345,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
 
         // Poll the chunk network queue.
-        this.pollChunkPacket();
+        this.profiler.section("chunkPackets", this::pollChunkPacket);
     }
 
     /**
@@ -437,7 +467,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @return the game's version.
      */
     public String getGameVersion() {
-        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(ServerConstants.NAMESPACE);
+        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE);
         if (container.isEmpty()) throw new InternalError("Can't find mod container for the base game.");
         return container.get().getMetadata().getVersion().getFriendlyString();
     }
@@ -476,6 +506,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public void placePlayer(ServerPlayer player) {
         // Put the player into the player list.
         this.players.put(player.getUuid(), player);
+
+        if (CommonConstants.INSPECTION_ENABLED) {
+            this.playersNode.createNode(player.getName(), () -> player);
+        }
 
         // Send player to all other players within the render distance.
         var players = this.getPlayers()
@@ -537,9 +571,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
     }
 
-    private void _sendChunk(ServerPlayer player, ChunkPos pos, Chunk chunk) {
-    }
-
     /**
      * @return the current TPS.
      */
@@ -587,7 +618,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
     public boolean isIntegrated() {

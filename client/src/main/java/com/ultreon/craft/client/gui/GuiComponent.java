@@ -6,7 +6,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.old.Widget;
 import com.ultreon.craft.client.init.Fonts;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import org.checkerframework.common.value.qual.IntRange;
 

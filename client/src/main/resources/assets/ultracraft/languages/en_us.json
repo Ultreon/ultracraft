@@ -14,6 +14,8 @@
   "ultracraft.ui.back": "Back",
   "ultracraft.screen.world_load.loading_world": "Loading World",
   "ultracraft.screen.language": "Language",
+  "ultracraft.screen.message.saving_world": "Saving World...",
+  "ultracraft.screen.message.joining_server": "Joining Server...",
   "ultracraft.screen.mod_list": "Mod List",
   "ultracraft.screen.mod_list.config": "Config",
   "ultracraft.screen.death.respawn": "Respawn",

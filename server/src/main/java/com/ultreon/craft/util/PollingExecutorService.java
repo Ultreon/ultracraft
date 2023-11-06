@@ -1,6 +1,7 @@
 package com.ultreon.craft.util;
 
 import com.google.common.collect.Queues;
+import com.ultreon.craft.debug.Profiler;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,13 +20,15 @@ public class PollingExecutorService implements ExecutorService {
     private boolean isShutdown = false;
     @Nullable
     private Runnable active;
+    public final Profiler profiler;
 
-    public PollingExecutorService() {
-        this(Thread.currentThread());
+    public PollingExecutorService(Profiler profiler) {
+        this(Thread.currentThread(), profiler);
     }
 
-    public PollingExecutorService(@NotNull Thread thread) {
+    public PollingExecutorService(@NotNull Thread thread, Profiler profiler) {
         this.thread = thread;
+        this.profiler = profiler;
     }
 
     @Override
@@ -100,12 +103,14 @@ public class PollingExecutorService implements ExecutorService {
             return future;
         }
         this.execute(() -> {
-            try {
-                task.run();
-                future.complete(result);
-            } catch (Throwable throwable) {
-                future.completeExceptionally(throwable);
-            }
+            this.profiler.section(task.getClass().getName(), () -> {
+                try {
+                    task.run();
+                    future.complete(result);
+                } catch (Throwable throwable) {
+                    future.completeExceptionally(throwable);
+                }
+            });
         });
         return future;
     }
@@ -240,8 +245,10 @@ public class PollingExecutorService implements ExecutorService {
 
     public void pollAll() {
         while ((this.active = this.tasks.poll()) != null) {
+            var task = this.active;
+
             try {
-                this.active.run();
+                task.run();
             } catch (Throwable t) {
                 PollingExecutorService.LOGGER.error("Failed to run task:", t);
             }

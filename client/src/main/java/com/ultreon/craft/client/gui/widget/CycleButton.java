@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
@@ -7,9 +8,9 @@ import org.checkerframework.common.value.qual.IntRange;
 import java.util.function.Function;
 
 public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
-    private TextObject label = TextObject.EMPTY;
+    private TextObject label = TextObject.empty();
     private T[] values;
-    private Function<T, String> formatter;
+    private Function<T, TextObject> formatter;
     private int cur;
 
     public CycleButton(int x, int y, @IntRange(from = 21) int width, TextObject name) {
@@ -19,7 +20,7 @@ public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
         this.text(name);
     }
 
-    public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, TextObject name) {
+    public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, MutableText name) {
         super(x, y, width, height);
 
         this.text(name);
@@ -31,12 +32,12 @@ public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
     }
 
     @SafeVarargs
-    public final CycleButton<T> withValues(T... values) {
+    public final CycleButton<T> values(T... values) {
         this.values = values;
         return this;
     }
 
-    public final CycleButton<T> withFormatter(Function<T, String> formatter) {
+    public final CycleButton<T> formatter(Function<T, TextObject> formatter) {
         this.formatter = formatter;
         return this;
     }
@@ -44,7 +45,7 @@ public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
     @Override
     public boolean click() {
         this.cur = (this.cur + 1) % this.values.length;
-        this.text(this.label + ": " + this.formatter.apply(this.values[this.cur]));
+        this.text(this.label.copy().append(": ").append(this.formatter.apply(this.values[this.cur])));
         return true;
     }
 

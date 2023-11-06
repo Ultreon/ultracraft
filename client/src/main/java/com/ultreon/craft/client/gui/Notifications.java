@@ -1,8 +1,8 @@
 package com.ultreon.craft.client.gui;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Renderable;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.datetime.v0.Duration;
 
 import java.util.*;

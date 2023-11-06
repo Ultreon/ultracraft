@@ -121,8 +121,8 @@ public class ImGuiOverlay {
                     if (ImGui.beginMenu("View")) {
                         ImGui.menuItem("Utils", null, ImGuiOverlay.SHOW_UTILS);
                         ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
-                        ImGui.menuItem("Chunk Section Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
-                        ImGui.menuItem("Profiler", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
+                        ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
+                        ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
                         ImGui.endMenu();
                     }
 

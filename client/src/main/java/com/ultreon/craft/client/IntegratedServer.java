@@ -1,6 +1,7 @@
 package com.ultreon.craft.client;
 
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.WorldStorage;
@@ -18,7 +19,7 @@ public class IntegratedServer extends UltracraftServer {
     private ServerPlayer host;
 
     public IntegratedServer(WorldStorage storage) {
-        super(storage);
+        super(storage, UltracraftClient.PROFILER, UltracraftClient.get().inspection);
 
         if (Files.notExists(storage.getDirectory())) {
             try {
@@ -41,6 +42,10 @@ public class IntegratedServer extends UltracraftServer {
         }
 
         this.host = player;
+
+        if (CommonConstants.INSPECTION_ENABLED) {
+            this.node.createNode("host", () -> this);
+        }
     }
 
     @Override

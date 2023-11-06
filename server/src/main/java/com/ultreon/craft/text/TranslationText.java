@@ -12,7 +12,15 @@ public class TranslationText extends MutableText {
     }
 
     @Override
-    protected String createString() {
+    public String createString() {
         return Language.translate(this.path, this.args);
+    }
+
+    @Override
+    public MutableText copy() {
+        var copy = this.extras.stream().map(TextObject::copy).toList();
+        var translationText = new TranslationText(this.path, this.args);
+        translationText.extras.addAll(copy);
+        return translationText;
     }
 }

@@ -2,11 +2,12 @@ package com.ultreon.craft.client.gui.screens;
 
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 
 public class MessageScreen extends Screen {
 
-    public MessageScreen(String message) {
+    public MessageScreen(TextObject message) {
         super(message);
     }
 

@@ -185,10 +185,7 @@ public final class ServerPlayer extends Player {
 
     @Override
     public String toString() {
-        return "ServerPlayer{" +
-                "uuid=" + this.uuid +
-                ", name='" + this.name + '\'' +
-                '}';
+        return "ServerPlayer{'" + this.name + "'}";
     }
 
     public void onChunkStatus(@NotNull ChunkPos pos, Chunk.Status status) {

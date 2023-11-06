@@ -6,14 +6,14 @@ import com.ultreon.craft.client.gui.widget.properties.AlignmentProperty;
 import com.ultreon.craft.client.gui.widget.properties.BackgroundColorProperty;
 import com.ultreon.craft.client.gui.widget.properties.TextColorProperty;
 import com.ultreon.craft.client.gui.widget.properties.TextProperty;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 @ApiStatus.NonExtendable
 public class Label extends Widget<Label> implements BackgroundColorProperty, TextColorProperty, TextProperty<Label>, AlignmentProperty {
-    private TextObject text = TextObject.EMPTY;
+    private TextObject text = TextObject.empty();
     private Alignment alignment;
     private Color textColor;
     private Color backgroundColor;

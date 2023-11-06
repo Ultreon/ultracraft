@@ -17,8 +17,8 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import org.jetbrains.annotations.ApiStatus;
@@ -472,7 +472,7 @@ public class Renderer {
     }
 
     public void drawTextLeft(TextObject text, int x, int y, Color color, boolean shadow) {
-        this.font.drawText(this, text.getText(), x, y, color, shadow);
+        this.font.drawText(this, text, x, y, color, shadow);
     }
 
     public void drawTextLeft(TextObject text, float x, float y) {
@@ -488,7 +488,7 @@ public class Renderer {
     }
 
     public void drawTextLeft(TextObject text, float x, float y, Color color, boolean shadow) {
-        this.font.drawText(this, text.getText(), x, y, color, shadow);
+        this.font.drawText(this, text, x, y, color, shadow);
     }
 
     public void drawTextCenter(String text, int x, int y) {
@@ -1215,7 +1215,7 @@ public class Renderer {
         this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void drawLine(float x1, int y1, float x2, int y2, Color color) {
+    public void drawLine(float x1, float y1, float x2, float y2, Color color) {
         this.shapes.line(x1, y1, x2, y2, color.toGdx(), this.strokeWidth);
     }
 

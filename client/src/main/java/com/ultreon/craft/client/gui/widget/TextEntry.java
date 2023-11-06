@@ -6,8 +6,8 @@ import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.properties.CallbackProperty;
 import com.ultreon.craft.client.gui.widget.properties.TextProperty;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
@@ -17,7 +17,7 @@ import static com.ultreon.craft.client.UltracraftClient.id;
 @SuppressWarnings("unchecked")
 public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements TextProperty<T>, CallbackProperty<T> {
     private String text = "";
-    private TextObject hint = TextObject.EMPTY;
+    private TextObject hint = TextObject.empty();
     private CharPredicate charPredicate = c -> true;
 
     private int cursorIdx = 0;

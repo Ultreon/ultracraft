@@ -2,9 +2,10 @@ package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.entity.util.EntitySize;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
-
+import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +32,10 @@ public abstract class EntityType<T extends Entity> {
 
     public EntitySize getSize() {
         return this.size;
+    }
+
+    public @Nullable Identifier getId() {
+        return Registries.ENTITIES.getKey(this);
     }
 
     public static class Builder<T extends Entity> {

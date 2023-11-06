@@ -1,7 +1,8 @@
 package com.ultreon.craft.server.dedicated;
 
+import com.ultreon.craft.debug.Profiler;
+import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -19,22 +20,24 @@ import java.nio.file.Paths;
  */
 public class DedicatedServer extends UltracraftServer {
     private static final WorldStorage STORAGE = new WorldStorage(Paths.get("world"));
+    private static final Profiler PROFILER = new Profiler();
 
     /**
      * Creates a new dedicated server instance.
      *
-     * @param host the hostname for the server.
-     * @param port the port for the server.
+     * @param host       the hostname for the server.
+     * @param port       the port for the server.
+     * @param inspection
      * @throws UnknownHostException if the hostname cannot be resolved.
      */
-    public DedicatedServer(String host, int port) throws UnknownHostException {
-        super(DedicatedServer.STORAGE);
+    public DedicatedServer(String host, int port, InspectionRoot<Main> inspection) throws UnknownHostException {
+        super(DedicatedServer.STORAGE, DedicatedServer.PROFILER, inspection);
 
         this.getConnections().startTcpServer(InetAddress.getByName(host), port);
     }
 
-    DedicatedServer(ServerConfig config) throws UnknownHostException {
-        this(config.hostname, config.port);
+    DedicatedServer(ServerConfig config, InspectionRoot<Main> inspection) throws UnknownHostException {
+        this(config.hostname, config.port, inspection);
 
         try {
             DedicatedServer.STORAGE.createWorld();
@@ -62,6 +65,15 @@ public class DedicatedServer extends UltracraftServer {
         // Print and save the crash log.
         crash.printCrash();
         crash.getCrashLog().defaultSave();
+
+        Runtime.getRuntime().halt(1); //* Halt server since the server crashed.
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+
+        this.profiler.close();
     }
 
     /**

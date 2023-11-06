@@ -7,8 +7,8 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.UIContainer;
 import com.ultreon.craft.client.gui.widget.Widget;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.nio.file.Path;

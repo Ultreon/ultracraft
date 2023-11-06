@@ -1,7 +1,8 @@
 package com.ultreon.craft.server.dedicated;
 
 import com.google.gson.Gson;
-import com.ultreon.craft.server.ServerConstants;
+import com.ultreon.craft.debug.inspect.InspectionRoot;
+import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -35,7 +36,7 @@ public class Main {
      * This will be called by the FabricMC game provider.
      *
      * @param args command line arguments
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      * @throws InterruptedException if the current thread was interrupted
      */
     @ApiStatus.Internal
@@ -45,7 +46,7 @@ public class Main {
             FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
             // Set default namespace in CoreLibs identifier.
-            Identifier.setDefaultNamespace(ServerConstants.NAMESPACE);
+            Identifier.setDefaultNamespace(CommonConstants.NAMESPACE);
 
             Main.serverLoader = new ServerLoader();
             Main.serverLoader.load();
@@ -70,7 +71,8 @@ public class Main {
             }
 
             // Start the server.
-            Main.server = new DedicatedServer(config);
+            @SuppressWarnings("InstantiationOfUtilityClass") InspectionRoot<Main> inspection = new InspectionRoot<>(new Main());
+            Main.server = new DedicatedServer(config, inspection);
             Main.server.start();
 
             // Handle server console commands.
@@ -95,6 +97,7 @@ public class Main {
 
             String string = crashLog.toString();
             Main.LOGGER.error(string);
+            Runtime.getRuntime().halt(1); //* Halt server since the server crashed.
         }
     }
 

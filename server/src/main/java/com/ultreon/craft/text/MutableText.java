@@ -1,36 +1,25 @@
 package com.ultreon.craft.text;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Range;
 
-import java.awt.*;
-import java.awt.font.TextAttribute;
-import java.text.AttributedString;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.*;
+import java.util.NoSuchElementException;
 
-import static java.text.AttributedCharacterIterator.Attribute;
-
-public abstract class MutableText extends TextObject implements Cloneable {
+public abstract class MutableText extends TextObject {
     final List<TextObject> extras = new ArrayList<>();
-    private final Map<Attribute, Object> attrs = new HashMap<>();
     private Color color;
+    private int size;
+    private boolean underlined = false;
+    private boolean bold = false;
+    private boolean italic = false;
+    private boolean strikethrough = false;
 
     protected MutableText() {
 
-    }
-
-    @Override
-    public AttributedString getAttrString() {
-        var builder = new AttributedStringBuilder();
-        var string = this.createString();
-        if (!string.isEmpty()) builder.append(new AttributedString(string, this.getAttrs()));
-        for (var extra : this.extras) {
-            builder.append(extra.getAttrString());
-        }
-
-        return builder.build();
     }
 
     @Override
@@ -44,122 +33,99 @@ public abstract class MutableText extends TextObject implements Cloneable {
     }
 
     public Color getColor() {
-        return (Color) this.attrs.get(TextAttribute.FOREGROUND);
+        return this.color;
     }
 
     public MutableText setColor(Color color) {
-        this.attrs.put(TextAttribute.FOREGROUND, color);
+        this.color = color;
         return this;
     }
 
     public boolean isUnderlined() {
-        return this.attrs.get(TextAttribute.UNDERLINE) != null;
+        return this.underlined;
     }
 
     public MutableText setUnderlined(boolean underlined) {
-        this.attrs.put(TextAttribute.FOREGROUND, underlined ? TextAttribute.UNDERLINE_LOW_ONE_PIXEL : null);
+        this.underlined = underlined;
         return this;
     }
 
     public boolean isStrikethrough() {
-        return (boolean) this.attrs.get(TextAttribute.STRIKETHROUGH);
+        return this.strikethrough;
     }
 
     public MutableText setStrikethrough(boolean strikethrough) {
-        this.attrs.put(TextAttribute.STRIKETHROUGH, strikethrough);
+        this.strikethrough = strikethrough;
         return this;
     }
 
-    public boolean isLigaturesEnabled() {
-        return Objects.equals(this.attrs.get(TextAttribute.LIGATURES), 1);
+    public boolean isBold() {
+        return this.bold;
     }
 
-    public MutableText setLigaturesEnabled(boolean ligaturesEnabled) {
-        this.attrs.put(TextAttribute.LIGATURES, ligaturesEnabled ? 1 : 0);
+    public MutableText setBold(boolean bold) {
+        this.bold = bold;
         return this;
     }
 
-    public double getSize() {
-        return ((Number) this.attrs.get(TextAttribute.SIZE)).doubleValue();
+    public boolean isItalic() {
+        return this.italic;
     }
 
-    public MutableText setSize(double size) {
-        this.attrs.put(TextAttribute.SIZE, size);
+    public MutableText setItalic(boolean italic) {
+        this.italic = italic;
         return this;
     }
 
-    public float getWidth() {
-        return (float) this.attrs.get(TextAttribute.SIZE);
+    public int getSize() {
+        return this.size;
     }
 
-    public MutableText setWidth(float size) {
-        this.attrs.put(TextAttribute.WIDTH, size);
+    public MutableText setSize(int size) {
+        this.size = size;
         return this;
     }
 
-    public FontWidth getFontWidth() {
-        return FontWidth.closestTo((float) this.attrs.get(TextAttribute.SIZE));
-    }
-
-    public MutableText setFontWidth(FontWidth width) {
-        this.attrs.put(TextAttribute.WIDTH, width.getWidth());
+    public MutableText append(TextObject append) {
+        Preconditions.checkNotNull(append, "Text object cannot be null");
+        this.extras.add(append);
         return this;
-    }
-
-    public float getWeight() {
-        return (float) this.attrs.get(TextAttribute.WEIGHT);
-    }
-
-    public MutableText setWeight(float weight) {
-        this.attrs.put(TextAttribute.WEIGHT, weight);
-        return this;
-    }
-
-    public @NotNull FontWeight getFontWeight() {
-        return FontWeight.closestTo((float) this.attrs.get(TextAttribute.WEIGHT));
-    }
-
-    public MutableText setFontWeight(@NotNull FontWeight weight) {
-        this.attrs.put(TextAttribute.WEIGHT, weight.getWeight());
-        return this;
-    }
-
-    @Range(from = -7, to = 7)
-    public int getSuperscript() {
-        return (int) this.attrs.get(TextAttribute.SUPERSCRIPT);
-    }
-
-    public MutableText setFontWeight(@Range(from = -7, to = 7) int superscript) {
-        this.attrs.put(TextAttribute.SUPERSCRIPT, superscript);
-        return this;
-    }
-
-    public Map<? extends Attribute, ?> getAttrs() {
-        return this.attrs;
-    }
-
-    public MutableText append(TextObject textObject) {
-        Preconditions.checkNotNull(textObject, "Appending text object is null.");
-
-        try {
-            var clone = this.clone();
-            clone.extras.add(textObject);
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public MutableText append(String text) {
-        return this.append(nullToEmpty(text));
+        return this.append(TextObject.nullToEmpty(text));
     }
 
     public MutableText append(Object o) {
-        return this.append(nullToEmpty(String.valueOf(o)));
+        return this.append(TextObject.nullToEmpty(String.valueOf(o)));
     }
 
+    public abstract MutableText copy();
+
     @Override
-    protected MutableText clone() throws CloneNotSupportedException {
-        return (MutableText) super.clone();
+    public @NotNull Iterator<TextObject> iterator() {
+        return new MutableTextIterator();
+    }
+
+    private class MutableTextIterator implements Iterator<TextObject> {
+        private int index = -1;
+        private TextObject next = MutableText.this;
+
+        @Override
+        public boolean hasNext() {
+            return this.next != null;
+        }
+
+        @Override
+        public TextObject next() {
+            if (this.next == null) {
+                throw new NoSuchElementException("No more elements in the iterator");
+            }
+
+            this.index++;
+            TextObject next1 = this.next;
+            this.next = this.index >= MutableText.this.extras.size() ? null : MutableText.this.extras.get(this.index);
+            return next1;
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.ultreon.craft.entity;
 
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.server.ServerConstants;
+import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.libs.commons.v0.Identifier;
 
 public class EntityTypes {
@@ -9,7 +9,7 @@ public class EntityTypes {
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {
         EntityType<T> entityType = builder.build();
-        Registries.ENTITIES.register(new Identifier(ServerConstants.NAMESPACE, name), entityType);
+        Registries.ENTITIES.register(new Identifier(CommonConstants.NAMESPACE, name), entityType);
         return entityType;
     }
 

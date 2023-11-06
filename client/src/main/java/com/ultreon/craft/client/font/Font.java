@@ -4,15 +4,17 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
+import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 
 public class Font {
     @SuppressWarnings("GDXJavaStaticResource")
-    private static final BitmapFont UNIFONT = UltracraftClient.get().unifont;
-    private final BitmapFont bitmapFont;
+    static final BitmapFont UNIFONT = UltracraftClient.get().unifont;
+    final BitmapFont bitmapFont;
     private final UltracraftClient client = UltracraftClient.get();
     public final int lineHeight;
     private final boolean special;
@@ -46,12 +48,17 @@ public class Font {
             this.layout.setText(currentFont, String.valueOf(c));
             BitmapFont.Glyph glyph = currentFont.getData().getGlyph(c);
             if (glyph != null) {
-                currentX += (float)glyph.xadvance * scale;
+                currentX += (float) glyph.xadvance * scale;
             }
         }
     }
 
-    private boolean isForcingUnicode() {
+    public void drawText(Renderer renderer, TextObject text, float x, float y, Color color, boolean shadow) {
+        TextObjectRenderer textRenderer = new TextObjectRenderer(text);
+        textRenderer.render(renderer, this.bitmapFont, renderer.getBatch(), color, x, y, shadow);
+    }
+
+    boolean isForcingUnicode() {
         return this.client.forceUnicode && !this.isSpecial();
     }
 
@@ -59,16 +66,36 @@ public class Font {
         return this.special;
     }
 
-    private void drawTextScaled(Renderer renderer, BitmapFont font, Batch batch, String text, float x, float y, float scale, Color color, boolean shadow) {
+    void drawTextScaled(Renderer renderer, BitmapFont font, Batch batch, String text, float x, float y, float scale, Color color, boolean shadow) {
+        this.drawTextScaled(renderer, font, batch, text, x, y, false, false, false, false, scale, color, shadow);
+    }
+
+    void drawTextScaled(Renderer renderer, BitmapFont font, Batch batch, String text, float x, float y, boolean bold, boolean italic, boolean underlined, boolean strikethrough, float scale, Color color, boolean shadow) {
         renderer.pushMatrix();
         renderer.scale(scale, scale);
         if (shadow) {
-            font.setColor(color.darker().darker().toGdx());
-            font.draw(batch, text, x / scale, y / scale + 1);
+            float shadowX = x;
+            if (Constants.SHADOW_OFFSET) shadowX += 1;
+            this.draw(renderer, font, color.darker().darker(), batch, text, shadowX, y / scale + 1, bold, italic, underlined, strikethrough, scale);
         }
-        font.setColor(color.toGdx());
-        font.draw(batch, text, x / scale, y / scale);
+
+        this.draw(renderer, font, color, batch, text, x, y / scale, bold, italic, underlined, strikethrough, scale);
         renderer.popMatrix();
+    }
+
+    private void draw(Renderer renderer, BitmapFont font, Color color, Batch batch, String text, float x, float y, boolean bold, boolean italic, boolean underlined, boolean strikethrough, float scale) {
+        font.setUseIntegerPositions(true);
+        font.setColor(color.toGdx());
+        font.draw(batch, text, x / scale, y);
+
+        if (bold)
+            this.draw(renderer, font, color, batch, text, x + 1, y, false, italic, underlined, strikethrough, scale);
+
+        if (underlined)
+            renderer.drawLine(x, (int) (y + (font.getLineHeight() + 2)) - 0.5f, x + (this.width(text)), (int) (y + (font.getLineHeight() + 2)) - 0.5f, color);
+
+        if (strikethrough)
+            renderer.drawLine(x, (int) (y + (font.getLineHeight()) / 2), x + (this.width(text)), (int) (y + (font.getLineHeight()) / 2), color);
     }
 
     public float width(String text) {
@@ -85,7 +112,7 @@ public class Font {
 
             BitmapFont.Glyph glyph = currentFont.getData().getGlyph(c);
             if (glyph != null) {
-                width += (float)glyph.xadvance * scale;
+                width += (float) glyph.xadvance * scale;
             }
         }
         return width - 1;
@@ -102,8 +129,18 @@ public class Font {
         Font.UNIFONT.setColor(gdx);
     }
 
-    public float width(TextObject text) {
-        return this.width(text.getText());
+    public int width(TextObject text) {
+        int width = 0;
+
+        for (TextObject child : text) {
+            boolean isBold = false;
+            if (child instanceof MutableText mutableText) {
+                isBold = mutableText.isBold();
+            }
+            this.layout.setText(this.bitmapFont, child.createString());
+            width += (int) (this.layout.width + (isBold ? 1 : 0));
+        }
+        return width;
     }
 
     public void dispose() {

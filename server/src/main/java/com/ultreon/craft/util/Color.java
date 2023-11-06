@@ -1,14 +1,16 @@
-package com.ultreon.craft.client.util;
+package com.ultreon.craft.util;
 
+import com.ultreon.libs.commons.v0.exceptions.InvalidValueException;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.regex.Pattern;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class Color {
     public static final Color BLACK = Color.rgb(0x000000);
     public static final Color DARK_GRAY = Color.rgb(0x404040);
     public static final Color GRAY = Color.rgb(0x808080);
-    public static final Color LIGHT_GRAY = Color.rgb(0xc0c0c0);
+    public static final Color LIGHT_GRAY = Color.rgb(0xb0b0b0);
     public static final Color WHITE = Color.rgb(0xffffff);
     public static final Color RED = Color.rgb(0xff0000);
     public static final Color ORANGE = Color.rgb(0xff8000);
@@ -113,7 +115,7 @@ public class Color {
                     hex.charAt(4), hex.charAt(4)}), 16);
             return Color.rgba(rgb);
         } else {
-            if (hex.length() >= 1) {
+            if (!hex.isEmpty()) {
                 if (hex.charAt(0) != '#') {
                     throw new InvalidValueException("First character create color code isn't '#'.");
                 } else if (hex.length() != 3 && hex.length() != 4 && hex.length() != 6 && hex.length() != 8) {

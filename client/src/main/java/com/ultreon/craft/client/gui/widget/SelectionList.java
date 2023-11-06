@@ -7,7 +7,7 @@ import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.Size;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;

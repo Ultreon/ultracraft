@@ -12,6 +12,7 @@ import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -25,6 +26,7 @@ public class DesktopInput extends GameInput {
     public int imGuiKey = Input.Keys.F9;
     public int imGuiFocusKey = Input.Keys.F10;
     public int debugHudKey = Input.Keys.F3;
+    public int inspectKey = Input.Keys.F4;
     public int screenshotKey = Input.Keys.F2;
     public int inventoryKey = Input.Keys.E;
     public int fullScreenKey = Input.Keys.F11;
@@ -54,6 +56,18 @@ public class DesktopInput extends GameInput {
     @Override
     public boolean keyDown(int keyCode) {
         super.keyDown(keyCode);
+
+        if (keyCode == this.debugHudKey) {
+            this.client.showDebugHud = !this.client.showDebugHud;
+            if (!this.client.showDebugHud) {
+                UltracraftClient.PROFILER.setProfiling(false);
+            } else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+                UltracraftClient.PROFILER.setProfiling(true);
+            }
+        } else if (keyCode == this.inspectKey)
+            if (CommonConstants.INSPECTION_ENABLED) {
+                this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
+            }
 
         Screen currentScreen = this.client.screen;
         if (currentScreen != null && !Gdx.input.isCursorCatched()) {
@@ -107,8 +121,6 @@ public class DesktopInput extends GameInput {
             if (this.client.isShowingImGui() && this.client.world != null && this.client.screen == null) {
                 DesktopInput.setCursorCaught(!Gdx.input.isCursorCatched());
             }
-        } else if (keyCode == this.debugHudKey) {
-            this.client.showDebugHud = !this.client.showDebugHud;
         } else if (currentScreen == null && player != null) {
             if (keyCode == this.inventoryKey && this.client.showScreen(new InventoryScreen(player.inventory, Language.translate("ultracraft.screen.inventory")))) {
                 return true;

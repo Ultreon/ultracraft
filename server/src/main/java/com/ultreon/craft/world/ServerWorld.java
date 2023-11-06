@@ -12,7 +12,7 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
-import com.ultreon.craft.server.ServerConstants;
+import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
@@ -229,20 +229,26 @@ public final class ServerWorld extends World {
     private void pollChunkQueues() {
         this.chunkLock.lock();
         try {
-            var unload = this.chunksToUnload.poll();
-            if (unload != null) {
-                var region = this.regionStorage.getRegionAt(unload);
-                if (region != null && region.getActiveChunk(World.toLocalChunkPos(unload)) != null) {
-                    this.unloadChunk(unload);
+            this.server.profiler.section("chunkUnloads", () -> {
+                var unload = this.chunksToUnload.poll();
+                if (unload != null) {
+                    var region = this.regionStorage.getRegionAt(unload);
+                    if (region != null && region.getActiveChunk(World.toLocalChunkPos(unload)) != null) {
+                        this.server.profiler.section("chunk[" + unload + "]", () -> this.unloadChunk(unload));
+                    }
                 }
-            }
+            });
         } catch (Throwable t) {
             World.LOGGER.error("Failed to poll chunk task", t);
         }
 
         try {
-            var load = this.chunksToLoad.poll();
-            if (load != null) this.loadChunk(load);
+            this.server.profiler.section("chunkLoads", () -> {
+                var load = this.chunksToLoad.poll();
+                if (load != null) {
+                    this.server.profiler.section("chunk[" + load.toString() + "]", () -> this.loadChunk(load));
+                }
+            });
         } catch (Throwable t) {
             World.LOGGER.error("Failed to poll chunk task", t);
         }
@@ -310,7 +316,7 @@ public final class ServerWorld extends World {
             if (this.chunksToLoad.contains(chunkPos)) return;
             this.chunksToLoad.offer(chunkPos);
         } catch (Throwable t) {
-            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":",t);
+            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":", t);
         }
         this.chunkLock.unlock();
     }
@@ -321,7 +327,7 @@ public final class ServerWorld extends World {
             if (this.chunksToUnload.contains(chunkPos)) return;
             this.chunksToUnload.add(chunkPos);
         } catch (Throwable t) {
-            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":",t);
+            World.LOGGER.error("Failed to defer chunk " + chunkPos + ":", t);
         }
         this.chunkLock.unlock();
     }
@@ -329,8 +335,8 @@ public final class ServerWorld extends World {
     /**
      * Unloads a chunk from the world.
      *
-     * @param chunkPos the position of the chunk to unload
-     * @param save if true, the chunk will be saved to disk.
+     * @param chunkPos     the position of the chunk to unload
+     * @param save         if true, the chunk will be saved to disk.
      * @param ignoredForce deprecated.
      * @return true if the chunk was successfully unloaded.
      * @deprecated use {@link #unloadChunk(ChunkPos, boolean)} instead.
@@ -344,7 +350,7 @@ public final class ServerWorld extends World {
      * Unloads a chunk from the world.
      *
      * @param chunkPos the position of the chunk to unload
-     * @param save if true, the chunk will be saved to disk.
+     * @param save     if true, the chunk will be saved to disk.
      * @return true if the chunk was successfully unloaded.
      */
     public boolean unloadChunk(ChunkPos chunkPos, boolean save) {
@@ -452,9 +458,9 @@ public final class ServerWorld extends World {
      * Play a sound at a specific position.
      *
      * @param sound sound to play.
-     * @param x the X-position.
-     * @param y the Y-position.
-     * @param z the Z-position.
+     * @param x     the X-position.
+     * @param y     the Y-position.
+     * @param z     the Z-position.
      */
     @Override
     public void playSound(@NotNull SoundEvent sound, double x, double y, double z) {
@@ -471,9 +477,9 @@ public final class ServerWorld extends World {
     }
 
     /**
-     * @param x the origin X-position.
-     * @param y the origin Y-position.
-     * @param z the origin Z-position.
+     * @param x     the origin X-position.
+     * @param y     the origin Y-position.
+     * @param z     the origin Z-position.
      * @param range the range.
      * @return the players within the range of the XYZ coordinates.
      */
@@ -535,9 +541,9 @@ public final class ServerWorld extends World {
                 } catch (Exception e) {
                     World.LOGGER.error(World.MARKER, "Failed to save world:", e);
                 }
-                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, ServerConstants.AUTO_SAVE_DELAY, ServerConstants.AUTO_SAVE_DELAY_UNIT);
+                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, CommonConstants.AUTO_SAVE_DELAY, CommonConstants.AUTO_SAVE_DELAY_UNIT);
             }
-        }, ServerConstants.INITIAL_AUTO_SAVE_DELAY, ServerConstants.AUTO_SAVE_DELAY_UNIT);
+        }, CommonConstants.INITIAL_AUTO_SAVE_DELAY, CommonConstants.AUTO_SAVE_DELAY_UNIT);
     }
 
     /**
@@ -584,7 +590,7 @@ public final class ServerWorld extends World {
     /**
      * Save a region to disk.
      *
-     * @param region the region to save.
+     * @param region  the region to save.
      * @param dispose true to also dispose the region.
      */
     public void saveRegion(Region region, boolean dispose) {
@@ -676,8 +682,8 @@ public final class ServerWorld extends World {
      * Spawn an entity into the world.
      *
      * @param entity the entity to spawn.
+     * @param <T>    the entity.
      * @return the spawned entity. (Same as {@code entity} parameter)
-     * @param <T> the entity.
      */
     @Override
     public <T extends Entity> T spawn(@NotNull T entity) {
@@ -770,7 +776,7 @@ public final class ServerWorld extends World {
          * Constructs a new region with the given world and position.
          *
          * @param world the world this region belongs to.
-         * @param pos the position of the region.
+         * @param pos   the position of the region.
          */
         public Region(ServerWorld world, RegionPos pos) {
             this.world = world;
@@ -780,8 +786,8 @@ public final class ServerWorld extends World {
         /**
          * Constructs a new region with the given world and position. It also preloads all chunks.
          *
-         * @param world the world this region belongs to.
-         * @param pos the position of the region.
+         * @param world  the world this region belongs to.
+         * @param pos    the position of the region.
          * @param chunks the chunks to load into the region.
          */
         public Region(ServerWorld world, RegionPos pos, Map<ChunkPos, ServerChunk> chunks) {
@@ -848,7 +854,7 @@ public final class ServerWorld extends World {
         /**
          * Activate the chunk at the given position.
          *
-         * @param chunkPos the local position of the chunk to activate.
+         * @param chunkPos  the local position of the chunk to activate.
          * @param globalPos the global position of the chunk to activate.
          * @return the acivated chunk, or null if the chunk wasn't loaded.
          */
@@ -955,7 +961,7 @@ public final class ServerWorld extends World {
         @NewInstance
         public void generateChunk(ChunkPos pos, ChunkPos globalPos) {
             this.validateThread();
-            
+
             this.buildChunkAsync(globalPos);
         }
 
@@ -1073,8 +1079,8 @@ public final class ServerWorld extends World {
         /**
          * Saves a region to an output stream.
          *
-         * @param region the region to save.
-         * @param stream the output stream to save to.
+         * @param region  the region to save.
+         * @param stream  the output stream to save to.
          * @param dispose if true, the region will be disposed after saving.
          * @throws IOException if an I/O error occurs.
          */
@@ -1115,7 +1121,7 @@ public final class ServerWorld extends World {
         /**
          * Loads a region from an input stream.
          *
-         * @param world the world to load the region in.
+         * @param world  the world to load the region in.
          * @param stream the input stream to load from.
          * @return the loaded region.
          * @throws IOException if an I/O error occurs.

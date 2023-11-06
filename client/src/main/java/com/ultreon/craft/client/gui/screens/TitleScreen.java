@@ -6,9 +6,9 @@ import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.rpc.Activity;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class TitleScreen extends Screen {
         builder.panelBounds(() -> new Bounds(0, 0, 250, this.size.height))
                 .backgroundColor(Color.BLACK.withAlpha(0x80));
 
-        this.titleLabel = builder.label(() -> new Position(125, 40)).text("Ultracraft").alignment(Alignment.CENTER).scale(3);
+        this.titleLabel = builder.label(() -> new Position(125, 40)).text(TextObject.literal("Ultracraft").setBold(true)).alignment(Alignment.CENTER).scale(3);
 
         this.singleplayerButton = builder.button(() -> new Position(50, this.size.height / 2 - 35), this::openSingleplayer)
                 .translation("ultracraft.screen.title.singleplayer")

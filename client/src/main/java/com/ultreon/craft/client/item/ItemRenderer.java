@@ -18,12 +18,12 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.client.model.BakedCubeModel;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 
 public class ItemRenderer {

@@ -453,4 +453,8 @@ public class Entity {
         this.xRot += x;
         this.yRot += y;
     }
+
+    public EntityType<?> getType() {
+        return type;
+    }
 }

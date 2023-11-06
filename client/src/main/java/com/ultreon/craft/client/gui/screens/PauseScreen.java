@@ -5,7 +5,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.widget.Button;
-import com.ultreon.craft.client.util.Color;
+import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.ServerWorld;
 
 public class PauseScreen extends Screen {

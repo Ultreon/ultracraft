@@ -8,7 +8,15 @@ public class LiteralText extends MutableText {
     }
 
     @Override
-    protected String createString() {
+    public String createString() {
         return this.text;
+    }
+
+    @Override
+    public LiteralText copy() {
+        var copy = this.extras.stream().map(TextObject::copy).toList();
+        var literalText = new LiteralText(this.text);
+        literalText.extras.addAll(copy);
+        return literalText;
     }
 }

@@ -2,10 +2,10 @@ package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Color;
 import com.ultreon.craft.client.util.Drawable;
+import com.ultreon.craft.client.util.Resizer;
+import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import org.jetbrains.annotations.Range;
 

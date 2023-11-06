@@ -15,6 +15,8 @@
   "ultracraft.ui.back": "Terug",
   "ultracraft.screen.world_load.loading_world": "Wereld Laden",
   "ultracraft.screen.language": "Taal",
+  "ultracraft.screen.message.saving_world": "Wereld opslaan...",
+  "ultracraft.screen.message.joining_server": "Server binnengaan...",
   "ultracraft.screen.mod_list": "Mod-lijst",
   "ultracraft.screen.mod_list.config": "Configuratie",
   "ultracraft.screen.death.respawn": "Herspawnen",
