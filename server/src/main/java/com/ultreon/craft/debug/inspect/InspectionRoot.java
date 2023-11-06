@@ -19,7 +19,7 @@ import java.util.function.Function;
  * Inspection trees are a way of determining values within the game.
  * It also allows for inspecting game packets.
  *
- * @author <a href="https://github.com/XyperCode">XyperCode</href>
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 @ThreadSafe
