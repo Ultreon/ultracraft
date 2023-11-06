@@ -316,7 +316,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.onlineTicks++;
 
         // Poll all the tasks in the queue.
-        this.profiler.section("taskPolling", this::pollAll);
+        this.profiler.section("taskPolling", this::poll);
 
         // Tick connections.
         this.profiler.section("connections", this.connections::tick);
@@ -623,6 +623,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public boolean isIntegrated() {
         return false;
+    }
+
+    public boolean isDedicated() {
+        return !this.isIntegrated();
     }
 
     @Nullable

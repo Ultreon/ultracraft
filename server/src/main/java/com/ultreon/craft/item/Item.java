@@ -1,8 +1,8 @@
 package com.ultreon.craft.item;
 
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v1.Language;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,8 +20,8 @@ public class Item {
 
     }
 
-    public String getTranslation() {
-        return Language.translate(this.getTranslationId());
+    public TextObject getTranslation() {
+        return TextObject.translation(this.getTranslationId());
     }
 
     @NotNull
@@ -34,7 +34,7 @@ public class Item {
         return Registries.ITEMS.getKey(this);
     }
 
-    public List<String> getDescription(ItemStack itemStack) {
+    public List<TextObject> getDescription(ItemStack itemStack) {
         return Collections.emptyList();
     }
 

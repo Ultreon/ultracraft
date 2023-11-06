@@ -3,6 +3,7 @@ package com.ultreon.craft.item;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -188,8 +189,7 @@ public class ItemStack {
         return new ItemStack(this.item, this.count, this.tag.copy());
     }
 
-    @NotNull
-    public List<String> getDescription() {
+    public List<TextObject> getDescription() {
         return this.item.getDescription(this);
     }
 

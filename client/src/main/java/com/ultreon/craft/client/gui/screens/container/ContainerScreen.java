@@ -11,7 +11,9 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
+import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -24,11 +26,11 @@ public abstract class ContainerScreen extends Screen {
     private final ContainerMenu container;
     private final LocalPlayer player;
 
-    public ContainerScreen(ContainerMenu container, String title, int maxSlots) {
+    public ContainerScreen(ContainerMenu container, TextObject title, int maxSlots) {
         this(container, UltracraftClient.get().screen, title, maxSlots);
     }
 
-    public ContainerScreen(ContainerMenu container, @Nullable Screen back, String title, int maxSlots) {
+    public ContainerScreen(ContainerMenu container, @Nullable Screen back, TextObject title, int maxSlots) {
         super(title, back);
         this.container = container;
         this.maxSlots = maxSlots;
@@ -92,7 +94,7 @@ public abstract class ContainerScreen extends Screen {
         this.renderForeground(renderer, mouseX, mouseY, deltaTime);
     }
 
-    protected void renderForeground(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+    public void renderForeground(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         ItemSlot slotAt = this.getSlotAt(mouseX, mouseY);
         if (slotAt != null && !slotAt.getItem().isEmpty()) {
             this.renderTooltip(renderer, mouseX + 4, mouseY + 4, slotAt.getItem().getItem().getTranslation(), slotAt.getItem().getDescription(), slotAt.getItem().getItem().getId().toString());
@@ -104,11 +106,11 @@ public abstract class ContainerScreen extends Screen {
         }
     }
 
-    private void renderTooltip(Renderer renderer, int x, int y, String title, List<String> description, @Nullable String subTitle) {
-        List<String> all = Lists.newArrayList(description);
+    private void renderTooltip(Renderer renderer, int x, int y, TextObject title, List<TextObject> description, @Nullable String subTitle) {
+        var all = Lists.newArrayList(description);
         all.add(0, title);
-        if (subTitle != null) all.add(subTitle);
-        int textWidth = all.stream().mapToInt(value -> (int) this.font.width(value)).max().orElse(0);
+        if (subTitle != null) all.add(TextObject.literal(subTitle));
+        int textWidth = all.stream().mapToInt(value -> this.font.width(value)).max().orElse(0);
         int descHeight = description.size() * (this.font.lineHeight + 1) - 1;
         int textHeight = descHeight + 3 + this.font.lineHeight;
 
@@ -126,7 +128,7 @@ public abstract class ContainerScreen extends Screen {
         renderer.drawTextLeft(title, x + 3, y + 3, Color.WHITE);
 
         int lineNr = 0;
-        for (String line : description) {
+        for (TextObject line : description) {
             renderer.drawTextLeft(line, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0xa0a0a0));
             lineNr++;
         }
@@ -149,21 +151,11 @@ public abstract class ContainerScreen extends Screen {
         ItemSlot slot = this.getSlotAt(x, y);
         if (slot == null) return super.mouseClick(x, y, button, count);
         if (button == Input.Buttons.LEFT) {
-            ItemStack cursor = this.player.getCursor();
-            ItemStack slotItem = slot.getItem();
-            if (!cursor.isEmpty() && cursor.isSameItemSameTag(slotItem)) {
-                cursor.transferTo(slotItem, cursor.getCount());
-                return true;
-            }
-            slot.setItem(cursor);
             this.client.connection.send(new C2SMenuTakeItemPacket(slot.getIndex(), false));
             return true;
         }
         if (button == Input.Buttons.RIGHT) {
-            if (this.player.getCursor().isEmpty())
-                this.client.connection.send(new C2SMenuTakeItemPacket(slot.getIndex(), true));
-            else
-                this.player.getCursor().transferTo(slot.getItem());
+            this.client.connection.send(new C2SMenuTakeItemPacket(slot.getIndex(), true));
             return true;
         }
 
@@ -176,5 +168,12 @@ public abstract class ContainerScreen extends Screen {
 
     public ItemSlot get(int index) {
         return this.container.get(index);
+    }
+
+    @Override
+    public void onClosed() {
+        super.onClosed();
+
+        this.client.connection.send(new C2SCloseContainerMenuPacket());
     }
 }

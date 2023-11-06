@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -21,6 +20,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.util.EntitySize;
@@ -42,7 +42,7 @@ import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
-public final class WorldRenderer implements RenderableProvider, Disposable {
+public final class WorldRenderer implements Disposable {
     static long vertexCount;
     private static long chunkMeshFrees;
     private final ChunkMeshBuilder meshBuilder;
@@ -182,14 +182,18 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         Cubemap cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
 
         UltracraftClient.LOGGER.info("Setting up world environment");
+
+        float v1 = 2f, v2 = 0.125f;
         this.environment = new Environment();
-        this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.0f, 0.0f, 0.0f, 1f));
+        this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, v2, v2, v2, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
         this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, .8f, 0, -.6f));
-        this.environment.add(new DirectionalLight().set(.8f, .8f, .8f, -.8f, 0, .6f));
-        this.environment.add(new DirectionalLight().set(1.0f, 1.0f, 1.0f, 0, -1, 0));
-        this.environment.add(new DirectionalLight().set(0.17f, .17f, .17f, 0, 1, 0));
+        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
+        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, -1.0f));
+        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, 1.0f, 0, 0.0f));
+        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, -1.0f, 0, 0.0f));
+        this.environment.add(new DirectionalLight().set(1.0f / v1, 1.0f / v1, 1.0f / v1, 0, -1, 0));
+        this.environment.add(new DirectionalLight().set(0.25f / v1, 0.25f / v1, 0.25f / v1, 0, 1, 0));
     }
 
     public Environment getEnvironment() {
@@ -221,8 +225,7 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
         WorldRenderer.chunkMeshFrees++;
     }
 
-    @Override
-    public void getRenderables(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
+    public void draw(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
         var player = this.client.player;
         if (player == null) return;
 
@@ -351,6 +354,23 @@ public final class WorldRenderer implements RenderableProvider, Disposable {
                     output.add(this.verifyOutput(renderable));
                 });
             }
+
+            UltracraftClient.PROFILER.section("(Local Player)", () -> {
+                LocalPlayer localPlayer = this.client.player;
+                if (localPlayer == null || !this.client.isInThirdPerson()) return;
+
+                Vector3 renderOffset = new Vector3(0, -localPlayer.getEyeHeight(), 0);
+
+                Renderable renderable = renderablePool.obtain();
+                renderable.meshPart.mesh = this.playerMesh;
+                renderable.meshPart.size = this.playerMesh.getMaxIndices();
+                renderable.meshPart.offset = 0;
+                renderable.meshPart.primitiveType = GL_TRIANGLES;
+                renderable.worldTransform.setToTranslation(renderOffset).rotate(Vector3.Y, localPlayer.getXRot());
+                renderable.material = this.playerMaterial;
+
+                output.add(this.verifyOutput(renderable));
+            });
         });
     }
 

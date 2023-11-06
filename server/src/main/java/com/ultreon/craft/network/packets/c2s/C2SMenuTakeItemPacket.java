@@ -7,26 +7,26 @@ import com.ultreon.craft.network.server.InGameServerPacketHandler;
 
 public class C2SMenuTakeItemPacket extends Packet<InGameServerPacketHandler> {
     private final int index;
-    private final boolean split;
+    private final boolean rightClick;
 
-    public C2SMenuTakeItemPacket(int index, boolean split) {
+    public C2SMenuTakeItemPacket(int index, boolean rightClick) {
         this.index = index;
-        this.split = split;
+        this.rightClick = rightClick;
     }
 
     public C2SMenuTakeItemPacket(PacketBuffer buffer) {
         this.index = buffer.readInt();
-        this.split = buffer.readBoolean();
+        this.rightClick = buffer.readBoolean();
     }
 
     @Override
     public void toBytes(PacketBuffer buffer) {
         buffer.writeInt(this.index);
-        buffer.writeBoolean(this.split);
+        buffer.writeBoolean(this.rightClick);
     }
 
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
-        handler.onTakeItem(this.index, this.split);
+        handler.onTakeItem(this.index, this.rightClick);
     }
 }

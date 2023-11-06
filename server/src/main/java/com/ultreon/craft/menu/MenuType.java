@@ -14,8 +14,8 @@ public class MenuType<T extends ContainerMenu> {
         this.menuBuilder = menuBuilder;
     }
 
-    public void create(World world, Entity entity, @Nullable BlockPos pos) {
-        this.menuBuilder.create(this, world, entity, pos);
+    public @Nullable T create(World world, Entity entity, @Nullable BlockPos pos) {
+        return this.menuBuilder.create(this, world, entity, pos);
     }
 
     public Identifier getId() {
@@ -23,6 +23,6 @@ public class MenuType<T extends ContainerMenu> {
     }
 
     public interface MenuBuilder<T extends ContainerMenu> {
-        T create(MenuType<T> menuType, World world, Entity entity, @Nullable BlockPos pos);
+        @Nullable T create(MenuType<T> menuType, World world, Entity entity, @Nullable BlockPos pos);
     }
 }

@@ -9,7 +9,6 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.CommonConstants;
@@ -17,7 +16,6 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.ultreon.libs.translations.v1.Language;
 
 import java.util.stream.IntStream;
 
@@ -122,7 +120,8 @@ public class DesktopInput extends GameInput {
                 DesktopInput.setCursorCaught(!Gdx.input.isCursorCatched());
             }
         } else if (currentScreen == null && player != null) {
-            if (keyCode == this.inventoryKey && this.client.showScreen(new InventoryScreen(player.inventory, Language.translate("ultracraft.screen.inventory")))) {
+            if (keyCode == this.inventoryKey) {
+                this.client.player.openInventory();
                 return true;
             }
         }

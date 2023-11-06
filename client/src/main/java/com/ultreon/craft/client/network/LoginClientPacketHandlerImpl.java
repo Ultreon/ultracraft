@@ -5,7 +5,6 @@ import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.world.ClientWorld;
-import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketContext;
@@ -39,18 +38,8 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
         ClientPlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
 
-        this.client.submit(() -> {
-            try {
-                this.client.worldRenderer = new WorldRenderer(clientWorld);
-                this.client.renderWorld = true;
-                this.client.showScreen(null);
-            } catch (Exception e) {
-                UltracraftClient.crash(e);
-            }
-
-            if (this.client.integratedServer != null) this.client.setActivity(Activity.SINGLEPLAYER);
-            else this.client.setActivity(Activity.MULTIPLAYER);
-        });
+        if (this.client.integratedServer != null) this.client.setActivity(Activity.SINGLEPLAYER);
+        else this.client.setActivity(Activity.MULTIPLAYER);
     }
 
     @Override

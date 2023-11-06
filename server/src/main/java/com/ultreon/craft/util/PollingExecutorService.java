@@ -75,14 +75,14 @@ public class PollingExecutorService implements ExecutorService {
             }
             return future;
         }
-        this.execute(() -> {
+        this.execute(() -> this.profiler.section(task.getClass().getName(), () -> {
             try {
                 var result = task.call();
                 future.complete(result);
             } catch (Throwable throwable) {
                 future.completeExceptionally(throwable);
             }
-        });
+        }));
         return future;
     }
 
@@ -102,16 +102,14 @@ public class PollingExecutorService implements ExecutorService {
             }
             return future;
         }
-        this.execute(() -> {
-            this.profiler.section(task.getClass().getName(), () -> {
-                try {
-                    task.run();
-                    future.complete(result);
-                } catch (Throwable throwable) {
-                    future.completeExceptionally(throwable);
-                }
-            });
-        });
+        this.execute(() -> this.profiler.section(task.getClass().getName(), () -> {
+            try {
+                task.run();
+                future.complete(result);
+            } catch (Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+        }));
         return future;
     }
 
@@ -234,24 +232,28 @@ public class PollingExecutorService implements ExecutorService {
     }
 
     public void poll() {
-        if ((this.active = this.tasks.poll()) != null) {
-            try {
-                this.active.run();
-            } catch (Throwable t) {
-                PollingExecutorService.LOGGER.error("Failed to run task:", t);
+        this.profiler.section("pollTask", () -> {
+            if ((this.active = this.tasks.poll()) != null) {
+                try {
+                    this.active.run();
+                } catch (Throwable t) {
+                    PollingExecutorService.LOGGER.error("Failed to run task:", t);
+                }
             }
-        }
+        });
     }
 
     public void pollAll() {
         while ((this.active = this.tasks.poll()) != null) {
-            var task = this.active;
+            this.profiler.section("pollTask", () -> {
+                var task = this.active;
 
-            try {
-                task.run();
-            } catch (Throwable t) {
-                PollingExecutorService.LOGGER.error("Failed to run task:", t);
-            }
+                try {
+                    task.run();
+                } catch (Throwable t) {
+                    PollingExecutorService.LOGGER.error("Failed to run task:", t);
+                }
+            });
         }
     }
 }

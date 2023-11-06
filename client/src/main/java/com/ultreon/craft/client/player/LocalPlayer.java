@@ -6,12 +6,14 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
+import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
+import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +27,7 @@ public class LocalPlayer extends ClientPlayer {
     public @Nullable ContainerMenu openMenu;
     private UUID uuid;
     private int oldSelected;
+    private int moveUpdate = 5;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
@@ -43,7 +46,10 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (this.x != this.ox || this.y != this.oy || this.z != this.oz) {
+        if (this.moveUpdate-- <= 0
+                && this.x - this.ox >= 0.001 && this.y - this.oy >= 0.001 && this.z - this.oz >= 0.001
+                && this.x != this.ox || this.y != this.oy || this.z != this.oz) {
+            this.moveUpdate = 5;
             if (this.world.getChunk(this.getChunkPos()) == null) {
                 this.x = this.ox;
                 this.z = this.oz;
@@ -114,6 +120,11 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
+    public void openInventory() {
+        this.client.connection.send(new C2SOpenInventoryPacket());
+    }
+
+    @Override
     public @NotNull ClientWorld getWorld() {
         return this.world;
     }
@@ -127,5 +138,10 @@ public class LocalPlayer extends ClientPlayer {
     public void resurrect() {
         this.setHealth(this.getMaxHeath());
         this.isDead = false;
+    }
+
+    public void onOpenMenu(ContainerMenu menu) {
+        this.openMenu = menu;
+        this.client.showScreen(MenuRegistry.getScreen(menu));
     }
 }

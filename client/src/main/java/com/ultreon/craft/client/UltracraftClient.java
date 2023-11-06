@@ -41,6 +41,7 @@ import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.*;
+import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
 import com.ultreon.craft.client.input.DesktopInput;
@@ -55,6 +56,7 @@ import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
+import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.rpc.RpcHandler;
@@ -77,6 +79,7 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolItem;
+import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
@@ -262,6 +265,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private MultiplayerData multiplayerData;
     ManualCrashOverlay crashOverlay;
     private boolean wasClicking;
+    private Queue<Runnable> serverTickQueue = new ArrayDeque<>();
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -667,6 +671,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         SoundEvents.nopInit();
         UltracraftClient.invokeAndWait(Shaders::nopInit);
 
+        registerMenuScreens();
+
         for (var registry : Registry.getRegistries()) {
             RegistryEvents.AUTO_REGISTER.factory().onAutoRegister(registry);
         }
@@ -728,6 +734,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         UltracraftClient.invoke(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
         this.loadingOverlay = null;
+    }
+
+    private void registerMenuScreens() {
+        MenuRegistry.registerScreen(MenuTypes.INVENTORY, InventoryScreen::new);
     }
 
     private void importModResources(ResourceManager resourceManager) {
@@ -1084,7 +1094,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.updateActivity();
 
-        this.pollAll();
+        this.poll();
 
         UltracraftClient.PROFILER.section("client-tick", this::tryClientTick);
 
@@ -1565,6 +1575,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.integratedServer.shutdown();
         }
 
+        this.serverTickQueue.clear();
+
         CompletableFuture.runAsync(() -> {
             try {
                 GameInput.cancelVibration();
@@ -1823,6 +1835,18 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @Override
     public String toString() {
         return "UltracraftClient";
+    }
+
+    public void runInTick(Runnable func) {
+        this.serverTickQueue.add(func);
+    }
+
+    @ApiStatus.Internal
+    public void pollServerTick() {
+        Runnable task;
+        while ((task = this.serverTickQueue.poll()) != null) {
+            task.run();
+        }
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

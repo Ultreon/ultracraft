@@ -8,18 +8,21 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Label;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
-import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.craft.world.World;
-import com.ultreon.craft.world.WorldStorage;
+import com.ultreon.craft.world.*;
+import com.ultreon.libs.commons.v0.vector.Vec2i;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 public class WorldLoadScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldLoadScreen.class);
@@ -60,6 +63,8 @@ public class WorldLoadScreen extends Screen {
 
     @Override
     public boolean onClose(@Nullable Screen next) {
+        if (!this.client.renderWorld) return false;
+
         DeathScreen closeScreen = this.closeScreen;
         if (next == null && closeScreen != null) {
             this.client.showScreen(closeScreen);
@@ -89,7 +94,7 @@ public class WorldLoadScreen extends Screen {
 
             this.world.setupSpawn();
 
-            UltracraftServer.invoke(() -> {
+            UltracraftServer.invokeAndWait(() -> {
                 try {
                     WorldLoadScreen.LOGGER.info("Loading spawn chunks...");
 
@@ -104,7 +109,21 @@ public class WorldLoadScreen extends Screen {
                         }
                     }
 
+                    ChunkRefresher refresher = new ChunkRefresher();
+                    ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk, ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5)).stream().filter(chunkPos -> {
+                        Vec2i loadChunk = new Vec2i(chunkPos.x(), chunkPos.z());
+                        Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
+                        return loadChunk.dst(spawnChunkXZ) < this.client.settings.renderDistance.get();
+                    }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
+                    this.world.doRefreshNow(refresher);
+
                     this.message("Spawn chunks loaded!");
+
+                    UltracraftClient.invoke(() -> {
+                        this.client.worldRenderer = new WorldRenderer(this.client.world);
+                        this.client.renderWorld = true;
+                        this.client.showScreen(null);
+                    });
                 } catch (Throwable t) {
                     if (t instanceof Error) {
                         UltracraftClient.crash(t);
@@ -112,7 +131,7 @@ public class WorldLoadScreen extends Screen {
                     }
                     UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
                 }
-            }).join();
+            });
 
             this.message("Waiting for server to finalize...");
         } catch (Throwable throwable) {

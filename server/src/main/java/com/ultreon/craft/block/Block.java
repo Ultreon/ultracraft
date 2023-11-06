@@ -4,18 +4,21 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
-import com.ultreon.libs.translations.v1.Language;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
@@ -90,8 +93,8 @@ public class Block implements DataWriter<MapType> {
         return block == null ? Blocks.AIR : block;
     }
 
-    public String getTranslation() {
-        return Language.translate(this.getTranslationId());
+    public TextObject getTranslation() {
+        return TextObject.translation(this.getTranslationId());
     }
 
     @NotNull

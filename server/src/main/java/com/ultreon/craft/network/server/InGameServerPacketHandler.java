@@ -126,11 +126,11 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         });
     }
 
-    public void onTakeItem(int index, boolean split) {
+    public void onTakeItem(int index, boolean rightClick) {
         this.server.submit(() -> {
             ContainerMenu openMenu = this.player.getOpenMenu();
             if (openMenu != null) {
-                openMenu.onTakeItem(this.player, index, split);
+                openMenu.onTakeItem(this.player, index, rightClick);
             }
         });
     }
@@ -176,5 +176,13 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         UltracraftServer.invoke(() -> {
             item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
         });
+    }
+
+    public void onOpenInventory() {
+        this.player.openInventory();
+    }
+
+    public void onCloseContainerMenu() {
+        this.player.closeMenu();
     }
 }

@@ -5,6 +5,7 @@ import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
+import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.RemotePlayer;
 import com.ultreon.craft.client.world.ClientChunk;
@@ -22,6 +23,7 @@ import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
@@ -81,7 +83,10 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             player.setPosition(pos);
             player.resurrect();
         }
-        this.client.showScreen(null);
+
+        if (!(this.client.screen instanceof WorldLoadScreen)) {
+            this.client.showScreen(null);
+        }
 
         UltracraftClient.LOGGER.debug("Player respawned at %s".formatted(pos)); //! DEBUG
     }
@@ -254,6 +259,19 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             if (openMenu != null) {
                 this.client.player.setCursor(cursor);
             }
+        }
+    }
+
+    @Override
+    public void onOpenContainerMenu(Identifier menuTypeId) {
+        var menuType = Registries.MENU_TYPES.getValue(menuTypeId);
+        LocalPlayer player = this.client.player;
+        if (player == null) return;
+        ContainerMenu o = menuType.create(this.client.world, player, null);
+        if (o != null) {
+            player.onOpenMenu(o);
+        } else {
+            this.client.connection.send(new C2SCloseContainerMenuPacket());
         }
     }
 }

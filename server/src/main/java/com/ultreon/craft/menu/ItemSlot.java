@@ -86,13 +86,26 @@ public class ItemSlot {
      * @return the item in the slot.
      */
     public ItemStack takeItem() {
-        ItemStack copy = this.item;
+        var copy = this.item;
         this.item = new ItemStack();
+        this.container.onItemChanged(this);
         return copy;
     }
 
     @Override
     public String toString() {
         return "ItemSlot(" + this.index + ')';
+    }
+
+    public ItemStack split() {
+        var remainder = this.item.split();
+        this.container.onItemChanged(this);
+        return remainder;
+    }
+
+    public ItemStack split(int amount) {
+        var remainder = this.item.split(amount);
+        this.container.onItemChanged(this);
+        return remainder;
     }
 }

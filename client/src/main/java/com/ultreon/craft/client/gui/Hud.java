@@ -10,6 +10,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
@@ -112,7 +113,7 @@ public class Hud implements GameRenderable {
 
         if (key != null && !selectedItem.isEmpty()) {
             if (renderer.pushScissors((int) ((float) this.client.getScaledWidth() / 2) - 84, this.leftY - 44, 168, 12)) {
-                String name = selectedItem.getItem().getTranslation();
+                TextObject name = selectedItem.getItem().getTranslation();
                 renderer.drawTextCenter(name, (int) ((float) this.client.getScaledWidth()) / 2, this.leftY - 41);
                 renderer.popScissors();
             }

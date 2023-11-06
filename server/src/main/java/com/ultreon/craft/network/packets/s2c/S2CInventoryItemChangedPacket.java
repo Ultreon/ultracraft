@@ -6,16 +6,16 @@ import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 
-public class S2CInventoryItemChanged extends Packet<InGameClientPacketHandler> {
+public class S2CInventoryItemChangedPacket extends Packet<InGameClientPacketHandler> {
     private final int index;
     private final ItemStack stack;
 
-    public S2CInventoryItemChanged(int index, ItemStack stack) {
+    public S2CInventoryItemChangedPacket(int index, ItemStack stack) {
         this.index = index;
         this.stack = stack;
     }
 
-    public S2CInventoryItemChanged(PacketBuffer buffer) {
+    public S2CInventoryItemChangedPacket(PacketBuffer buffer) {
         this.index = buffer.readInt();
         this.stack = buffer.readItemStack();
     }

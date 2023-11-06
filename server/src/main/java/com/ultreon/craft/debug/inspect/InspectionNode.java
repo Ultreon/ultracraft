@@ -64,23 +64,23 @@ public class InspectionNode<T> {
      * @param value supplier of the element value.
      */
     public void create(String name, Supplier<@Nullable Object> value) {
-        this.elements.putIfAbsent(name, Suppliers.memoizeWithExpiration(() -> {
+        this.elements.putIfAbsent(name, () -> {
             try {
                 return InspectionRoot.format(value.get());
             } catch (Throwable t) {
                 return "ERROR";
             }
-        }, 2, TimeUnit.SECONDS));
+        });
     }
 
     public <C> void create(String name, NodeMapping<T, C> value) {
-        this.elements.putIfAbsent(name, Suppliers.memoizeWithExpiration(() -> {
+        this.elements.putIfAbsent(name, () -> {
             try {
                 return InspectionRoot.format(value.map(this.value.apply(this)));
             } catch (Throwable t) {
                 return "ERROR";
             }
-        }, 2, TimeUnit.SECONDS));
+        });
     }
 
     /**

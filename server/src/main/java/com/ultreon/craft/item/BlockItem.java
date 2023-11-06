@@ -3,6 +3,7 @@ package com.ultreon.craft.item;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -37,7 +38,7 @@ public class BlockItem extends Item {
     }
 
     @Override
-    public String getTranslation() {
+    public TextObject getTranslation() {
         return this.block.get().getTranslation();
     }
 

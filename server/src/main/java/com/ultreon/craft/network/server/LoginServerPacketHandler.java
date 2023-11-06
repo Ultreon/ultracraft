@@ -98,11 +98,11 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
 
         Connection.LOGGER.info(name + " joined the server.");
 
+        this.server.placePlayer(player);
+
         this.connection.send(new S2CLoginAcceptedPacket(finalUuid), PacketResult.onEither(() -> {
             this.connection.moveToInGame();
             this.connection.setHandler(new InGameServerPacketHandler(this.server, player, this.connection));
-
-            this.server.placePlayer(player);
 
             PlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
 

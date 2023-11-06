@@ -205,4 +205,7 @@ public abstract class Player extends LivingEntity {
         this.cursor = cursor;
     }
 
+    public void openInventory() {
+        this.openMenu(this.inventory);
+    }
 }

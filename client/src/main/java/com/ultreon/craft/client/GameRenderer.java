@@ -58,7 +58,7 @@ public class GameRenderer {
                 this.modelBatch.begin(this.client.camera);
                 this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
                 this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
-                this.modelBatch.render(worldRenderer, worldRenderer.getEnvironment());
+                this.modelBatch.render(worldRenderer::draw, worldRenderer.getEnvironment());
                 this.modelBatch.end();
             });
         }

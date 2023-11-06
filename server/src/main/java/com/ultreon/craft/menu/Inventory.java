@@ -7,7 +7,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.packets.s2c.S2CInventoryItemChanged;
+import com.ultreon.craft.network.packets.s2c.S2CInventoryItemChangedPacket;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -51,7 +51,7 @@ public class Inventory extends ContainerMenu {
     protected @Nullable Packet<InGameClientPacketHandler> createPacket(ServerPlayer player, ItemSlot slot) {
         if (this.holder != player) return null;
 
-        return new S2CInventoryItemChanged(slot.index, slot.getItem());
+        return new S2CInventoryItemChangedPacket(slot.index, slot.getItem());
     }
 
     public ItemSlot getHotbarSlot(int index) {

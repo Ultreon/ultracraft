@@ -10,8 +10,10 @@ import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +31,7 @@ public abstract class ContainerMenu {
     public ItemSlot[] slots;
 
     protected final List<Player> watching = new ArrayList<>();
+    private @Nullable TextObject customTitle = null;
 
     public ContainerMenu(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable BlockPos pos, int size) {
         Preconditions.checkNotNull(type, "Menu type cannot be null!");
@@ -116,15 +119,42 @@ public abstract class ContainerMenu {
         this.world.closeMenu(this);
     }
 
-    public void onTakeItem(ServerPlayer player, int index, boolean split) {
+    public void onTakeItem(ServerPlayer player, int index, boolean rightClick) {
         ItemSlot slot = this.slots[index];
-        ItemStack item;
-        if (split && slot.getItem().getCount() > 1) {
-            item = slot.getItem().split();
+        if (rightClick) {
+            if (player.getCursor().isEmpty()) {
+                ItemStack item = slot.getItem().split();
+                player.setCursor(item);
+            } else {
+                player.getCursor().transferTo(slot.getItem());
+                player.setCursor(player.getCursor());
+            }
         } else {
-            item = slot.takeItem();
+            ItemStack cursor = player.getCursor();
+            ItemStack slotItem = slot.getItem();
+            if (!cursor.isEmpty() && cursor.isSameItemSameTag(slotItem)) {
+                cursor.transferTo(slotItem, cursor.getCount());
+                player.setCursor(player.getCursor());
+                return;
+            }
+            slot.setItem(cursor);
+            player.setCursor(player.getCursor());
         }
+    }
 
-        player.setCursor(item);
+    public TextObject getTitle() {
+        Identifier id = this.getType().getId();
+
+        if (this.customTitle == null)
+            return TextObject.translation(id.location() + ".container." + id.path().replaceAll("/", ".") + ".title");
+        return this.customTitle;
+    }
+
+    public @Nullable TextObject getCustomTitle() {
+        return this.customTitle;
+    }
+
+    public void setCustomTitle(@Nullable TextObject customTitle) {
+        this.customTitle = customTitle;
     }
 }

@@ -59,6 +59,15 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
+    public void placePlayer(ServerPlayer player) {
+        this.deferWorldLoad(() -> super.placePlayer(player));
+    }
+
+    private void deferWorldLoad(Runnable func) {
+        this.client.runInTick(func);
+    }
+
+    @Override
     public boolean isIntegrated() {
         return true;
     }
@@ -77,6 +86,13 @@ public class IntegratedServer extends UltracraftServer {
         return "IntegratedServer{" +
                 "openToLan=" + this.openToLan +
                 '}';
+    }
+
+    @Override
+    protected void runTick() {
+        this.client.pollServerTick();
+
+        super.runTick();
     }
 
     @Override

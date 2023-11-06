@@ -45,4 +45,6 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onInventoryItemChanged(int index, ItemStack stack);
 
     void onMenuCursorChanged(ItemStack cursor);
+
+    void onOpenContainerMenu(Identifier menuType);
 }

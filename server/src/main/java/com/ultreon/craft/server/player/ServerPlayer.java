@@ -9,6 +9,7 @@ import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
+import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.packets.s2c.*;
@@ -120,6 +121,17 @@ public final class ServerPlayer extends Player {
             this.connection.send(new S2CPlayerHealthPacket(this.health));
             this.oldHealth = this.health;
         }
+
+        ContainerMenu menu = this.getOpenMenu();
+        if (menu != null) {
+            BlockPos pos = menu.getPos();
+            if (pos != null && pos.vec().d().dst(this.getPosition()) > 5)
+                this.autoCloseMenu();
+        }
+    }
+
+    private void autoCloseMenu() {
+        this.connection.send(new S2CCloseContainerMenuPacket());
     }
 
     @Override
@@ -209,6 +221,8 @@ public final class ServerPlayer extends Player {
     public void refreshChunks(ChunkRefresher refresher) {
         var pos = this.getPosition();
         var chunkPos = this.getChunkPos();
+        var server = this.server;
+        var world = this.world;
         var needed = this.world.getChunksAround(pos);
         var toLoad = this.getChunksToLoad(needed);
         var toUnload = this.getChunksToUnload(needed);
@@ -224,6 +238,11 @@ public final class ServerPlayer extends Player {
         toLoad.removeAll(this.failedChunks.asMap().keySet());
         toLoad.removeAll(toUnload);
 
+        ServerPlayer.refreshChunks(refresher, server, world, chunkPos, toLoad, toUnload);
+    }
+
+    @ApiStatus.Internal
+    public static void refreshChunks(ChunkRefresher refresher, UltracraftServer server, ServerWorld world, ChunkPos chunkPos, ListOrderedSet<ChunkPos> toLoad, ListOrderedSet<ChunkPos> toUnload) {
         List<ChunkPos> load = toLoad.stream().sorted((o1, o2) -> {
             // Compare against player position.
             Vec2d playerPos = new Vec2d(chunkPos.x(), chunkPos.z());
@@ -234,10 +253,10 @@ public final class ServerPlayer extends Player {
         }).toList();
 
         for (ChunkPos loadingChunk : load) {
-            ServerChunk chunk = this.world.getChunk(loadingChunk);
+            ServerChunk chunk = world.getChunk(loadingChunk);
             if (chunk != null) {
                 try {
-                    this.server.sendChunk(loadingChunk, chunk);
+                    server.sendChunk(loadingChunk, chunk);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -285,8 +304,16 @@ public final class ServerPlayer extends Player {
     }
 
     @Override
+    public void openMenu(@NotNull ContainerMenu menu) {
+        super.openMenu(menu);
+
+        this.connection.send(new S2COpenContainerMenuPacket(this.inventory.getType().getId()));
+    }
+
+    @Override
     public void setCursor(@NotNull ItemStack cursor) {
         this.connection.send(new S2CMenuCursorPacket(cursor));
+        super.setCursor(cursor);
     }
 
     @Override
