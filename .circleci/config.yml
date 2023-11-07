@@ -2,4 +2,18 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Do nothing LMAO
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  build:
+    docker:
+      - image: alpine
+    steps:
+      - run:
+          name: Javadoc LMAO
+          command: echo Javadoc LMAO
+
+workflows:
+  echo:
+    jobs:
+      - build
