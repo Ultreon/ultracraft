@@ -317,6 +317,8 @@ afterEvaluate {
             "https://javadoc.io/doc/org.apache.commons/commons-compress/${project.property("commons_compress_version")}",
             "https://javadoc.io/doc/org.apache.commons/commons-lang3/${project.property("commons_lang3_version")}",
             "https://javadoc.io/doc/org.slf4j/slf4j-api/${project.property("slf4j_version_javadoc")}",
+            "https://ultreon.github.io/corelibs/docs/${project.property("corelibs_version")}",
+            "https://ultreon.github.io/ultreon-data/docs/${project.property("ultreon_data_version")}",
             "https://maven.fabricmc.net/docs/fabric-loader-${project.property("fabric_version")}",
         )
     }
