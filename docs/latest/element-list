@@ -58,6 +58,7 @@ com.ultreon.craft.network.packets.s2c
 com.ultreon.craft.network.server
 com.ultreon.craft.network.stage
 com.ultreon.craft.premain
+com.ultreon.craft.premain.posix
 com.ultreon.craft.premain.win32
 com.ultreon.craft.registry
 com.ultreon.craft.server

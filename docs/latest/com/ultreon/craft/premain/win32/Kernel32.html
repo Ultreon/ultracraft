@@ -79,6 +79,8 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Kernel32</span><span class="extends-implements">
 extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/Library.html" title="class or interface in com.sun.jna" class="external-link">Library</a></span></div>
+<div class="block">Windows API wrapper for the Kernel32 library.
+ Used for setting the current working directory.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -102,7 +104,9 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final <a href="Kernel32.html" title="interface in com.ultreon.craft.premain.win32">Kernel32</a></code></div>
 <div class="col-second even-row-color"><code><a href="#INSTANCE" class="member-name-link">INSTANCE</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">The Kernel32 instance.</div>
+</div>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.sun.jna.Library">Fields inherited from interface&nbsp;com.sun.jna.<a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/Library.html" title="class or interface in com.sun.jna" class="external-link">Library</a></h3>
@@ -123,7 +127,7 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#SetCurrentDirectoryW(char%5B%5D)" class="member-name-link">SetCurrentDirectoryW</a><wbr>(char[]&nbsp;pathName)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">BOOL SetCurrentDirectory( LPCTSTR lpPathName );</div>
+<div class="block">Sets the current working directory to the specified path.</div>
 </div>
 </div>
 </div>
@@ -143,6 +147,7 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <section class="detail" id="INSTANCE">
 <h3>INSTANCE</h3>
 <div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="Kernel32.html" title="interface in com.ultreon.craft.premain.win32">Kernel32</a></span>&nbsp;<span class="element-name">INSTANCE</span></div>
+<div class="block">The Kernel32 instance.</div>
 </section>
 </li>
 </ul>
@@ -157,7 +162,10 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <section class="detail" id="SetCurrentDirectoryW(char[])">
 <h3>SetCurrentDirectoryW</h3>
 <div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">SetCurrentDirectoryW</span><wbr><span class="parameters">(char[]&nbsp;pathName)</span></div>
-<div class="block">BOOL SetCurrentDirectory( LPCTSTR lpPathName );</div>
+<div class="block">Sets the current working directory to the specified path.
+ <p>
+ Original Win32 API signature:
+ <pre>BOOL SetCurrentDirectory( LPCTSTR lpPathName );</pre></div>
 </section>
 </li>
 </ul>

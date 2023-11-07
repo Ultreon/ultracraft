@@ -5,7 +5,7 @@
 <title>CLibrary (Ultracraft API)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="description" content="declaration: package: com.ultreon.craft.premain.win32, interface: CLibrary">
+<meta name="description" content="declaration: package: com.ultreon.craft.premain.posix, interface: CLibrary">
 <meta name="generator" content="javadoc/ClassWriterImpl">
 <link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
 <link rel="stylesheet" type="text/css" href="../../../../../script-dir/jquery-ui.min.css" title="Style">
@@ -68,7 +68,7 @@ loadScripts(document, 'script');</script>
 <main role="main">
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.premain.win32</a></div>
+<div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.premain.posix</a></div>
 <h1 title="Interface CLibrary" class="title">Interface CLibrary</h1>
 </div>
 <section class="class-description" id="class-description">
@@ -79,6 +79,8 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">CLibrary</span><span class="extends-implements">
 extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/Library.html" title="class or interface in com.sun.jna" class="external-link">Library</a></span></div>
+<div class="block">Posix API wrapper for the C library.
+ Used for setting the current working directory.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -100,7 +102,7 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static final <a href="CLibrary.html" title="interface in com.ultreon.craft.premain.win32">CLibrary</a></code></div>
+<div class="col-first even-row-color"><code>static final <a href="CLibrary.html" title="interface in com.ultreon.craft.premain.posix">CLibrary</a></code></div>
 <div class="col-second even-row-color"><code><a href="#INSTANCE" class="member-name-link">INSTANCE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
@@ -123,7 +125,7 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#chdir(java.lang.String)" class="member-name-link">chdir</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">int chdir(const char *path);</div>
+<div class="block">Sets the current working directory to the specified path.</div>
 </div>
 </div>
 </div>
@@ -142,7 +144,7 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <li>
 <section class="detail" id="INSTANCE">
 <h3>INSTANCE</h3>
-<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="CLibrary.html" title="interface in com.ultreon.craft.premain.win32">CLibrary</a></span>&nbsp;<span class="element-name">INSTANCE</span></div>
+<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="CLibrary.html" title="interface in com.ultreon.craft.premain.posix">CLibrary</a></span>&nbsp;<span class="element-name">INSTANCE</span></div>
 </section>
 </li>
 </ul>
@@ -157,7 +159,10 @@ extends <a href="https://javadoc.io/doc/net.java.dev.jna/jna/5.13.0/com/sun/jna/
 <section class="detail" id="chdir(java.lang.String)">
 <h3>chdir</h3>
 <div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">chdir</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">int chdir(const char *path);</div>
+<div class="block">Sets the current working directory to the specified path.
+ <p>
+ Original Posix API signature:
+ <pre>int chdir(const char *path);</pre></div>
 </section>
 </li>
 </ul>

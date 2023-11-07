@@ -772,9 +772,9 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/gui/widget/Widget.html#charType(char)" class="member-name-link">charType(char)</a> - Method in class com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/ultreon/craft/premain/win32/CLibrary.html#chdir(java.lang.String)" class="member-name-link">chdir(String)</a> - Method in interface com.ultreon.craft.premain.win32.<a href="com/ultreon/craft/premain/win32/CLibrary.html" title="interface in com.ultreon.craft.premain.win32">CLibrary</a></dt>
+<dt><a href="com/ultreon/craft/premain/posix/CLibrary.html#chdir(java.lang.String)" class="member-name-link">chdir(String)</a> - Method in interface com.ultreon.craft.premain.posix.<a href="com/ultreon/craft/premain/posix/CLibrary.html" title="interface in com.ultreon.craft.premain.posix">CLibrary</a></dt>
 <dd>
-<div class="block">int chdir(const char *path);</div>
+<div class="block">Sets the current working directory to the specified path.</div>
 </dd>
 <dt><a href="com/ultreon/craft/client/world/ClientWorld.html#checkThread()" class="member-name-link">checkThread()</a> - Method in class com.ultreon.craft.client.world.<a href="com/ultreon/craft/client/world/ClientWorld.html" title="class in com.ultreon.craft.client.world">ClientWorld</a></dt>
 <dd>&nbsp;</dd>
@@ -884,8 +884,10 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/gui/GuiContainer.html#clearWidgets()" class="member-name-link">clearWidgets()</a> - Method in class com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/GuiContainer.html" title="class in com.ultreon.craft.client.gui">GuiContainer</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/ultreon/craft/premain/win32/CLibrary.html" class="type-name-link" title="interface in com.ultreon.craft.premain.win32">CLibrary</a> - Interface in <a href="com/ultreon/craft/premain/win32/package-summary.html">com.ultreon.craft.premain.win32</a></dt>
-<dd>&nbsp;</dd>
+<dt><a href="com/ultreon/craft/premain/posix/CLibrary.html" class="type-name-link" title="interface in com.ultreon.craft.premain.posix">CLibrary</a> - Interface in <a href="com/ultreon/craft/premain/posix/package-summary.html">com.ultreon.craft.premain.posix</a></dt>
+<dd>
+<div class="block">Posix API wrapper for the C library.</div>
+</dd>
 <dt><a href="com/ultreon/craft/client/gui/widget/Button.html#click()" class="member-name-link">click()</a> - Method in class com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/gui/widget/CycleButton.html#click()" class="member-name-link">click()</a> - Method in class com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a></dt>
@@ -1131,6 +1133,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/ultreon/craft/network/stage/package-summary.html">com.ultreon.craft.network.stage</a> - package com.ultreon.craft.network.stage</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/package-summary.html">com.ultreon.craft.premain</a> - package com.ultreon.craft.premain</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/ultreon/craft/premain/posix/package-summary.html">com.ultreon.craft.premain.posix</a> - package com.ultreon.craft.premain.posix</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/win32/package-summary.html">com.ultreon.craft.premain.win32</a> - package com.ultreon.craft.premain.win32</dt>
 <dd>&nbsp;</dd>
@@ -1612,7 +1616,9 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/ultreon/craft/client/GameEnvironment.html#DEVELOPMENT" class="member-name-link">DEVELOPMENT</a> - Enum constant in enum class com.ultreon.craft.client.<a href="com/ultreon/craft/client/GameEnvironment.html" title="enum class in com.ultreon.craft.client">GameEnvironment</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/DevMain.html" class="type-name-link" title="class in com.ultreon.craft.premain">DevMain</a> - Class in <a href="com/ultreon/craft/premain/package-summary.html">com.ultreon.craft.premain</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Development main class.</div>
+</dd>
 <dt><a href="com/ultreon/craft/premain/DevMain.html#%3Cinit%3E()" class="member-name-link">DevMain()</a> - Constructor for class com.ultreon.craft.premain.<a href="com/ultreon/craft/premain/DevMain.html" title="class in com.ultreon.craft.premain">DevMain</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/collection/PaletteStorage.html#direct(int)" class="member-name-link">direct(int)</a> - Method in class com.ultreon.craft.collection.<a href="com/ultreon/craft/collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a></dt>
@@ -4042,10 +4048,12 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/Metadata.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in class com.ultreon.craft.client.<a href="com/ultreon/craft/client/Metadata.html" title="class in com.ultreon.craft.client">Metadata</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/ultreon/craft/premain/win32/CLibrary.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in interface com.ultreon.craft.premain.win32.<a href="com/ultreon/craft/premain/win32/CLibrary.html" title="interface in com.ultreon.craft.premain.win32">CLibrary</a></dt>
+<dt><a href="com/ultreon/craft/premain/posix/CLibrary.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in interface com.ultreon.craft.premain.posix.<a href="com/ultreon/craft/premain/posix/CLibrary.html" title="interface in com.ultreon.craft.premain.posix">CLibrary</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/win32/Kernel32.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in interface com.ultreon.craft.premain.win32.<a href="com/ultreon/craft/premain/win32/Kernel32.html" title="interface in com.ultreon.craft.premain.win32">Kernel32</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">The Kernel32 instance.</div>
+</dd>
 <dt><a href="com/ultreon/craft/util/Unit.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in class com.ultreon.craft.util.<a href="com/ultreon/craft/util/Unit.html" title="class in com.ultreon.craft.util">Unit</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/UltracraftClient.html#integratedServer" class="member-name-link">integratedServer</a> - Variable in class com.ultreon.craft.client.<a href="com/ultreon/craft/client/UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a></dt>
@@ -4541,7 +4549,9 @@ loadScripts(document, 'script');</script>
 <h2 class="title" id="I:K">K</h2>
 <dl class="index">
 <dt><a href="com/ultreon/craft/premain/win32/Kernel32.html" class="type-name-link" title="interface in com.ultreon.craft.premain.win32">Kernel32</a> - Interface in <a href="com/ultreon/craft/premain/win32/package-summary.html">com.ultreon.craft.premain.win32</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Windows API wrapper for the Kernel32 library.</div>
+</dd>
 <dt><a href="com/ultreon/craft/client/events/ScreenEvents.html#KEY_PRESS" class="member-name-link">KEY_PRESS</a> - Static variable in class com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ScreenEvents.html" title="class in com.ultreon.craft.client.events">ScreenEvents</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/client/events/ScreenEvents.html#KEY_RELEASE" class="member-name-link">KEY_RELEASE</a> - Static variable in class com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ScreenEvents.html" title="class in com.ultreon.craft.client.events">ScreenEvents</a></dt>
@@ -4833,9 +4843,13 @@ loadScripts(document, 'script');</script>
 </div>
 </dd>
 <dt><a href="com/ultreon/craft/premain/DevMain.html#main(java.lang.String%5B%5D)" class="member-name-link">main(String[])</a> - Static method in class com.ultreon.craft.premain.<a href="com/ultreon/craft/premain/DevMain.html" title="class in com.ultreon.craft.premain">DevMain</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Development main method.</div>
+</dd>
 <dt><a href="com/ultreon/craft/premain/PreMain.html#main(java.lang.String%5B%5D)" class="member-name-link">main(String[])</a> - Static method in class com.ultreon.craft.premain.<a href="com/ultreon/craft/premain/PreMain.html" title="class in com.ultreon.craft.premain">PreMain</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Production main method.</div>
+</dd>
 <dt><a href="com/ultreon/craft/server/dedicated/Main.html#main(java.lang.String%5B%5D)" class="member-name-link">main(String[])</a> - Static method in class com.ultreon.craft.server.dedicated.<a href="com/ultreon/craft/server/dedicated/Main.html" title="class in com.ultreon.craft.server.dedicated">Main</a></dt>
 <dd>
 <div class="block">Main entry point for the server.</div>
@@ -6071,7 +6085,9 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/ultreon/craft/client/imgui/ImGuiOverlay.html#preInitImGui()" class="member-name-link">preInitImGui()</a> - Static method in class com.ultreon.craft.client.imgui.<a href="com/ultreon/craft/client/imgui/ImGuiOverlay.html" title="class in com.ultreon.craft.client.imgui">ImGuiOverlay</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/PreMain.html" class="type-name-link" title="class in com.ultreon.craft.premain">PreMain</a> - Class in <a href="com/ultreon/craft/premain/package-summary.html">com.ultreon.craft.premain</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Pre-main class for Ultracraft.</div>
+</dd>
 <dt><a href="com/ultreon/craft/premain/PreMain.html#%3Cinit%3E()" class="member-name-link">PreMain()</a> - Constructor for class com.ultreon.craft.premain.<a href="com/ultreon/craft/premain/PreMain.html" title="class in com.ultreon.craft.premain">PreMain</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/world/ServerWorld.html#prepareSpawn(com.ultreon.craft.entity.Player)" class="member-name-link">prepareSpawn(Player)</a> - Method in class com.ultreon.craft.world.<a href="com/ultreon/craft/world/ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></dt>
@@ -7416,7 +7432,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/ultreon/craft/premain/win32/Kernel32.html#SetCurrentDirectoryW(char%5B%5D)" class="member-name-link">SetCurrentDirectoryW(char[])</a> - Method in interface com.ultreon.craft.premain.win32.<a href="com/ultreon/craft/premain/win32/Kernel32.html" title="interface in com.ultreon.craft.premain.win32">Kernel32</a></dt>
 <dd>
-<div class="block">BOOL SetCurrentDirectory( LPCTSTR lpPathName );</div>
+<div class="block">Sets the current working directory to the specified path.</div>
 </dd>
 <dt><a href="com/ultreon/craft/client/gui/LayoutBounds.html#setCurrentHeight(int)" class="member-name-link">setCurrentHeight(int)</a> - Method in class com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/LayoutBounds.html" title="class in com.ultreon.craft.client.gui">LayoutBounds</a></dt>
 <dd>&nbsp;</dd>
