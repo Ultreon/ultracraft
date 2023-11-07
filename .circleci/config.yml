@@ -24,7 +24,7 @@ jobs:
       - run:
           name: "Build Project"
           command: |
-            ./gradlew jpackage --no-daemon
+            ./gradlew clean build
           environment:
             CIRCLE_CI: "true"
 
