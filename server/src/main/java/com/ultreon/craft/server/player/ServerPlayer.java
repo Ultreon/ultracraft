@@ -37,7 +37,14 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public final class ServerPlayer extends Player {
+/**
+ * Server-side player implementation.
+ * Represents an online player.
+ * <p style="color: red;">NOTE: Should not be stored in collections, if you need to store a player in a collection. You should get the cached player instead,</p>
+ *
+ * @see UltracraftServer#getCachedPlayer(String)
+ */
+public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public Connection connection;
     private final ServerWorld world;
     public int hotbarIdx;
@@ -52,6 +59,8 @@ public final class ServerPlayer extends Player {
     private final Set<ChunkPos> skippedChunks = new CopyOnWriteArraySet<>();
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
     private boolean sendingChunk;
+    private boolean spawned;
+    private boolean playedBefore;
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name, Connection connection) {
         super(entityType, world);
@@ -111,10 +120,22 @@ public final class ServerPlayer extends Player {
         this.world.prepareSpawn(this);
         this.world.spawn(this);
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
+
+        this.spawned = true;
+    }
+
+    public void markSpawned() {
+        this.spawned = true;
     }
 
     @Override
     public void tick() {
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+
+        if (!this.isChunkActive(this.getChunkPos())) {
+            return;
+        }
+
         super.tick();
 
         if (this.oldHealth != this.health) {
@@ -159,11 +180,11 @@ public final class ServerPlayer extends Player {
         double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed() * 5) * Math.max(this.fallDistance * this.gravity, 2);
         if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ) {
             UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max xz: " + maxDistanceXZ + ")");
-            this.teleportTo(this.ox, this.oy, this.oz);
+//            this.teleportTo(this.ox, this.oy, this.oz);
         }
         if (Math.abs(this.getY() - this.oy) > maxDistanceY) {
             UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max y: " + maxDistanceY + ")");
-            this.teleportTo(this.ox, this.oy, this.oz);
+//            this.teleportTo(this.ox, this.oy, this.oz);
         }
 
         // Set old position.
@@ -183,6 +204,16 @@ public final class ServerPlayer extends Player {
     @Override
     public @NotNull UUID getUuid() {
         return this.uuid;
+    }
+
+    @Override
+    public boolean isOnline() {
+        return true;
+    }
+
+    @Override
+    public boolean isCache() {
+        return false;
     }
 
     public String getName() {
@@ -336,5 +367,23 @@ public final class ServerPlayer extends Player {
 
         this.inventory.addItem(Items.WOODEN_PICKAXE.defaultStack());
         this.inventory.addItem(Items.WOODEN_SHOVEL.defaultStack());
+    }
+
+    public void handlePlayerMove(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public boolean isSpawned() {
+        return this.spawned;
+    }
+
+    public void markPlayedBefore() {
+        this.playedBefore = true;
+    }
+
+    public boolean hasPlayedBefore() {
+        return this.playedBefore;
     }
 }

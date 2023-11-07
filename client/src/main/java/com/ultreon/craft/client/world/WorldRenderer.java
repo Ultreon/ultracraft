@@ -54,6 +54,7 @@ public final class WorldRenderer implements Disposable {
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
     private final Environment environment;
+    private final Cubemap cubemap;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -179,7 +180,7 @@ public final class WorldRenderer implements Disposable {
         skyboxTextures[4] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
         skyboxTextures[5] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
 
-        Cubemap cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
+        cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
 
         UltracraftClient.LOGGER.info("Setting up world environment");
 
@@ -457,6 +458,10 @@ public final class WorldRenderer implements Disposable {
         this.disposed = true;
         this.pool.clear();
         this.pool.flush();
+        this.cubemap.dispose();
+        if (this.sectionBorder != null) this.sectionBorder.dispose();
+        if (this.playerMesh != null) this.playerMesh.dispose();
+        if (this.breakingMeshes != null) this.breakingMeshes.forEach(Mesh::dispose);
         Renderable cursor1 = this.cursor;
         if (cursor1 != null) {
             Mesh mesh = cursor1.meshPart.mesh;

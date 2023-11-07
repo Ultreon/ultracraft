@@ -73,7 +73,7 @@ public class DedicatedServer extends UltracraftServer {
     public void shutdown() {
         super.shutdown();
 
-        this.profiler.close();
+        this.profiler.dispose();
     }
 
     /**

@@ -23,7 +23,7 @@ public class DisconnectedScreen extends Screen {
 
     @Override
     public void renderWidget(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        super.render(renderer, mouseX, mouseY, deltaTime);
+        super.renderWidget(renderer, mouseX, mouseY, deltaTime);
         renderer.drawTextScaledCenter(this.title, 2, this.size.width / 2, this.size.height / 3, Color.WHITE);
 
         int lineY = 0;

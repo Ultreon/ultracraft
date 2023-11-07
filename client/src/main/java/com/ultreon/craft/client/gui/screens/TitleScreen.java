@@ -11,8 +11,6 @@ import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 
-import java.io.IOException;
-
 public class TitleScreen extends Screen {
     private Label titleLabel;
     private Button<?> singleplayerButton;
@@ -63,11 +61,6 @@ public class TitleScreen extends Screen {
     }
 
     private void openSingleplayer(Button<?> caller) {
-        try {
-            UltracraftClient.getSavedWorld().delete();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         this.client.startWorld();
     }
 

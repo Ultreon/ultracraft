@@ -32,7 +32,6 @@ import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import io.netty.channel.ChannelFuture;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
@@ -114,7 +113,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
 
             if (world == null) {
-                UltracraftClient.LOGGER.warn("World is not available when chunk load packet got received.");
                 this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
                 return;
             }
@@ -148,7 +146,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             ClientPlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(player, message);
         }
 
-        this.client.connection.close();
+        this.client.connection.closeAll();
 
         this.client.submit(() -> {
             this.client.renderWorld = false;
@@ -163,17 +161,25 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 this.client.worldRenderer = null;
             }
 
-            ChannelFuture close = this.connection.close();
+            var close = this.connection.close();
             if (close != null) {
                 try {
                     close.sync();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    UltracraftClient.LOGGER.error("Failed to close connection", e);
+                }
+            }
+            var future = this.connection.closeGroup();
+            if (future != null) {
+                try {
+                    future.sync();
+                } catch (InterruptedException e) {
+                    UltracraftClient.LOGGER.error("Failed to close Netty event group", e);
                 }
             }
 
             IntegratedServer server = this.client.getSingleplayerServer();
-            IntegratedServer.invokeAndWait(server::shutdown);
+            server.shutdown();
 
             this.client.showScreen(new DisconnectedScreen(message));
         });

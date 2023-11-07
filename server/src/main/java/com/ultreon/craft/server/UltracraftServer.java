@@ -1,19 +1,27 @@
 package com.ultreon.craft.server;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
 import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionNode;
+import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.ServerConnections;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CAddPlayerPacket;
 import com.ultreon.craft.network.packets.s2c.S2CRemovePlayerPacket;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
+import com.ultreon.craft.server.player.CacheablePlayer;
+import com.ultreon.craft.server.player.CachedPlayer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.PollingExecutorService;
+import com.ultreon.craft.util.Shutdownable;
 import com.ultreon.craft.world.*;
+import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -40,7 +48,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 @ApiStatus.NonExtendable
-public abstract class UltracraftServer extends PollingExecutorService implements Runnable {
+public abstract class UltracraftServer extends PollingExecutorService implements Runnable, Shutdownable {
     public static final int TPS = 20;
     public static final long NANOSECONDS_PER_SECOND = 1_000_000_000L;
     public static final long NANOSECONDS_PER_TICK = UltracraftServer.NANOSECONDS_PER_SECOND / UltracraftServer.TPS;
@@ -65,6 +73,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private int currentTps;
     private boolean sendingChunk;
     protected int maxPlayers = 10;
+    private final Cache<String, CachedPlayer> cachedPlayers = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.HOURS).build();
 
     /**
      * Creates a new {@link UltracraftServer} instance.
@@ -94,6 +103,18 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             this.node.create("maxPlayers", () -> this.maxPlayers);
             this.node.create("tps", () -> this.currentTps);
             this.node.create("onlineTicks", () -> this.onlineTicks);
+        }
+    }
+
+    public void load() throws IOException {
+        this.world.load();
+    }
+
+    public void save(boolean silent) throws IOException {
+        try {
+            this.world.save(silent);
+        } catch (IOException e) {
+            UltracraftServer.LOGGER.error("Failed to save world", e);
         }
     }
 
@@ -240,12 +261,33 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 // Allow thread interrupting.
                 Thread.sleep(1);
             }
+        } catch (InterruptedException ignored) {
+
         } catch (Throwable t) {
             // Server crashed.
             this.crash(t);
             this.close();
             return;
         }
+
+        // Close all connections.
+        this.connections.stop();
+
+        // Save all the server data.
+        try {
+            this.save(false);
+        } catch (IOException e) {
+            UltracraftServer.LOGGER.error("Saving server data failed!", e);
+        }
+
+        // Cleanup any resources allocated.
+        this.players.clear();
+        this.scheduler.shutdownNow();
+
+        this.close();
+
+        // Clear the instance.
+        UltracraftServer.instance = null;
 
         // Send event for server stopping to mods.
         ServerLifecycleEvents.SERVER_STOPPED.factory().onServerStopped(this);
@@ -264,12 +306,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      */
     @Blocking
     public void shutdown() {
-        // Only shutdown if we are on the server thread.
-        if (!UltracraftServer.isOnServerThread()) {
-            UltracraftServer.invoke(this::shutdown);
-            return;
-        }
-
         // Send event for server stopping.
         ServerLifecycleEvents.SERVER_STOPPING.factory().onServerStopping(this);
 
@@ -285,28 +321,18 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.thread.interrupt();
 
         try {
-            this.thread.join(30000);
+            this.thread.join(60000);
             if (this.thread.isAlive()) {
-                this.crash(new RuntimeException("Server thread did not terminate in 30 seconds!"));
+                this.crash(new RuntimeException("Server thread did not terminate in 60 seconds!"));
                 Runtime.getRuntime().halt(1);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            this.crash(new RuntimeException("Safe shutdown got interrupted."));
+            Runtime.getRuntime().halt(1);
         }
 
-        // Close all connections.
-        this.connections.stop();
-
-        // Cleanup any resources allocated.
-        this.players.clear();
-        this.world.dispose();
-        this.scheduler.shutdownNow();
-
-        // Clear the instance.
-        UltracraftServer.instance = null;
-
         // Shut down the parent executor service.
-        super.shutdown();
+        super.shutdownNow();
     }
 
     @OverridingMethodsMustInvokeSuper
@@ -428,6 +454,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             disposable.dispose();
         }
 
+        this.world.dispose();
+
         try {
             if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
                 this.onTerminationFailed();
@@ -478,7 +506,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @param uuid the uuid of the player.
      * @return the player, or null if not found.
      */
-    public @Nullable ServerPlayer getPlayerByUuid(UUID uuid) {
+    public @Nullable ServerPlayer getPlayer(UUID uuid) {
         return this.players.get(uuid);
     }
 
@@ -488,13 +516,24 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @param name the name of the player
      * @return the player, or null if not found.
      */
-    public @Nullable ServerPlayer getPlayerByName(String name) {
+    public @Nullable ServerPlayer getPlayer(String name) {
         for (ServerPlayer player : this.players.values()) {
             if (player.getName().equals(name)) {
                 return player;
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a player from the cache.
+     *
+     * @param name the name of the player
+     * @return the player, or null if the player is not in the cache.
+     * @throws ExecutionException if an error occurred while loading the player.
+     */
+    public @Nullable CachedPlayer getCachedPlayer(String name) throws ExecutionException {
+        return this.cachedPlayers.get(name, () -> new CachedPlayer(null, name));
     }
 
     /**
@@ -506,6 +545,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public void placePlayer(ServerPlayer player) {
         // Put the player into the player list.
         this.players.put(player.getUuid(), player);
+        this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
         if (CommonConstants.INSPECTION_ENABLED) {
             this.playersNode.createNode(player.getName(), () -> player);
@@ -632,5 +672,31 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     @Nullable
     public UUID getHost() {
         return null;
+    }
+
+    public ServerPlayer loadPlayer(String name, UUID uuid, Connection connection) {
+        ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.world, uuid, name, connection);
+        try {
+            if (this.storage.exists("players/" + name + ".ubo")) {
+                UltracraftServer.LOGGER.info("Loading player '" + name + "'...");
+                MapType read = this.storage.read("players/" + name + ".ubo");
+                player.load(read);
+                player.markSpawned();
+                player.markPlayedBefore();
+                return player;
+            }
+        } catch (IOException e) {
+            UltracraftServer.LOGGER.warn("Failed to load player '" + name + "'!", e);
+        }
+
+        return player;
+    }
+
+    public boolean hasPlayedBefore(CacheablePlayer player) {
+        try {
+            return this.storage.exists("players/" + player.getName() + ".ubo");
+        } catch (IOException ignored) {
+            return false;
+        }
     }
 }

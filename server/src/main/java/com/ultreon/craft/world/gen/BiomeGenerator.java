@@ -5,10 +5,8 @@ import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.NoiseUtils;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
-
-import org.jetbrains.annotations.Nullable;
+import com.ultreon.craft.world.gen.noise.NoiseUtils;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
@@ -72,6 +70,9 @@ public class BiomeGenerator implements ServerDisposable {
     @Override
     public void dispose() {
         this.biomeNoise.dispose();
+
+        this.layers.forEach(TerrainLayer::dispose);
+        this.extraLayers.forEach(TerrainLayer::dispose);
     }
 
     public World getWorld() {

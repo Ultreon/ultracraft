@@ -108,4 +108,8 @@ public class ItemSlot {
         this.container.onItemChanged(this);
         return remainder;
     }
+
+    public void update() {
+        this.container.onItemChanged(this);
+    }
 }

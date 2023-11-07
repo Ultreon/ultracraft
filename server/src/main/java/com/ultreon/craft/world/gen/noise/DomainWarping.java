@@ -14,6 +14,11 @@ public class DomainWarping {
         this.domainY = domainY;
     }
 
+    public DomainWarping(long seed, NoiseSettings settingsX, NoiseSettings settingsZ) {
+        this.domainX = settingsX.create(seed);
+        this.domainY = settingsZ.create(seed);
+    }
+
     public float generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
         Vec2f domainOffset = this.generateDomainOffset(x, z);
         return NoiseUtils.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
@@ -27,5 +32,10 @@ public class DomainWarping {
 
     public Vec2i generateDomainOffsetInt(int x, int z) {
         return MathHelper.round(this.generateDomainOffset(x, z));
+    }
+
+    public void dispose() {
+        this.domainX.dispose();
+        this.domainY.dispose();
     }
 }

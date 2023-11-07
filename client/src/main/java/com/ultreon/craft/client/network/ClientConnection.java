@@ -5,8 +5,6 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -16,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClientConnection implements Runnable {
@@ -42,19 +41,25 @@ public class ClientConnection implements Runnable {
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
         Class<? extends SocketChannel> channelClass;
         Supplier<? extends EventLoopGroup> group;
-        if (Epoll.isAvailable()) {
-            channelClass = EpollSocketChannel.class;
-            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
-        } else {
+//        if (Epoll.isAvailable()) {
+//            channelClass = EpollSocketChannel.class;
+//            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
+//        } else {
             channelClass = NioSocketChannel.class;
             group = Connection.NETWORK_WORKER_GROUP;
-        }
+//        }
+
+        connection.setGroup(group.get());
 
         return new Bootstrap()
                 .group(group.get())
                 .handler(new MultiplayerChannelInitializer(connection))
                 .channel(channelClass)
                 .connect(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
+    }
+
+    public static Future<?> closeGroup(ChannelFuture future) {
+        return Connection.NETWORK_WORKER_GROUP.get().shutdownGracefully();
     }
 
     public void tick(Connection connection) {

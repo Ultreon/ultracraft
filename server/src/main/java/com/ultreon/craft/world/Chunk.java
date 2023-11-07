@@ -78,7 +78,7 @@ public abstract class Chunk implements ServerDisposable {
 
         if (id == null) {
             LOGGER.error("Unknown block: " + stringId);
-            return Blocks.AIR;
+            return Blocks.BARRIER;
         }
         return Registries.BLOCKS.getValue(id);
     }
@@ -138,7 +138,7 @@ public abstract class Chunk implements ServerDisposable {
 
     public Block get(int x, int y, int z) {
         if (this.disposed) return Blocks.BARRIER;
-        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+        if (this.isOutOfBounds(x, y, z)) return Blocks.BARRIER;
         return this.getFast(x, y, z);
     }
 

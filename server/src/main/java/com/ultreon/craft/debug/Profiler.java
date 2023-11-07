@@ -1,16 +1,16 @@
 package com.ultreon.craft.debug;
 
+import com.badlogic.gdx.utils.Disposable;
 import org.intellij.lang.annotations.RegExp;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.io.Closeable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @ThreadSafe
-public final class Profiler implements Closeable {
+public final class Profiler implements Disposable {
     @RegExp
     static final String SECTION_REGEX = "[a-zA-Z0-9_ \\[\\],.\\-]+";
     private final ConcurrentMap<Thread, ThreadSection> threads = new ConcurrentHashMap<>();
@@ -46,6 +46,10 @@ public final class Profiler implements Closeable {
     }
 
     public ProfileData collect() {
+        for (var thread : this.threads.keySet()) {
+            if (!thread.isAlive()) this.threads.remove(thread);
+        }
+
         return new ProfileData(this.finished);
     }
 
@@ -63,7 +67,7 @@ public final class Profiler implements Closeable {
         this.profiling = profiling;
     }
 
-    public void close() {
+    public void dispose() {
         this.scheduler.shutdown();
     }
 }

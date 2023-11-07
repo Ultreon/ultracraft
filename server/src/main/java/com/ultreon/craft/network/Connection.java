@@ -14,12 +14,12 @@ import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.Future;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String disconnectMsg;
 
     public static final Supplier<NioEventLoopGroup> LOCAL_WORKER_GROUP = Suppliers.memoize(Connection::createLocalWorkerGroup);
-    public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkEpollWorkerGroup);
+//    public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkEpollWorkerGroup);
 
     public static final Supplier<NioEventLoopGroup> NETWORK_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkWorkerGroup);
 
@@ -66,9 +66,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String address;
     private int port;
     private static int packetsSent;
-    private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(8);
+    private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     private ServerPlayer player;
     private int keepAlive = 100;
+    private EventLoopGroup group;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -83,9 +84,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Client IO #%d").setDaemon(true).build());
     }
 
-    private static EpollEventLoopGroup createNetworkEpollWorkerGroup() {
-        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Network Client IO #%d").setDaemon(true).build());
-    }
+//    private static EpollEventLoopGroup createNetworkEpollWorkerGroup() {
+//        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Network Client IO #%d").setDaemon(true).build());
+//    }
 
     public static int getPacketsSent() {
         return Connection.packetsSent;
@@ -179,8 +180,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null) + " (" + message + ")");
 
         switch (this.direction.getSourceEnv()) {
-            case SERVER -> this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::close));
-            case CLIENT -> this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::close));
+            case SERVER -> this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
+            case CLIENT -> this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
         }
 
         this.disconnectMsg = message;
@@ -403,7 +404,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.disconnectHandler = handler;
         this.address = address;
         this.port = port;
-        System.out.println("Initiated connection to " + address + ":" + port);
+        Connection.LOGGER.info("Initiated connection to " + address + ":" + port);
         this.runOnceConnected(() -> {
             this.setHandler(handler);
             this.send(loginPacket, true);
@@ -467,6 +468,20 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public ChannelFuture close() {
+        this.dispatchExecutor.shutdownNow();
+        return this.closeChannel();
+    }
+
+    public Future<?> closeGroup() {
+        EventLoopGroup group = this.group;
+        if (group != null) {
+            return group.shutdownGracefully();
+        }
+        return null;
+    }
+
+    @Nullable
+    private ChannelFuture closeChannel() {
         Channel channel = this.channel;
         if (channel != null)
             return channel.isOpen() ? channel.close() : channel.newSucceededFuture();
@@ -492,5 +507,14 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         boolean doKeepAlive = this.keepAlive-- <= 0;
         if (doKeepAlive) this.keepAlive = 100;
         return doKeepAlive;
+    }
+
+    public void setGroup(EventLoopGroup eventLoopGroup) {
+        this.group = eventLoopGroup;
+    }
+
+    public void closeAll() {
+        this.close();
+        this.closeGroup();
     }
 }

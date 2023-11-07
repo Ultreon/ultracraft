@@ -2,12 +2,13 @@ package com.ultreon.craft.client.atlas;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.util.TextureOffset;
 import com.ultreon.libs.commons.v0.Identifier;
 
 import java.util.Map;
 
-public class TextureAtlas {
+public class TextureAtlas implements Disposable {
     private final TextureStitcher stitcher;
     private final Texture textureAtlas;
     private final Map<Identifier, TextureOffset> uvMap;

@@ -24,7 +24,7 @@ public class WaterTerrainLayer extends TerrainLayer {
         }
 
         // Set sand layer from the height - 3 up to water level + 2
-        if (y <= this.waterLevel + 2 && y <= height && y >= height - 3) {
+        if (y <= this.waterLevel + 2 && y <= height && y >= height - 3 && height <= this.waterLevel + 2) {
             chunk.set(x, y, z, Blocks.SAND);
             return true;
         }

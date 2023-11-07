@@ -128,6 +128,13 @@ public class ImGuiOverlay {
 
                     ImGui.text(" FPS: " + Gdx.graphics.getFramesPerSecond() + " ");
                     ImGui.sameLine();
+                    ImGui.text(" Client TPS: " + Gdx.graphics.getFramesPerSecond() + " ");
+                    ImGui.sameLine();
+                    UltracraftServer server = UltracraftServer.get();
+                    if (server != null) {
+                        ImGui.text(" Server TPS: " + server.getCurrentTps() + " ");
+                        ImGui.sameLine();
+                    }
                     ImGui.text(" Frame ID: " + Gdx.graphics.getFrameId() + " ");
                     ImGui.endMenuBar();
                 }

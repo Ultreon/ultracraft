@@ -1,6 +1,8 @@
 package com.ultreon.craft.world.gen.layer;
 
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -10,7 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
  * @author XyperCode
  * @since 0.1.0
  */
-public abstract class TerrainLayer {
+public abstract class TerrainLayer implements Disposable {
     /**
      * Set blocks for the building of a chunk.
      * It handles world generation of a single terrain layer.
@@ -25,4 +27,13 @@ public abstract class TerrainLayer {
      */
     @ApiStatus.OverrideOnly
     public abstract boolean handle(World world, Chunk chunk, int x, int y, int z, int height);
+
+    public void create(ServerWorld world) {
+
+    }
+
+    @Override
+    public void dispose() {
+
+    }
 }

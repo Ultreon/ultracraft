@@ -57,7 +57,7 @@ public abstract class World implements ServerDisposable {
     private int totalChunks;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
-    final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(8);
+    final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new HashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();

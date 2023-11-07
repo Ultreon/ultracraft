@@ -60,7 +60,6 @@ public final class ServerWorld extends World {
     private static long chunkUnloads;
     private static long chunkLoads;
     private static long chunkSaves;
-    private final Map<ChunkPos, CompletableFuture<ServerChunk>> loadingChunks = new ConcurrentHashMap<>();
 
     private static final Biome DEFAULT_BIOME = Biome.builder()
             .noise(NoiseSettingsInit.DEFAULT)
@@ -70,7 +69,7 @@ public final class ServerWorld extends World {
             .layer(new SurfaceTerrainLayer())
             .layer(new StoneTerrainLayer())
             .layer(new UndergroundTerrainLayer())
-//			.extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH))
+            .extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH_X, NoiseSettingsInit.STONE_PATCH_Y, NoiseSettingsInit.STONE_PATCH_BASE))
             .build();
 
     static {
@@ -487,25 +486,11 @@ public final class ServerWorld extends World {
     public void dispose() {
         var saveSchedule = this.saveSchedule;
         if (saveSchedule != null) saveSchedule.cancel(true);
-        this.saveExecutor.shutdownNow().clear();
+        this.saveExecutor.shutdownNow();
+        super.dispose();
 
-        try {
-            this.save(false);
-        } catch (IOException e) {
-            World.LOGGER.warn(World.MARKER, "Saving failed:", e);
-        }
+        this.regionStorage.dispose();
 
-        for (var region : this.regionStorage.regions.values()) {
-            try {
-                this.saveRegion(region, true);
-            } catch (Exception e) {
-                World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
-                var remove = this.regionStorage.regions.remove(region.getPos());
-                if (remove != region)
-                    this.server.crash(new ValidationError("Removed region is not the region that got saved."));
-                region.dispose();
-            }
-        }
         this.generator.dispose();
     }
 
@@ -583,8 +568,8 @@ public final class ServerWorld extends World {
         this.storage.createDir("data/");
         this.storage.createDir("regions/");
 
-        if (this.storage.exists("data/entities.ubo")) {
-            ListType<MapType> entityListData = this.storage.read("data/entities.ubo");
+        if (this.storage.exists("entities.ubo")) {
+            ListType<MapType> entityListData = this.storage.read("entities.ubo");
             for (var entityData : entityListData) {
                 var entity = Entity.loadFrom(this, entityData);
                 this.entities.put(entity.getId(), entity);
@@ -616,6 +601,7 @@ public final class ServerWorld extends World {
     public void save(boolean silent) throws IOException {
         if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getFileName());
 
+        //<editor-fold defaultstate="collapsed" desc="<<Entity-Saving>>">
         var entitiesData = new ListType<MapType>();
         for (var entity : this.entities.values()) {
             if (entity instanceof Player) continue;
@@ -623,17 +609,28 @@ public final class ServerWorld extends World {
             var entityData = entity.save(new MapType());
             entitiesData.add(entityData);
         }
-        this.storage.write(entitiesData, "data/entities.ubo");
-
-//		Player player = UltreonCraft.get().player;
-//		MapType playerData = player == null ? new MapType() : player.save(new MapType());
-//		this.worldStorage.write(playerData, "data/player.ubo");
+        this.storage.write(entitiesData, "entities.ubo");
+        //</editor-fold>
 
         for (var region : this.regionStorage.regions.values()) {
             this.saveRegion(region, false);
         }
 
         WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
+
+        //<editor-fold defaultstate="collapsed" desc="<<Region-Saving>>">
+        for (var region : this.regionStorage.regions.values()) {
+            try {
+                this.saveRegion(region, false);
+            } catch (Exception e) {
+                World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
+                var remove = this.regionStorage.regions.remove(region.getPos());
+                if (remove != region)
+                    this.server.crash(new ValidationError("Removed region is not the region that got saved."));
+                region.dispose();
+            }
+        }
+        //</editor-fold>
 
         if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getFileName());
     }
@@ -659,11 +656,10 @@ public final class ServerWorld extends World {
         }
 
         var file = this.storage.regionFile(region.getPos());
-        try (var stream = new GZIPOutputStream(new FileOutputStream(file, false))) {
+        try (var stream = new GZIPOutputStream(new FileOutputStream(file, false), true)) {
             var dataStream = new DataOutputStream(stream);
 
             this.regionStorage.save(region, dataStream, dispose);
-            stream.finish();
             stream.flush();
         } catch (IOException e) {
             World.LOGGER.error("Failed to save region %s".formatted(region.getPos()), e);
@@ -1238,6 +1234,7 @@ public final class ServerWorld extends World {
                 stream.writeByte(localChunkPos.x());
                 stream.writeByte(localChunkPos.z());
                 chunk.save().write(stream);
+                stream.flush();
                 idx++;
             }
 
@@ -1271,7 +1268,7 @@ public final class ServerWorld extends World {
             // Read chunks from region file.
             Map<ChunkPos, ServerChunk> chunkMap = new HashMap<>();
             var maxIdx = stream.readUnsignedShort();
-            for (var idx = 0; idx <= maxIdx; idx++) {
+            for (var idx = 0; idx < maxIdx; idx++) {
                 // Read local chunk pos.
                 var chunkX = stream.readUnsignedByte();
                 var chunkZ = stream.readUnsignedByte();
@@ -1282,10 +1279,9 @@ public final class ServerWorld extends World {
 
                 // Create local and global chunk coordinates.
                 var localChunkPos = new ChunkPos(chunkX, chunkZ);
-                var globalChunkPos = new ChunkPos(chunkX + x * World.REGION_SIZE * World.REGION_SIZE, chunkZ + z * World.REGION_SIZE);
 
                 // Load server chunk.
-                var chunk = ServerChunk.load(world, globalChunkPos, MapType.read(stream));
+                var chunk = ServerChunk.load(world, localChunkPos, MapType.read(stream));
                 chunkMap.put(localChunkPos, chunk);
             }
 
@@ -1338,6 +1334,11 @@ public final class ServerWorld extends World {
         @Nullable
         private Region getRegion(RegionPos regionPos) {
             return this.regions.get(regionPos);
+        }
+
+        public void dispose() {
+            this.regions.values().forEach(Region::dispose);
+            this.regions.clear();
         }
     }
 }

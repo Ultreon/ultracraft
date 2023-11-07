@@ -43,6 +43,7 @@ public class DefaultInspections {
             node.create("isFlying", Player::isFlying);
             node.create("isSpectating", Player::isSpectating);
             node.create("selected", value -> value.selected);
+            node.create("uuid", Player::getUuid);
         });
         InspectionRoot.registerAutoFill(Inventory.class, node -> {
             node.createNode("hotbar", value -> value.hotbar);
@@ -50,6 +51,7 @@ public class DefaultInspections {
         });
         InspectionRoot.registerAutoFill(ServerPlayer.class, node -> {
             node.createNode("cursor", ServerPlayer::getCursor);
+            node.create("name", ServerPlayer::getName);
         });
         InspectionRoot.registerAutoFill(ItemStack.class, node -> {
             node.create("item", ItemStack::getItem);

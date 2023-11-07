@@ -39,7 +39,9 @@ public class PollingExecutorService implements ExecutorService {
     @Override
     public @NotNull List<Runnable> shutdownNow() {
         this.isShutdown = true;
-        return List.copyOf(this.tasks);
+        List<Runnable> remainingTasks = List.copyOf(this.tasks);
+        this.tasks.clear();
+        return remainingTasks;
     }
 
     @Override

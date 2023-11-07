@@ -10,6 +10,7 @@ import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.Constants;
@@ -41,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public abstract class GameInput implements InputProcessor, ControllerListener {
+public abstract class GameInput implements InputProcessor, ControllerListener, Disposable {
     protected static final float DEG_PER_PIXEL = 0.6384300433839F;
     private static final IntArraySet keys = new IntArraySet();
     protected final UltracraftClient client;
@@ -307,5 +308,10 @@ public abstract class GameInput implements InputProcessor, ControllerListener {
 //                }
 //            }
 //        }
+    }
+
+    @Override
+    public void dispose() {
+        Controllers.removeListener(this);
     }
 }

@@ -1,6 +1,7 @@
 package com.ultreon.craft.client;
 
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
 import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
@@ -8,6 +9,7 @@ import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +18,7 @@ import java.util.UUID;
 public class IntegratedServer extends UltracraftServer {
     private final UltracraftClient client = UltracraftClient.get();
     private boolean openToLan = false;
-    private ServerPlayer host;
+    private @Nullable ServerPlayer host;
 
     public IntegratedServer(WorldStorage storage) {
         super(storage, UltracraftClient.PROFILER, UltracraftClient.get().inspection);
@@ -31,20 +33,40 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     public void loadPlayer(@NotNull LocalPlayer localPlayer) {
-        ServerPlayer player = this.getPlayerByUuid(localPlayer.getUuid());
+        ServerPlayer player = this.getPlayer(localPlayer.getUuid());
         try {
-            if (player != null && player.getUuid().equals(localPlayer.getUuid()) && this.getStorage().exists("data/player.ubo")) {
-                var playerData = this.getStorage().<MapType>read("data/player.ubo");
+            if (player != null && player.getUuid().equals(localPlayer.getUuid()) && this.getStorage().exists("player.ubo")) {
+                var playerData = this.getStorage().<MapType>read("player.ubo");
                 player.loadWithPos(playerData);
+                player.connection.send(new S2CPlayerSetPosPacket(player.getPosition()));
+            } else if (player == null) {
+                throw new IllegalStateException("Player not found.");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        this.host = player;
+        if (player.getUuid().equals(localPlayer.getUuid())) {
+            this.host = player;
+        }
 
         if (CommonConstants.INSPECTION_ENABLED) {
-            this.node.createNode("host", () -> this);
+            this.node.createNode("host", () -> this.host);
+        }
+    }
+
+    public void savePlayer() {
+        ServerPlayer player = this.host;
+        try {
+            if (player != null) {
+                MapType save = player.save(new MapType());
+                this.getStorage().write(save, "player.ubo");
+                UltracraftServer.LOGGER.info("Saved local player data.");
+            } else {
+                UltracraftServer.LOGGER.error("Player not found.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -60,7 +82,14 @@ public class IntegratedServer extends UltracraftServer {
 
     @Override
     public void placePlayer(ServerPlayer player) {
-        this.deferWorldLoad(() -> super.placePlayer(player));
+        this.deferWorldLoad(() -> {
+            super.placePlayer(player);
+
+            LocalPlayer localPlayer = this.client.player;
+            if (localPlayer != null && player.getUuid().equals(localPlayer.getUuid())) {
+                this.client.integratedServer.loadPlayer(localPlayer);
+            }
+        });
     }
 
     private void deferWorldLoad(Runnable func) {
@@ -82,6 +111,22 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
+    public void load() throws IOException {
+        super.load();
+    }
+
+    @Override
+    public void save(boolean silent) throws IOException {
+        super.save(silent);
+
+        try {
+            this.savePlayer();
+        } catch (Exception e) {
+            UltracraftServer.LOGGER.error("Failed to save local player data.", e);
+        }
+    }
+
+    @Override
     public String toString() {
         return "IntegratedServer{" +
                 "openToLan=" + this.openToLan +
@@ -97,7 +142,7 @@ public class IntegratedServer extends UltracraftServer {
 
     @Override
     public UUID getHost() {
-        return this.host.getUuid();
+        return this.host != null ? this.host.getUuid() : null;
     }
 
     public UltracraftClient getClient() {

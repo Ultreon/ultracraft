@@ -8,6 +8,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -56,7 +57,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         Connection.LOGGER.info("Player " + this.player.getName() + " disconnected: " + message);
         PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
 
-        this.connection.close();
+        this.connection.closeAll();
     }
 
     public boolean shouldHandlePacket(Packet<?> packet) {
@@ -95,8 +96,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.server.onDisconnected(this.player, message);
     }
 
-    public void onPlayerMove(ServerPlayer player, double dx, double dy, double dz) {
-        this.server.submit(() -> player.move(dx, dy, dz));
+    public void onPlayerMove(ServerPlayer player, double x, double y, double z) {
+        this.server.submit(() -> player.handlePlayerMove(x, y, z));
     }
 
     public void onChunkStatus(ServerPlayer player, ChunkPos pos, Chunk.Status status) {
@@ -168,13 +169,15 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     public void onItemUse(HitResult hitResult) {
         var player = this.player;
         var inventory = player.inventory;
-        var stack = inventory.hotbar[player.selected].getItem();
+        ItemSlot slot = inventory.hotbar[player.selected];
+        var stack = slot.getItem();
         var item = stack.getItem();
 
         if (item == null) return;
 
         UltracraftServer.invoke(() -> {
             item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
+            slot.update();
         });
     }
 

@@ -1,10 +1,10 @@
 package com.ultreon.craft.debug.inspect;
 
+import com.badlogic.gdx.utils.Disposable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.io.Closeable;
 import java.lang.reflect.Array;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +23,7 @@ import java.util.function.Function;
  * @since 0.1.0
  */
 @ThreadSafe
-public final class InspectionRoot<T> extends InspectionNode<T> implements Closeable {
+public final class InspectionRoot<T> extends InspectionNode<T> implements Disposable {
     private boolean inspecting;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static final Map<Class<?>, Consumer<InspectionNode<?>>> AUTO_FILL = new ConcurrentHashMap<>();
@@ -60,10 +60,6 @@ public final class InspectionRoot<T> extends InspectionNode<T> implements Closea
 
     public void setInspecting(boolean inspecting) {
         this.inspecting = inspecting;
-    }
-
-    public void close() {
-        this.scheduler.shutdown();
     }
 
     @Override
@@ -104,7 +100,6 @@ public final class InspectionRoot<T> extends InspectionNode<T> implements Closea
         }
 
         while (clazz != null) {
-            System.out.println("clazz = " + clazz);
             filler = InspectionRoot.AUTO_FILL.get(clazz);
             if (filler != null) {
                 filler.accept(node);
@@ -138,5 +133,9 @@ public final class InspectionRoot<T> extends InspectionNode<T> implements Closea
         if (node == null) throw new InternalError("Profile section not found: " + path);
 
         return node;
+    }
+
+    public void dispose() {
+        this.scheduler.shutdownNow();
     }
 }

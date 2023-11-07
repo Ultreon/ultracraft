@@ -33,7 +33,8 @@ public class Entity {
     public double velocityX;
     public double velocityY;
     public double velocityZ;
-    public float gravity = 0.1F;
+    public float gravity = 0.08f;
+    public float drag = 0.98f;
     public boolean noGravity;
     public boolean isColliding;
     public boolean isCollidingX;
@@ -83,6 +84,7 @@ public class Entity {
 
         this.fallDistance = data.getDouble("fallDistance", this.fallDistance);
         this.gravity = data.getFloat("gravity", this.gravity);
+        this.drag = data.getFloat("drag", this.drag);
         this.noGravity = data.getBoolean("noGravity", this.noGravity);
         this.noClip = data.getBoolean("noClip", this.noClip);
     }
@@ -111,6 +113,7 @@ public class Entity {
 
         data.putDouble("fallDistance", this.fallDistance);
         data.putFloat("gravity", this.gravity);
+        data.putFloat("drag", this.drag);
         data.putBoolean("noGravity", this.noGravity);
         data.putBoolean("noClip", this.noClip);
 
@@ -138,7 +141,7 @@ public class Entity {
             this.velocityZ *= 0.56f;
         } else {
             this.velocityX *= 0.6F;
-            this.velocityY *= this.noGravity ? 0.6F : 0.98F;
+            this.velocityY *= this.noGravity ? 0.6F : this.drag;
             this.velocityZ *= 0.6F;
         }
 

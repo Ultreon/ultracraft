@@ -31,7 +31,7 @@ public class BlockItem extends Item {
         World world = useItemContext.world();
         ItemStack stack = useItemContext.stack();
         Vec3i next = useItemContext.result().getNext();
-        if (!world.intersectEntities(this.getBlock().getBoundingBox(next))) {
+        if (useItemContext.world().isServerSide() && !world.intersectEntities(this.getBlock().getBoundingBox(next))) {
             world.set(new BlockPos(next), this.getBlock());
             stack.shrink(1);
         }

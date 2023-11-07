@@ -37,14 +37,12 @@ public class TextureManager {
     @Deprecated
     public static final TextureRegion DEFAULT_TEXTURE_REG = TextureManager.DEFAULT_TEX_REG;
 
-    @SuppressWarnings("GDXJavaStaticResource")
-    @Deprecated(forRemoval = true)
-    public static final Texture DEFAULT_TEXTURE = TextureManager.DEFAULT_TEX;
-
     static {
         TextureManager.DEFAULT_TEX.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         TextureManager.DEFAULT_TEX.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
     }
+
+    private boolean frozen = false;
 
     public TextureManager(ResourceManager resourceManager) {
         Preconditions.checkNotNull(resourceManager, "resourceManager");
@@ -81,10 +79,12 @@ public class TextureManager {
 
     @NotNull
     public Texture getTexture(Identifier id) {
+        if (this.frozen) return TextureManager.DEFAULT_TEX;
+
         Preconditions.checkNotNull(id, "id");
 
         if (!UltracraftClient.isOnMainThread()) {
-            return UltracraftClient.invokeAndWait(() -> getTexture(id));
+            return UltracraftClient.invokeAndWait(() -> this.getTexture(id));
         }
 
         if (!this.textures.containsKey(id)) {
@@ -98,6 +98,8 @@ public class TextureManager {
     }
 
     public boolean isTextureLoaded(Identifier id) {
+        if (this.frozen) return false;
+
         Preconditions.checkNotNull(id, "id");
 
         return this.textures.containsKey(id);
@@ -107,6 +109,8 @@ public class TextureManager {
     @NewInstance
     @CanIgnoreReturnValue
     public Texture registerTexture(Identifier id) {
+        if (this.frozen) return TextureManager.DEFAULT_TEX;
+
         Preconditions.checkNotNull(id, "id");
         Texture oldTexture = this.textures.get(id);
         if (oldTexture != null) return oldTexture;
@@ -126,6 +130,8 @@ public class TextureManager {
 
     @CanIgnoreReturnValue
     public Texture registerTexture(@NotNull Identifier id, @NotNull Texture texture) {
+        if (this.frozen) return TextureManager.DEFAULT_TEX;
+
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(texture, "texture");
 
@@ -138,5 +144,12 @@ public class TextureManager {
 
     public ResourceManager getResourceManager() {
         return this.resourceManager;
+    }
+
+    public void dispose() {
+        this.frozen = true;
+        for (Texture texture : this.textures.values()) {
+            texture.dispose();
+        }
     }
 }

@@ -67,7 +67,7 @@ dependencies {
     runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
-    implementation api("org.apache.commons:commons-collections4:4.4")
+    implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")
     implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.tukaani:xz:$tukaani_xz_version")
     implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")

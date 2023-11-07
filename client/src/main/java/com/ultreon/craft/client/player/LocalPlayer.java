@@ -27,7 +27,7 @@ public class LocalPlayer extends ClientPlayer {
     public @Nullable ContainerMenu openMenu;
     private UUID uuid;
     private int oldSelected;
-    private int moveUpdate = 5;
+    private int moveUpdate = 10;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
@@ -37,6 +37,9 @@ public class LocalPlayer extends ClientPlayer {
 
     @Override
     public void tick() {
+        if (!this.client.renderWorld) return;
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+
         this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
         super.tick();
@@ -46,26 +49,17 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (this.moveUpdate-- <= 0
-                && this.x - this.ox >= 0.001 && this.y - this.oy >= 0.001 && this.z - this.oz >= 0.001
-                && this.x != this.ox || this.y != this.oy || this.z != this.oz) {
-            this.moveUpdate = 5;
+        if (Math.abs(this.x - this.ox) >= 0.01 && Math.abs(this.y - this.oy) >= 0.01 && Math.abs(this.z - this.oz) >= 0.01
+                && (this.x != this.ox || this.y != this.oy || this.z != this.oz)) {
             if (this.world.getChunk(this.getChunkPos()) == null) {
                 this.x = this.ox;
                 this.z = this.oz;
             }
-            this.client.connection.send(new C2SPlayerMovePacket(this.x - this.ox, this.y - this.oy, this.z - this.oz));
+            this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
             this.ox = this.x;
             this.oy = this.y;
             this.oz = this.z;
         }
-    }
-
-    @Override
-    protected void move() {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-
-        super.move();
     }
 
     @Override
@@ -76,6 +70,17 @@ public class LocalPlayer extends ClientPlayer {
     @Override
     protected void hurtFromVoid() {
 
+    }
+
+    @Override
+    public void jump() {
+        if (this.isInWater()) return;
+        this.velocityY = this.jumpVel;
+
+        if (this.isRunning()) {
+            this.velocityX *= 1.2;
+            this.velocityZ *= 1.2;
+        }
     }
 
     @Override

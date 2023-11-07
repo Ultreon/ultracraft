@@ -16,8 +16,14 @@ public final class NoiseSettingsInit {
     public static final NoiseSettings TREE = NoiseSettingsInit.register("tree",
             new NoiseSettings(0.01f, 1, new Vec2f(300, 5000), 497395, 0.01f, 1.2f, 4f, 1, 0));
 
-    public static final NoiseSettings STONE_PATCH = NoiseSettingsInit.register("stone_patch",
-            new NoiseSettings(0.01f, 5, new Vec2f(-48000, 85000), 159373, 0.5f, 0.25f, 0.635f, 1, 0.5f));
+    public static final NoiseSettings STONE_PATCH_BASE = NoiseSettingsInit.register("stone_patch_base",
+            new NoiseSettings(0.01f, 5, new Vec2f(680875, 914213), 425023, 0.5f, 0.25f, 0.635f, 1, 0.5f));
+
+    public static final NoiseSettings STONE_PATCH_X = NoiseSettingsInit.register("stone_patch_x",
+            new NoiseSettings(0.01f, 4, new Vec2f(9941, -790416), 278733, 0.6f, 1.2f, 5f, 30, 60));
+
+    public static final NoiseSettings STONE_PATCH_Y = NoiseSettingsInit.register("stone_patch_y",
+            new NoiseSettings(0.01f, 4, new Vec2f(-708253, 112907), 953183, 0.6f, 1.2f, 5f, 30, 60));
 
     public static final NoiseSettings DOMAIN_X = NoiseSettingsInit.register("domain_x",
             new NoiseSettings(0.01f, 4, new Vec2f(69400, 35350), 998334, 0.6f, 1.2f, 5f, 30, 60));

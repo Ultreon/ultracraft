@@ -19,7 +19,7 @@ public class LivingEntity extends Entity {
     protected boolean isDead = false;
     protected int damageImmunity = 0;
 
-    public float jumpVel = 0.55F;
+    public float jumpVel = 0.52F;
     public boolean jumping = false;
     public boolean invincible = false;
     protected float oldHealth;
