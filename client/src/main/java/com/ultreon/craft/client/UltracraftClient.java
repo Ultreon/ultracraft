@@ -431,7 +431,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     /**
      * Launches the game.
-     * <h2 style="color:red;"><b>Note: This method should not be called.</b></h2>
+     * <p style="color:red;"><b>Note: This method should not be called.</b></p>
      *
      * @param argv the arguments to pass to the game
      * @deprecated the method is replaced by {@link #launch(String[])}
