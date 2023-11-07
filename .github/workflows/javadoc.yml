@@ -19,3 +19,4 @@ jobs:
           java-version: 17
           target-folder: latest
           project: gradle
+          subdirectories: client server
