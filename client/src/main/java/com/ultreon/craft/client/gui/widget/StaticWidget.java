@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Static widget, only for rendering.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public interface StaticWidget {

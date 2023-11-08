@@ -61,7 +61,7 @@ public class TitleScreen extends Screen {
     }
 
     private void openSingleplayer(Button<?> caller) {
-        this.client.startWorld();
+        this.client.showScreen(new WorldSelectionScreen());
     }
 
     private void openMultiplayer(Button<?> caller) {

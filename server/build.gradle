@@ -47,6 +47,7 @@ dependencies {
     implementation api(project(":gameprovider"))
 
     implementation api("com.formdev:flatlaf:3.2.1")
+    implementation api("org.yaml:snakeyaml:$snakeyaml_version")
 
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")

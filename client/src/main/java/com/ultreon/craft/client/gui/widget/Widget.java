@@ -317,4 +317,12 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
         this.size.height = bounds.size().height;
         return (T) this;
     }
+
+    public void onFocusLost() {
+        this.focused = false;
+    }
+
+    public void onFocusGained() {
+        this.focused = true;
+    }
 }

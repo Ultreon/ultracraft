@@ -3,7 +3,6 @@ package com.ultreon.craft.collection;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.ubo.DataKeys;
-import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.ArrayUtils;
@@ -15,7 +14,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisposable {
+/**
+ * <h1>Palette Storage Implementation.</h1>
+ * Palette storage is used for storing data in palettes.
+ * It's used for optimizing memory and storage usage.
+ * Generally used for advanced voxel games.
+ * <p>
+ * It makes use of short arrays to store {@link #getPalette() index pointers} to the {@linkplain #getData() data}.
+ * While the data itself is stored without any duplicates.
+ *
+ * @param <D> the data type.
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ */
+public class PaletteStorage<D> implements ServerDisposable {
     private short[] palette;
     private List<D> data = new ArrayList<>();
     private int paletteCounter = 0;
@@ -25,23 +36,14 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
         Arrays.fill(this.palette, (short) -1);
     }
 
-    public PaletteStorage(MapType data, Function<MapType, D> decoder) {
-        ListType<MapType> paletteData = data.getList("Data", new ListType<>());
-        for (MapType mapData : paletteData) {
-            this.data.add(decoder.apply(mapData));
-        }
-
-        this.palette = data.getShortArray("Palette");
-    }
-
     public PaletteStorage(short[] palette, List<D> data) {
         this.palette = palette;
         this.data = data;
     }
 
-    public MapType save(MapType outputData) {
+    public MapType save(MapType outputData, Function<D, MapType> encoder) {
         ListType<MapType> data = new ListType<>();
-        for (@Nullable D entry : this.data) if (entry != null) data.add(entry.save());
+        for (@Nullable D entry : this.data) if (entry != null) data.add(encoder.apply(entry));
         outputData.put("Data", data);
 
         outputData.putShortArray("Palette", this.palette);
@@ -60,10 +62,10 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
         this.palette = inputData.getShortArray(DataKeys.PALETTE, new short[this.palette.length]);
     }
 
-    public void write(PacketBuffer buffer) {
+    public void write(PacketBuffer buffer, Function<D, MapType> encoder) {
         buffer.writeInt(this.data.size());
         for (D entry : this.data) {
-            buffer.writeUbo(entry.save());
+            buffer.writeUbo(encoder.apply(entry));
         }
 
         buffer.writeInt(this.palette.length);
@@ -169,5 +171,12 @@ public class PaletteStorage<D extends DataWriter<MapType>> implements ServerDisp
 
     public List<D> getData() {
         return Collections.unmodifiableList(this.data);
+    }
+
+    public void set(short[] palette, List<D> data) {
+        if (this.palette.length != palette.length) throw new IllegalArgumentException("Palette length must be equal.");
+
+        this.palette = palette;
+        this.data = data;
     }
 }

@@ -4,6 +4,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.config.UltracraftServerConfig;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.entity.EntityTypes;
@@ -43,7 +46,7 @@ import java.util.stream.Stream;
 /**
  * The base class for the Ultracraft server.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -84,16 +87,27 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public UltracraftServer(WorldStorage storage, Profiler profiler, InspectionNode<?> parentNode) {
         super(profiler);
 
-
         this.storage = storage;
 
         UltracraftServer.instance = this;
         this.thread = new Thread(this, "server");
 
         this.connections = new ServerConnections(this);
-        this.world = new ServerWorld(this, this.storage);
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        UltracraftServerConfig.get();
+
+        MapType worldData = new MapType();
+        if (this.storage.exists("world.ubo")) {
+            try {
+                this.storage.read("world.ubo");
+            } catch (IOException e) {
+                this.crash(e);
+            }
+        }
+
+        this.world = new ServerWorld(this, this.storage, worldData);
+
+        if (DebugFlags.INSPECTION_ENABLED) {
             this.node = parentNode.createNode("server", () -> this);
             this.playersNode = this.node.createNode("players", this.players::values);
             this.node.createNode("world", () -> this.world);
@@ -547,7 +561,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.players.put(player.getUuid(), player);
         this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED) {
             this.playersNode.createNode(player.getName(), () -> player);
         }
 
@@ -693,10 +707,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     public boolean hasPlayedBefore(CacheablePlayer player) {
-        try {
-            return this.storage.exists("players/" + player.getName() + ".ubo");
-        } catch (IOException ignored) {
-            return false;
-        }
+        return this.storage.exists("players/" + player.getName() + ".ubo");
     }
 }

@@ -4,7 +4,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 import java.util.Objects;
 
-public final class NoiseSettings {
+public final class NoiseConfig {
     private final float noiseZoom;
     private final float octaves;
     private final Vec2f offset;
@@ -26,8 +26,8 @@ public final class NoiseSettings {
      * @param amplitude
      * @param base
      */
-    public NoiseSettings(float noiseZoom, float octaves, Vec2f offset, long seed, float persistence,
-                         float redistributionModifier, float exponent, float amplitude, float base) {
+    public NoiseConfig(float noiseZoom, float octaves, Vec2f offset, long seed, float persistence,
+                       float redistributionModifier, float exponent, float amplitude, float base) {
         this.noiseZoom = noiseZoom;
         this.octaves = octaves;
         this.offset = offset;
@@ -78,7 +78,7 @@ public final class NoiseSettings {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        NoiseSettings that = (NoiseSettings) obj;
+        NoiseConfig that = (NoiseConfig) obj;
         return Float.floatToIntBits(this.noiseZoom) == Float.floatToIntBits(that.noiseZoom) &&
                 this.octaves == that.octaves &&
                 Objects.equals(this.offset, that.offset) &&
@@ -95,7 +95,7 @@ public final class NoiseSettings {
 
     @Override
     public String toString() {
-        return "NoiseSettings[" +
+        return "NoiseConfig[" +
                 "noiseZoom=" + this.noiseZoom + ", " +
                 "octaves=" + this.octaves + ", " +
                 "offset=" + this.offset + ", " +

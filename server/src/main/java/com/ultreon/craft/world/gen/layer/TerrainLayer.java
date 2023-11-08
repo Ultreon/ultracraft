@@ -9,7 +9,7 @@ import org.jetbrains.annotations.ApiStatus;
 /**
  * A terrain layer that handles world generation.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public abstract class TerrainLayer implements Disposable {

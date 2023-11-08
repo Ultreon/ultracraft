@@ -3,7 +3,6 @@ package com.ultreon.craft.world;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteStorage;
-import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
@@ -13,44 +12,51 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.ultreon.craft.world.World.*;
 
+/**
+ * Represents a chunk in the world.
+ * <p style="color: red;">NOTE: This class isn't meant to be extended</p>
+ * <p style="color: red;">NOTE: This class isn't thread safe</p>
+ *
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ * @since 0.1.0
+ */
 @NotThreadSafe
 @ApiStatus.NonExtendable
 public abstract class Chunk implements ServerDisposable {
     public static final int VERTEX_SIZE = 6;
     private final ChunkPos pos;
     final Map<BlockPos, Float> breaking = new HashMap<>();
-    final Map<BlockPos, Integer> breakingId = new HashMap<>();
     protected final Object lock = new Object();
     protected boolean active;
-    protected boolean modifiedByPlayer;
     protected boolean ready;
-    //	protected Node[] sections;
     public final int size;
     public final int height;
     protected final Vec3i offset;
-    @Nullable
+    @MonotonicNonNull
+    @ApiStatus.Internal
     public TreeData treeData;
     private boolean disposed;
     @Deprecated
     protected boolean updateNeighbours;
     private final World world;
-    protected List<Palette.@NotNull Index> blockData = new ArrayList<>();
-    Block[] blocks = new Block[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
-    //	protected final Palette<Block> palette = new Palette<>(this::encodeBlock, this::decodeBlock);
+
+    /**
+     * Field for block data in palette storage format.
+     * Palette storage is used for improving memory usage.
+     */
     public final PaletteStorage<Block> storage;
+    protected final PaletteStorage<Biome> biomeStorage = new PaletteStorage<>(256);
 
     protected Chunk(World world, int size, int height, ChunkPos pos) {
         this(world, size, height, pos, new PaletteStorage<>(size * height * size));
@@ -67,6 +73,12 @@ public abstract class Chunk implements ServerDisposable {
         this.storage = storage;
     }
 
+    /**
+     * Decodes a block from a UBO object.
+     *
+     * @param inputData The input data.
+     * @return The decoded block data.
+     */
     public static Block decodeBlock(MapType inputData) {
         @Nullable String stringId = inputData.getString("id");
         if (stringId == null) {
@@ -83,52 +95,26 @@ public abstract class Chunk implements ServerDisposable {
         return Registries.BLOCKS.getValue(id);
     }
 
-    // Serialize the chunk to a byte array
+    /**
+     * Serialize the chunk to the packet buffer.
+     *
+     * @param buffer The packet buffer.
+     */
     public void serializeChunk(PacketBuffer buffer) {
         synchronized (this.lock) {
-            this.storage.write(buffer);
-
-            try {
-                if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-                    Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/before/");
-                    if (Files.notExists(readDir)) Files.createDirectories(readDir);
-
-                    Files.writeString(readDir.resolve("before_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-                }
-            } catch (IOException ignored) {
-
-            }
-
-            // Debug network packet dump.
-//            if (DebugFlags.CHUNK_PACKET_DUMP) {
-//                Path readDir = Path.of(".cache/ultracraft/_debug/packet/written/");
-//                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-//                Files.write(readDir.resolve("written_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), buffer, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-//            }
-//            return byteArray;
+            this.storage.write(buffer, Block::save);
+            this.biomeStorage.write(buffer, Biome::save);
         }
     }
 
-    // Deserialize the chunk from a byte array
+    /**
+     * Deserialize the chunk from the packet buffer.
+     *
+     * @param buffer The packet buffer.
+     */
     public void deserializeChunk(PacketBuffer buffer) {
-//        // Debug network packet dump.
-//        if (DebugFlags.CHUNK_PACKET_DUMP) {
-//            var readDir = Path.of(".cache/ultracraft/_debug/packet/read/");
-//            if (Files.notExists(readDir)) Files.createDirectories(readDir);
-//            Files.write(readDir.resolve("read_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-//        }
-
         this.storage.read(buffer, Chunk::decodeBlock);
-
-        try {
-            if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-                Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/after/");
-                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-                Files.writeString(readDir.resolve("after_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-            }
-        } catch (IOException ignored) {
-
-        }
+        this.biomeStorage.read(buffer, Biome::load);
     }
 
     public Block get(Vec3i pos) {
@@ -196,8 +182,6 @@ public abstract class Chunk implements ServerDisposable {
             this.ready = false;
 
             this.storage.dispose();
-            this.blockData = null;
-            this.blocks = null;
         }
     }
 
@@ -272,7 +256,13 @@ public abstract class Chunk implements ServerDisposable {
         return this.pos;
     }
 
-
+    /**
+     * Find the highest block at the given position.
+     *
+     * @param x the x coordinate
+     * @param z the z coordinate
+     * @return The highest block Y coordinate.
+     */
     // TODO: Make faster with heightmaps.
     public int getHighest(int x, int z) {
         for (int y = CHUNK_HEIGHT; y > 0; y--) {
@@ -283,6 +273,14 @@ public abstract class Chunk implements ServerDisposable {
         return 0;
     }
 
+    /**
+     * Find an empty space above the given position.
+     *
+     * @param x The x position.
+     * @param y The y position to use as base.
+     * @param z The z position.
+     * @return The found position.
+     */
     public int ascend(int x, int y, int z) {
         for (; y < CHUNK_HEIGHT; y++) {
             if (this.getFast(x, y, z).isAir()) {
@@ -292,11 +290,51 @@ public abstract class Chunk implements ServerDisposable {
         return CHUNK_HEIGHT;
     }
 
+    /**
+     * Find an empty space with a given {@code height} above the given position.
+     *
+     * @param x      The x position.
+     * @param y      The y position to use as base.
+     * @param z      The z position.
+     * @param height The height of the space.
+     * @return The found position.
+     */
+    public int ascend(int x, int y, int z, int height) {
+        for (; y < CHUNK_HEIGHT; y++) {
+            if (!this.getFast(x, y, z).isAir()) continue;
+
+            for (int i = 0; i < height; i++) {
+                if (this.getFast(x, y + i, z).isAir()) return y;
+            }
+        }
+        return CHUNK_HEIGHT;
+    }
+
+    public void setTreeData(TreeData treeData) {
+        if (this.treeData != null) return;
+
+        this.treeData = treeData;
+    }
+
+    protected int toFlatIndex(int x, int z) {
+        return x + z * CHUNK_SIZE;
+    }
+
+    public Biome getBiome(int x, int y, int z) {
+        int index = this.toFlatIndex(x, z);
+        return this.biomeStorage.get(index);
+    }
+
+    /**
+     * Chunk status for client chunk load response.
+     *
+     * @author <a href="https://github.com/XyperCode">XyperCode</a>
+     */
     public enum Status {
         SUCCESS,
         SKIP,
         UNLOADED,
         FAILED
-    }
 
+    }
 }

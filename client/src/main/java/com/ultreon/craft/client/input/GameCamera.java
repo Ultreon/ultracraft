@@ -3,9 +3,9 @@ package com.ultreon.craft.client.input;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -15,7 +15,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3f;
  * The camera used for the game.
  * Originates at 0,0,0. The world is rendered relative to the camera.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public class GameCamera extends PerspectiveCamera {
@@ -29,7 +29,7 @@ public class GameCamera extends PerspectiveCamera {
     public GameCamera(float fieldOfViewY, float viewportWidth, float viewportHeight) {
         super(fieldOfViewY, viewportWidth, viewportHeight);
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED) {
             this.node = this.client.inspection.createNode("camera", () -> this);
             this.node.create("position", () -> this.position);
             this.node.create("direction", () -> this.direction);

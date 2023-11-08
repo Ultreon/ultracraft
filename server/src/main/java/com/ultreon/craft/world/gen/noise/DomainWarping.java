@@ -14,7 +14,7 @@ public class DomainWarping {
         this.domainY = domainY;
     }
 
-    public DomainWarping(long seed, NoiseSettings settingsX, NoiseSettings settingsZ) {
+    public DomainWarping(long seed, NoiseConfig settingsX, NoiseConfig settingsZ) {
         this.domainX = settingsX.create(seed);
         this.domainY = settingsZ.create(seed);
     }

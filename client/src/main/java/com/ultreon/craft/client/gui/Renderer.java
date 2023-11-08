@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 /**
  * Renderer class.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @SuppressWarnings("unused")
 public class Renderer {

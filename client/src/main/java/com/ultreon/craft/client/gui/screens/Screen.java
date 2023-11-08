@@ -10,6 +10,7 @@ import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -19,6 +20,7 @@ public abstract class Screen extends UIContainer<Screen> {
     protected TextObject title;
     public Screen parentScreen;
     public Widget<?> directHovered;
+    public @Nullable Widget<?> focused;
 
     public Screen(String title) {
         this(TextObject.literal(title));
@@ -195,12 +197,44 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     @Override
+    public boolean mouseClick(int mouseX, int mouseY, int button, int clicks) {
+        Widget<?> widgetsAt = this.getWidgetAt(mouseX, mouseY);
+        if (this.focused != null) this.focused.onFocusLost();
+        this.focused = widgetsAt;
+        if (this.focused != null) this.focused.onFocusGained();
+
+        return super.mouseClick(mouseX, mouseY, button, clicks);
+    }
+
+    @Override
     public boolean keyPress(int keyCode) {
         if (keyCode == Input.Keys.ESCAPE) {
             this.back();
             return true;
         }
 
+        if (this.focused != null) {
+            if (this.focused.keyPress(keyCode)) return true;
+        }
+
         return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean keyRelease(int keyCode) {
+        if (this.focused != null) {
+            if (this.focused.keyRelease(keyCode)) return true;
+        }
+
+        return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean charType(char character) {
+        if (this.focused != null) {
+            if (this.focused.charType(character)) return true;
+        }
+
+        return super.charType(character);
     }
 }

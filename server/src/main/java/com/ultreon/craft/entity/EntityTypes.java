@@ -1,7 +1,7 @@
 package com.ultreon.craft.entity;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.libs.commons.v0.Identifier;
 
 public class EntityTypes {

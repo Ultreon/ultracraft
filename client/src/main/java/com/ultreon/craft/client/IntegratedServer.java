@@ -1,8 +1,8 @@
 package com.ultreon.craft.client;
 
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.WorldStorage;
@@ -50,7 +50,7 @@ public class IntegratedServer extends UltracraftServer {
             this.host = player;
         }
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED) {
             this.node.createNode("host", () -> this.host);
         }
     }
@@ -108,11 +108,6 @@ public class IntegratedServer extends UltracraftServer {
     @ApiStatus.Experimental
     public void openToLan() {
         this.openToLan = true;
-    }
-
-    @Override
-    public void load() throws IOException {
-        super.load();
     }
 
     @Override

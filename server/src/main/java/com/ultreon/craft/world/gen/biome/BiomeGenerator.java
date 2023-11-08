@@ -1,12 +1,17 @@
-package com.ultreon.craft.world.gen;
+package com.ultreon.craft.world.gen.biome;
 
 import com.ultreon.craft.server.ServerDisposable;
+import com.ultreon.craft.world.Biome;
+import com.ultreon.craft.world.BuilderChunk;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.craft.world.gen.TreeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseUtils;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
@@ -20,16 +25,18 @@ public class BiomeGenerator implements ServerDisposable {
     public static final boolean USE_DOMAIN_WARPING = true;
     @UnknownNullability
     public TreeGenerator treeGenerator;
+    private final Biome biome;
 
-    public BiomeGenerator(World world, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
+    public BiomeGenerator(World world, Biome biome, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
         this.world = world;
+        this.biome = biome;
         this.biomeNoise = noise;
         this.domainWarping = domainWarping;
         this.layers = layers;
         this.extraLayers = extraLayers;
     }
 
-    public Chunk processColumn(Chunk chunk, int x, int z) {
+    public BuilderChunk processColumn(BuilderChunk chunk, int x, int z) {
         final int chunkAmplitude = 1;
 
         int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z) * chunkAmplitude;
@@ -60,11 +67,11 @@ public class BiomeGenerator implements ServerDisposable {
         return (int) Math.ceil(Math.max(height, 1));
     }
 
-    public TreeData getTreeData(Chunk chunk, long seed) {
+    public TreeData createTreeData(Chunk chunk) {
         if (this.treeGenerator == null)
             return new TreeData();
 
-        return this.treeGenerator.generateTreeData(chunk, seed);
+        return this.treeGenerator.generateTreeData(chunk);
     }
 
     @Override
@@ -77,5 +84,24 @@ public class BiomeGenerator implements ServerDisposable {
 
     public World getWorld() {
         return this.world;
+    }
+
+    public Biome getBiome() {
+        return this.biome;
+    }
+
+    public static class Index {
+        public BiomeGenerator biomeGenerator;
+        @Nullable
+        public Integer terrainSurfaceNoise;
+
+        public Index(BiomeGenerator biomeGenerator) {
+            this(biomeGenerator, null);
+        }
+
+        public Index(BiomeGenerator biomeGenerator, @Nullable Integer terrainSurfaceNoise) {
+            this.biomeGenerator = biomeGenerator;
+            this.terrainSurfaceNoise = terrainSurfaceNoise;
+        }
     }
 }

@@ -1,8 +1,8 @@
 package com.ultreon.craft.server.dedicated;
 
 import com.google.gson.Gson;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.crash.v0.CrashLog;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Dedicated server main class.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 @ApiStatus.Internal

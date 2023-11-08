@@ -102,6 +102,7 @@ public class DebugGui {
                 this.left(renderer, "XYZ", player.getPosition());
                 this.left(renderer, "Block XYZ", blockPosition);
                 this.left(renderer, "Chunk XYZ", sectionPos);
+                this.left(renderer, "Biome", world.getBiome(blockPosition));
                 if (chunk != null) {
                     this.left(renderer, "Chunk Offset", chunk.renderOffset);
                 }

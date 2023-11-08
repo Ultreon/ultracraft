@@ -8,6 +8,7 @@ import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.data.types.MapType;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import java.util.List;
 
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -33,7 +34,8 @@ public final class ServerChunk extends Chunk {
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData) {
         var storage = new PaletteStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
 
-        storage.load(chunkData, Chunk::decodeBlock);
+        MapType blockData = chunkData.getMap("Blocks");
+        storage.load(blockData, Chunk::decodeBlock);
 
         ServerChunk chunk = new ServerChunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage);
         chunk.load(chunkData);
@@ -42,26 +44,41 @@ public final class ServerChunk extends Chunk {
 
     public void load(MapType chunkData) {
         MapType extra = chunkData.getMap("Extra");
+        MapType biomeData = chunkData.getMap("Biomes");
+
+        if (biomeData != null) {
+            this.biomeStorage.load(biomeData, Biome::load);
+        }
+
         if (extra != null) {
             WorldEvents.LOAD_CHUNK.factory().onLoadChunk(this, extra);
         }
     }
 
     public MapType save() {
+        MapType data = new MapType();
         MapType chunkData = new MapType();
+        MapType biomeData = new MapType();
 
-        this.storage.save(chunkData);
+        this.storage.save(chunkData, Block::save);
+        this.biomeStorage.save(biomeData, Biome::save);
+        data.put("Biomes", biomeData);
+        data.put("Blocks", chunkData);
 
         MapType extra = new MapType();
         WorldEvents.SAVE_CHUNK.factory().onSaveChunk(this, extra);
         if (!extra.getValue().isEmpty()) {
-            chunkData.put("Extra", extra);
+            data.put("Extra", extra);
         }
-        return chunkData;
+        return data;
     }
 
     @Override
     public ServerWorld getWorld() {
         return this.world;
+    }
+
+    void setBiomes(short[] palette, List<Biome> data) {
+        this.biomeStorage.set(palette, data);
     }
 }

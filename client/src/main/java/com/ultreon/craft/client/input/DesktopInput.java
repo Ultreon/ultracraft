@@ -6,12 +6,13 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.UltracraftClientConfig;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -59,13 +60,12 @@ public class DesktopInput extends GameInput {
             this.client.showDebugHud = !this.client.showDebugHud;
             if (!this.client.showDebugHud) {
                 UltracraftClient.PROFILER.setProfiling(false);
-            } else if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            } else if (UltracraftClientConfig.get().enableDebugUtils && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
                 UltracraftClient.PROFILER.setProfiling(true);
             }
-        } else if (keyCode == this.inspectKey)
-            if (CommonConstants.INSPECTION_ENABLED) {
-                this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
-            }
+        } else if (keyCode == this.inspectKey && UltracraftClientConfig.get().enableDebugUtils && DebugFlags.INSPECTION_ENABLED) {
+            this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
+        }
 
         Screen currentScreen = this.client.screen;
         if (currentScreen != null && !Gdx.input.isCursorCatched()) {
@@ -110,7 +110,7 @@ public class DesktopInput extends GameInput {
         Player player = this.client.player;
 
         Screen currentScreen = this.client.screen;
-        if (keyCode == this.imGuiKey) {
+        if (keyCode == this.imGuiKey && UltracraftClientConfig.get().enableDebugUtils) {
             if (this.client.isShowingImGui() && this.client.world != null) {
                 DesktopInput.setCursorCaught(true);
             }

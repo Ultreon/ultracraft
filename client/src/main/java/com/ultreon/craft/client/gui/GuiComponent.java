@@ -16,7 +16,7 @@ import java.nio.file.Path;
  * Controllable widget, a widget that can be controlled by the user.
  * This widget contains input event handlers like {@link #keyPress(int)} and {@link #mouseClick(int, int, int, int)}
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @Deprecated
 @SuppressWarnings("unused")

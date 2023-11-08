@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.CrashHandler;
 import com.ultreon.craft.ModInit;
 import com.ultreon.craft.block.Block;
@@ -32,6 +33,7 @@ import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.audio.ClientSound;
 import com.ultreon.craft.client.config.GameSettings;
+import com.ultreon.craft.client.config.UltracraftClientConfig;
 import com.ultreon.craft.client.events.ClientLifecycleEvents;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.events.WindowEvents;
@@ -68,6 +70,7 @@ import com.ultreon.craft.client.util.DeferredDisposable;
 import com.ultreon.craft.client.util.GG;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.client.world.*;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.DefaultInspections;
 import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionNode;
@@ -84,13 +87,13 @@ import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.*;
-import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.craft.world.gen.biome.Biomes;
+import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
@@ -284,6 +287,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.mainThread = Thread.currentThread();
 
+        UltracraftClientConfig.get(); // Initialize class.
+
         ImGuiOverlay.preInitImGui();
 
         this.resourceManager = new ResourceManager("assets");
@@ -324,7 +329,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         Gdx.graphics.setCursor(this.normalCursor);
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED) {
             InspectionNode<Application> libGdxNode = this.inspection.createNode("libGdx", value -> Gdx.app);
             InspectionNode<Graphics> graphicsNode = libGdxNode.createNode("graphics", Application::getGraphics);
             graphicsNode.create("backBufferScale", Graphics::getBackBufferScale);
@@ -667,11 +672,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         Blocks.nopInit();
         Items.nopInit();
-        NoiseSettingsInit.nopInit();
+        NoiseConfigs.nopInit();
         EntityTypes.nopInit();
         Fonts.nopInit();
         SoundEvents.nopInit();
         UltracraftClient.invokeAndWait(Shaders::nopInit);
+
+        Biomes.nopInit();
 
         this.registerMenuScreens();
 
@@ -1077,7 +1084,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void prepareScreenshot() {
-        this.screenshotScale = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) ? 4 : 1;
+        this.screenshotScale = 1;
+
+        if (UltracraftClientConfig.get().enable4xScreenshot) {
+            if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                this.screenshotScale = 4;
+            }
+        }
+
         this.width = this.width * this.screenshotScale;
         this.height = this.height * this.screenshotScale;
 
@@ -1555,9 +1569,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
     }
 
-    /**
-     * @return
-     */
     public boolean isDevMode() {
         return this.isDevMode;
     }

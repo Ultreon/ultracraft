@@ -81,10 +81,10 @@ public class WorldLoadScreen extends Screen {
             this.message("Starting integrated server..");
             this.client.startIntegratedServer();
 
-            this.message("Loading world...");
+            this.message("Loading saved world...");
             try {
-                this.world.load();
-                this.message("World loaded!");
+                this.client.integratedServer.load();
+                this.message("Saved world loaded!");
             } catch (IOException e) {
                 UltracraftClient.crash(e);
                 return;

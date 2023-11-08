@@ -7,7 +7,7 @@ import com.ultreon.craft.item.ItemStack;
  * Item slot for {@link ContainerMenu}.
  *
  * @see ItemStack
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 public class ItemSlot {
     private final ContainerMenu container;

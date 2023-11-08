@@ -75,7 +75,7 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
         if (!Character.isISOControl(character) && this.charPredicate.test(character)) {
             this.text += character;
             this.cursorIdx++;
-            this.revalidate();
+            this.revalidateCursor();
             return true;
         }
         return super.charType(character);
@@ -88,29 +88,28 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
             var end = this.text.substring(this.cursorIdx);
             this.text = start + end;
             this.cursorIdx--;
-            this.revalidate();
+            this.revalidateCursor();
         }
         if (keyCode == Input.Keys.FORWARD_DEL && this.cursorIdx < this.text.length()) {
             var start = this.text.substring(0, this.cursorIdx);
             var end = this.text.substring(this.cursorIdx + 1);
             this.text = start + end;
-            this.revalidate();
+            this.revalidateCursor();
         }
 
         if (keyCode == Input.Keys.LEFT && this.cursorIdx > 0) {
             this.cursorIdx--;
-            this.revalidate();
+            this.revalidateCursor();
         }
         if (keyCode == Input.Keys.RIGHT && this.cursorIdx < this.text.length()) {
             this.cursorIdx++;
-            this.revalidate();
+            this.revalidateCursor();
         }
 
         return super.keyPress(keyCode);
     }
 
-    @Override
-    public void revalidate() {
+    public void revalidateCursor() {
         this.cursorX = this.font.width(this.text.substring(0, this.cursorIdx));
 
         this.callback.call((T) this);

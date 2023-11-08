@@ -13,17 +13,50 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 
+/**
+ * The world storage.
+ * <p>Represents a world directory.</p>
+ */
 public final class WorldStorage {
     private final Path directory;
+
+    /**
+     * Creates a new world storage instance from the given directory.
+     *
+     * @param path the world directory.
+     */
 
     public WorldStorage(Path path) {
         this.directory = path;
     }
 
+    /**
+     * Creates a new world storage instance from the given directory.
+     *
+     * @param path the world directory.
+     */
     public WorldStorage(String path) {
         this(Paths.get(path));
     }
 
+    /**
+     * Creates a new world storage instance from the given directory.
+     *
+     * @param file the world directory.
+     */
+    public WorldStorage(File file) {
+        this(file.toPath());
+    }
+
+    /**
+     * Read a UBO object from the given path.
+     *
+     * @param path       the path to the UBO object.
+     * @param typeGetter the type getter. <span style="color: red;">NOTE: do not use this parameter! Leave it empty.</span>
+     * @param <T>        the type of the UBO object.
+     * @return the UBO object.
+     * @throws IOException if an I/O error occurs.
+     */
     @SafeVarargs
     public final <T extends IType<?>> T read(String path, T... typeGetter) throws IOException {
         Preconditions.checkNotNull(path, "Path is null");
@@ -31,16 +64,40 @@ public final class WorldStorage {
         return DataIo.readCompressed(this.validatePath(path).toFile(), typeGetter);
     }
 
+    /**
+     * Write a UBO object to the given path.
+     *
+     * @param data the UBO object to write.
+     * @param path the path to the UBO object.
+     * @throws IOException if an I/O error occurs.
+     */
     public void write(IType<?> data, String path) throws IOException {
         Preconditions.checkNotNull(data, "Data is null");
         DataIo.writeCompressed(data, this.validatePath(path).toFile());
     }
 
-    public boolean exists(String path) throws IOException {
-        Path worldPath = this.validatePath(path);
-        return Files.exists(worldPath);
+    /**
+     * Check if the given path exists.
+     *
+     * @param path the path to the UBO object.
+     * @return {@code true} if the path exists, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     */
+    public boolean exists(String path) {
+        try {
+            Path worldPath = this.validatePath(path);
+            return Files.exists(worldPath);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
+    /**
+     * Creates a new subdirectory in the world directory.
+     *
+     * @param path the relative path to the subdirectory.
+     * @throws IOException if an I/O error occurs.
+     */
     public void createDir(String path) throws IOException {
         // Validate path
         var worldPath = this.validatePath(path);
@@ -73,18 +130,42 @@ public final class WorldStorage {
         return worldPath;
     }
 
+    /**
+     * @return the world directory.
+     */
     public Path getDirectory() {
         return this.directory;
     }
 
+    /**
+     * Check if the given region file exists.
+     *
+     * @param x the x coordinate of the region.
+     * @param z the z coordinate of the region.
+     * @return {@code true} if the region file exists, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     */
     public boolean regionExists(int x, int z) throws IOException {
         return this.exists("regions/" + x + "." + z + ".ucregion");
     }
 
+    /**
+     * Get the region file for the given coordinates.
+     *
+     * @param x the x coordinate of the region.
+     * @param z the z coordinate of the region.
+     * @return the region file.
+     */
     public File regionFile(int x, int z) {
         return this.directory.resolve("regions/" + x + "." + z + ".ucregion").toFile();
     }
 
+    /**
+     * Delete the world directory.
+     *
+     * @return {@code true} if the world directory existed before, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     */
     @CanIgnoreReturnValue
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     public boolean delete() throws IOException {
@@ -97,10 +178,21 @@ public final class WorldStorage {
         }
     }
 
+    /**
+     * Get the region file for the given coordinates.
+     *
+     * @param pos the position of the region.
+     * @return the region file.
+     */
     public File regionFile(RegionPos pos) {
         return this.regionFile(pos.x(), pos.z());
     }
 
+    /**
+     * Create the world directory if it doesn't exist.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
     public void createWorld() throws IOException {
         this.createDir("regions");
         this.createDir("data");

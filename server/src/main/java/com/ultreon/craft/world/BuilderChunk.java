@@ -1,12 +1,21 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.util.InvalidThreadException;
+import com.ultreon.craft.world.gen.biome.BiomeGenerator;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class BuilderChunk extends Chunk {
     private final ServerWorld world;
     private final Thread thread;
+    private final PaletteStorage<BiomeGenerator> biomePalette = new PaletteStorage<>(256);
+    private List<Vec3i> biomeCenters;
 
     public BuilderChunk(ServerWorld world, Thread thread, int size, int height, ChunkPos pos) {
         super(world, size, height, pos);
@@ -46,6 +55,28 @@ public final class BuilderChunk extends Chunk {
     }
 
     public ServerChunk build() {
-        return new ServerChunk(this.world, this.size, this.height, this.getPos(), this.storage);
+        ServerChunk builtChunk = new ServerChunk(this.world, this.size, this.height, World.toLocalChunkPos(this.getPos()), this.storage);
+        short[] palette = this.biomePalette.getPalette();
+        List<Biome> data = this.biomePalette.getData().stream().map(BiomeGenerator::getBiome).collect(Collectors.toCollection(ArrayList::new));
+        builtChunk.setBiomes(palette, data);
+        return builtChunk;
+    }
+
+    public void setBiomeGenerator(int x, int z, BiomeGenerator generator) {
+        int index = this.toFlatIndex(x, z);
+        this.biomePalette.set(index, generator);
+    }
+
+    public BiomeGenerator getBiomeGenerator(int x, int z) {
+        int index = this.toFlatIndex(x, z);
+        return this.biomePalette.get(index);
+    }
+
+    public void setBiomeCenters(List<Vec3i> biomeCenters) {
+        this.biomeCenters = biomeCenters;
+    }
+
+    public List<Vec3i> getBiomeCenters() {
+        return this.biomeCenters;
     }
 }

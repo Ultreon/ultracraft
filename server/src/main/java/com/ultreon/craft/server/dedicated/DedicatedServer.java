@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 /**
  * Dedicated server implementation.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public class DedicatedServer extends UltracraftServer {

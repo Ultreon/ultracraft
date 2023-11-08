@@ -7,6 +7,7 @@ import com.ultreon.craft.client.gui.widget.layout.StandardLayout;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -117,6 +118,20 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
 
         output.removeIf(Objects::isNull);
         return output;
+    }
+
+    public @Nullable Widget<?> getWidgetAt(int x, int y) {
+        List<Widget<?>> output = new ArrayList<>();
+        for (int i = this.widgets.size - 1; i >= 0; i--) {
+            var widget = this.widgets.get(i);
+
+            if (!widget.visible) continue;
+            if (widget.isWithinBounds(x, y)) {
+                return widget;
+            }
+        }
+
+        return null;
     }
 
     public <C extends Widget<?>> C add(C widget) {

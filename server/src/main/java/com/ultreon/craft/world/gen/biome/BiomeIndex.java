@@ -1,12 +1,12 @@
-package com.ultreon.craft.world;
+package com.ultreon.craft.world.gen.biome;
 
 import java.util.Objects;
 
-public final class BiomeSelectionHelper {
+public final class BiomeIndex {
     private final int index;
     private final double distance;
 
-    public BiomeSelectionHelper(int index, double distance) {
+    public BiomeIndex(int index, double distance) {
         this.index = index;
         this.distance = distance;
     }
@@ -23,7 +23,7 @@ public final class BiomeSelectionHelper {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        BiomeSelectionHelper that = (BiomeSelectionHelper) obj;
+        BiomeIndex that = (BiomeIndex) obj;
         return this.index == that.index &&
                 Double.doubleToLongBits(this.distance) == Double.doubleToLongBits(that.distance);
     }
@@ -35,7 +35,7 @@ public final class BiomeSelectionHelper {
 
     @Override
     public String toString() {
-        return "BiomeSelectionHelper[" +
+        return "BiomeIndex[" +
                 "index=" + index + ", " +
                 "distance=" + distance + ']';
     }
