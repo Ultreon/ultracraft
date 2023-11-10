@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen.noise;
 
-import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 
@@ -39,7 +39,7 @@ public final class NoiseConfigs {
             new NoiseConfig(2f, 3, new Vec2f(903852, 493382), 137339, 0.6f, 1.2f, 5f, 10, 0));
 
     private static <T extends NoiseConfig> T register(String name, T settings) {
-        Registries.NOISE_SETTINGS.register(new Identifier(CommonConstants.NAMESPACE, name), settings);
+        Registries.NOISE_SETTINGS.register(new Identifier(UltracraftServer.NAMESPACE, name), settings);
         return settings;
     }
 

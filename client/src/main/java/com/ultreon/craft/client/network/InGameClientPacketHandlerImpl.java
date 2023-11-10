@@ -166,6 +166,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 try {
                     close.sync();
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     UltracraftClient.LOGGER.error("Failed to close connection", e);
                 }
             }
@@ -174,6 +175,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 try {
                     future.sync();
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     UltracraftClient.LOGGER.error("Failed to close Netty event group", e);
                 }
             }

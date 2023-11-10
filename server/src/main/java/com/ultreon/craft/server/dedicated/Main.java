@@ -1,20 +1,19 @@
 package com.ultreon.craft.server.dedicated;
 
-import com.google.gson.Gson;
-import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.crash.v0.CrashException;
 import com.ultreon.libs.crash.v0.CrashLog;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -46,29 +45,23 @@ public class Main {
             FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
             // Set default namespace in CoreLibs identifier.
-            Identifier.setDefaultNamespace(CommonConstants.NAMESPACE);
+            Identifier.setDefaultNamespace(UltracraftServer.NAMESPACE);
 
             Main.serverLoader = new ServerLoader();
             Main.serverLoader.load();
 
             // First-initialize the server configuration.
-            Gson gson = new Gson();
-            File configFile = new File("server_config.json");
-            if (!configFile.exists()) {
-                try (var writer = new FileWriter(configFile)) {
-                    gson.toJson(new ServerConfig(), ServerConfig.class, writer);
-                }
-
+            Yaml yaml = new Yaml();
+            Path configPath = Path.of("server_config.yml");
+            if (Files.notExists(configPath)) {
+                Files.writeString(configPath, yaml.dumpAsMap(new ServerConfig()));
                 Main.LOGGER.info("First-initialization finished, set up your config in server_config.json and restart the server.");
                 Main.LOGGER.info("We will wait 10 seconds so you would be able to stop the server for configuration.");
                 Thread.sleep(10000);
             }
 
             // Read the server configuration file.
-            ServerConfig config;
-            try (var reader = new FileReader(configFile)) {
-                config = gson.fromJson(reader, ServerConfig.class);
-            }
+            ServerConfig config = yaml.loadAs(Files.readString(configPath), ServerConfig.class);
 
             // Start the server.
             @SuppressWarnings("InstantiationOfUtilityClass") InspectionRoot<Main> inspection = new InspectionRoot<>(new Main());
@@ -90,6 +83,10 @@ public class Main {
                     }
                 }
             }
+
+            UltracraftServer.getWatchManager().stop();
+        } catch (CrashException e) {
+            e.getCrashLog().createCrash().printCrash();
         } catch (Throwable t) {
             // Server crashed! Saving a crash log, and write it to the server console.
             CrashLog crashLog = new CrashLog("Server crashed!", t);

@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.config.UltracraftClientConfig;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
@@ -21,15 +20,15 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import java.util.stream.IntStream;
 
 public class DesktopInput extends GameInput {
-    public int pauseKey = Input.Keys.ESCAPE;
-    public int imGuiKey = Input.Keys.F9;
-    public int imGuiFocusKey = Input.Keys.F10;
-    public int debugHudKey = Input.Keys.F3;
-    public int inspectKey = Input.Keys.F4;
-    public int screenshotKey = Input.Keys.F2;
-    public int inventoryKey = Input.Keys.E;
-    public int fullScreenKey = Input.Keys.F11;
-    public int thirdPersonKey = Input.Keys.F5;
+    public static final KeyBind PAUSE_KEY = KeyBinds.pauseKey;
+    public static final KeyBind IM_GUI_KEY = KeyBinds.imGuiKey;
+    public static final KeyBind IM_GUI_FOCUS_KEY = KeyBinds.imGuiFocusKey;
+    public static final KeyBind DEBUG_KEY = KeyBinds.debugKey;
+    public static final KeyBind INSPECT_KEY = KeyBinds.inspectKey;
+    public static final KeyBind SCREENSHOT_KEY = KeyBinds.screenshotKey;
+    public static final KeyBind INVENTORY_KEY = KeyBinds.inventoryKey;
+    public static final KeyBind FULL_SCREEN_KEY = KeyBinds.fullScreenKey;
+    public static final KeyBind THIRD_PERSON_KEY = KeyBinds.thirdPersonKey;
 
     public DesktopInput(UltracraftClient client, Camera camera) {
         super(client, camera);
@@ -56,84 +55,94 @@ public class DesktopInput extends GameInput {
     public boolean keyDown(int keyCode) {
         super.keyDown(keyCode);
 
-        if (keyCode == this.debugHudKey) {
-            this.client.showDebugHud = !this.client.showDebugHud;
-            if (!this.client.showDebugHud) {
-                UltracraftClient.PROFILER.setProfiling(false);
-            } else if (UltracraftClientConfig.get().enableDebugUtils && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-                UltracraftClient.PROFILER.setProfiling(true);
-            }
-        } else if (keyCode == this.inspectKey && UltracraftClientConfig.get().enableDebugUtils && DebugFlags.INSPECTION_ENABLED) {
-            this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
-        }
-
         Screen currentScreen = this.client.screen;
-        if (currentScreen != null && !Gdx.input.isCursorCatched()) {
-            boolean flag = currentScreen.keyPress(keyCode);
-            if (flag) return true;
-        }
+        if (currentScreen != null && !Gdx.input.isCursorCatched() && currentScreen.keyPress(keyCode))
+            return true;
 
-        if (keyCode == this.screenshotKey) {
-            this.client.screenshot();
-        }
+        Player player = this.client.player;
+        if (player == null || keyCode < Input.Keys.NUM_1 || keyCode > Input.Keys.NUM_9 || !Gdx.input.isCursorCatched())
+            return false;
 
-        if (keyCode == this.fullScreenKey) {
-            this.client.setFullScreen(!this.client.isFullScreen());
-        }
-
-        if (keyCode == this.thirdPersonKey) {
-            this.client.setInThirdPerson(!this.client.isInThirdPerson());
-        }
-
-        if (Gdx.input.isCursorCatched()) {
-            if (keyCode == this.pauseKey && GameInput.isKeyDown(this.pauseKey)) {
-                UltracraftClient.invoke(() -> this.client.showScreen(new PauseScreen()));
-                return true;
-            }
-
-            Player player = this.client.player;
-            if (player != null) {
-                if (keyCode >= Input.Keys.NUM_1 && keyCode <= Input.Keys.NUM_9) {
-                    int index = keyCode - Input.Keys.NUM_1;
-                    player.selectBlock(index);
-                }
-            }
-        }
-
+        int index = keyCode - Input.Keys.NUM_1;
+        player.selectBlock(index);
         return true;
+
     }
 
     @Override
     public boolean keyUp(int keyCode) {
         super.keyUp(keyCode);
 
-        Player player = this.client.player;
-
         Screen currentScreen = this.client.screen;
-        if (keyCode == this.imGuiKey && UltracraftClientConfig.get().enableDebugUtils) {
-            if (this.client.isShowingImGui() && this.client.world != null) {
-                DesktopInput.setCursorCaught(true);
-            }
-            this.client.setShowingImGui(!this.client.isShowingImGui());
-        } else if (keyCode == this.imGuiFocusKey) {
-            if (this.client.isShowingImGui() && this.client.world != null && this.client.screen == null) {
-                DesktopInput.setCursorCaught(!Gdx.input.isCursorCatched());
-            }
-        } else if (currentScreen == null && player != null) {
-            if (keyCode == this.inventoryKey) {
-                this.client.player.openInventory();
-                return true;
-            }
-        }
+        if (currentScreen != null)
+            return currentScreen.keyRelease(keyCode);
 
-        if (currentScreen != null) currentScreen.keyRelease(keyCode);
-        return true;
+        return false;
+    }
+
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+
+        Player player = this.client.player;
+        Screen currentScreen = this.client.screen;
+
+        if (DesktopInput.IM_GUI_KEY.isJustPressed()) {
+            this.handleImGuiKey();
+        } else if (DesktopInput.IM_GUI_FOCUS_KEY.isJustPressed()) {
+            this.handleImGuiFocus();
+        } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen == null && player != null) {
+            player.openInventory();
+        } else if (DesktopInput.DEBUG_KEY.isJustPressed()) {
+            this.handleDebugKey();
+        } else if (DesktopInput.INSPECT_KEY.isJustPressed()) {
+            this.handleInspectKey();
+        } else if (DesktopInput.SCREENSHOT_KEY.isJustPressed()) {
+            this.client.screenshot();
+        } else if (DesktopInput.FULL_SCREEN_KEY.isJustPressed()) {
+            this.client.setFullScreen(!this.client.isFullScreen());
+        } else if (DesktopInput.THIRD_PERSON_KEY.isJustPressed()) {
+            this.client.setInThirdPerson(!this.client.isInThirdPerson());
+        } else if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
+            UltracraftClient.invoke(() -> this.client.showScreen(new PauseScreen()));
+        }
+    }
+
+    private void handleImGuiKey() {
+        if (!UltracraftClient.get().config.get().enableDebugUtils) return;
+
+        if (this.client.isShowingImGui() && this.client.world != null)
+            DesktopInput.setCursorCaught(true);
+
+        this.client.setShowingImGui(!this.client.isShowingImGui());
+    }
+
+    private void handleInspectKey() {
+        if (UltracraftClient.get().config.get().enableDebugUtils && DebugFlags.INSPECTION_ENABLED) {
+            this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
+        }
+    }
+
+    private void handleDebugKey() {
+        this.client.showDebugHud = !this.client.showDebugHud;
+
+        if (!this.client.showDebugHud)
+            UltracraftClient.PROFILER.setProfiling(false);
+        else if (this.client.config.get().enableDebugUtils && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
+            UltracraftClient.PROFILER.setProfiling(true);
+    }
+
+    private void handleImGuiFocus() {
+        if (this.client.isShowingImGui() && this.client.world != null && this.client.screen == null) {
+            DesktopInput.setCursorCaught(!Gdx.input.isCursorCatched());
+        }
     }
 
     @Override
     public boolean keyTyped(char character) {
         Screen currentScreen = this.client.screen;
-        if (currentScreen != null) currentScreen.charType(character);
+        if (currentScreen != null)
+            return currentScreen.charType(character);
 
         return true;
     }
@@ -143,11 +152,15 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
-        if (!Gdx.input.isCursorCatched()) {
-            Screen currentScreen = this.client.screen;
-            if (currentScreen != null)
-                currentScreen.mouseMove((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()));
-        }
+        if (Gdx.input.isCursorCatched())
+            return false;
+
+        Screen currentScreen = this.client.screen;
+
+        if (currentScreen == null)
+            return false;
+
+        currentScreen.mouseMove((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()));
         return true;
     }
 
@@ -168,38 +181,52 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
+        Screen currentScreen = this.client.screen;
         World world = this.client.world;
-        if (Gdx.input.isCursorCatched()) {
-            if (world != null && this.client.screen == null) {
-                if (!Gdx.input.isCursorCatched() && !UltracraftClient.get().isShowingImGui()) {
-                    DesktopInput.setCursorCaught(true);
-                    return true;
-                }
+        Player player = this.client.player;
+        HitResult hitResult = this.client.hitResult;
 
-                Player player = this.client.player;
-                HitResult hitResult = this.client.hitResult;
-                if (player != null && hitResult != null) {
-                    Vec3i pos = hitResult.getPos();
-                    Block block = world.get(new BlockPos(pos));
-                    Vec3i posNext = hitResult.getNext();
-                    Block blockNext = world.get(new BlockPos(posNext));
-                    if (hitResult.isCollide() && block != null && !block.isAir()) {
-                        if (button == Input.Buttons.LEFT) {
-                            this.client.startBreaking();
-                        } else if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
-                            this.useItem(player, world, hitResult);
-                        }
-                    }
-                }
-            }
-        } else {
-            Screen currentScreen = this.client.screen;
-            if (currentScreen != null) {
-                if (!ScreenEvents.MOUSE_PRESS.factory().onMousePressScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button).isCanceled()) {
-                    currentScreen.mousePress((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button);
-                }
-            }
+        if (!Gdx.input.isCursorCatched() && currentScreen != null) {
+            int mouseX = (int) (screenX / this.client.getGuiScale());
+            int mouseY = (int) (screenY / this.client.getGuiScale());
+            boolean canceled = ScreenEvents.MOUSE_PRESS.factory().onMousePressScreen(mouseX, mouseY, button).isCanceled();
+            boolean pressed = currentScreen.mousePress(mouseX, mouseY, button);
+            return !canceled && pressed;
         }
+
+        if (world == null || this.client.screen != null)
+            return false;
+
+        if (!Gdx.input.isCursorCatched() && !UltracraftClient.get().isShowingImGui()) {
+            DesktopInput.setCursorCaught(true);
+            return true;
+        }
+
+        if (player == null || hitResult == null)
+            return false;
+
+        return this.doPlayerInteraction(button, hitResult, world, player);
+    }
+
+    private boolean doPlayerInteraction(int button, HitResult hitResult, World world, Player player) {
+        Vec3i pos = hitResult.getPos();
+        Block block = world.get(new BlockPos(pos));
+        Vec3i posNext = hitResult.getNext();
+        Block blockNext = world.get(new BlockPos(posNext));
+
+        if (!hitResult.isCollide() || block == null || block.isAir())
+            return false;
+
+        if (button == Input.Buttons.LEFT) {
+            this.client.startBreaking();
+            return true;
+        }
+
+        if (button == Input.Buttons.RIGHT && blockNext != null && blockNext.isAir()) {
+            this.useItem(player, world, hitResult);
+            return true;
+        }
+
         return false;
     }
 
@@ -208,20 +235,23 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
-        if (!Gdx.input.isCursorCatched()) {
-            Screen currentScreen = this.client.screen;
-            if (currentScreen != null) {
-                if (!ScreenEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button).isCanceled()) {
-                    currentScreen.mouseRelease((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button);
-                }
-
-                if (!ScreenEvents.MOUSE_CLICK.factory().onMouseClickScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1).isCanceled()) {
-                    currentScreen.mouseClick((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1);
-                }
-            }
-        }
         this.client.stopBreaking();
-        return false;
+
+        if (Gdx.input.isCursorCatched())
+            return false;
+
+        Screen currentScreen = this.client.screen;
+        if (currentScreen == null)
+            return false;
+
+        boolean flag = false;
+        if (!ScreenEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button).isCanceled())
+            flag |= currentScreen.mouseRelease((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button);
+
+        if (!ScreenEvents.MOUSE_CLICK.factory().onMouseClickScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1).isCanceled())
+            flag |= currentScreen.mouseClick((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1);
+
+        return flag;
     }
 
     @Override
@@ -239,14 +269,16 @@ public class DesktopInput extends GameInput {
         if (currentScreen == null && player != null) {
             int scrollAmount = (int) amountY;
             int i = (player.selected + scrollAmount) % 9;
-            if (i < 0) {
+
+            if (i < 0)
                 i += 9;
-            }
+
             player.selected = i;
             return true;
-        } else if (currentScreen != null && !ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY).isCanceled()) {
-            return currentScreen.mouseWheel((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY);
         }
+
+        if (currentScreen != null && !ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY).isCanceled())
+            return currentScreen.mouseWheel((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY);
 
         return false;
     }

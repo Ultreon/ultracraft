@@ -1,6 +1,14 @@
 package com.ultreon.craft;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CommonConstants {
-    //? Should we move this to the server class instead? TODO
-    public static final String NAMESPACE = "ultracraft";
+    public static final String EX_NOT_ON_RENDER_THREAD = "Current thread is not the rendering thread.";
+
+    private CommonConstants() {
+
+    }
+
+    public static final Logger LOGGER = LoggerFactory.getLogger("Ultracraft");
 }

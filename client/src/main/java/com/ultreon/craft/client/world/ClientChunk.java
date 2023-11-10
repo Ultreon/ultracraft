@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.collection.PaletteStorage;
@@ -34,7 +35,7 @@ public final class ClientChunk extends Chunk {
     @Override
     public Block getFast(int x, int y, int z) {
         if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
 
         return super.getFast(x, y, z);
@@ -43,7 +44,7 @@ public final class ClientChunk extends Chunk {
     @Override
     public boolean setFast(int x, int y, int z, Block block) {
         if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
 
         boolean isBlockSet = super.setFast(x, y, z, block);
@@ -53,14 +54,14 @@ public final class ClientChunk extends Chunk {
         return isBlockSet;
     }
 
-    public void setDirty(boolean ignoredB) {
+    public void updated() {
         this.dirty = false;
     }
 
     @Override
     public void onUpdated() {
         if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
 
         super.onUpdated();
@@ -73,7 +74,7 @@ public final class ClientChunk extends Chunk {
 
     void ready() {
         if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
         this.ready = true;
         this.clientWorld.updateChunkAndNeighbours(this);

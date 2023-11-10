@@ -3,7 +3,7 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.util.Drawable;
+import com.ultreon.craft.client.gui.widget.StaticWidget;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.ultreon.craft.client.UltracraftClient.TO_ZOOM;
 
-public class LoadingOverlay implements Drawable {
+public class LoadingOverlay implements StaticWidget {
     private final Resizer resizer;
     private final Texture ultreonLogoTex;
     private float progress;

@@ -18,7 +18,6 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClientConnection implements Runnable {
-
     private final String host;
     private final int port;
 
@@ -41,13 +40,8 @@ public class ClientConnection implements Runnable {
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
         Class<? extends SocketChannel> channelClass;
         Supplier<? extends EventLoopGroup> group;
-//        if (Epoll.isAvailable()) {
-//            channelClass = EpollSocketChannel.class;
-//            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
-//        } else {
-            channelClass = NioSocketChannel.class;
-            group = Connection.NETWORK_WORKER_GROUP;
-//        }
+        channelClass = NioSocketChannel.class;
+        group = Connection.NETWORK_WORKER_GROUP;
 
         connection.setGroup(group.get());
 
@@ -58,7 +52,7 @@ public class ClientConnection implements Runnable {
                 .connect(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
     }
 
-    public static Future<?> closeGroup(ChannelFuture future) {
+    public static Future<?> closeGroup() {
         return Connection.NETWORK_WORKER_GROUP.get().shutdownGracefully();
     }
 
@@ -90,7 +84,7 @@ public class ClientConnection implements Runnable {
 
             f.channel().closeFuture().sync();
         } catch (InterruptedException ignored) {
-
+            Thread.currentThread().interrupt();
         } finally {
             workerGroup.shutdownGracefully();
         }

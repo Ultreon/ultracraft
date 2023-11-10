@@ -12,10 +12,10 @@ public class LanguageRegistry {
 
     @ApiStatus.Internal
     public static void doRegistration(Consumer<Identifier> consumer) {
-        REGISTRY.forEach(consumer);
+        LanguageRegistry.REGISTRY.forEach(consumer);
     }
 
     public static void register(Identifier id) {
-        REGISTRY.add(id);
+        LanguageRegistry.REGISTRY.add(id);
     }
 }

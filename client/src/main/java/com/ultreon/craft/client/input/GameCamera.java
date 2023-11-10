@@ -57,35 +57,39 @@ public class GameCamera extends PerspectiveCamera {
         this.player = player;
 
         if (this.client.isInThirdPerson()) {
-            // Move camera backwards when player is in third person.
-            var ray = new Ray(this.eyePosition, lookVec.cpy().neg().nor());
-            var world = this.client.world;
-            if (world != null) {
-                this.hitResult = world.rayCast(ray, 5.1f);
-                Vector3 lookVector = new Vector3((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
-                if (this.hitResult.isCollide()) {
-                    Vec3f normal = this.hitResult.getNormal().f();
-                    this.hitPosition = new Vector3(0, 0, 0)
-                            .add(lookVector.cpy()
-                                    .nor()
-                                    .scl((float) -this.hitResult.distance)
-                                    .sub(new Vector3(normal.x, normal.y, normal.z).scl(-0.1f).rotate(lookVector, 360)));
-                } else {
-                    this.hitPosition = new Vector3(0, 0, 0).add(lookVector.cpy().nor().scl(-5));
-                }
-                this.position.set(this.hitPosition.x, this.hitPosition.y, this.hitPosition.z);
-                this.direction.set(lookVector);
-            }
+            this.updateThirdPerson(lookVec);
         } else {
             this.node.remove("hitPosition");
             this.node.remove("eyePosition");
             this.node.remove("playerPosition");
-            // Set the camera's position to zero, and set the camera's direction to the player's look vector.'
+            // Set the camera's position to zero, and set the camera's direction to the player's look vector.
             this.position.set(new Vector3());
             this.direction.set((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
         }
 
         super.update(true);
+    }
+
+    private void updateThirdPerson(Vec3d lookVec) {
+        // Move camera backwards when player is in third person.
+        var ray = new Ray(this.eyePosition, lookVec.cpy().neg().nor());
+        var world = this.client.world;
+        if (world != null) {
+            this.hitResult = world.rayCast(ray, 5.1f);
+            Vector3 lookVector = new Vector3((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
+            if (this.hitResult.isCollide()) {
+                Vec3f normal = this.hitResult.getNormal().f();
+                Vector3 gdxNormal = new Vector3(normal.x, normal.y, normal.z);
+                Vector3 hitOffset = lookVector.cpy().nor()
+                        .scl((float) -this.hitResult.distance)
+                        .sub(gdxNormal.scl(-0.1f).rotate(lookVector, 360));
+                this.hitPosition = new Vector3(0, 0, 0).add(hitOffset);
+            } else {
+                this.hitPosition = new Vector3(0, 0, 0).add(lookVector.cpy().nor().scl(-5));
+            }
+            this.position.set(this.hitPosition.x, this.hitPosition.y, this.hitPosition.z);
+            this.direction.set(lookVector);
+        }
     }
 
     /**

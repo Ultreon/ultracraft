@@ -11,22 +11,22 @@ public class GameLibGDXWrapper implements ApplicationListener {
     private final String[] argv;
     @Nullable
     private UltracraftClient client;
-    private static Thread.UncaughtExceptionHandler exceptionHandler;
+    private Thread.UncaughtExceptionHandler exceptionHandler;
 
     public GameLibGDXWrapper(String[] argv) {
         this.argv = argv;
     }
 
-    private static void uncaughtException(Thread thread, Throwable throwable) {
+    private void uncaughtException(Thread thread, Throwable throwable) {
         if (throwable instanceof CrashException e) {
             try {
                 CrashLog crashLog = e.getCrashLog();
                 UltracraftClient.get().delayCrash(crashLog);
             } catch (Throwable t) {
-                GameLibGDXWrapper.exceptionHandler.uncaughtException(thread, t);
+                this.exceptionHandler.uncaughtException(thread, t);
             }
         }
-        GameLibGDXWrapper.exceptionHandler.uncaughtException(thread, throwable);
+        this.exceptionHandler.uncaughtException(thread, throwable);
     }
 
     @Override
@@ -35,11 +35,11 @@ public class GameLibGDXWrapper implements ApplicationListener {
             Gdx.app.setLogLevel(Application.LOG_DEBUG);
             this.client = new UltracraftClient(this.argv);
 
-            GameLibGDXWrapper.exceptionHandler = Thread.currentThread().getUncaughtExceptionHandler();
-            Thread.setDefaultUncaughtExceptionHandler(GameLibGDXWrapper::uncaughtException);
+            this.exceptionHandler = Thread.currentThread().getUncaughtExceptionHandler();
+            Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
 
-            Thread.currentThread().setUncaughtExceptionHandler(GameLibGDXWrapper::uncaughtException);
-        } catch (Throwable t) {
+            Thread.currentThread().setUncaughtExceptionHandler(this::uncaughtException);
+        } catch (CrashException t) {
             UltracraftClient.crash(t);
         }
     }

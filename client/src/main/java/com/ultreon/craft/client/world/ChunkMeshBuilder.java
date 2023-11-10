@@ -11,6 +11,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
@@ -40,10 +41,10 @@ public class ChunkMeshBuilder {
         mesh.setIndices(this.indices);
         mesh.setVertices(vertices.items);
         vertices.clear();
-        chunk.setDirty(false);
+        chunk.updated();
         vertices.items = null;
 
-        WorldRenderer.vertexCount += mesh.getMaxVertices();
+        ValueTracker.vertexCount += mesh.getMaxVertices();
 
         chunkMesh.meshPart.mesh = mesh;
         chunkMesh.meshPart.size = this.indices.length;
@@ -120,10 +121,10 @@ public class ChunkMeshBuilder {
         mesh.setIndices(this.indices);
         mesh.setVertices(vertices.items);
         vertices.clear();
-        chunk.setDirty(false);
+        chunk.updated();
         vertices.items = null;
 
-        WorldRenderer.vertexCount += mesh.getMaxVertices();
+        ValueTracker.vertexCount += mesh.getMaxVertices();
 
         chunkMesh.meshPart.mesh = mesh;
         chunkMesh.meshPart.size = this.indices.length;

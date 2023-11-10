@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.world.FaceProperties;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -52,7 +51,7 @@ public final class BakedCubeModel implements Disposable {
         this.back = back;
         this.mesh = this.createMesh();
         this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
-        this.properties = new ModelProperties(new FaceProperties());
+        this.properties = properties;
 
         UltracraftClient.get().deferDispose(this);
     }
@@ -81,7 +80,6 @@ public final class BakedCubeModel implements Disposable {
         return this.back;
     }
     
-    @SuppressWarnings("UnusedAssignment")
     private Mesh createMesh() {
         int len = World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE * 6 * 6 / 3;
 
@@ -97,7 +95,6 @@ public final class BakedCubeModel implements Disposable {
         }
 
         FloatList vertices = new FloatArrayList();
-        int i = 0;
         Vec3i offset = new Vec3i();
 
         BakedCubeModel model = this;
@@ -112,10 +109,8 @@ public final class BakedCubeModel implements Disposable {
         int numVertices = vertices.size() / VERTEX_SIZE + 1;
         Mesh mesh = new Mesh(false, false, numVertices, indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
         mesh.setIndices(indices);
-        numVertices = numVertices / 4 * 6;
         mesh.setVertices(vertices.toFloatArray());
         vertices.clear();
-        indices = null;
         return mesh;
     }
 

@@ -69,7 +69,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     @Nullable
     protected HitResult hitResult;
 
-    public GameInput(UltracraftClient client, Camera camera) {
+    protected GameInput(UltracraftClient client, Camera camera) {
         this.client = client;
         this.camera = camera;
 
@@ -131,10 +131,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
             }
         }
 
-        if (controller.getMapping().buttonB == buttonCode) {
-            if (currentScreen != null) {
-                currentScreen.back();
-            }
+        if (controller.getMapping().buttonB == buttonCode && currentScreen != null) {
+            currentScreen.back();
         }
 
         return true;
@@ -166,88 +164,108 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         if (this.client.isPlaying()) {
             Player player = this.client.player;
             if (player != null && this.isControllerConnected()) {
-                Joystick joystick = GameInput.JOYSTICKS.get(JoystickType.RIGHT);
-
-                float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
-                float deltaY = joystick.y * deltaTime * Constants.CTRL_CAMERA_SPEED;
-
-                Vec2f rotation = player.getRotation();
-                rotation.add(deltaX * GameInput.DEG_PER_PIXEL, deltaY * GameInput.DEG_PER_PIXEL);
-                player.setRotation(rotation);
-
-                @Nullable World world = this.client.world;
-                if (world != null) {
-                    HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
-                    Vec3i pos = hitResult.getPos();
-                    Block block = world.get(new BlockPos(pos));
-                    if (hitResult.isCollide() && block != null && !block.isAir()) {
-                        float right = GameInput.TRIGGERS.get(TriggerType.RIGHT).value;
-                        if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
-                            this.client.startBreaking();
-                            this.nextBreak = System.currentTimeMillis() + 500;
-                            this.breaking = true;
-                        } else if (right < 0.3F && this.breaking) {
-                            this.client.stopBreaking();
-                            this.nextBreak = 0;
-                            this.breaking = false;
-                        }
-
-                        float left = GameInput.TRIGGERS.get(TriggerType.LEFT).value;
-                        if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
-                            this.useItem(player, world, hitResult);
-
-                            this.itemUse = System.currentTimeMillis() + 500;
-                            this.using = true;
-                        } else if (left < 0.3F && this.using) {
-                            this.itemUse = 0;
-                            this.using = false;
-                        }
-                    }
-                }
-
-                player.setRunning(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
-
-                if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-                    boolean doNowFly = !player.isFlying();
-                    player.noGravity = doNowFly;
-                    player.setFlying(doNowFly);
-                }
-
-                if (!player.isFlying()) player.setCrouching(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || GameInput.isControllerButtonDown(ControllerButton.RIGHT_STICK));
-
-                float speed;
-                if (player.isFlying()) speed = player.getFlyingSpeed();
-                else speed = player.getWalkingSpeed();
-
-                if (player.isCrouching()) speed *= player.crouchModifier;
-                else if (player.isRunning()) speed *= player.runModifier;
-
-                Vec3d tmp = new Vec3d();
-                this.client.playerInput.tick(speed);
-                Vector3 velocity = this.client.playerInput.getVelocity();
-                this.vel.set(velocity.x, velocity.y, velocity.z);
-
-                if (player.isInWater() && this.client.playerInput.up) {
-                    tmp.set(0, 1, 0).nor().mul(speed);
-                    this.vel.add(tmp);
-                }
-                if (player.isFlying()) {
-                    if (this.client.playerInput.up) {
-                        tmp.set(0, 1, 0).nor().mul(speed);
-                        this.vel.add(tmp);
-                    }
-                    if (this.client.playerInput.down) {
-                        tmp.set(0, 1, 0).nor().mul(-speed);
-                        this.vel.add(tmp);
-                    }
-                }
-
-                this.vel.x *= deltaTime * UltracraftServer.TPS;
-                this.vel.y *= deltaTime * UltracraftServer.TPS;
-                this.vel.z *= deltaTime * UltracraftServer.TPS;
-
-                player.setVelocity(player.getVelocity().add(this.vel));
+                this.updateController(deltaTime, player);
             }
+        }
+    }
+
+    private void updateController(float deltaTime, Player player) {
+        Joystick joystick = GameInput.JOYSTICKS.get(JoystickType.RIGHT);
+
+        float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
+        float deltaY = joystick.y * deltaTime * Constants.CTRL_CAMERA_SPEED;
+
+        Vec2f rotation = player.getRotation();
+        rotation.add(deltaX * GameInput.DEG_PER_PIXEL, deltaY * GameInput.DEG_PER_PIXEL);
+        player.setRotation(rotation);
+
+        @Nullable World world = this.client.world;
+        if (world != null)
+            this.updateInGame(player, world);
+
+        player.setRunning(GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            boolean doNowFly = !player.isFlying();
+            player.noGravity = doNowFly;
+            player.setFlying(doNowFly);
+        }
+
+        if (!player.isFlying()) {
+            player.setCrouching(GameInput.isControllerButtonDown(ControllerButton.RIGHT_STICK));
+        }
+
+        float speed = player.isFlying() ? player.getFlyingSpeed() : player.getWalkingSpeed();
+
+        if (player.isCrouching()) speed *= player.crouchModifier;
+        else if (player.isRunning()) speed *= player.runModifier;
+
+        this.client.playerInput.tick(speed);
+        this.updateControllerMove(deltaTime, player, speed);
+    }
+
+    private void updateControllerMove(float deltaTime, Player player, float speed) {
+        Vec3d tmp = new Vec3d();
+        Vector3 velocity = this.client.playerInput.getVelocity();
+        this.vel.set(velocity.x, velocity.y, velocity.z);
+
+        // Water movement
+        if (player.isInWater() && this.client.playerInput.up) {
+            tmp.set(0, 1, 0).nor().mul(speed);
+            this.vel.add(tmp);
+        }
+
+        // Flight movement
+        if (player.isFlying() && this.client.playerInput.up) {
+            tmp.set(0, 1, 0).nor().mul(speed);
+            this.vel.add(tmp);
+        }
+
+        if (player.isFlying() && this.client.playerInput.down) {
+            tmp.set(0, 1, 0).nor().mul(-speed);
+            this.vel.add(tmp);
+        }
+
+        this.vel.x *= deltaTime * UltracraftServer.TPS;
+        this.vel.y *= deltaTime * UltracraftServer.TPS;
+        this.vel.z *= deltaTime * UltracraftServer.TPS;
+
+        player.setVelocity(player.getVelocity().add(this.vel));
+    }
+
+    private void updateInGame(Player player, @NotNull World world) {
+        HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
+        Vec3i pos = hitResult.getPos();
+        Block block = world.get(new BlockPos(pos));
+        if (!hitResult.isCollide() || block == null || block.isAir()) return;
+
+        this.updateControllerBlockBreak();
+        this.updateControllerBlockPlace(player, world, hitResult);
+    }
+
+    private void updateControllerBlockPlace(Player player, @NotNull World world, HitResult hitResult) {
+        float left = GameInput.TRIGGERS.get(TriggerType.LEFT).value;
+        if (left >= 0.3F && this.itemUse < System.currentTimeMillis()) {
+            this.useItem(player, world, hitResult);
+
+            this.itemUse = System.currentTimeMillis() + 500;
+            this.using = true;
+        } else if (left < 0.3F && this.using) {
+            this.itemUse = 0;
+            this.using = false;
+        }
+    }
+
+    private void updateControllerBlockBreak() {
+        float right = GameInput.TRIGGERS.get(TriggerType.RIGHT).value;
+        if (right >= 0.3F && this.nextBreak < System.currentTimeMillis()) {
+            this.client.startBreaking();
+            this.nextBreak = System.currentTimeMillis() + 500;
+            this.breaking = true;
+        } else if (right < 0.3F && this.breaking) {
+            this.client.stopBreaking();
+            this.nextBreak = 0;
+            this.breaking = false;
         }
     }
 
@@ -289,25 +307,6 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         if (current == null) return false;
         current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));
         return true;
-    }
-
-    @Deprecated
-    protected void onWorldHit(@NotNull World world, @Nullable Player player, @Nullable HitResult hitResult, boolean destroy, boolean use) {
-//        if (player != null && hitResult != null) {
-//            Vec3i pos = hitResult.getPos();
-//            Block block = world.get(pos);
-//            Vec3i posNext = hitResult.getNext();
-//            Block blockNext = world.get(posNext);
-//            Item selectedBlock = player.getSelectedItem();
-//            if (hitResult.collide && !block.isAir()) {
-//                if (destroy) {
-//                    world.set(pos, Blocks.AIR);
-//                } else if (use && blockNext.isAir()
-//                        && !selectedBlock.getBoundingBox(posNext).intersectsExclusive(player.getBoundingBox())) {
-//                    world.set(posNext, selectedBlock);
-//                }
-//            }
-//        }
     }
 
     @Override

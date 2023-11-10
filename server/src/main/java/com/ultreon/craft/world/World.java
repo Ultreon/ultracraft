@@ -58,7 +58,7 @@ public abstract class World implements ServerDisposable {
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
     protected static int chunkLoads;
 
-    private final Vec3i spawnPoint = new Vec3i();
+    protected final Vec3i spawnPoint = new Vec3i();
     protected final long seed;
     private int renderedChunks;
 

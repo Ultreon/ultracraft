@@ -8,16 +8,21 @@ import java.io.Reader;
 import java.util.Objects;
 
 public class Metadata {
-    public static final Metadata INSTANCE;
+    private static Metadata instance;
 
-    static {
+    @SerializedName("version")
+    public String version;
+
+    public static Metadata get() {
+        return Metadata.instance;
+    }
+
+    static Metadata load() {
         try (Reader reader = new InputStreamReader(Objects.requireNonNull(Metadata.class.getResourceAsStream("/metadata.json")))) {
-            INSTANCE = UltracraftClient.GSON.fromJson(reader, Metadata.class);
+            Metadata.instance = UltracraftClient.GSON.fromJson(reader, Metadata.class);
+            return Metadata.instance;
         } catch (IOException e) {
             throw new AssertionError(e);
         }
     }
-
-    @SerializedName("version")
-    public String version;
 }

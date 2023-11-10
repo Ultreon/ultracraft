@@ -13,6 +13,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2i;
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @see GuiComponent
  */
+@Deprecated
 public interface Widget extends GuiStateListener, Drawable {
     /**
      * @return the x position create the widget.

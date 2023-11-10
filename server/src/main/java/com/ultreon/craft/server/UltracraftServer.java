@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
-import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Profiler;
@@ -30,6 +29,8 @@ import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import org.apache.logging.log4j.core.config.ConfigurationScheduler;
+import org.apache.logging.log4j.core.util.WatchManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
@@ -57,6 +58,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public static final long NANOSECONDS_PER_TICK = UltracraftServer.NANOSECONDS_PER_SECOND / UltracraftServer.TPS;
 
     public static final Logger LOGGER = LoggerFactory.getLogger("UltracraftServer");
+    public static final String NAMESPACE = "ultracraft";
+    private static final WatchManager WATCH_MANAGER = new WatchManager(new ConfigurationScheduler("Ultracraft"));
     private static UltracraftServer instance;
     private final List<ServerDisposable> disposables = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -99,7 +102,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         MapType worldData = new MapType();
         if (this.storage.exists("world.ubo")) {
             try {
-                this.storage.read("world.ubo");
+                worldData = this.storage.read("world.ubo");
             } catch (IOException e) {
                 this.crash(e);
             }
@@ -118,6 +121,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             this.node.create("tps", () -> this.currentTps);
             this.node.create("onlineTicks", () -> this.onlineTicks);
         }
+    }
+
+    public static WatchManager getWatchManager() {
+        return UltracraftServer.WATCH_MANAGER;
     }
 
     public void load() throws IOException {
@@ -463,6 +470,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.world.dispose();
 
+        this.scheduler.shutdownNow();
+
         try {
             if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
                 this.onTerminationFailed();
@@ -502,7 +511,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @return the game's version.
      */
     public String getGameVersion() {
-        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE);
+        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(NAMESPACE);
         if (container.isEmpty()) throw new InternalError("Can't find mod container for the base game.");
         return container.get().getMetadata().getVersion().getFriendlyString();
     }

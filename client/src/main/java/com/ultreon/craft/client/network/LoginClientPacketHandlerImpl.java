@@ -30,7 +30,7 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         this.client.inspection.createNode("world", () -> this.client.world);
         var player = this.client.player = new LocalPlayer(EntityTypes.PLAYER, clientWorld, uuid);
 
-        Connection.LOGGER.info("Logged in with uuid: " + uuid);
+        Connection.LOGGER.info("Logged in with uuid: {}", uuid);
 
         ClientPlayerEvents.PLAYER_JOINED.factory().onPlayerJoined(player);
 

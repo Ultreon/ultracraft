@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class GuiContainer extends GuiComponent implements IGuiContainer {
+@Deprecated
+public abstract class GuiContainer extends GuiComponent {
     protected final List<GuiComponent> children = new CopyOnWriteArrayList<>();
     protected final List<Widget> statics = new CopyOnWriteArrayList<>();
     protected GuiComponent hoveredWidget;
@@ -210,7 +211,6 @@ public abstract class GuiContainer extends GuiComponent implements IGuiContainer
         return this.hoveredWidget;
     }
 
-    @Override
     public List<GuiComponent> children() {
         return this.children;
     }

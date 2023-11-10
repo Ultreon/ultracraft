@@ -1,6 +1,5 @@
 package com.ultreon.craft.client.resources;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
@@ -21,8 +20,8 @@ public class ResourceFileHandle extends FileHandle {
     }
 
     public ResourceFileHandle(Resource resource) {
-        super("generated_" + UUID.randomUUID().toString().replaceAll("-", ""));
-        this.id = new Identifier("java", "generated_" + UUID.randomUUID().toString().replaceAll("-", ""));
+        super("generated_" + UUID.randomUUID().toString().replace("-", ""));
+        this.id = new Identifier("java", "generated_" + UUID.randomUUID().toString().replace("-", ""));
         this.resource = resource;
     }
 

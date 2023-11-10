@@ -21,6 +21,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.BakedCubeModel;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.util.EntitySize;
@@ -43,7 +44,6 @@ import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements Disposable {
-    static long vertexCount;
     private static long chunkMeshFrees;
     private final ChunkMeshBuilder meshBuilder;
     private final Material material;
@@ -206,7 +206,7 @@ public final class WorldRenderer implements Disposable {
     }
 
     public static long getVertexCount() {
-        return WorldRenderer.vertexCount;
+        return ValueTracker.vertexCount;
     }
 
     public void free(ClientChunk chunk) {

@@ -7,6 +7,8 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.crash.v0.CrashException;
+import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +79,7 @@ public class IntegratedServer extends UltracraftServer {
 
     @Override
     protected void onTerminationFailed() {
-        throw new Error("Failed termination of integrated server.");
+        throw new CrashException(new CrashLog("onTerminationFailed", new Throwable("Failed termination of integrated server.")));
     }
 
     @Override

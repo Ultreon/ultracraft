@@ -81,7 +81,7 @@ public class ModelProperties {
         }
 
         public ModelProperties build() {
-            return new ModelProperties(top, bottom, left, right, front, back);
+            return new ModelProperties(this.top, this.bottom, this.left, this.right, this.front, this.back);
         }
     }
 }

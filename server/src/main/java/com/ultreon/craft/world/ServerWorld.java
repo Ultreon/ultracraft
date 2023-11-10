@@ -113,13 +113,14 @@ public final class ServerWorld extends World {
 
     private void load(MapType worldData) {
         this.playTime = worldData.getInt("playTime", 0);
-        this.setSpawnPoint(worldData.getInt("spawnX", 0), worldData.getInt("spawnZ", 0));
+        this.spawnPoint.set(worldData.getInt("spawnX", 0), worldData.getInt("spawnY", 0), worldData.getInt("spawnZ", 0));
     }
 
     private MapType save(MapType worldData) {
         BlockPos spawnPoint = UltracraftServer.invokeAndWait(this::getSpawnPoint);
         worldData.putInt("playTime", this.playTime);
         worldData.putInt("spawnX", spawnPoint.x());
+        worldData.putInt("spawnY", spawnPoint.y());
         worldData.putInt("spawnZ", spawnPoint.z());
         worldData.putLong("seed", this.seed);
         return worldData;
@@ -606,7 +607,7 @@ public final class ServerWorld extends World {
 
         //<editor-fold defaultstate="collapsed" desc="<<Loading: world.ubo>>">
         if (this.storage.exists("world.ubo")) {
-            MapType worldData = this.storage.read("entities.ubo");
+            MapType worldData = this.storage.read("world.ubo");
             this.load(worldData);
         }
         //</editor-fold>

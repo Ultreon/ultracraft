@@ -1,15 +1,13 @@
 package com.ultreon.craft.client.model;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.libs.commons.v0.Identifier;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 import java.util.Objects;
 import java.util.Set;
-
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 

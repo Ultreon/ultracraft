@@ -27,7 +27,6 @@ public class LocalPlayer extends ClientPlayer {
     public @Nullable ContainerMenu openMenu;
     private UUID uuid;
     private int oldSelected;
-    private int moveUpdate = 10;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
@@ -63,13 +62,8 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
-    protected void onMoved() {
-        super.onMoved();
-    }
-
-    @Override
     protected void hurtFromVoid() {
-
+        // Player void damage should be handled by the server.
     }
 
     @Override

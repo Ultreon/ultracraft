@@ -5,10 +5,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.client.texture.TextureManager;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
+import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.Identifier;
 
 import java.util.HashMap;
@@ -22,30 +22,30 @@ public class BlockModelRegistry {
     private static final Set<Identifier> TEXTURES = new HashSet<>();
 
     static {
-        TEXTURES.add(new Identifier("misc/breaking1"));
-        TEXTURES.add(new Identifier("misc/breaking2"));
-        TEXTURES.add(new Identifier("misc/breaking3"));
-        TEXTURES.add(new Identifier("misc/breaking4"));
-        TEXTURES.add(new Identifier("misc/breaking5"));
-        TEXTURES.add(new Identifier("misc/breaking6"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking1"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking2"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking3"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking4"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking5"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking6"));
     }
 
     public static void register(Block block, CubeModel model) {
-        REGISTRY.put(() -> block, () -> model);
+        BlockModelRegistry.REGISTRY.put(() -> block, () -> model);
     }
 
     public static void register(Supplier<Block> block, Supplier<CubeModel> model) {
-        REGISTRY.put(block, model);
+        BlockModelRegistry.REGISTRY.put(block, model);
     }
 
     public static void registerDefault(Block block) {
         Identifier key = Registries.BLOCKS.getKey(block);
         Preconditions.checkNotNull(key, "Block is not registered");
-        register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
+        BlockModelRegistry.register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
     }
 
     public static void registerDefault(Supplier<Block> block) {
-        register(block, Suppliers.memoize(() -> {
+        BlockModelRegistry.register(block, Suppliers.memoize(() -> {
             Identifier key = Registries.BLOCKS.getKey(block.get());
             Preconditions.checkNotNull(key, "Block is not registered");
             return CubeModel.of(key.mapPath(path -> "blocks/" + path));
@@ -55,8 +55,8 @@ public class BlockModelRegistry {
     public static TextureAtlas stitch(TextureManager textureManager) {
         TextureStitcher textureStitcher = new TextureStitcher();
 
-        for (Supplier<CubeModel> value : REGISTRY.values()) {
-            TEXTURES.addAll(value.get().all());
+        for (Supplier<CubeModel> value : BlockModelRegistry.REGISTRY.values()) {
+            BlockModelRegistry.TEXTURES.addAll(value.get().all());
         }
 
         final int breakStages = 6;
@@ -67,7 +67,7 @@ public class BlockModelRegistry {
             textureStitcher.add(texId, tex);
         }
 
-        for (Identifier texture : TEXTURES) {
+        for (Identifier texture : BlockModelRegistry.TEXTURES) {
             textureStitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")));
         }
 
@@ -76,7 +76,7 @@ public class BlockModelRegistry {
 
     public static BakedModelRegistry bake(TextureAtlas atlas) {
         ImmutableMap.Builder<Block, BakedCubeModel> bakedModels = new ImmutableMap.Builder<>();
-        REGISTRY.forEach((block, model) -> bakedModels.put(block.get(), model.get().bake(atlas)));
+        BlockModelRegistry.REGISTRY.forEach((block, model) -> bakedModels.put(block.get(), model.get().bake(atlas)));
 
         return new BakedModelRegistry(atlas, bakedModels.build());
     }

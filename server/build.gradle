@@ -47,7 +47,7 @@ dependencies {
     implementation api(project(":gameprovider"))
 
     implementation api("com.formdev:flatlaf:3.2.1")
-    implementation api("org.yaml:snakeyaml:$snakeyaml_version")
+    implementation api("com.github.FusionYAML:FusionYAML:$fusion_yaml_version")
 
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")
@@ -83,6 +83,9 @@ dependencies {
 
     // SLF4J
     implementation api("org.slf4j:slf4j-api:$slf4j_version")
+
+    // JSON5
+    implementation api("de.marhali:json5-java:2.0.0")
 
     // Google
     implementation api("com.google.code.gson:gson:2.10.1")
