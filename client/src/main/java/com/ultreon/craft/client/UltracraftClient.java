@@ -102,6 +102,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
 import com.ultreon.libs.crash.v0.CrashCategory;
+import com.ultreon.libs.crash.v0.CrashException;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.datetime.v0.Duration;
 import com.ultreon.libs.registries.v0.Registry;
@@ -494,6 +495,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         try (var ignored = GLFW.glfwSetErrorCallback((error, description) -> UltracraftClient.LOGGER.error("GLFW Error: " + description))) {
             try {
                 new Lwjgl3Application(new GameLibGDXWrapper(argv), UltracraftClient.createConfig());
+            } catch (CrashException e) {
+                CrashLog crashLog = e.getCrashLog();
+                UltracraftClient.crash(crashLog);
             } catch (Throwable t) {
                 UltracraftClient.LOGGER.error("Failed to create LWJGL3 Application:", t);
                 JOptionPane.showMessageDialog(null, t.getMessage() + "\n\nCheck the debug.log file for more info!", "Launch failed!", JOptionPane.ERROR_MESSAGE);

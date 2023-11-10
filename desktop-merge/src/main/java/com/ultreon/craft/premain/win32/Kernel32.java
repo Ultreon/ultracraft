@@ -7,6 +7,7 @@ import com.sun.jna.Native;
  * Windows API wrapper for the Kernel32 library.
  * Used for setting the current working directory.
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface Kernel32 extends Library {
     /**
      * The Kernel32 instance.

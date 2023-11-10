@@ -473,11 +473,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public Future<?> closeGroup() {
-        EventLoopGroup group = this.group;
-        if (group != null) {
-            return group.shutdownGracefully();
+        EventLoopGroup group;
+        if (this.isMemoryConnection()) {
+            group = Connection.LOCAL_WORKER_GROUP.get();
+        } else {
+            group = Connection.NETWORK_WORKER_GROUP.get();
         }
-        return null;
+        return group.shutdownGracefully();
     }
 
     @Nullable

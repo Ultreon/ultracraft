@@ -331,15 +331,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Set running flag to make server stop.
         this.running = false;
 
-        // Stop the server thread.
-        this.thread.interrupt();
-
         try {
             this.thread.join(60000);
-            if (this.thread.isAlive()) {
-                this.crash(new RuntimeException("Server thread did not terminate in 60 seconds!"));
-                Runtime.getRuntime().halt(1);
-            }
         } catch (InterruptedException e) {
             this.crash(new RuntimeException("Safe shutdown got interrupted."));
             Runtime.getRuntime().halt(1);

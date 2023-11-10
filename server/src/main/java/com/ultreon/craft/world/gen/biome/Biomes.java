@@ -19,7 +19,7 @@ public class Biomes {
             .layer(new AirTerrainLayer())
             .layer(new UndergroundTerrainLayer(Blocks.STONE, 4))
             .layer(new GroundTerrainLayer(Blocks.DIRT, 1, 3))
-            .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 1))
+            .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 0))
             .extraLayer(new PatchTerrainLayer(NoiseConfigs.STONE_PATCH, Blocks.STONE))
             .build());
 

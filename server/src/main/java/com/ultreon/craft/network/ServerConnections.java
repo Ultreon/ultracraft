@@ -33,7 +33,6 @@ public class ServerConnections {
     private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
 
     public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(ServerConnections::createServerEventGroup);
-    //    public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(ServerConnections::createEpollEventGroup);
     final List<Connection> connections = new ArrayList<>();
     private boolean running;
 
@@ -59,10 +58,6 @@ public class ServerConnections {
     private static NioEventLoopGroup createServerEventGroup() {
         return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Server IO #%d").setDaemon(true).build());
     }
-
-//    private static EpollEventLoopGroup createEpollEventGroup() {
-//        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
-//    }
 
     public SocketAddress startMemoryServer() {
         ChannelFuture channelFuture;
@@ -154,6 +149,7 @@ public class ServerConnections {
         for (ChannelFuture future : this.channels) {
             try {
                 future.channel().close().sync();
+                ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
             } catch (InterruptedException ex) {
                 ServerConnections.LOGGER.warn("Failed to close channel", ex);
             }

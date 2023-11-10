@@ -43,7 +43,7 @@ public class UltracraftServerConfig {
 
     public void save() {
         try {
-            Files.writeString(Path.of("config/ultracraft_client.yml"), UltracraftClientConfig.YAML.dumpAsMap(UltracraftClientConfig.class));
+            Files.writeString(Path.of("config/ultracraft_client.yml"), UltracraftServerConfig.YAML.dumpAsMap(UltracraftServerConfig.class));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
