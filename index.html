@@ -17,6 +17,7 @@
                 margin-top: 0px;
                 width: 200px;
                 text-align: center;
+                display: inline-block;
             }
 
             a.button:active {
@@ -28,11 +29,11 @@
                 margin-top: 4px;
             }
 
-            a.button:hover {
+            a.button:hover, a.button:focus {
                 outline-color: white;
             }
 
-            a.button:active:hover {
+            a.button:active:hover, a.button:active:focus {
                 outline-color: black;
             }
 
@@ -86,7 +87,6 @@
 
             div#content {
                 display: flex;
-                justify-content: center;
 
                 top: 50%;
                 left: 50%;
@@ -114,6 +114,15 @@
                 overflow-y: scroll !important; */
                 min-height: 0%;
             }
+
+            div.button-block {
+                display: inline-flex;
+                flex-wrap: wrap;
+                flex-direction: row;
+                justify-content: center;
+                max-width: 100%;
+            }
+
             h1, h2 {
                 margin-bottom: 0.5em;
                 margin-top: 1em;
@@ -150,9 +159,12 @@
             <p>Ultracraft is a voxel game that aims to do things differently.</p>
 
             <h2>Links</h2>
-            <a class="button" href="docs/latest/index.html" target="_blank">Latest Javadocs</a>
-            <a class="button" href="https://jitpack.io/#Ultreon/ultracraft" target="_blank">Jitpack Page</a>
-            <a class="button" href="https://github.com/Ultreon/ultracraft-example-mod" target="_blank">Example Mod Sources</a>
+            <div class="button-block">
+                <a class="button" href="https://github.com/Ultreon/ultracraft" target="_blank">Source Code</a>
+                <a class="button" href="docs/latest/index.html" target="_blank">Latest Javadocs</a>
+                <a class="button" href="https://jitpack.io/#Ultreon/ultracraft" target="_blank">Jitpack Page</a>
+                <a class="button" href="https://github.com/Ultreon/ultracraft-example-mod" target="_blank">Example Mod Sources</a>
+            </div>
         </div>
         <script>
             
