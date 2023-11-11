@@ -1,0 +1,149 @@
+/*
+ * Copyright 2023 - Ultreon Team.
+ * All Rights Reserved.
+ */
+
+a.button {
+    box-shadow: 0 0 0 2px #666 inset;
+    background-color: #444;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    padding: calc(0.5em);
+    border-bottom: 6px solid #222;
+    margin: 8px;
+    outline: 2px solid black;
+    margin-top: 0px;
+    width: 200px;
+    text-align: center;
+    display: inline-block;
+}
+
+a.button:active {
+    box-shadow: 0 0 0 2px #484848 inset;
+    color: #bbb;
+    background-color: #383838;
+    padding: calc(0.5em);
+    border-bottom: 2px solid #222;
+    margin-top: 4px;
+}
+
+a.button:hover, a.button:focus {
+    outline-color: white;
+}
+
+a.button:active:hover, a.button:active:focus {
+    outline-color: black;
+}
+
+a.button.disabled {
+    box-shadow: 0 0 0 2px #444 inset;
+    color: #bbb;
+    background-color: #333;
+    padding: calc(0.5em);
+    cursor: not-allowed;
+    outline-color: #222;
+}
+
+a.button.disabled:active {
+    border-bottom: 6px solid #222;
+    margin: 8px;
+    outline: 2px solid black;
+    margin-top: 0px;
+}
+
+a.button:visited {
+    font-weight: normal;
+}
+
+a.button:focus {
+    top: 0;
+}
+
+img.banner {
+    height: 100% !important;
+    width: 100% !important;
+    position: fixed;
+    z-index: -10;
+    object-fit: cover;
+    transition: opacity .4s linear;
+}
+
+img.banner-loading {
+    min-height: 100% !important;
+    min-width: 100% !important;
+    z-index: -15;
+    position: fixed;
+    object-fit: cover;
+    filter: blur(16px);
+}
+
+body {
+    background: #222;
+    padding: 0;
+    margin: 0;
+}
+
+div#content {
+    display: flex;
+
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+
+    max-width: 512px;
+    width: 512px;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    margin: 32px;
+    
+    box-shadow: 0 0 0 2px #666 inset, 0 6px 12px 0 #0008;
+    background-color: #444;
+    color: white;
+    font-weight: bold;
+    font-family: sans-serif, Arial;
+    text-decoration: none;
+    padding: calc(0.5em);
+    border-bottom: 10px solid #222;
+    margin: 0px;
+    
+    /* overflow-x: scroll;
+    overflow-y: scroll !important; */
+    min-height: 0%;
+}
+
+div.button-block {
+    display: inline-flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    max-width: 100%;
+}
+
+h1, h2 {
+    margin-bottom: 0.5em;
+    margin-top: 1em;
+    border-bottom: 2px solid #666;
+    padding-bottom: 0.1em;
+    text-align: center;
+    width: 100%;
+}
+h1 {
+    margin-top: 0;
+}
+p {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    max-width: 50vw;
+    text-wrap: balance;
+    text-align: center;
+    font-weight: 400;
+}
+
+* {
+    font-family: sans-serif, Arial;
+    user-select: none;
+    -webkit-user-drag: none;
+}
