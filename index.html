@@ -66,7 +66,7 @@
                 position: fixed;
                 z-index: -10;
                 object-fit: cover;
-                animation: fade-in 1s;
+                transition: opacity .4s linear;
             }
 
             img.banner-loading {
@@ -82,11 +82,6 @@
                 background: #222;
                 padding: 0;
                 margin: 0;
-            }
-
-            @keyframes fade-in {
-                0% { opacity: 0; }
-                100% { opacity: 1; }
             }
 
             div#content {
@@ -147,7 +142,7 @@
     </head>
     <body>
         <img src="banner-loading.png" class="banner-loading">
-        <img src="banner.png" class="banner" loading="lazy">
+        <img src="banner.png" class="banner" style="opacity: 0" loading="lazy" onload="this.style.opacity=1">
 
         <div id="content">
             <h1>Ultracraft</h1>
@@ -158,5 +153,8 @@
             <a class="button" href="https://jitpack.io/#Ultreon/ultracraft" target="_blank">Jitpack Page</a>
             <a class="button" href="https://github.com/Ultreon/ultracraft-example-mod" target="_blank">Example Mod Sources</a>
         </div>
+        <script>
+            
+        </script>
     </body>
 </html>
