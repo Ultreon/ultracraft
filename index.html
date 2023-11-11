@@ -61,22 +61,34 @@
             }
 
             img.banner {
-                height: 100%;
-                width: 100%;
-                image-rendering: crisp-edges;
-                position: absolute;
+                height: 100% !important;
+                width: 100% !important;
+                position: fixed;
                 z-index: -10;
                 object-fit: cover;
+                animation: fade-in 1s;
+            }
+
+            img.banner-loading {
+                min-height: 100% !important;
+                min-width: 100% !important;
+                z-index: -15;
+                position: fixed;
+                object-fit: cover;
+                filter: blur(16px);
             }
 
             body {
                 background: #222;
                 padding: 0;
                 margin: 0;
-                display: flex;
-                justify-content: center;
-                align-content: center;
             }
+
+            @keyframes fade-in {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+
             div#content {
                 display: flex;
                 justify-content: center;
@@ -134,7 +146,9 @@
         </style>
     </head>
     <body>
-        <img src="banner.png" class="banner">
+        <img src="banner-loading.png" class="banner-loading">
+        <img src="banner.png" class="banner" loading="lazy">
+
         <div id="content">
             <h1>Ultracraft</h1>
             <p>Ultracraft is a voxel game that aims to do things differently.</p>
