@@ -64,7 +64,7 @@ public class ImGuiOverlay {
 
         UltracraftClient.invokeAndWait(() -> {
             ImGuiOverlay.imGuiGlfw.init(windowHandle, true);
-            ImGuiOverlay.imGuiGl3.init("#version 150");
+            ImGuiOverlay.imGuiGl3.init("#version 110");
         });
     }
 

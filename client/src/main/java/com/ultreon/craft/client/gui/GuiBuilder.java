@@ -64,4 +64,21 @@ public record GuiBuilder(Screen screen) {
         return this.screen.add(new Panel(0, 0, 0, 0))
                 .onRevalidate(it -> it.pos(positionSupplier.get()));
     }
+
+    @CanIgnoreReturnValue
+    public <T extends Widget<T>> T custom(T widget) {
+        return this.screen.add(widget);
+    }
+
+    @CanIgnoreReturnValue
+    public Slider slider(Supplier<Position> positionSupplier) {
+        return this.screen.add(new Slider())
+                .onRevalidate(it -> it.pos(positionSupplier.get()));
+    }
+
+    @CanIgnoreReturnValue
+    public <T extends Widget<T>> T custom(T widget, Supplier<Position> positionSupplier) {
+        return this.screen.add(widget)
+                .onRevalidate(it -> it.pos(positionSupplier.get()));
+    }
 }

@@ -1,16 +1,19 @@
 package com.ultreon.craft.client.gui.widget;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.component.GameComponent;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -33,6 +36,7 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     protected final UltracraftClient client = UltracraftClient.get();
     protected Font font = this.client.font;
     private final List<Callback<T>> revalidateListeners = new ArrayList<>();
+    private final List<GameComponent<?>> components = new ArrayList<>();
 
     @SafeVarargs
     protected Widget(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
@@ -41,6 +45,16 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
         this.preferredSize.width = width;
         this.preferredSize.height = height;
         this.size.set(this.preferredSize);
+    }
+
+    @CheckReturnValue
+    protected final <C extends GameComponent<?>> C register(C component) {
+        this.components.add(component);
+        return component;
+    }
+
+    public List<GameComponent<?>> getComponents() {
+        return Collections.unmodifiableList(this.components);
     }
 
     @Override
