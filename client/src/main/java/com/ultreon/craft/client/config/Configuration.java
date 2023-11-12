@@ -8,7 +8,9 @@ import com.ultreon.craft.client.util.DuplicateException;
 import com.ultreon.libs.collections.v0.maps.OrderedHashMap;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,22 +21,22 @@ public class Configuration {
 
     private static final Map<String, Configuration> CONFIGS = new HashMap<>();
     private final Map<String, ConfigEntry<?>> entries = new OrderedHashMap<>();
-    private final FileHandle file;
+    private final FileHandle handle;
     private final String id;
 
     public Configuration(String id) {
-        if (CONFIGS.containsKey(id)) {
+        if (Configuration.CONFIGS.containsKey(id)) {
             throw new DuplicateException("Duplicate configuration id: " + id);
         }
 
-        this.file = UltracraftClient.getConfigDir().child(id + ".txt");
+        this.handle = UltracraftClient.getConfigDir().child(id + ".txt");
         this.id = id;
 
-        CONFIGS.put(id, this);
+        Configuration.CONFIGS.put(id, this);
     }
 
     Configuration() {
-        this.file = FILE;
+        this.handle = Configuration.FILE;
         this.id = UltracraftClient.NAMESPACE;
     }
 
@@ -81,7 +83,7 @@ public class Configuration {
     }
 
     protected <T> ConfigEntry<T> add(String key, T defaultValue, Function<String, T> reader, Function<T, String> writer, String comment) {
-        ConfigEntry<T> entry = new ConfigEntry<T>(key, defaultValue, this) {
+        ConfigEntry<T> entry = new ConfigEntry<>(key, defaultValue, this) {
             @Override
             protected T read(String text) {
                 return reader.apply(text);
@@ -106,19 +108,15 @@ public class Configuration {
     }
 
     public void reload() {
-        if (!this.file.exists()) {
+        if (!this.handle.exists()) {
             this.save();
         }
-        try (BufferedReader reader = new BufferedReader(this.file.reader())) {
+        try (BufferedReader reader = new BufferedReader(this.handle.reader())) {
             String s;
             while ((s = reader.readLine()) != null) {
-                if (s.startsWith("#")) {
-                    continue;
-                }
                 String[] entryArr = s.split("=", 2);
-                if (entryArr.length <= 1) {
+                if (s.startsWith("#") || entryArr.length <= 1)
                     continue;
-                }
 
                 ConfigEntry<?> entry = this.entries.get(entryArr[0]);
                 if (entry != null) {
@@ -126,14 +124,14 @@ public class Configuration {
                 }
             }
         } catch (FileNotFoundException ignored) {
-
+            // ignored
         } catch (Exception e) {
-            e.printStackTrace();
+            UltracraftClient.LOGGER.error("Failed to reload configuration", e);
         }
     }
 
     public void save() {
-        try (BufferedWriter writer = new BufferedWriter(this.file.writer(false))) {
+        try (BufferedWriter writer = new BufferedWriter(this.handle.writer(false))) {
             for (ConfigEntry<?> e : this.entries.values()) {
                 String key = e.getKey();
                 String value = e.write();
@@ -141,7 +139,7 @@ public class Configuration {
                 String comment = e.getComment();
                 if (comment != null && !comment.isEmpty()) {
                     writer.write("# ");
-                    writer.write(comment.trim().replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+                    writer.write(comment.trim().replace("\r\n", " ").replace("\r", " ").replace("\n", " "));
                     writer.newLine();
                 }
                 writer.write(key);
@@ -150,9 +148,9 @@ public class Configuration {
                 writer.newLine();
             }
         } catch (FileNotFoundException ignored) {
-
+            // ignored
         } catch (Exception e) {
-            e.printStackTrace();
+            UltracraftClient.LOGGER.error("Failed to save configuration", e);
         }
     }
 
@@ -164,12 +162,12 @@ public class Configuration {
         return this.id;
     }
 
-    public FileHandle getFile() {
-        return this.file;
+    public FileHandle getHandle() {
+        return this.handle;
     }
 
     @Nullable
     public static Configuration getConfig(String id) {
-        return CONFIGS.get(id);
+        return Configuration.CONFIGS.get(id);
     }
 }

@@ -16,6 +16,7 @@ import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +45,7 @@ public class ChunkMeshBuilder {
         chunk.updated();
         vertices.items = null;
 
-        ValueTracker.vertexCount += mesh.getMaxVertices();
+        ValueTracker.setVertexCount(ValueTracker.getVertexCount() + mesh.getMaxVertices());
 
         chunkMesh.meshPart.mesh = mesh;
         chunkMesh.meshPart.size = this.indices.length;
@@ -58,54 +59,9 @@ public class ChunkMeshBuilder {
      * Creates a mesh out of the chunk, returning the number of indices produced
      */
     private void buildVertices(ClientChunk chunk, FloatArray vertices) {
-        int i = 0;
-
-        for (int y = 0; y < CHUNK_HEIGHT; y++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                for (int x = 0; x < CHUNK_SIZE; x++, i++) {
-                    Block block = chunk.get(x, y, z);
-                    Vec3i offset = new Vec3i(x, y, z);
-
-                    if (!block.doesRender()) continue;
-
-                    BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
-                    if (block.isTransparent()) continue;
-
-                    if (model == null) continue;
-
-                    {
-                        Block b = this.block(chunk, x, y + 1, z);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
-                    }
-                    {
-                        Block b = this.block(chunk, x, y - 1, z);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
-                    }
-                    {
-                        Block b = this.block(chunk, x - 1, y, z);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
-                    }
-                    {
-                        Block b = this.block(chunk, x + 1, y, z);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
-                    }
-                    {
-                        Block b = this.block(chunk, x, y, z - 1);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
-                    }
-                    {
-                        Block b = this.block(chunk, x, y, z + 1);
-                        if (b == null || b == Blocks.AIR || b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
-                    }
-                }
-            }
-        }
+        for (int y = 0; y < CHUNK_HEIGHT; y++)
+            for (int z = 0; z < CHUNK_SIZE; z++)
+                for (int x = 0; x < CHUNK_SIZE; x++) this.buildBlock(chunk, vertices, x, y, z);
     }
 
     @NotNull
@@ -124,7 +80,7 @@ public class ChunkMeshBuilder {
         chunk.updated();
         vertices.items = null;
 
-        ValueTracker.vertexCount += mesh.getMaxVertices();
+        ValueTracker.setVertexCount(ValueTracker.getVertexCount() + mesh.getMaxVertices());
 
         chunkMesh.meshPart.mesh = mesh;
         chunkMesh.meshPart.size = this.indices.length;
@@ -138,282 +94,94 @@ public class ChunkMeshBuilder {
      * Creates a mesh out of the chunk, returning the number of indices produced
      */
     private void buildTransparentVertices(ClientChunk section, FloatArray vertices) {
-        int i = 0;
-
-        for (int y = 0; y < CHUNK_HEIGHT; y++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                for (int x = 0; x < CHUNK_SIZE; x++, i++) {
-                    Block block = section.get(x, y, z);
-                    Vec3i offset = new Vec3i(x, y, z);
-
-                    if (!block.doesRender()) continue;
-                    if (!block.isTransparent()) continue;
-
-                    BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
-
-                    if (model == null) continue;
-
-                    {
-                        Block b = this.block(section, x, y + 1, z);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
-                    }
-                    {
-                        Block b = this.block(section, x, y - 1, z);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
-                    }
-                    {
-                        Block b = this.block(section, x - 1, y, z);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
-                    }
-                    {
-                        Block b = this.block(section, x + 1, y, z);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
-                    }
-                    {
-                        Block b = this.block(section, x, y, z - 1);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
-                    }
-                    {
-                        Block b = this.block(section, x, y, z + 1);
-                        if (b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender())
-                            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
-                    }
-                }
-            }
-        }
+        for (int y = 0; y < CHUNK_HEIGHT; y++)
+            for (int z = 0; z < CHUNK_SIZE; z++)
+                for (int x = 0; x < CHUNK_SIZE; x++) this.buildTransparentBlock(section, vertices, x, y, z);
     }
 
-    protected static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
+    private void buildTransparentBlock(ClientChunk section, FloatArray vertices, int x, int y, int z) {
+        Block block = section.get(x, y, z);
+        Vec3i offset = new Vec3i(x, y, z);
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
+        if (ChunkMeshBuilder.isInvisible(block, model)) return;
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
+        assert model != null;
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        Block top = this.block(section, x, y + 1, z);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(top))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
+
+        Block bottom = this.block(section, x, y - 1, z);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(bottom))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
+
+        Block left = this.block(section, x - 1, y, z);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(left))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
+
+        Block right = this.block(section, x + 1, y, z);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(right))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
+
+        Block front = this.block(section, x, y, z - 1);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(front))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
+
+        Block back = this.block(section, x, y, z + 1);
+        if (ChunkMeshBuilder.shouldRenderTransparentFace(back))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
     }
 
-    protected static void createBottom(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+    private static boolean isInvisible(Block block, BakedCubeModel model) {
+        return !block.doesRender() || !block.isTransparent() || model == null;
     }
 
-    protected static void createLeft(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+    private static boolean shouldRenderTransparentFace(Block b) {
+        return b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender();
     }
 
-    protected static void createRight(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
+    private void buildBlock(ClientChunk chunk, FloatArray vertices, int x, int y, int z) {
+        Block block = chunk.get(x, y, z);
+        Vec3i offset = new Vec3i(x, y, z);
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
+        if (ChunkMeshBuilder.isTransparent(block, model)) return;
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
+        assert model != null;
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        Block top = this.block(chunk, x, y + 1, z);
+        if (ChunkMeshBuilder.shouldRenderFace(top))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
+
+        Block bottom = this.block(chunk, x, y - 1, z);
+        if (ChunkMeshBuilder.shouldRenderFace(bottom))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
+
+        Block left = this.block(chunk, x - 1, y, z);
+        if (ChunkMeshBuilder.shouldRenderFace(left))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
+
+        Block right = this.block(chunk, x + 1, y, z);
+        if (ChunkMeshBuilder.shouldRenderFace(right))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
+
+        Block front = this.block(chunk, x, y, z - 1);
+        if (ChunkMeshBuilder.shouldRenderFace(front))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
+
+        Block back = this.block(chunk, x, y, z + 1);
+        if (ChunkMeshBuilder.shouldRenderFace(back))
+            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
     }
 
-    protected static void createFront(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+    @EnsuresNonNullIf(expression = "model", result = true)
+    private static boolean isTransparent(Block block, BakedCubeModel model) {
+        return !block.doesRender() || block.isTransparent() || model == null;
     }
 
-    protected static void createBack(Vec3i offset, int x, int y, int z, TextureRegion region, FloatArray vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+    private static boolean shouldRenderFace(Block side) {
+        return side == null || side == Blocks.AIR || side.isTransparent() || !side.doesRender();
     }
 
     static float[] backUv = {
@@ -494,14 +262,14 @@ public class ChunkMeshBuilder {
     };
 
     static float[] backVertices = {
-        0, 0, 1,
-        0, 1, 1,
-        1, 1, 1,
-        1, 0, 1,
+            0, 0, 1,
+            0, 1, 1,
+            1, 1, 1,
+            1, 0, 1,
     };
 
     public static void drawFace(Vec3i offset, BlockFace face, TextureRegion region, FloatArray output, FaceProperties faceProperties) {
-        float[] vertices = switch(face) {
+        float[] vertices = switch (face) {
             case TOP -> ChunkMeshBuilder.topVertices;
             case BOTTOM -> ChunkMeshBuilder.bottomVertices;
             case LEFT -> ChunkMeshBuilder.leftVertices;
@@ -509,7 +277,7 @@ public class ChunkMeshBuilder {
             case FRONT -> ChunkMeshBuilder.frontVertices;
             case BACK -> ChunkMeshBuilder.backVertices;
         };
-        
+
         float[] uvs = switch (face) {
             case TOP -> ChunkMeshBuilder.topUv;
             case BOTTOM -> ChunkMeshBuilder.bottomUv;
@@ -521,13 +289,11 @@ public class ChunkMeshBuilder {
 
         Vector3 normal = face.getNormal();
 
-//        if (faceProperties.randomRotation) {
-//            // Generate seed for offset.
-//            long seed = (long) face.ordinal() + (long) offset.x + (long) offset.y + (long) offset.z;
-//            Random random = new Random(seed);
-//
-//            vertices = MathHelper.rotate(vertices, random);
-//        }
+        // FIXME Random rotation is broken.
+        if (faceProperties.randomRotation) {
+            // Generate seed for offset.
+            vertices = MathHelper.rotate(vertices, new Vector3().add(0.5f), face.getAxis());
+        }
 
         // Loop vertices and uvs and add them to the output.
         for (int vertex = 0, uv = 0; vertex < vertices.length; vertex += 3, uv += 2) {
@@ -538,7 +304,7 @@ public class ChunkMeshBuilder {
             // Calculate the UV coordinates from the texture region.
             float u = MathHelper.lerp(uvs[uv], region.getU(), region.getU2());
             float v = MathHelper.lerp(uvs[uv + 1], region.getV(), region.getV2());
-            
+
             output.add(x);
             output.add(y);
             output.add(z);
@@ -556,9 +322,7 @@ public class ChunkMeshBuilder {
         Vec3i vec = new Vec3i(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         BlockPos pos = new BlockPos(vec);
         Chunk chunkAt = world.getChunkAt(pos);
-        if (chunkAt != null) {
-            return world.get(pos);
-        }
+        if (chunkAt != null) return world.get(pos);
         return null;
     }
 

@@ -1,6 +1,5 @@
 package com.ultreon.craft.client.config;
 
-import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.gui.ConfigEntry;
 import com.ultreon.libs.translations.v1.LanguageManager;

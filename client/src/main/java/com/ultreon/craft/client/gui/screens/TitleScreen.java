@@ -90,13 +90,6 @@ public class TitleScreen extends Screen {
         renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, this.resizer.getSourceWidth(), this.resizer.getSourceHeight(), (int) this.resizer.getSourceWidth(), (int) this.resizer.getSourceHeight());
     }
 
-    @Override
-    protected void renderBackground(Renderer renderer) {
-        super.renderBackground(renderer);
-
-//        renderer.drawTextScaledCenter("Ultracraft", 3, (int) ((float) 125), (int) (float) 40);
-    }
-
     public Button<?> getSingleplayerButton() {
         return this.singleplayerButton;
     }

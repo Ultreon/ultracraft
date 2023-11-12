@@ -13,8 +13,7 @@ public class MessageScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-//        builder.button(() -> new Position(this.size.width / 2, this.size.height / 2))
-//                .text("Cancel");
+
     }
 
     @Override

@@ -22,19 +22,19 @@ public abstract class Screen extends UIContainer<Screen> {
     public Widget<?> directHovered;
     public @Nullable Widget<?> focused;
 
-    public Screen(String title) {
+    protected Screen(String title) {
         this(TextObject.literal(title));
     }
 
-    public Screen(TextObject title) {
+    protected Screen(TextObject title) {
         this(title, UltracraftClient.get().screen);
     }
 
-    public Screen(String title, Screen parent) {
+    protected Screen(String title, Screen parent) {
         this(TextObject.literal(title), parent);
     }
 
-    public Screen(TextObject title, Screen parent) {
+    protected Screen(TextObject title, Screen parent) {
         super(0, 0, Screen.width(), Screen.height());
         this.parentScreen = parent;
         this.root = this;

@@ -1,7 +1,6 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.widget.StaticWidget;
 import com.ultreon.craft.client.util.Resizer;
@@ -19,7 +18,6 @@ public class LoadingOverlay implements StaticWidget {
     private final Texture ultreonLogoTex;
     private float progress;
     private final List<String> messages = new ArrayList<>();
-    private final BitmapFont font = new BitmapFont();
     private final UltracraftClient client = UltracraftClient.get();
     private final Texture background;
 

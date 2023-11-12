@@ -87,7 +87,7 @@ public class ModListScreen extends Screen {
                 ModListScreen.TEXTURES.put(iconPath, texture);
             }
             Texture texture = ModListScreen.TEXTURES.computeIfAbsent(metadata.getId(), s -> new Texture(Gdx.files.classpath(metadata.getIconPath(128).orElse(null))));
-            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.getId().replaceAll("-", "_") + ".png");
+            iconId = UltracraftClient.id("generated/mod_icon/" + metadata.getId().replace("-", "_") + ".png");
             if (!textureManager.isTextureLoaded(iconId)) textureManager.registerTexture(iconId, texture);
             if (!textureManager.isTextureLoaded(iconId)) iconId = ModListScreen.DEFAULT_MOD_ICON;
         } else {

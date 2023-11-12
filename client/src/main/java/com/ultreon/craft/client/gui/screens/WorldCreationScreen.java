@@ -2,7 +2,9 @@ package com.ultreon.craft.client.gui.screens;
 
 import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.TextEntry;
 import com.ultreon.craft.text.TextObject;
@@ -17,7 +19,6 @@ public class WorldCreationScreen extends Screen {
     private TextEntry<?> worldNameEntry;
     @MonotonicNonNull
     private Button<?> createButton;
-    private Button<?> cancelButton;
     private String worldName;
 
     public WorldCreationScreen() {
@@ -35,7 +36,7 @@ public class WorldCreationScreen extends Screen {
         this.createButton = builder.button(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 5), this::createWorld)
                 .width(95)
                 .translation("ultracraft.screen.world_creation.create");
-        this.cancelButton = builder.button(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 5), this::onBack)
+        builder.button(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 5), this::onBack)
                 .width(95)
                 .translation("ultracraft.ui.cancel");
     }
@@ -51,7 +52,7 @@ public class WorldCreationScreen extends Screen {
             storage.createWorld();
             this.client.startWorld(storage);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            this.client.notifications.add(Notification.builder(TextObject.literal("Failed to create world"), TextObject.literal(e.getLocalizedMessage())).icon(MessageIcon.ERROR).build());
         }
     }
 

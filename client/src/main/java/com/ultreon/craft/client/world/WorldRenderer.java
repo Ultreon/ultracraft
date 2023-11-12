@@ -206,7 +206,7 @@ public final class WorldRenderer implements Disposable {
     }
 
     public static long getVertexCount() {
-        return ValueTracker.vertexCount;
+        return ValueTracker.getVertexCount();
     }
 
     public void free(ClientChunk chunk) {
@@ -297,7 +297,7 @@ public final class WorldRenderer implements Disposable {
                     renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
                     renderable.meshPart.primitiveType = GL_TRIANGLES;
                     renderable.material = this.breakingMaterial;
-                    renderable.worldTransform.setToTranslation(this.tmp);
+                    renderable.worldTransform.setToTranslationAndScaling(this.tmp, new Vector3(1.01f, 1.01f, 1.01f));
 
                     output.add(this.verifyOutput(renderable));
                 }

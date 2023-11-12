@@ -81,7 +81,7 @@ public class WorldSelectionScreen extends Screen {
         try (Stream<Path> worldPaths = Files.list(WorldSelectionScreen.WORLDS_DIR)) {
             worlds = worldPaths.map(WorldStorage::new).sorted(Comparator.comparing(o -> o.getDirectory().getFileName().toString())).collect(Collectors.toCollection(ArrayList::new));
         } catch (IOException ignored) {
-
+            // ignored
         }
 
         return worlds;

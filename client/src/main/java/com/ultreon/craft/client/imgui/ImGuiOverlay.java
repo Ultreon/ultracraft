@@ -35,8 +35,8 @@ public class ImGuiOverlay {
     private static final ImBoolean SHOW_PROFILER = new ImBoolean(false);
 
     private static final ChunkPos RESET_CHUNK = new ChunkPos(17, 18);
-    public static final String[] keys = {"A", "B", "C"};
-    public static final Double[] values = {0.1, 0.3, 0.6};
+    protected static final String[] keys = {"A", "B", "C"};
+    protected static final Double[] values = {0.1, 0.3, 0.6};
 
     private static ImGuiImplGlfw imGuiGlfw;
     private static ImGuiImplGl3 imGuiGl3;
@@ -49,7 +49,7 @@ public class ImGuiOverlay {
     public static void setupImGui() {
         UltracraftClient.LOGGER.info("Setting up ImGui");
 
-        GLFWErrorCallback.createPrint(System.err).set();
+        GLFWErrorCallback.create((error, description) -> UltracraftClient.LOGGER.error("GLFW Error: {}", description)).set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
@@ -79,93 +79,112 @@ public class ImGuiOverlay {
     }
 
     public static void renderImGui(UltracraftClient client) {
-        if (ImGuiOverlay.SHOW_IM_GUI.get()) {
-            ImGuiOverlay.imGuiGlfw.newFrame();
+        if (!ImGuiOverlay.SHOW_IM_GUI.get()) return;
 
-            ImGui.newFrame();
-            ImGui.setNextWindowPos(0, 0);
-            ImGui.setNextWindowSize(client.getWidth(), 18);
-            ImGui.setNextWindowCollapsed(true);
+        ImGuiOverlay.imGuiGlfw.newFrame();
 
-            if (Gdx.input.isCursorCatched()) {
-                ImGui.getIO().setMouseDown(new boolean[5]);
-                ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        ImGui.newFrame();
+        ImGui.setNextWindowPos(0, 0);
+        ImGui.setNextWindowSize(client.getWidth(), 18);
+        ImGui.setNextWindowCollapsed(true);
+
+        if (Gdx.input.isCursorCatched()) {
+            ImGui.getIO().setMouseDown(new boolean[5]);
+            ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+
+        ImGuiOverlay.renderDisplay();
+
+        if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
+                ImGuiWindowFlags.NoCollapse |
+                ImGuiWindowFlags.AlwaysAutoResize |
+                ImGuiWindowFlags.NoTitleBar |
+                ImGuiWindowFlags.MenuBar |
+                ImGuiInputTextFlags.AllowTabInput)) {
+            ImGuiOverlay.renderMenuBar();
+            ImGui.end();
+        }
+
+
+        ImGuiOverlay.renderWindows(client);
+
+        ImGuiOverlay.handleTriggers();
+
+        ImGui.render();
+        ImGuiOverlay.imGuiGl3.renderDrawData(ImGui.getDrawData());
+
+        ImGuiOverlay.handleInput();
+    }
+
+    private static void renderDisplay() {
+        if (ImGuiFileDialog.display("Main::loadWorld", ImGuiFileDialogFlags.None, 200, 400, 800, 600)) {
+            if (ImGuiFileDialog.isOk()) {
+                Path filePathName = Path.of(ImGuiFileDialog.getFilePathName());
+                UltracraftClient.invoke(() -> UltracraftClient.get().startWorld(filePathName));
             }
+            ImGuiFileDialog.close();
+        }
+    }
 
-            if (ImGuiFileDialog.display("Main::loadWorld", ImGuiFileDialogFlags.None, 200, 400, 800, 600)) {
-                if (ImGuiFileDialog.isOk()) {
-                    Path filePathName = Path.of(ImGuiFileDialog.getFilePathName());
-                    UltracraftClient.invoke(() -> UltracraftClient.get().startWorld(filePathName));
-                }
-                ImGuiFileDialog.close();
-            }
+    private static void handleTriggers() {
+        if (ImGuiOverlay.triggerLoadWorld) {
+            ImGuiOverlay.triggerLoadWorld = false;
+            ImGuiFileDialog.openModal("Main::loadWorld", "Choose Folder", null, UltracraftClient.getGameDir().toAbsolutePath().toString(), "", 1, 7, ImGuiFileDialogFlags.None);
+        }
+    }
 
-            if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-                    ImGuiWindowFlags.NoCollapse |
-                    ImGuiWindowFlags.AlwaysAutoResize |
-                    ImGuiWindowFlags.NoTitleBar |
-                    ImGuiWindowFlags.MenuBar |
-                    ImGuiInputTextFlags.AllowTabInput)) {
-                if (ImGui.beginMenuBar()) {
-                    if (ImGui.beginMenu("File")) {
-                        if (ImGui.menuItem("Load World...", "Ctrl+O")) {
-                            ImGuiOverlay.triggerLoadWorld = true;
-                        }
-                        ImGui.endMenu();
-                    }
-                    if (ImGui.beginMenu("Edit")) {
-                        ImGui.menuItem("Player Editor", "Ctrl+P", ImGuiOverlay.SHOW_PLAYER_UTILS);
-                        ImGui.menuItem("Gui Editor", "Ctrl+G", ImGuiOverlay.SHOW_GUI_UTILS);
-                        ImGui.endMenu();
-                    }
-                    if (ImGui.beginMenu("View")) {
-                        ImGui.menuItem("Utils", null, ImGuiOverlay.SHOW_UTILS);
-                        ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
-                        ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
-                        ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
-                        ImGui.endMenu();
-                    }
+    private static void renderWindows(UltracraftClient client) {
+        if (ImGuiOverlay.SHOW_PLAYER_UTILS.get()) ImGuiOverlay.showPlayerUtilsWindow(client);
+        if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiEditor(client);
+        if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
+        if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
+    }
 
-                    ImGui.text(" FPS: " + Gdx.graphics.getFramesPerSecond() + " ");
-                    ImGui.sameLine();
-                    ImGui.text(" Client TPS: " + Gdx.graphics.getFramesPerSecond() + " ");
-                    ImGui.sameLine();
-                    UltracraftServer server = UltracraftServer.get();
-                    if (server != null) {
-                        ImGui.text(" Server TPS: " + server.getCurrentTps() + " ");
-                        ImGui.sameLine();
-                    }
-                    ImGui.text(" Frame ID: " + Gdx.graphics.getFrameId() + " ");
-                    ImGui.endMenuBar();
-                }
-                ImGui.end();
-            }
+    private static void handleInput() {
+        if (!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) return;
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.O))
+            ImGuiOverlay.triggerLoadWorld = true;
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.P))
+            ImGuiOverlay.SHOW_PLAYER_UTILS.set(!ImGuiOverlay.SHOW_PLAYER_UTILS.get());
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.G))
+            ImGuiOverlay.SHOW_GUI_UTILS.set(!ImGuiOverlay.SHOW_GUI_UTILS.get());
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.F4))
+            ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.set(!ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.get());
+    }
 
-            if (ImGuiOverlay.SHOW_PLAYER_UTILS.get()) ImGuiOverlay.showPlayerUtilsWindow(client);
-            if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiEditor(client);
-            if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
-            if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
-
-            if (ImGuiOverlay.triggerLoadWorld) {
-                ImGuiOverlay.triggerLoadWorld = false;
-                ImGuiFileDialog.openModal("Main::loadWorld", "Choose Folder", null, UltracraftClient.getGameDir().toAbsolutePath().toString(), "", 1, 7, ImGuiFileDialogFlags.None);
-            }
-
-            ImGui.render();
-            ImGuiOverlay.imGuiGl3.renderDrawData(ImGui.getDrawData());
-
-            if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-                if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
+    private static void renderMenuBar() {
+        if (ImGui.beginMenuBar()) {
+            if (ImGui.beginMenu("File")) {
+                if (ImGui.menuItem("Load World...", "Ctrl+O")) {
                     ImGuiOverlay.triggerLoadWorld = true;
-                } else if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-                    ImGuiOverlay.SHOW_PLAYER_UTILS.set(!ImGuiOverlay.SHOW_PLAYER_UTILS.get());
-                } else if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
-                    ImGuiOverlay.SHOW_GUI_UTILS.set(!ImGuiOverlay.SHOW_GUI_UTILS.get());
-                } else if (Gdx.input.isKeyJustPressed(Input.Keys.F4)) {
-                    ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.set(!ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.get());
                 }
+                ImGui.endMenu();
             }
+            if (ImGui.beginMenu("Edit")) {
+                ImGui.menuItem("Player Editor", "Ctrl+P", ImGuiOverlay.SHOW_PLAYER_UTILS);
+                ImGui.menuItem("Gui Editor", "Ctrl+G", ImGuiOverlay.SHOW_GUI_UTILS);
+                ImGui.endMenu();
+            }
+            if (ImGui.beginMenu("View")) {
+                ImGui.menuItem("Utils", null, ImGuiOverlay.SHOW_UTILS);
+                ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
+                ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
+                ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
+                ImGui.endMenu();
+            }
+
+            ImGui.text(" FPS: " + Gdx.graphics.getFramesPerSecond() + " ");
+            ImGui.sameLine();
+            ImGui.text(" Client TPS: " + Gdx.graphics.getFramesPerSecond() + " ");
+            ImGui.sameLine();
+            UltracraftServer server = UltracraftServer.get();
+            if (server != null) {
+                ImGui.text(" Server TPS: " + server.getCurrentTps() + " ");
+                ImGui.sameLine();
+            }
+            ImGui.text(" Frame ID: " + Gdx.graphics.getFrameId() + " ");
+            ImGui.endMenuBar();
         }
     }
 

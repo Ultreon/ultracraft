@@ -109,7 +109,7 @@ public class DesktopInput extends GameInput {
     }
 
     private void handleImGuiKey() {
-        if (!UltracraftClient.get().config.get().enableDebugUtils) return;
+        if (!UltracraftClient.get().config.get().debugUtils) return;
 
         if (this.client.isShowingImGui() && this.client.world != null)
             DesktopInput.setCursorCaught(true);
@@ -118,7 +118,7 @@ public class DesktopInput extends GameInput {
     }
 
     private void handleInspectKey() {
-        if (UltracraftClient.get().config.get().enableDebugUtils && DebugFlags.INSPECTION_ENABLED) {
+        if (UltracraftClient.get().config.get().debugUtils && DebugFlags.INSPECTION_ENABLED) {
             this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
         }
     }
@@ -128,7 +128,7 @@ public class DesktopInput extends GameInput {
 
         if (!this.client.showDebugHud)
             UltracraftClient.PROFILER.setProfiling(false);
-        else if (this.client.config.get().enableDebugUtils && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
+        else if (this.client.config.get().debugUtils && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
             UltracraftClient.PROFILER.setProfiling(true);
     }
 

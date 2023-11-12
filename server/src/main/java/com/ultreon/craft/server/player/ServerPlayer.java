@@ -131,10 +131,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     @Override
     public void tick() {
         if (this.world.getChunk(this.getChunkPos()) == null) return;
-
-        if (!this.isChunkActive(this.getChunkPos())) {
-            return;
-        }
+        if (!this.isChunkActive(this.getChunkPos())) return;
 
         super.tick();
 
@@ -162,6 +159,9 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     protected void onMoved() {
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+        if (!this.isChunkActive(this.getChunkPos())) return;
+
         super.onMoved();
 
         // Send the new position to the client.
@@ -178,14 +178,10 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         // Limit player speed server-side.
         double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 12.5;
         double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed() * 5) * Math.max(this.fallDistance * this.gravity, 2);
-        if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ) {
-            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max xz: " + maxDistanceXZ + ")");
-//            this.teleportTo(this.ox, this.oy, this.oz);
-        }
-        if (Math.abs(this.getY() - this.oy) > maxDistanceY) {
-            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max y: " + maxDistanceY + ")");
-//            this.teleportTo(this.ox, this.oy, this.oz);
-        }
+        if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ)
+            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max xz: %s)".formatted(this.getName(), this.getPosition().dst(this.ox, this.oy, this.oz), maxDistanceXZ));
+        if (Math.abs(this.getY() - this.oy) > maxDistanceY)
+            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max y: %s)".formatted(this.getName(), this.getPosition().dst(this.ox, this.oy, this.oz), maxDistanceY));
 
         // Set old position.
         this.ox = this.x;
@@ -195,9 +191,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         for (var player : this.server.getPlayers()) {
             if (player == this) continue;
 
-            if (player.getPosition().dst(this.getPosition()) < this.server.getEntityRenderDistance()) {
+            if (player.getPosition().dst(this.getPosition()) < this.server.getEntityRenderDistance())
                 player.connection.send(new S2CPlayerPositionPacket(this.getUuid(), this.getPosition()));
-            }
         }
     }
 
@@ -233,15 +228,22 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     public void onChunkStatus(@NotNull ChunkPos pos, Chunk.Status status) {
         switch (status) {
-            case FAILED -> {
-                if (this.retryChunks.computeInt(pos, (chunkPos, integer) -> integer == null ? 1 : integer + 1) == 3) {
-                    this.pendingChunks.invalidate(pos);
-                    this.failedChunks.put(pos, Unit.INSTANCE);
-                }
-            }
+            case FAILED -> this.handleFailedChunk(pos);
             case SKIP -> this.skippedChunks.add(pos);
-            case SUCCESS -> this.activeChunks.add(pos);
+            case SUCCESS -> this.handleClientLoadChunk(pos);
             case UNLOADED -> this.activeChunks.remove(pos);
+        }
+    }
+
+    private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
+        this.setPosition(ox, oy, oz);
+        return this.activeChunks.add(pos);
+    }
+
+    private void handleFailedChunk(@NotNull ChunkPos pos) {
+        if (this.retryChunks.computeInt(pos, (chunkPos, integer) -> integer == null ? 1 : integer + 1) == 3) {
+            this.pendingChunks.invalidate(pos);
+            this.failedChunks.put(pos, Unit.INSTANCE);
         }
     }
 
@@ -266,6 +268,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         else this.oldChunkPos = chunkPos;
 
         // Remove all failed chunks.
+        toLoad.removeAll(this.pendingChunks.asMap().keySet());
         toLoad.removeAll(this.failedChunks.asMap().keySet());
         toLoad.removeAll(toUnload);
 
@@ -370,9 +373,17 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void handlePlayerMove(double x, double y, double z) {
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+        if (!this.isChunkActive(this.getChunkPos())) return;
+
+        this.ox = this.x;
+        this.oy = this.y;
+        this.oz = this.z;
         this.x = x;
         this.y = y;
         this.z = z;
+
+        this.onMoved();
     }
 
     public boolean isSpawned() {

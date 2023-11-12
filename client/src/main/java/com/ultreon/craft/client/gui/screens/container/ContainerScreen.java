@@ -26,11 +26,11 @@ public abstract class ContainerScreen extends Screen {
     private final ContainerMenu container;
     private final LocalPlayer player;
 
-    public ContainerScreen(ContainerMenu container, TextObject title, int maxSlots) {
+    protected ContainerScreen(ContainerMenu container, TextObject title, int maxSlots) {
         this(container, UltracraftClient.get().screen, title, maxSlots);
     }
 
-    public ContainerScreen(ContainerMenu container, @Nullable Screen back, TextObject title, int maxSlots) {
+    protected ContainerScreen(ContainerMenu container, @Nullable Screen back, TextObject title, int maxSlots) {
         super(title, back);
         this.container = container;
         this.maxSlots = maxSlots;

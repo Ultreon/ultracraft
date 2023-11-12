@@ -75,6 +75,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         renderer.popMatrix();
     }
 
+    @Override
     public void renderChildren(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         for (Entry<T> entry : this.entries) {
             if (entry.visible) {
@@ -208,6 +209,10 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.selected.value;
     }
 
+    public int getGap() {
+        return this.gap;
+    }
+
     @CanIgnoreReturnValue
     public Entry<T> addEntry(T value) {
         Entry<T> entry = new Entry<>(value, this);
@@ -278,14 +283,12 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
             this.size.width = this.list.size.width - SelectionList.SCROLLBAR_WIDTH;
             this.size.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = this.list.itemRenderer;
-            if (itemRenderer != null) {
-                if (renderer.pushScissors(this.pos.x, this.pos.y, this.size.width, this.size.height)) {
-                    if (selected)
-                        renderer.box(this.pos.x, this.pos.y, this.size.width - 2, this.size.height - 2, Color.rgb(0xffffff));
+            if (itemRenderer != null && renderer.pushScissors(this.pos.x, this.pos.y, this.size.width, this.size.height)) {
+                if (selected)
+                    renderer.box(this.pos.x, this.pos.y, this.size.width - 2, this.size.height - 2, Color.rgb(0xffffff));
 
-                    itemRenderer.render(renderer, this.value, this.pos.y, mouseX, mouseY, selected, deltaTime);
-                    renderer.popScissors();
-                }
+                itemRenderer.render(renderer, this.value, this.pos.y, mouseX, mouseY, selected, deltaTime);
+                renderer.popScissors();
             }
         }
 

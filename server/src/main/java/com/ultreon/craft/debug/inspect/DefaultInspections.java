@@ -1,7 +1,6 @@
-package com.ultreon.craft.debug;
+package com.ultreon.craft.debug.inspect;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.LivingEntity;

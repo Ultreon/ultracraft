@@ -3,7 +3,9 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -11,6 +13,7 @@ import com.ultreon.craft.world.WorldStorage;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class WorldDeleteConfirmScreen extends Screen {
     @NotNull
@@ -41,7 +44,9 @@ public class WorldDeleteConfirmScreen extends Screen {
 
     private void deleteWorld(Button<?> caller) {
         try {
+            Path name = this.storage.getDirectory().getFileName();
             this.storage.delete();
+            this.client.notifications.add(Notification.builder("World Deleted", "'%s'".formatted(name)).subText("World Manager").icon(MessageIcon.DANGER).build());
         } catch (IOException e) {
             UltracraftClient.crash(e);
         }

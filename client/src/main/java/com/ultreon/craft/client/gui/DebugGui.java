@@ -9,10 +9,9 @@ import com.ultreon.craft.client.world.ChunkMesh;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
-import com.ultreon.craft.debug.ProfileData;
-import com.ultreon.craft.debug.Section.FinishedSection;
-import com.ultreon.craft.debug.ThreadSection.FinishedThreadSection;
-import com.ultreon.craft.debug.inspect.InspectionNode;
+import com.ultreon.craft.debug.profiler.ProfileData;
+import com.ultreon.craft.debug.profiler.Section.FinishedSection;
+import com.ultreon.craft.debug.profiler.ThreadSection.FinishedThreadSection;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.text.MutableText;
@@ -22,7 +21,6 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,15 +30,14 @@ import java.util.List;
 
 public class DebugGui {
     private static final int OFFSET = 10;
-    private final UltracraftClient client;
+    final UltracraftClient client;
     private int leftY;
     private ProfileData profile;
     private long lastUpdate;
     private @NotNull String currentPath = "/";
     private @Nullable Thread currentThread = null;
     private String idxInput = "";
-    private String inspectCurrentPath = "/";
-    private String inspectIdxInput = "";
+    private InspectorOverlay inspectorOverlay = new InspectorOverlay();
 
     public DebugGui(UltracraftClient client) {
         this.client = client;
@@ -66,7 +63,7 @@ public class DebugGui {
         }
 
         if (this.client.inspection.isInspecting()) {
-            this.renderInspector(renderer);
+            this.inspectorOverlay.renderInspector(renderer, this);
             return;
         }
 
@@ -128,75 +125,6 @@ public class DebugGui {
             this.left(renderer, "Pool Max", WorldRenderer.getPoolMax());
             this.left(renderer, "Pool Peak", WorldRenderer.getPoolPeak());
             this.left();
-        }
-    }
-
-    private void renderInspector(Renderer renderer) {
-        String path = this.inspectCurrentPath;
-
-        Comparator<InspectionNode<?>> comparator = Comparator.comparing(InspectionNode::getName);
-
-        this.entryLine(renderer, TextObject.nullToEmpty(this.inspectIdxInput).setColor(Color.WHITE));
-
-        this.entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true));
-        this.entryLine(renderer);
-
-        {
-            @Nullable InspectionNode<?> node = this.client.inspection.getNode(path);
-            if (node == null) {
-                this.inspectCurrentPath = "/";
-                return;
-            }
-
-            List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).toList();
-            for (int i = 0, nodeSize = nodes.size(); i < nodeSize; i++) {
-                InspectionNode<?> curNode = nodes.get(i);
-                this.entryLine(renderer, i, curNode.getName());
-            }
-
-            List<Pair<String, String>> elements = node.getElements().entrySet().stream().map(t -> new Pair<>(t.getKey(), t.getValue().get())).sorted(Comparator.comparing(Pair::getFirst)).toList();
-            for (Pair<String, String> element : elements) {
-                this.entryLine(renderer, element.getFirst(), element.getSecond());
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_ENTER)) {
-            String input = this.inspectIdxInput;
-            try {
-                int idx = Integer.parseInt(input);
-
-                @Nullable InspectionNode<?> node = this.client.inspection.getNode(path);
-                if (node == null) {
-                    this.inspectCurrentPath = "/";
-                    return;
-                }
-                List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).toList();
-
-                if (nodes.isEmpty()) return;
-
-                if (idx >= 0 && idx < nodes.size()) {
-                    path += nodes.get(idx).getName() + "/";
-                    this.inspectCurrentPath = path;
-                }
-                this.inspectIdxInput = "";
-            } catch (NumberFormatException ignored) {
-                this.inspectIdxInput = "";
-            }
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
-            if (this.inspectCurrentPath.equals("/")) {
-                return;
-            }
-
-            if (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-            this.inspectCurrentPath = path.substring(0, path.lastIndexOf("/")) + "/";
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_DOT)) {
-            this.inspectIdxInput = "";
-        } else for (int num = 0; num < 10; num++) {
-            int key = Input.Keys.NUMPAD_0 + num;
-            if (Gdx.input.isKeyJustPressed(key)) {
-                this.inspectIdxInput += String.valueOf(num);
-                break;
-            }
         }
     }
 
@@ -365,7 +293,7 @@ public class DebugGui {
         this.leftY += 11;
     }
 
-    private void entryLine(Renderer renderer, int idx, String name) {
+    void entryLine(Renderer renderer, int idx, String name) {
         MutableText text = TextObject.literal("[" + idx + "] ").setColor(Color.GOLD).append(TextObject.literal(name).setColor(Color.WHITE));
         int width = renderer.getFont().width(text);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(width + 2, 304), 11, Color.BLACK.withAlpha(128));
@@ -373,7 +301,7 @@ public class DebugGui {
         this.leftY += 11;
     }
 
-    private void entryLine(Renderer renderer, TextObject text) {
+    void entryLine(Renderer renderer, TextObject text) {
         int width = renderer.getFont().width(text);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(width + 2, 304), 11, Color.BLACK.withAlpha(128));
         renderer.drawTextLeft(text, DebugGui.OFFSET, this.leftY);

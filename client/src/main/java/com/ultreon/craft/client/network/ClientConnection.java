@@ -5,6 +5,8 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -40,10 +42,13 @@ public class ClientConnection implements Runnable {
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
         Class<? extends SocketChannel> channelClass;
         Supplier<? extends EventLoopGroup> group;
-        channelClass = NioSocketChannel.class;
-        group = Connection.NETWORK_WORKER_GROUP;
-
-        connection.setGroup(group.get());
+        if (Epoll.isAvailable()) {
+            channelClass = EpollSocketChannel.class;
+            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
+        } else {
+            channelClass = NioSocketChannel.class;
+            group = Connection.NETWORK_WORKER_GROUP;
+        }
 
         return new Bootstrap()
                 .group(group.get())

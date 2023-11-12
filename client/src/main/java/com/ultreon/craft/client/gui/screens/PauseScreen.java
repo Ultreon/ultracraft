@@ -1,10 +1,12 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.widget.Button;
+import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.ServerWorld;
 
@@ -36,6 +38,15 @@ public class PauseScreen extends Screen {
                 .color(Color.RED)
                 .textColor(Color.WHITE)
                 .translation("ultracraft.screen.pause.exit_world");
+
+        if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
+            this.client.showScreen(null);
+        }
+    }
+
+    @Override
+    public boolean canCloseWithEsc() {
+        return false;
     }
 
     public Button<?> getBackToGameButton() {

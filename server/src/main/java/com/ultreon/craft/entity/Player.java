@@ -30,7 +30,7 @@ public abstract class Player extends LivingEntity {
     @Nullable private ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
 
-    public Player(EntityType<? extends Player> entityType, World world) {
+    protected Player(EntityType<? extends Player> entityType, World world) {
         super(entityType, world);
 
         this.inventory = new Inventory(MenuTypes.INVENTORY, world, this, null);

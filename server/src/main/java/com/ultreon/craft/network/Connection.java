@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
@@ -14,6 +16,7 @@ import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
@@ -40,8 +43,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     public static final Logger LOGGER = LoggerFactory.getLogger(Connection.class);
     public static final AttributeKey<PacketData<ServerPacketHandler>> DATA_TO_SERVER_KEY = AttributeKey.valueOf("data_to_server");
     public static final AttributeKey<PacketData<ClientPacketHandler>> DATA_TO_CLIENT_KEY = AttributeKey.valueOf("data_to_client");
-    private static int packetsReceived;
-    private static int packetsReceivedTotal;
 
     private final PacketDestination direction;
     @Nullable
@@ -52,7 +53,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String disconnectMsg;
 
     public static final Supplier<NioEventLoopGroup> LOCAL_WORKER_GROUP = Suppliers.memoize(Connection::createLocalWorkerGroup);
-//    public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkEpollWorkerGroup);
+    public static final Supplier<EpollEventLoopGroup> NETWORK_EPOLL_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkEpollWorkerGroup);
 
     public static final Supplier<NioEventLoopGroup> NETWORK_WORKER_GROUP = Suppliers.memoize(Connection::createNetworkWorkerGroup);
 
@@ -65,11 +66,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private boolean disconnected = false;
     private String address;
     private int port;
-    private static int packetsSent;
     private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     private ServerPlayer player;
     private int keepAlive = 100;
-    private EventLoopGroup group;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -84,20 +83,25 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Client IO #%d").setDaemon(true).build());
     }
 
-//    private static EpollEventLoopGroup createNetworkEpollWorkerGroup() {
-//        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Network Client IO #%d").setDaemon(true).build());
-//    }
+    private static EpollEventLoopGroup createNetworkEpollWorkerGroup() {
+        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Network Client IO #%d").setDaemon(true).build());
+    }
 
     public static int getPacketsSent() {
-        return Connection.packetsSent;
+        return ValueTracker.getPacketsSent();
     }
 
     public static int getPacketsReceived() {
-        return Connection.packetsReceived;
+        return ValueTracker.getPacketsReceived();
     }
 
     public static int getPacketsReceivedTotal() {
-        return Connection.packetsReceivedTotal;
+        return ValueTracker.getPacketsReceivedTotal();
+    }
+
+    private static void closeFail(Future<? super Void> future) {
+        if (!(future.cause() instanceof ClosedChannelException))
+            Connection.LOGGER.error("Failed to close channel", future.cause());
     }
 
     public void delayDisconnect(String message) {
@@ -112,7 +116,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.remoteAddress = this.channel.remoteAddress();
 
         if (this.direction.getSourceEnv() == EnvType.CLIENT) {
-            Connection.LOGGER.info("Connected to: " + (this.remoteAddress != null ? this.remoteAddress : "null"));
+            Connection.LOGGER.info("Connected to: {}", this.remoteAddress != null ? this.remoteAddress : "null");
         }
 
         if (this.shouldDisconnect()) {
@@ -142,24 +146,24 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                     Connection.LOGGER.debug("Timeout", cause);
                     this.disconnect("Timed Out");
                 } else {
-                    Connection.LOGGER.error("Exception: ", cause);
-                    this.disconnect("Internal Exception: " + cause);
-                    if (handlingFault) {
-                        Connection.LOGGER.error("Double fault detected, force closing connection.");
-                        try {
-                            channel.close().addListener(future -> {
-                                if (!(future.cause() instanceof ClosedChannelException)) {
-                                    Connection.LOGGER.error("Failed to close channel", future.cause());
-                                }
-                            });
-                        } catch (Exception e) {
-                            Connection.LOGGER.error("Failed to close channel", e);
-                        }
-                    }
+                    this.handleInternalError(cause, handlingFault, channel);
                 }
             }
         } catch (Exception e) {
             Connection.LOGGER.error("Failed to handle exception", e);
+        }
+    }
+
+    private void handleInternalError(Throwable cause, boolean handlingFault, Channel channel) {
+        Connection.LOGGER.error("Exception: ", cause);
+        this.disconnect("Internal Exception: " + cause);
+        if (handlingFault) {
+            Connection.LOGGER.error("Double fault detected, force closing connection.");
+            try {
+                channel.close().addListener(Connection::closeFail);
+            } catch (Exception e) {
+                Connection.LOGGER.error("Failed to close channel", e);
+            }
         }
     }
 
@@ -177,11 +181,12 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         if (this.channel == null || !this.channel.isOpen()) return;
 
         @NotNull String msg = "Disconnected: ";
-        Connection.LOGGER.info(msg + (this.remoteAddress != null ? this.remoteAddress.toString() : null) + " (" + message + ")");
+        Connection.LOGGER.info("%s%s (%s)".formatted(msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
 
-        switch (this.direction.getSourceEnv()) {
-            case SERVER -> this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
-            case CLIENT -> this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
+        if (this.direction.getSourceEnv() == EnvType.SERVER) {
+            this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
+        } else if (this.direction.getSourceEnv() == EnvType.CLIENT) {
+            this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
         }
 
         this.disconnectMsg = message;
@@ -208,7 +213,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 try {
                     this._send(packet, stateListener, flush);
                 } catch (Exception e) {
-                    Connection.LOGGER.error("Failed to send packet:", e);
+                    Connection.LOGGER.error(CommonConstants.EX_FAILED_TO_SEND_PACKET, e);
                 }
             });
             return;
@@ -219,7 +224,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         try {
             this._send(packet, stateListener, flush);
         } catch (Exception e) {
-            Connection.LOGGER.error("Failed to send packet:", e);
+            Connection.LOGGER.error(CommonConstants.EX_FAILED_TO_SEND_PACKET, e);
         }
     }
 
@@ -236,15 +241,16 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 try {
                     this._actuallySend(packet, stateListener, flush);
                 } catch (Exception e) {
-                    Connection.LOGGER.error("Failed to send packet:", e);
+                    Connection.LOGGER.error(CommonConstants.EX_FAILED_TO_SEND_PACKET, e);
                 }
             });
         }
     }
 
     private void _actuallySend(Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
+        Preconditions.checkNotNull(packet, "packet");
+
         try {
-            Preconditions.checkNotNull(packet, "packet");
             if (this.channel == null) {
                 Connection.LOGGER.warn("Can't send packet because the channel isn't available.");
                 return;
@@ -255,29 +261,37 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
             sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 
-            Connection.packetsSent++;
+            ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
 
             if (stateListener != null) {
-                sent.addListener(future -> {
-                    try {
-                        if (future.isSuccess()) {
-                            stateListener.onSuccess();
-                            return;
-                        }
-
-                        Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
-                        Packet<?> failPacket = stateListener.onFailure();
-                        if (failPacket != null) {
-                            ChannelFuture finalAttempt = this.channel.writeAndFlush(failPacket);
-                            finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-                        }
-                    } catch (Exception e) {
-                        Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName(), e);
-                    }
-                });
+                sent.addListener(future -> this.handleListener(packet, stateListener, future));
             }
         } catch (Exception e) {
-            Connection.LOGGER.error("Failed to send packet: " + packet.getClass().getName(), e);
+            Connection.LOGGER.error("Failed to send packet: {}", packet.getClass().getName(), e);
+        }
+    }
+
+    private void handleListener(Packet<?> packet, @NotNull PacketResult stateListener, Future<? super Void> future) {
+        try {
+            Channel ch = this.channel;
+            if (ch == null) {
+                Connection.LOGGER.warn("Can't handle packet because the channel isn't available.");
+                return;
+            }
+
+            if (future.isSuccess()) {
+                stateListener.onSuccess();
+                return;
+            }
+
+            Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
+            Packet<?> failPacket = stateListener.onFailure();
+            if (failPacket != null) {
+                ChannelFuture finalAttempt = ch.writeAndFlush(failPacket);
+                finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            }
+        } catch (Exception e) {
+            Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName(), e);
         }
     }
 
@@ -287,7 +301,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet<?> msg) {
-        Connection.packetsReceivedTotal++;
+        ValueTracker.setPacketsReceivedTotal(ValueTracker.getPacketsReceivedTotal() + 1);
         if (this.channel != null && this.channel.isOpen()) {
             PacketHandler handler = this.handler;
             if (handler == null) {
@@ -295,7 +309,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 return;
             }
             try {
-                Connection.packetsReceived++;
+                ValueTracker.setPacketsReceived(ValueTracker.getPacketsReceived() + 1);
                 this.readGeneric(msg, handler);
             } catch (RejectedExecutionException ex) {
                 this.disconnect("Server shutdown");
@@ -371,9 +385,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                     .addLast("decoder", new PacketDecoder(theirData))
                     .addLast("encoder", new PacketEncoder(ourData))
             ;
-        } catch (Throwable t) {
-            Connection.LOGGER.error("Failed to setup:", t);
-            throw t;
+        } catch (Exception e) {
+            Connection.LOGGER.error("Failed to setup:", e);
+            throw e;
         }
     }
 
@@ -404,7 +418,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.disconnectHandler = handler;
         this.address = address;
         this.port = port;
-        Connection.LOGGER.info("Initiated connection to " + address + ":" + port);
+        Connection.LOGGER.info("Initiated connection to {}:{}", this.address, this.port);
         this.runOnceConnected(() -> {
             this.setHandler(handler);
             this.send(loginPacket, true);
@@ -509,10 +523,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         boolean doKeepAlive = this.keepAlive-- <= 0;
         if (doKeepAlive) this.keepAlive = 100;
         return doKeepAlive;
-    }
-
-    public void setGroup(EventLoopGroup eventLoopGroup) {
-        this.group = eventLoopGroup;
     }
 
     public void closeAll() {

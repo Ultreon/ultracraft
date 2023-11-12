@@ -12,7 +12,7 @@ public abstract class ConfigEntry<T> {
     private String comment;
     private final Configuration config;
 
-    public ConfigEntry(String key, T value, Configuration config) {
+    protected ConfigEntry(String key, T value, Configuration config) {
         this.key = key;
         this.value = value;
         this.config = config;

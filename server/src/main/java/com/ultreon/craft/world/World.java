@@ -56,7 +56,6 @@ public abstract class World implements ServerDisposable {
     public static final Marker MARKER = MarkerFactory.getMarker("World");
     public static final int REGION_SIZE = 32;
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
-    protected static int chunkLoads;
 
     protected final Vec3i spawnPoint = new Vec3i();
     protected final long seed;

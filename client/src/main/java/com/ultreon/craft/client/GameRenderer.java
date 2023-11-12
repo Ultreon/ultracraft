@@ -80,6 +80,11 @@ public class GameRenderer {
                 this.client.crashOverlay.reset();
             }
         });
+
+        if (!this.client.isLoading()) {
+            this.client.notifications.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
+        }
+
         renderer.popMatrix();
 
         this.spriteBatch.end();

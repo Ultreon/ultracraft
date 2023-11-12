@@ -53,7 +53,10 @@ public class Button<T extends Button<T>> extends Widget<T> implements ColorPrope
 
         int x = this.pos.x;
         int y = this.pos.y;
-        int u = this.enabled ? this.isWithinBounds(mouseX, mouseY) ? 21 : 0 : 42;
+
+        int u;
+        if (this.enabled) u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
+        else u = 42;
         int v = this.isPressed() ? 21 : 0;
 
         renderer.setTextureColor(Color.WHITE);
@@ -161,7 +164,6 @@ public class Button<T extends Button<T>> extends Widget<T> implements ColorPrope
     @Override
     public void _callback(Object widget) {
         CallbackProperty.super._callback(widget);
-        System.out.println("getCallback() = " + this.getCallback());
     }
 
     @Override

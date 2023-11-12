@@ -41,7 +41,12 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
 
     @Override
     public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
-        final int u = this.enabled ? this.focused ? 12 : 0 : 24;
+        final int u;
+        if (this.enabled) {
+            u = this.focused ? 12 : 0;
+        } else {
+            u = 24;
+        }
         final int v = 0;
         final int tx = this.pos.x;
         final int ty = this.pos.y - 2;

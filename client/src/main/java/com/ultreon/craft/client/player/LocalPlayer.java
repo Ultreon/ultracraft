@@ -37,7 +37,6 @@ public class LocalPlayer extends ClientPlayer {
     @Override
     public void tick() {
         if (!this.client.renderWorld) return;
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
 
         this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 

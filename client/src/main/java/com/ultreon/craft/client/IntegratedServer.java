@@ -1,10 +1,13 @@
 package com.ultreon.craft.client;
 
+import com.ultreon.craft.client.gui.Notification;
+import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.crash.v0.CrashException;
@@ -140,6 +143,26 @@ public class IntegratedServer extends UltracraftServer {
     @Override
     public UUID getHost() {
         return this.host != null ? this.host.getUuid() : null;
+    }
+
+    @Override
+    public void handleWorldSaveError(Exception e) {
+        super.handleWorldSaveError(e);
+
+        this.client.notifications.add(Notification.builder("Error", "Failed to save world.")
+                .subText("Auto Save")
+                .icon(MessageIcon.ERROR)
+                .build());
+    }
+
+    @Override
+    public void handleChunkLoadFailure(ChunkPos globalPos) {
+        super.handleChunkLoadFailure(globalPos);
+
+        this.client.notifications.add(Notification.builder("Warning", "Failed to load chunk " + globalPos.toString())
+                .subText("Chunk Loader")
+                .icon(MessageIcon.WARNING)
+                .build());
     }
 
     public UltracraftClient getClient() {

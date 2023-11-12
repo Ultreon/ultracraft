@@ -19,7 +19,6 @@ public enum ControllerButton {
             case RIGHT_STICK -> mapping.buttonRightStick;
             case LEFT_BUTTON -> mapping.buttonL1;
             case RIGHT_BUTTON -> mapping.buttonR1;
-            default -> throw new IllegalStateException("Unexpected value: " + this);
         };
     }
 }

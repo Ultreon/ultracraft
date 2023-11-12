@@ -211,61 +211,65 @@ public class Entity {
             this.z += dz;
             this.onMoved();
         } else {
-            List<BoundingBox> boxes = this.world.collide(ext, false);
-            BoundingBox pBox = this.getBoundingBox();
-            this.isColliding = false;
-            this.isCollidingY = false;
-            for (BoundingBox box : boxes) {
-                double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
-                this.isColliding |= dy != dy2;
-                this.isCollidingY |= dy != dy2;
-                dy = dy2;
-            }
-            pBox.min.add(0.0f, dy, 0.0f);
-            pBox.max.add(0.0f, dy, 0.0f);
-            pBox.update();
-            this.isCollidingX = false;
-            for (BoundingBox box : boxes) {
-                double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
-                this.isColliding |= dx != dx2;
-                this.isCollidingX |= dx != dx2;
-                dx = dx2;
-            }
-            pBox.min.add(dx, 0.0f, 0.0f);
-            pBox.max.add(dx, 0.0f, 0.0f);
-            pBox.update();
-            this.isCollidingZ = false;
-            for (BoundingBox box : boxes) {
-                double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
-                this.isColliding |= dz != dz2;
-                this.isCollidingZ |= dz != dz2;
-                dz = dz2;
-            }
-            pBox.min.add(0.0f, 0.0f, dz);
-            pBox.max.add(0.0f, 0.0f, dz);
-            pBox.update();
-            this.onGround = oDy != dy && oDy < 0.0f;
-            if (oDx != dx) {
-                this.velocityX = 0.0f;
-            }
-
-            if (dy >= 0) this.fallDistance = 0.0F;
-
-            if (oDy != dy) {
-                this.hitGround();
-                this.fallDistance = 0.0F;
-                this.velocityY = 0.0f;
-            } else if (dy < 0) {
-                this.fallDistance -= dy;
-            }
-            if (oDz != dz) {
-                this.velocityZ = 0.0f;
-            }
-            this.x = (pBox.min.x + pBox.max.x) / 2.0f;
-            this.y = pBox.min.y;
-            this.z = (pBox.min.z + pBox.max.z) / 2.0f;
+            this.playerMovement(ext, dy, dx, dz, oDy, oDx, oDz);
             this.onMoved();
         }
+    }
+
+    private void playerMovement(BoundingBox ext, double dy, double dx, double dz, double oDy, double oDx, double oDz) {
+        List<BoundingBox> boxes = this.world.collide(ext, false);
+        BoundingBox pBox = this.getBoundingBox();
+        this.isColliding = false;
+        this.isCollidingY = false;
+        for (BoundingBox box : boxes) {
+            double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+            this.isColliding |= dy != dy2;
+            this.isCollidingY |= dy != dy2;
+            dy = dy2;
+        }
+        pBox.min.add(0.0f, dy, 0.0f);
+        pBox.max.add(0.0f, dy, 0.0f);
+        pBox.update();
+        this.isCollidingX = false;
+        for (BoundingBox box : boxes) {
+            double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+            this.isColliding |= dx != dx2;
+            this.isCollidingX |= dx != dx2;
+            dx = dx2;
+        }
+        pBox.min.add(dx, 0.0f, 0.0f);
+        pBox.max.add(dx, 0.0f, 0.0f);
+        pBox.update();
+        this.isCollidingZ = false;
+        for (BoundingBox box : boxes) {
+            double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+            this.isColliding |= dz != dz2;
+            this.isCollidingZ |= dz != dz2;
+            dz = dz2;
+        }
+        pBox.min.add(0.0f, 0.0f, dz);
+        pBox.max.add(0.0f, 0.0f, dz);
+        pBox.update();
+        this.onGround = oDy != dy && oDy < 0.0f;
+        if (oDx != dx) {
+            this.velocityX = 0.0f;
+        }
+
+        if (dy >= 0) this.fallDistance = 0.0F;
+
+        if (oDy != dy) {
+            this.hitGround();
+            this.fallDistance = 0.0F;
+            this.velocityY = 0.0f;
+        } else if (dy < 0) {
+            this.fallDistance -= dy;
+        }
+        if (oDz != dz) {
+            this.velocityZ = 0.0f;
+        }
+        this.x = (pBox.min.x + pBox.max.x) / 2.0f;
+        this.y = pBox.min.y;
+        this.z = (pBox.min.z + pBox.max.z) / 2.0f;
     }
 
     /**

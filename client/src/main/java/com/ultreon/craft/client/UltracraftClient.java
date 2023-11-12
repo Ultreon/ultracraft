@@ -39,6 +39,7 @@ import com.ultreon.craft.client.events.WindowEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.font.FontRegistry;
 import com.ultreon.craft.client.gui.*;
+import com.ultreon.craft.client.gui.icon.ImageIcon;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
@@ -71,10 +72,10 @@ import com.ultreon.craft.client.world.*;
 import com.ultreon.craft.config.UcConfiguration;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
-import com.ultreon.craft.debug.DefaultInspections;
-import com.ultreon.craft.debug.Profiler;
+import com.ultreon.craft.debug.inspect.DefaultInspections;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
+import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ConfigEvents;
@@ -176,7 +177,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static final String FATAL_ERROR_MSG = "Fatal error occurred when handling crash:";
     public boolean forceUnicode = false;
     public ItemRenderer itemRenderer;
-    public Notifications notifications = new Notifications(this);
+    public NotifyManager notifications = new NotifyManager(this);
     @SuppressWarnings("FieldMayBeFinal")
     private boolean booted;
     public Font font;
@@ -278,6 +279,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         UltracraftClient.instance = this;
 
         this.config = new UcConfiguration<>("ultracraft-client", EnvType.CLIENT, new UltracraftClientConfig());
+        this.config.event.listen(this::onReloadConfig);
 
         this.registerAutoFillers();
 
@@ -347,6 +349,22 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
             libGdxNode.create("version", Application::getVersion);
             libGdxNode.create("javaHeap", Application::getJavaHeap);
+        }
+    }
+
+    private void onReloadConfig() {
+        UltracraftClientConfig config = this.config.get();
+        if (config.fullscreen) {
+            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        }
+        String[] split = config.language.split("\\_");
+        if (split.length == 2) {
+            LanguageManager.setCurrentLanguage(new Locale(split[0], split[1]));
+        } else {
+            UltracraftClient.LOGGER.error("Invalid language: " + config.language);
+            LanguageManager.setCurrentLanguage(new Locale("en", "us"));
+            config.language = "en_us";
+            this.config.save();
         }
     }
 
@@ -1050,11 +1068,18 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         try {
             UltracraftClient.PROFILER.update();
 
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                this.notifications.add(Notification.builder("Hello Word", "Lorem ipsum dolor sit amet")
+                        .subText("Test Notification")
+                        .icon(new ImageIcon(UltracraftClient.id("textures/hello.png"), 16, 16))
+                        .build());
+            }
+
             if (this.debugRenderer != null && this.showDebugHud) {
                 this.debugRenderer.updateProfiler();
             }
 
-            UltracraftClient.PROFILER.section("render", () -> doRender(deltaTime));
+            UltracraftClient.PROFILER.section("render", () -> this.doRender(deltaTime));
         } catch (Throwable t) {
             UltracraftClient.crash(t);
         }

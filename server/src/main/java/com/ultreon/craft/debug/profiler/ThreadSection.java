@@ -1,4 +1,4 @@
-package com.ultreon.craft.debug;
+package com.ultreon.craft.debug.profiler;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public final class ThreadSection {
             this.current.start(name);
             return;
         }
-        this.current = this.data.computeIfAbsent(name, $ -> new Section(name, this.profiler));
+        this.current = this.data.computeIfAbsent(name, s -> new Section(name, this.profiler));
         this.current.startThis();
     }
 

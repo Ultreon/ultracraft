@@ -48,14 +48,14 @@ public class Font {
             this.layout.setText(currentFont, String.valueOf(c));
             BitmapFont.Glyph glyph = currentFont.getData().getGlyph(c);
             if (glyph != null) {
-                currentX += (float) glyph.xadvance * scale;
+                currentX += glyph.xadvance * scale;
             }
         }
     }
 
     public void drawText(Renderer renderer, TextObject text, float x, float y, Color color, boolean shadow) {
         TextObjectRenderer textRenderer = new TextObjectRenderer(text);
-        textRenderer.render(renderer, this.bitmapFont, renderer.getBatch(), color, x, y, shadow);
+        textRenderer.render(renderer, color, x, y, shadow);
     }
 
     boolean isForcingUnicode() {
@@ -112,7 +112,7 @@ public class Font {
 
             BitmapFont.Glyph glyph = currentFont.getData().getGlyph(c);
             if (glyph != null) {
-                width += (float) glyph.xadvance * scale;
+                width += glyph.xadvance * scale;
             }
         }
         return width - 1;

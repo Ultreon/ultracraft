@@ -35,7 +35,7 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     private final List<Callback<T>> revalidateListeners = new ArrayList<>();
 
     @SafeVarargs
-    public Widget(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
+    protected Widget(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
         this.preferredPos.x = x;
         this.preferredPos.y = y;
         this.preferredSize.width = width;

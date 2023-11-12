@@ -1,4 +1,4 @@
-package com.ultreon.craft.debug;
+package com.ultreon.craft.debug.profiler;
 
 import javax.annotation.Nullable;
 import java.util.Map;

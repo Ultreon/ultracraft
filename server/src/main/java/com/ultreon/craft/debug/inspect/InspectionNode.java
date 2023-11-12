@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class InspectionNode<T> {
     private final ConcurrentMap<String, InspectionNode<?>> nodes = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Supplier<String>> elements = new ConcurrentHashMap<>();
     private final String name;
-    private final InspectionRoot<?> root;
+    private final @Nullable InspectionRoot<?> root;
     private final @Nullable InspectionNode<?> parent;
     private final Function<InspectionNode<T>, T> value;
     private final Consumer<InspectionNode<T>> filler;
@@ -37,7 +36,7 @@ public class InspectionNode<T> {
      * @param root   the inspection root.
      * @param value  the value of the inspection node
      */
-    public InspectionNode(String name, @Nullable InspectionNode<?> parent, @UnknownNullability InspectionRoot<?> root,
+    public InspectionNode(String name, @Nullable InspectionNode<?> parent, @Nullable InspectionRoot<?> root,
                           Function<InspectionNode<T>, T> value) {
         this.name = name;
         this.parent = parent;
@@ -47,7 +46,7 @@ public class InspectionNode<T> {
         };
     }
 
-    public InspectionNode(String name, @Nullable InspectionNode<?> parent, @UnknownNullability InspectionRoot<?> root,
+    public InspectionNode(String name, @Nullable InspectionNode<?> parent, @Nullable InspectionRoot<?> root,
                           Function<InspectionNode<T>, T> value, Consumer<InspectionNode<T>> filler) {
         this.name = name;
         this.parent = parent;
@@ -67,7 +66,7 @@ public class InspectionNode<T> {
         this.elements.putIfAbsent(name, () -> {
             try {
                 return InspectionRoot.format(value.get());
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 return "ERROR";
             }
         });
@@ -77,22 +76,10 @@ public class InspectionNode<T> {
         this.elements.putIfAbsent(name, () -> {
             try {
                 return InspectionRoot.format(value.map(this.value.apply(this)));
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 return "ERROR";
             }
         });
-    }
-
-    /**
-     * Create an element in the inspection node.
-     *
-     * @param name  the name of the element.
-     * @param value the element value.
-     * @deprecated not recommended to use. Use {@link #create(String, Supplier)} instead.
-     */
-    @Deprecated
-    public void create(String name, @Nullable Object value) {
-        this.elements.putIfAbsent(name, Suppliers.memoizeWithExpiration(() -> InspectionRoot.format(value), 2, TimeUnit.SECONDS));
     }
 
     /**
@@ -109,20 +96,20 @@ public class InspectionNode<T> {
     @SafeVarargs
     @CanIgnoreReturnValue
     public final <C> InspectionNode<C> createNode(String name, Supplier<C> value, C... typeGetter) {
-        return this._createNode(name, typeGetter, Suppliers.memoizeWithExpiration(value::get, 2, TimeUnit.SECONDS));
+        return this.createNode0(name, typeGetter, Suppliers.memoizeWithExpiration(value::get, 2, TimeUnit.SECONDS));
     }
 
     @SafeVarargs
     @CanIgnoreReturnValue
     public final <C> InspectionNode<C> createNode(String name, NodeMapping<T, C> value, C... typeGetter) {
-        return this._createNode(name, typeGetter, Suppliers.memoizeWithExpiration(() -> {
+        return this.createNode0(name, typeGetter, Suppliers.memoizeWithExpiration(() -> {
             Function<InspectionNode<T>, T> v = this.value;
             return value.map(v.apply(this));
         }, 2, TimeUnit.SECONDS));
     }
 
     @NotNull
-    private <C> InspectionNode<@Nullable C> _createNode(String name, C[] typeGetter, Supplier<C> val) {
+    private <C> InspectionNode<@Nullable C> createNode0(String name, C[] typeGetter, Supplier<C> val) {
         var node = new InspectionNode<@Nullable C>(name, this, this.getRoot(), n -> val.get(), n -> InspectionRoot.fill(n, typeGetter.getClass().getComponentType()));
         this.nodes.put(name, node);
         return node;
@@ -159,11 +146,11 @@ public class InspectionNode<T> {
     /**
      * @return the root of the inspection tree.
      */
-    public InspectionRoot<?> getRoot() {
+    public @Nullable InspectionRoot<?> getRoot() {
         return this.root;
     }
 
-    public T getValue() throws Throwable {
+    public T getValue() {
         return this.value.apply(this);
     }
 

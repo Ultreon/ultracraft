@@ -80,12 +80,15 @@ public final class CubeModel {
         TextureRegion rightTex = texture.get(this.right);
         TextureRegion frontTex = texture.get(this.front);
         TextureRegion backTex = texture.get(this.back);
-        return new BakedCubeModel(
+        BakedCubeModel baked = new BakedCubeModel(
                 topTex, bottomTex,
                 leftTex, rightTex,
                 frontTex, backTex,
                 this.properties
         );
+
+        UltracraftClient.get().deferDispose(baked);
+        return baked;
     }
 
     public Identifier top() {

@@ -27,7 +27,9 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -37,16 +39,16 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("unused")
 public class Renderer {
+    private static final int TAB_WIDTH = 32;
     ////////////////////
     //     Fields     //
     ////////////////////
     private final UltracraftClient client = UltracraftClient.get();
-    private final Stack<Vector3> globalTranslation = new Stack<>();
+    private final Deque<Vector3> globalTranslation = new ArrayDeque<>();
     private final Batch batch;
     private final ShapeDrawer shapes;
     private final TextureManager textureManager;
     private float strokeWidth = 1;
-    private Texture curTexture;
     private Font font;
     private final MatrixStack matrixStack;
     private Color textureColor = Color.rgb(0xffffff);
@@ -540,19 +542,19 @@ public class Renderer {
     }
 
     public void drawTextCenter(TextObject text, float x, float y) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y);
+        this.drawTextLeft(text, x - (float) this.font.width(text) / 2, y);
     }
 
     public void drawTextCenter(TextObject text, float x, float y, Color color) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color);
+        this.drawTextLeft(text, x - (float) this.font.width(text) / 2, y, color);
     }
 
     public void drawTextCenter(TextObject text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, shadow);
+        this.drawTextLeft(text, x - (float) this.font.width(text) / 2, y, shadow);
     }
 
     public void drawTextCenter(TextObject text, float x, float y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        this.drawTextLeft(text, x - (float) this.font.width(text) / 2, y, color, shadow);
     }
 
     public void drawTextRight(TextObject text, float x, float y) {
@@ -790,56 +792,56 @@ public class Renderer {
     public void drawTextScaledCenter(TextObject text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
     }
 
     public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.drawTextLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
     }
 
@@ -914,8 +916,10 @@ public class Renderer {
     public void multiLineText(String text, int x, int y, Color color, boolean shadow) {
         y -= this.font.lineHeight;
 
-        for (String line : text.split("\n"))
-            this.drawTextLeft(line, x, y += this.font.lineHeight, color, shadow);
+        for (String line : text.split("\n")) {
+            y += this.font.lineHeight;
+            this.drawTextLeft(line, x, y, color, shadow);
+        }
     }
 
     public void tabString(String text, int x, int y) {
@@ -932,8 +936,8 @@ public class Renderer {
 
     public void tabString(String text, int x, int y, Color color, boolean shadow) {
         for (String line : text.split("\t")) {
-            //noinspection SuspiciousNameCombination
-            this.drawTextLeft(line, x += this.font.lineHeight, y, color, shadow);
+            this.drawTextLeft(line, x, y, color, shadow);
+            x += Renderer.TAB_WIDTH;
         }
     }
 
@@ -945,26 +949,38 @@ public class Renderer {
     //     Transformation     //
     ////////////////////////////
     public void translate(float x, float y) {
-        this.globalTranslation.peek().add(x, y, 0);
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, 0);
+        }
         this.matrixStack.translate(x, y);
         this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void translate(int x, int y) {
-        this.globalTranslation.peek().add(x, y, 0);
-        this.matrixStack.translate((float) x, (float) y);
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, 0);
+        }
+        this.matrixStack.translate(x, y);
         this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void translate(float x, float y, float z) {
-        this.globalTranslation.peek().add(x, y, z);
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, z);
+        }
         this.matrixStack.translate(x, y, z);
         this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
     public void translate(int x, int y, int z) {
-        this.globalTranslation.peek().add(x, y, z);
-        this.matrixStack.translate((float) x, (float) y, (float) z);
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, z);
+        }
+        this.matrixStack.translate(x, y, z);
         this.batch.setTransformMatrix(this.matrixStack.last());
     }
 
@@ -1091,21 +1107,6 @@ public class Renderer {
         return "Renderer{}";
     }
 
-    @Deprecated(forRemoval = true)
-    public void blit(int x, int y) {
-        this.batch.draw(this.curTexture, x, y);
-    }
-
-    @Deprecated(forRemoval = true)
-    public void blit(int x, int y, int width, int height) {
-        this.batch.draw(this.curTexture, x, y, width, height);
-    }
-
-    @Deprecated
-    public void setTexture(Identifier texture) {
-        this.curTexture = this.client.getTextureManager().getTexture(texture);
-    }
-
     public void setFont(Font font) {
         this.font = font;
     }
@@ -1119,7 +1120,11 @@ public class Renderer {
     }
 
     public void pushMatrix() {
-        this.globalTranslation.push(this.globalTranslation.peek().cpy());
+        Vector3 peek = this.globalTranslation.peek();
+        if (this.globalTranslation.peek() == null)
+            throw new IllegalStateException("Global translation is null");
+
+        this.globalTranslation.push(peek.cpy());
         this.matrixStack.push();
         this.batch.setTransformMatrix(this.matrixStack.last());
     }
@@ -1135,7 +1140,7 @@ public class Renderer {
     }
 
     public Vector3 getGlobalTranslation() {
-        return this.globalTranslation.peek().cpy();
+        return Objects.requireNonNull(this.globalTranslation.peek()).cpy();
     }
 
     public void fill(int x, int y, int width, int height, Color rgb) {
@@ -1206,12 +1211,12 @@ public class Renderer {
     }
 
     public void enableInvert() {
-//        this.flush();
+        this.flush();
         this.batch.setBlendFunctionSeparate(GL20.GL_ONE_MINUS_DST_COLOR, GL20.GL_ONE_MINUS_SRC_COLOR, GL20.GL_ONE, GL20.GL_ZERO);
     }
 
     public void disableInvert() {
-//        this.flush();
+        this.flush();
         this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
     }
 

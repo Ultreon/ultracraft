@@ -16,7 +16,7 @@ public class ChunkMesh implements Pool.Poolable {
     public Chunk chunk;
 
     public static long getMeshesDisposed() {
-        return ValueTracker.meshDisposes;
+        return ValueTracker.getMeshDisposes();
     }
 
     public ChunkMesh() {
@@ -42,9 +42,9 @@ public class ChunkMesh implements Pool.Poolable {
 
     @Override
     public void reset() {
-        ValueTracker.meshDisposes++;
+        ValueTracker.setMeshDisposes(ValueTracker.getMeshDisposes() + 1);
         if (this.meshPart.mesh != null) {
-            ValueTracker.vertexCount -= this.meshPart.mesh.getMaxVertices();
+            ValueTracker.setVertexCount(ValueTracker.getVertexCount() - this.meshPart.mesh.getMaxVertices());
             this.meshPart.mesh.dispose();
 
             this.meshPart.mesh = null;

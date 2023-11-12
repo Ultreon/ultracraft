@@ -1,7 +1,7 @@
 package com.ultreon.craft.util;
 
 import com.google.common.collect.Queues;
-import com.ultreon.craft.debug.Profiler;
+import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

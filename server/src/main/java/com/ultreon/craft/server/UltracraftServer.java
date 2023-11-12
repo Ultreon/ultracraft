@@ -6,8 +6,8 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.DebugFlags;
-import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionNode;
+import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.Connection;
@@ -710,5 +710,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public boolean hasPlayedBefore(CacheablePlayer player) {
         return this.storage.exists("players/" + player.getName() + ".ubo");
+    }
+
+    public void handleWorldSaveError(Exception e) {
+
+    }
+
+    public void handleChunkLoadFailure(ChunkPos globalPos) {
+
     }
 }

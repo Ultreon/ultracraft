@@ -1,4 +1,4 @@
-package com.ultreon.craft.debug;
+package com.ultreon.craft.debug.profiler;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -53,8 +53,10 @@ public final class Section {
         try {
             this.current = this.data.get(name, () -> new Section(name, this.profiler));
         } catch (ExecutionException ignored) {
-
+            // ignore
         }
+
+        if (this.current == null) return;
         this.current.startThis();
     }
 

@@ -63,9 +63,9 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
 
     public void renderChildren(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                this.renderChild(renderer, mouseX, mouseY, deltaTime, widget);
+            if (!widget.visible) {
+                if (widget.ignoreBounds)
+                    this.renderChild(renderer, mouseX, mouseY, deltaTime, widget);
                 continue;
             }
             if (renderer.pushScissors(this.getBounds())) {
@@ -121,7 +121,6 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     }
 
     public @Nullable Widget<?> getWidgetAt(int x, int y) {
-        List<Widget<?>> output = new ArrayList<>();
         for (int i = this.widgets.size - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
 
@@ -149,14 +148,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public boolean mouseClick(int mouseX, int mouseY, int button, int clicks) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                if (widget.mouseClick(mouseX, mouseY, button, clicks)) return true;
+            if (!widget.visible) {
+                if (widget.ignoreBounds && widget.mouseClick(mouseX, mouseY, button, clicks)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY)) {
-                if (widget.mouseClick(mouseX, mouseY, button, clicks)) return true;
-            }
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseClick(mouseX, mouseY, button, clicks)) return true;
         }
         return super.mouseClick(mouseX, mouseY, button, clicks);
     }
@@ -164,14 +160,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public boolean mousePress(int mouseX, int mouseY, int button) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                if (widget.mousePress(mouseX, mouseY, button)) return true;
+            if (!widget.visible) {
+                if (widget.ignoreBounds && widget.mousePress(mouseX, mouseY, button)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY)) {
-                if (widget.mousePress(mouseX, mouseY, button)) return true;
-            }
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mousePress(mouseX, mouseY, button)) return true;
         }
         return super.mousePress(mouseX, mouseY, button);
     }
@@ -179,14 +172,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public boolean mouseRelease(int mouseX, int mouseY, int button) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                if (widget.mouseRelease(mouseX, mouseY, button)) return true;
+            if (!widget.visible) {
+                if (widget.ignoreBounds && widget.mouseRelease(mouseX, mouseY, button)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY)) {
-                if (widget.mouseRelease(mouseX, mouseY, button)) return true;
-            }
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseRelease(mouseX, mouseY, button)) return true;
         }
         return super.mouseRelease(mouseX, mouseY, button);
     }
@@ -194,14 +184,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public boolean mouseWheel(int mouseX, int mouseY, double rotation) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                if (widget.mouseWheel(mouseX, mouseY, rotation)) return true;
+            if (!widget.visible) {
+                if (widget.ignoreBounds && widget.mouseWheel(mouseX, mouseY, rotation)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY)) {
-                if (widget.mouseWheel(mouseX, mouseY, rotation)) return true;
-            }
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseWheel(mouseX, mouseY, rotation)) return true;
         }
         return super.mouseWheel(mouseX, mouseY, rotation);
     }
@@ -209,9 +196,10 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public void mouseMove(int mouseX, int mouseY) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                widget.mouseMove(mouseX, mouseY);
+            if (!widget.visible) {
+                if (widget.ignoreBounds) {
+                    widget.mouseMove(mouseX, mouseY);
+                }
                 continue;
             }
             if (widget.isWithinBounds(mouseX, mouseY)) {
@@ -224,14 +212,12 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     @Override
     public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int button) {
         for (var widget : this.widgets) {
-            if (!widget.visible) continue;
-            if (widget.ignoreBounds) {
-                if (widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button)) return true;
+            if (!widget.visible) {
+                if (widget.ignoreBounds && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY)) {
-                if (widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button)) return true;
-            }
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button))
+                return true;
         }
         return super.mouseDrag(mouseX, mouseY, deltaX, deltaY, button);
     }
@@ -240,9 +226,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     public boolean keyPress(int keyCode) {
         var widget = this.focused;
 
-        if (widget != null) {
-            if (widget.keyPress(keyCode)) return true;
-        }
+        if (widget != null && widget.keyPress(keyCode)) return true;
 
         return super.keyPress(keyCode);
     }
@@ -251,9 +235,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     public boolean keyRelease(int keyCode) {
         var widget = this.focused;
 
-        if (widget != null) {
-            if (widget.keyRelease(keyCode)) return true;
-        }
+        if (widget != null && widget.keyRelease(keyCode)) return true;
 
         return super.keyRelease(keyCode);
     }
@@ -262,9 +244,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     public boolean charType(char character) {
         var widget = this.focused;
 
-        if (widget != null) {
-            if (widget.charType(character)) return true;
-        }
+        if (widget != null && widget.charType(character)) return true;
 
         return super.charType(character);
     }

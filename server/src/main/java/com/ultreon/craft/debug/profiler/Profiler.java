@@ -1,4 +1,4 @@
-package com.ultreon.craft.debug;
+package com.ultreon.craft.debug.profiler;
 
 import com.badlogic.gdx.utils.Disposable;
 import org.intellij.lang.annotations.RegExp;
@@ -17,10 +17,6 @@ public final class Profiler implements Disposable {
     private final ConcurrentMap<Thread, ThreadSection.FinishedThreadSection> finished = new ConcurrentHashMap<>();
     private boolean profiling;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    public Profiler() {
-
-    }
 
     private void start(String name) {
         if (!this.profiling) {

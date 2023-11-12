@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -52,8 +51,6 @@ public final class BakedCubeModel implements Disposable {
         this.mesh = this.createMesh();
         this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
         this.properties = properties;
-
-        UltracraftClient.get().deferDispose(this);
     }
 
     public TextureRegion top() {

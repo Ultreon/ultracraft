@@ -1,7 +1,7 @@
 package com.ultreon.craft.server.dedicated;
 
-import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
+import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.libs.crash.v0.ApplicationCrash;

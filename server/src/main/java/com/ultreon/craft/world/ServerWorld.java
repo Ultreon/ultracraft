@@ -8,6 +8,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.config.UltracraftServerConfig;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
@@ -220,7 +221,7 @@ public final class ServerWorld extends World {
             }
 
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
-            World.chunkLoads++;
+            ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
@@ -260,7 +261,8 @@ public final class ServerWorld extends World {
             var region = this.getOrOpenRegionAt(globalPos);
             var chunk = region.openChunkNow(localPos, globalPos);
             if (chunk == null) {
-                World.LOGGER.warn("Failed to load chunk " + globalPos + "!");
+                this.server.handleChunkLoadFailure(globalPos);
+                World.LOGGER.warn("Failed to load chunk {}!", globalPos);
                 return null;
             }
             if (chunk.active) {
@@ -268,7 +270,7 @@ public final class ServerWorld extends World {
             }
 
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
-            World.chunkLoads++;
+            ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
@@ -728,6 +730,7 @@ public final class ServerWorld extends World {
                     this.save(silent);
                     return true;
                 } catch (Exception e) {
+                    this.server.handleWorldSaveError(e);
                     World.LOGGER.error(World.MARKER, "Failed to save world", e);
                     return false;
                 }

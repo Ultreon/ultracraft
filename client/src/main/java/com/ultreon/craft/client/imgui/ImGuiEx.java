@@ -23,8 +23,8 @@ public class ImGuiEx {
         Object o;
         try {
             o = value.get();
-        } catch (Throwable t) {
-            o = "~@# " + t.getClass().getName() + " #@~";
+        } catch (Exception e) {
+            o = "~@# " + e.getClass().getName() + " #@~";
         }
         ImGui.text(String.valueOf(o));
     }
@@ -37,8 +37,8 @@ public class ImGuiEx {
             if (ImGui.inputText("##" + id, i, ImGuiInputTextFlags.EnterReturnsTrue)) {
                 setter.accept(i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -50,8 +50,8 @@ public class ImGuiEx {
             if (ImGui.inputScalar("##" + id, ImGuiDataType.U8, i)) {
                 setter.accept((byte) i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -63,8 +63,8 @@ public class ImGuiEx {
             if (ImGui.inputScalar("##" + id, ImGuiDataType.S16, i)) {
                 setter.accept(i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -76,8 +76,8 @@ public class ImGuiEx {
             if (ImGui.inputInt("##" + id, i)) {
                 setter.accept(i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -89,8 +89,8 @@ public class ImGuiEx {
             if (ImGui.inputScalar("##" + id, ImGuiDataType.S64, i)) {
                 setter.accept(i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -102,8 +102,8 @@ public class ImGuiEx {
             if (ImGui.inputFloat("##" + id, i)) {
                 setter.accept(i.get());
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -130,8 +130,8 @@ public class ImGuiEx {
         ImGui.sameLine();
         try {
             ImGui.checkbox("##", value.getAsBoolean());
-        } catch (Throwable t) {
-            ImGui.text("~@# " + t.getClass().getName() + " #@~");
+        } catch (Exception e) {
+            ImGui.text("~@# " + e.getClass().getName() + " #@~");
         }
     }
 
@@ -143,8 +143,8 @@ public class ImGuiEx {
             if (ImGui.sliderInt("##" + id, v, min, max)) {
                 onChange.accept(v[0]);
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -155,8 +155,8 @@ public class ImGuiEx {
             if (ImGui.button("##" + id, 120, 16)) {
                 func.run();
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -169,8 +169,8 @@ public class ImGuiEx {
             if (ImGui.colorEdit3("##" + s, floats)) {
                 setter.accept(new Color(floats[0], floats[1], floats[2], 1f));
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -183,8 +183,8 @@ public class ImGuiEx {
             if (ImGui.colorEdit4("##" + s, floats)) {
                 setter.accept(new Color(floats[0], floats[1], floats[2], floats[3]));
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 
@@ -197,8 +197,8 @@ public class ImGuiEx {
             if (ImGui.combo("##" + s1, index, Arrays.stream(e.getClass().getEnumConstants()).map(Enum::name).toArray(String[]::new))) {
                 setter.accept(EnumUtils.byOrdinal(index.get(), e));
             }
-        } catch (Throwable t) {
-            ImGui.text(String.valueOf(t));
+        } catch (Exception e) {
+            ImGui.text(String.valueOf(e));
         }
     }
 }

@@ -23,6 +23,7 @@ public class LanguageScreen extends Screen {
     @Override
     public void build(GuiBuilder builder) {
         List<Locale> locales = LanguageManager.INSTANCE.getLocales().stream().sorted((a, b) -> a.getDisplayLanguage().compareToIgnoreCase(b.getDisplayLanguage())).collect(Collectors.toList());
+        ;
 
         this.titleLabel = builder.label(Alignment.CENTER, () -> new Position(this.size.width / 2, 15))
                 .text(this.title)

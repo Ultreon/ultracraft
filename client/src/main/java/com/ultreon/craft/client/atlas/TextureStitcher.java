@@ -5,14 +5,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.google.common.collect.ImmutableMap;
-import com.ultreon.craft.client.util.TextureOffset;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.util.TextureOffset;
 import com.ultreon.libs.commons.v0.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 
 public class TextureStitcher {
@@ -28,30 +27,12 @@ public class TextureStitcher {
             return UltracraftClient.invokeAndWait(this::stitch);
         }
 
-        UltracraftClient ultracraft = UltracraftClient.get();
-
         // Determine the dimensions of the final texture atlas
         int width = 1024; // calculate the width of the atlas
-        int height = 1024; // calculate the height of the atlas
-        {
-            int x = 0;
-            int y = 0;
-            int texHeight = 0;
-            for (Texture tex : this.textures.values()) {
-                texHeight = Math.max(tex.getHeight(), texHeight);
-                x += tex.getWidth();
-                if (x + tex.getWidth() > width) {
-                    x = 0;
-                    y += texHeight;
-                    texHeight = 0;
-                    height = y;
-                }
-            }
-        }
+        int height = this.calcHeight(width);
 
         // Create a temporary FrameBuffer to hold the packed textures
-        int finalHeight = height;
-        this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, finalHeight, false);
+        this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
 
         // Create a SpriteBatch to draw the packed textures to the FrameBuffer
         SpriteBatch spriteBatch = new SpriteBatch();
@@ -94,6 +75,24 @@ public class TextureStitcher {
         spriteBatch.dispose();
 
         return new TextureAtlas(this, textureAtlas, uvMap.build());
+    }
+
+    private int calcHeight(int width) {
+        int height = 1024; // calculate the height of the atlas
+        int x = 0;
+        int y = 0;
+        int texHeight = 0;
+        for (Texture tex : this.textures.values()) {
+            texHeight = Math.max(tex.getHeight(), texHeight);
+            x += tex.getWidth();
+            if (x + tex.getWidth() > width) {
+                x = 0;
+                y += texHeight;
+                texHeight = 0;
+                height = y;
+            }
+        }
+        return height;
     }
 
     public void dispose() {

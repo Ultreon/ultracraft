@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.util.Axis;
 import com.ultreon.libs.translations.v1.Language;
 
 import java.util.Locale;
@@ -25,5 +26,13 @@ public enum BlockFace {
 
     public void getDisplayName() {
         Language.translate("ultracraft.misc.blockFace." + this.name().toLowerCase(Locale.ROOT));
+    }
+
+    public Axis getAxis() {
+        return switch (this) {
+            case TOP, BOTTOM -> Axis.Y;
+            case LEFT, RIGHT -> Axis.X;
+            case FRONT, BACK -> Axis.Z;
+        };
     }
 }
