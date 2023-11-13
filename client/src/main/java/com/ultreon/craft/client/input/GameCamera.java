@@ -1,11 +1,12 @@
 package com.ultreon.craft.client.input;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.inspect.InspectionNode;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -24,7 +25,10 @@ public class GameCamera extends PerspectiveCamera {
     private Vector3 hitPosition;
     private Vec3d eyePosition;
     private HitResult hitResult;
-    private Player player;
+    private LocalPlayer player;
+    private float cameraBop;
+    private boolean inverseBop;
+    private boolean walking;
 
     public GameCamera(float fieldOfViewY, float viewportWidth, float viewportHeight) {
         super(fieldOfViewY, viewportWidth, viewportHeight);
@@ -51,7 +55,7 @@ public class GameCamera extends PerspectiveCamera {
      *
      * @param player the player to update the camera for.
      */
-    public void update(Player player) {
+    public void update(LocalPlayer player) {
         var lookVec = player.getLookVector();
         this.eyePosition = player.getPosition().add(0, player.getEyeHeight(), 0);
         this.player = player;
@@ -67,7 +71,37 @@ public class GameCamera extends PerspectiveCamera {
             this.direction.set((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
         }
 
+        float delta = Gdx.graphics.getDeltaTime();
+        float duration = 0.5f;
+        if (player.isWalking()) this.walking = true;
+        if (!this.walking) this.cameraBop = 0;
+        else this.updateWalkAnim(player, this.cameraBop, delta, duration);
+
         super.update(true);
+    }
+
+    private void updateWalkAnim(LocalPlayer player, float cameraBop, float delta, float duration) {
+        this.walking = true;
+        float old = this.cameraBop;
+
+        var bop = this.cameraBop;
+        bop -= this.inverseBop ? delta : -delta;
+
+        if (bop > duration) {
+            float overflow = duration - bop;
+            bop = duration - overflow;
+            this.inverseBop = true;
+        } else if (bop < -duration) {
+            float overflow = duration + bop;
+            bop = -duration - overflow;
+            this.inverseBop = false;
+        }
+
+        if (!player.isWalking() && (old >= 0 && cameraBop < 0 || old <= 0 && cameraBop > 0)) {
+            player.walking = false;
+        }
+
+        this.cameraBop = bop * 6;
     }
 
     private void updateThirdPerson(Vec3d lookVec) {
@@ -97,5 +131,12 @@ public class GameCamera extends PerspectiveCamera {
      */
     public Vec3d getEyePosition() {
         return this.eyePosition;
+    }
+
+    public Vector3 relative(Vec3d position) {
+        LocalPlayer localPlayer = this.client.player;
+        if (localPlayer == null) return null;
+        Vec3f sub = position.sub(this.player.getPosition().add(0, this.player.getEyeHeight(), 0)).f();
+        return new Vector3(sub.x, sub.y, sub.z);
     }
 }

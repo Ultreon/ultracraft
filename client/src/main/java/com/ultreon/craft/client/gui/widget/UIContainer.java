@@ -1,6 +1,8 @@
 package com.ultreon.craft.client.gui.widget;
 
 import com.badlogic.gdx.utils.Array;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.layout.Layout;
 import com.ultreon.craft.client.gui.widget.layout.StandardLayout;
@@ -13,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class UIContainer<T extends UIContainer<T>> extends Widget {
     @SuppressWarnings("rawtypes")
@@ -36,6 +39,18 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
 
     public UIContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(width, height);
+    }
+
+    @Override
+    public UIContainer<T> position(Supplier<Position> position) {
+        this.onRevalidate(widget -> widget.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public UIContainer<T> bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> widget.setBounds(position.get()));
+        return this;
     }
 
     @Override

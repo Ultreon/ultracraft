@@ -2,7 +2,9 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.util.Axis;
+import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.translations.v1.Language;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
@@ -20,6 +22,15 @@ public enum BlockFace {
         this.normal = normal;
     }
 
+    public static @Nullable BlockFace ofNormal(Vec3f normal) {
+        for (BlockFace face : BlockFace.values()) {
+            if (face.normal.x == normal.x && face.normal.y == normal.y && face.normal.z == normal.z) {
+                return face;
+            }
+        }
+        return null;
+    }
+
     public Vector3 getNormal() {
         return this.normal;
     }
@@ -33,6 +44,17 @@ public enum BlockFace {
             case TOP, BOTTOM -> Axis.Y;
             case LEFT, RIGHT -> Axis.X;
             case FRONT, BACK -> Axis.Z;
+        };
+    }
+
+    public float[] getFaceVertices() {
+        return switch (this) {
+            case TOP -> ChunkMeshBuilder.topVertices;
+            case BOTTOM -> ChunkMeshBuilder.bottomVertices;
+            case LEFT -> ChunkMeshBuilder.leftVertices;
+            case RIGHT -> ChunkMeshBuilder.rightVertices;
+            case FRONT -> ChunkMeshBuilder.frontVertices;
+            case BACK -> ChunkMeshBuilder.backVertices;
         };
     }
 }

@@ -5,6 +5,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public final class ClientWorld extends World implements Disposable {
     @NotNull
@@ -173,5 +175,9 @@ public final class ClientWorld extends World implements Disposable {
                 });
             }
         }
+    }
+
+    public Stream<Entity> getAllEntities() {
+        return this.entities.values().stream();
     }
 }

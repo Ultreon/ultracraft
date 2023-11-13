@@ -2,9 +2,7 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -19,12 +17,18 @@ import com.google.common.base.Preconditions;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
-import com.ultreon.craft.client.model.BakedCubeModel;
-import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
+import com.ultreon.craft.client.model.entity.EntityModel;
+import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
+import com.ultreon.craft.client.registry.ModelRegistry;
+import com.ultreon.craft.client.registry.RendererRegistry;
+import com.ultreon.craft.client.shaders.OutlineShader;
 import com.ultreon.craft.debug.ValueTracker;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.util.EntitySize;
+import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -32,6 +36,8 @@ import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,6 +83,8 @@ public final class WorldRenderer implements Disposable {
     private final Vector3 tmp = new Vector3();
     private final Material breakingMaterial;
     private final Array<Mesh> breakingMeshes;
+    private Int2ObjectMap<ModelInstance> modelInstances = new Int2ObjectOpenHashMap<>();
+    private final Shader outlineShader = new OutlineShader(Color.BLACK);
 
     public WorldRenderer(ClientWorld world) {
         this.world = world;
@@ -180,7 +188,7 @@ public final class WorldRenderer implements Disposable {
         skyboxTextures[4] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
         skyboxTextures[5] = new Pixmap(UltracraftClient.resource(id("textures/cubemap/skybox_side.png")));
 
-        cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
+        this.cubemap = new Cubemap(skyboxTextures[0], skyboxTextures[1], skyboxTextures[2], skyboxTextures[3], skyboxTextures[4], skyboxTextures[5]);
 
         UltracraftClient.LOGGER.info("Setting up world environment");
 
@@ -188,7 +196,7 @@ public final class WorldRenderer implements Disposable {
         this.environment = new Environment();
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, v2, v2, v2, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
-        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
+        this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
         this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
         this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, -1.0f));
         this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, 1.0f, 0, 0.0f));
@@ -224,6 +232,16 @@ public final class WorldRenderer implements Disposable {
         chunk.mesh = null;
         chunk.transparentMesh = null;
         WorldRenderer.chunkMeshFrees++;
+    }
+
+    public void removeEntity(int id) {
+        this.checkThread();
+        this.modelInstances.remove(id);
+    }
+
+    private void checkThread() {
+        if (!UltracraftClient.isOnMainThread())
+            throw new IllegalStateException("Should only be called on the main thread!");
     }
 
     public void draw(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
@@ -333,6 +351,9 @@ public final class WorldRenderer implements Disposable {
                 Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
                 Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
+                this.cursor.meshPart.id = "ultracraft:outline_cursor";
+                this.cursor.shader = this.outlineShader;
+
                 this.cursor.worldTransform.setToTranslation(renderOffset);
                 output.add(this.verifyOutput(this.cursor));
             });
@@ -355,24 +376,20 @@ public final class WorldRenderer implements Disposable {
                     output.add(this.verifyOutput(renderable));
                 });
             }
-
-            UltracraftClient.PROFILER.section("(Local Player)", () -> {
-                LocalPlayer localPlayer = this.client.player;
-                if (localPlayer == null || !this.client.isInThirdPerson()) return;
-
-                Vector3 renderOffset = new Vector3(0, -localPlayer.getEyeHeight(), 0);
-
-                Renderable renderable = renderablePool.obtain();
-                renderable.meshPart.mesh = this.playerMesh;
-                renderable.meshPart.size = this.playerMesh.getMaxIndices();
-                renderable.meshPart.offset = 0;
-                renderable.meshPart.primitiveType = GL_TRIANGLES;
-                renderable.worldTransform.setToTranslation(renderOffset).rotate(Vector3.Y, localPlayer.getXRot());
-                renderable.material = this.playerMaterial;
-
-                output.add(this.verifyOutput(renderable));
-            });
         });
+    }
+
+    public void renderEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
+        ModelInstance instance = this.modelInstances.get(entity.getId());
+        //noinspection unchecked
+        var renderer = (EntityRenderer<EntityModel<?>, Entity>) RendererRegistry.get(entity.getType());
+        if (instance == null) {
+            Model model = ModelRegistry.getFinished(entity.getType());
+            instance = renderer.createInstance(model);
+            this.modelInstances.put(entity.getId(), instance);
+        }
+        renderer.animate(instance, entity);
+        renderer.render(instance, output, renderablePool);
     }
 
     private Renderable verifyOutput(Renderable renderable) {
@@ -470,6 +487,8 @@ public final class WorldRenderer implements Disposable {
                 cursor1.meshPart.mesh = null;
             }
         }
+
+        this.outlineShader.dispose();
     }
 
     public boolean isDisposed() {
@@ -478,5 +497,9 @@ public final class WorldRenderer implements Disposable {
 
     public Texture getBreakingTex() {
         return this.breakingTex;
+    }
+
+    public void renderEntities() {
+
     }
 }

@@ -31,6 +31,18 @@ public final class MathHelper {
     }
 
     /**
+     * Linear interpolation between two values.
+     *
+     * @param value The value to interpolate.
+     * @param min   The minimum value.
+     * @param max   The maximum value.
+     * @return The interpolated value.
+     */
+    public static double lerp(double value, double min, double max) {
+        return ((max - min) * value + min);
+    }
+
+    /**
      * Randomly rotates the given vertices.
      *
      * @param vertices The vertices to rotate.

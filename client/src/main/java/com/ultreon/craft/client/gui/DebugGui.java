@@ -3,6 +3,7 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Mesh;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.world.ChunkMesh;
@@ -52,9 +53,9 @@ public class DebugGui {
         if (world != null && world.isDisposed()) world = null;
 
         if (UltracraftClient.PROFILER.isProfiling() || this.client.isRenderingWorld()) {
-            this.left(renderer, "FPS", Gdx.graphics.getFramesPerSecond());
-            this.left(renderer, "TPS", this.client.getCurrentTps());
-            this.left();
+            this.left(renderer, "FPS", Gdx.graphics.getFramesPerSecond())
+                    .left(renderer, "TPS", this.client.getCurrentTps())
+                    .left();
         }
 
         if (UltracraftClient.PROFILER.isProfiling()) {
@@ -69,23 +70,23 @@ public class DebugGui {
 
         if (!this.client.showDebugHud || this.client.world == null) return;
 
-        this.left(renderer, "GDX Status");
-        this.left(renderer, "Mesh Status", Mesh.getManagedStatus());
-        this.left();
+        this.left(renderer, "GDX Status")
+                .left(renderer, "Mesh Status", Mesh.getManagedStatus())
+                .left();
 
         // World
         @Nullable IntegratedServer integratedServer = this.client.integratedServer;
         if (integratedServer != null) {
-            this.left(renderer, "Integrated Server");
-            this.left(renderer, "Server TPS", integratedServer.getCurrentTps());
-            this.left(renderer, "Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent());
-            this.left();
+            this.left(renderer, "Integrated Server")
+                    .left(renderer, "Server TPS", integratedServer.getCurrentTps())
+                    .left(renderer, "Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent())
+                    .left();
         }
 
-        this.left(renderer, "Meshes");
-        this.left(renderer, "Meshes Disposed", ChunkMesh.getMeshesDisposed());
-        this.left(renderer, "Vertex Count", WorldRenderer.getVertexCount());
-        this.left();
+        this.left(renderer, "Meshes")
+                .left(renderer, "Meshes Disposed", ChunkMesh.getMeshesDisposed())
+                .left(renderer, "Vertex Count", WorldRenderer.getVertexCount())
+                .left();
 
         if (world != null) {
             // Player
@@ -96,10 +97,10 @@ public class DebugGui {
                 Vec3i sectionPos = this.block2sectionPos(blockPosition);
                 ChunkPos chunkPos = player.getChunkPos();
                 ClientChunk chunk = world.getChunk(chunkPos);
-                this.left(renderer, "XYZ", player.getPosition());
-                this.left(renderer, "Block XYZ", blockPosition);
-                this.left(renderer, "Chunk XYZ", sectionPos);
-                this.left(renderer, "Biome", world.getBiome(blockPosition));
+                this.left(renderer, "XYZ", player.getPosition())
+                        .left(renderer, "Block XYZ", blockPosition)
+                        .left(renderer, "Chunk XYZ", sectionPos)
+                        .left(renderer, "Biome", world.getBiome(blockPosition));
                 if (chunk != null) {
                     this.left(renderer, "Chunk Offset", chunk.renderOffset);
                 }
@@ -117,14 +118,14 @@ public class DebugGui {
 
             this.left(renderer, "Chunk Mesh Disposes", WorldRenderer.getChunkMeshFrees());
             if (this.client.isSinglePlayer()) {
-                this.left(renderer, "Chunk Loads", ServerWorld.getChunkLoads());
-                this.left(renderer, "Chunk Unloads", ServerWorld.getChunkUnloads());
-                this.left(renderer, "Chunk Saves", ServerWorld.getChunkSaves());
+                this.left(renderer, "Chunk Loads", ServerWorld.getChunkLoads())
+                        .left(renderer, "Chunk Unloads", ServerWorld.getChunkUnloads())
+                        .left(renderer, "Chunk Saves", ServerWorld.getChunkSaves());
             }
-            this.left(renderer, "Pool Free", WorldRenderer.getPoolFree());
-            this.left(renderer, "Pool Max", WorldRenderer.getPoolMax());
-            this.left(renderer, "Pool Peak", WorldRenderer.getPoolPeak());
-            this.left();
+            this.left(renderer, "Pool Free", WorldRenderer.getPoolFree())
+                    .left(renderer, "Pool Max", WorldRenderer.getPoolMax())
+                    .left(renderer, "Pool Peak", WorldRenderer.getPoolPeak())
+                    .left();
         }
     }
 
@@ -153,8 +154,8 @@ public class DebugGui {
         this.entryLine(renderer, TextObject.literal(this.idxInput).setColor(Color.WHITE));
 
         if (thread == null) {
-            this.entryLine(renderer, TextObject.literal("Thread View").setColor(Color.GREEN).setBold(true).setUnderlined(true));
-            this.entryLine(renderer);
+            this.entryLine(renderer, TextObject.literal("Thread View").setColor(Color.GREEN).setBold(true).setUnderlined(true))
+                    .entryLine(renderer);
 
             List<Thread> threads = this.profile.getThreads().stream().sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())).toList();
             if (threads.isEmpty()) return;
@@ -167,8 +168,8 @@ public class DebugGui {
             FinishedThreadSection threadSection = this.profile.getThreadSection(thread);
             List<FinishedSection> data;
 
-            this.entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true));
-            this.entryLine(renderer);
+            this.entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true))
+                    .entryLine(renderer);
 
             if (path.equals("/")) {
                 data = threadSection.getData().values().stream().sorted(comparator).toList();
@@ -245,38 +246,47 @@ public class DebugGui {
         }
     }
 
-    private void left(Renderer renderer, MutableText mutableText) {
+    @CanIgnoreReturnValue
+    private DebugGui left(Renderer renderer, MutableText mutableText) {
         int width = renderer.getFont().width(mutableText);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, width + 5, 12, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(mutableText, DebugGui.OFFSET, this.leftY);
+        renderer.textLeft(mutableText, DebugGui.OFFSET, this.leftY);
         this.leftY += 13;
+        return this;
     }
 
     private Vec3i block2sectionPos(BlockPos blockPos) {
         return new Vec3i(blockPos.x() / 16, blockPos.y() / 16, blockPos.z() / 16);
     }
 
-    public void left(Renderer renderer, String name, Object value) {
+    @CanIgnoreReturnValue
+    public DebugGui left(Renderer renderer, String name, Object value) {
         MutableText textObject = TextObject.literal(name).append(": ").append(TextObject.literal(String.valueOf(value)).setColor(Color.LIGHT_GRAY));
         int width = renderer.getFont().width(textObject);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, width + 5, 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(textObject, DebugGui.OFFSET, this.leftY);
+        renderer.textLeft(textObject, DebugGui.OFFSET, this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    public void left(Renderer renderer, String text) {
+    @CanIgnoreReturnValue
+    public DebugGui left(Renderer renderer, String text) {
         MutableText textObject = TextObject.literal(text).setBold(true).setUnderlined(true).setColor(Color.GOLD);
         int width = renderer.getFont().width(textObject);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, width + 5, 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(textObject, DebugGui.OFFSET, this.leftY);
+        renderer.textLeft(textObject, DebugGui.OFFSET, this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    public void left() {
+    @CanIgnoreReturnValue
+    public DebugGui left() {
         this.leftY += 11;
+        return this;
     }
 
-    public void entryLine(Renderer renderer, int idx, String name, long nanos) {
+    @CanIgnoreReturnValue
+    public DebugGui entryLine(Renderer renderer, int idx, String name, long nanos) {
         MutableText lText = TextObject.literal("[" + idx + "] ").setColor(Color.GOLD).append(TextObject.literal(name).setColor(Color.WHITE));
         MutableText rText;
         if (nanos < 10000.0)
@@ -288,39 +298,48 @@ public class DebugGui {
         int lWidth = renderer.getFont().width(lText);
         int rWidth = renderer.getFont().width(rText);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(lWidth + rWidth + 18, 304), 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(lText, DebugGui.OFFSET, this.leftY);
-        renderer.drawTextRight(rText, DebugGui.OFFSET + Math.max(lWidth + rWidth + 16, 300), this.leftY);
+        renderer.textLeft(lText, DebugGui.OFFSET, this.leftY);
+        renderer.textRight(rText, DebugGui.OFFSET + Math.max(lWidth + rWidth + 16, 300), this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    void entryLine(Renderer renderer, int idx, String name) {
+    @CanIgnoreReturnValue
+    DebugGui entryLine(Renderer renderer, int idx, String name) {
         MutableText text = TextObject.literal("[" + idx + "] ").setColor(Color.GOLD).append(TextObject.literal(name).setColor(Color.WHITE));
         int width = renderer.getFont().width(text);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(width + 2, 304), 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(text, DebugGui.OFFSET, this.leftY);
+        renderer.textLeft(text, DebugGui.OFFSET, this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    void entryLine(Renderer renderer, TextObject text) {
+    @CanIgnoreReturnValue
+    DebugGui entryLine(Renderer renderer, TextObject text) {
         int width = renderer.getFont().width(text);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(width + 2, 304), 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(text, DebugGui.OFFSET, this.leftY);
+        renderer.textLeft(text, DebugGui.OFFSET, this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    public void entryLine(Renderer renderer, String name, String value) {
+    @CanIgnoreReturnValue
+    public DebugGui entryLine(Renderer renderer, String name, String value) {
         MutableText lText = TextObject.literal(name).setColor(Color.WHITE);
         MutableText rText = TextObject.literal(value).setColor(Color.LIGHT_GRAY);
         int lWidth = renderer.getFont().width(lText);
         int rWidth = renderer.getFont().width(rText);
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, Math.max(lWidth + rWidth + 18, 304), 11, Color.BLACK.withAlpha(128));
-        renderer.drawTextLeft(lText, DebugGui.OFFSET, this.leftY);
-        renderer.drawTextRight(rText, DebugGui.OFFSET + Math.max(lWidth + rWidth + 16, 300), this.leftY);
+        renderer.textLeft(lText, DebugGui.OFFSET, this.leftY);
+        renderer.textRight(rText, DebugGui.OFFSET + Math.max(lWidth + rWidth + 16, 300), this.leftY);
         this.leftY += 11;
+        return this;
     }
 
-    public void entryLine(Renderer renderer) {
+    @CanIgnoreReturnValue
+    public DebugGui entryLine(Renderer renderer) {
         renderer.fill(DebugGui.OFFSET - 2, this.leftY - 1, 304, 11, Color.BLACK.withAlpha(128));
         this.leftY += 11;
+        return this;
     }
 }

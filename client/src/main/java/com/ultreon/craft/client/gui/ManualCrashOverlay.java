@@ -38,13 +38,13 @@ public class ManualCrashOverlay implements StaticWidget {
         var width = UltracraftClient.get().getScaledWidth();
         var height = UltracraftClient.get().getScaledHeight();
 
-        renderer.fill(0, 0, width, height, Color.rgb(0x101010));
-        renderer.fill(0, 0, width, 2, Color.rgb(0xff0000));
+        renderer.fill(0, 0, width, height, Color.rgb(0x101010))
+                .fill(0, 0, width, 2, Color.rgb(0xff0000));
 
-        renderer.drawTextScaledCenter("Manual Initiating Crash", 3, width / 2, height / 2 - 100);
-        renderer.drawTextCenter("Crashing the game in " + (this.endTime - millis) / 1000 + " seconds.", width / 2, height / 2 - 50);
-        renderer.drawTextCenter("If you didn't meant to trigger this, release any ctrl, alt or shift key.", width / 2, height / 2 - 35);
-        renderer.drawTextCenter("If you continue, it will crash the game with all thread states in the crash log.", width / 2, height / 2 - 10);
+        renderer.textCenter("Manual Initiating Crash", 3, width / 2, height / 2 - 100)
+                .textCenter("Crashing the game in " + (this.endTime - millis) / 1000 + " seconds.", width / 2, height / 2 - 50)
+                .textCenter("If you didn't meant to trigger this, release any ctrl, alt or shift key.", width / 2, height / 2 - 35)
+                .textCenter("If you continue, it will crash the game with all thread states in the crash log.", width / 2, height / 2 - 10);
     }
 
     private void crash() {

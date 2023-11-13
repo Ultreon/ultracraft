@@ -11,6 +11,8 @@ import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -62,6 +64,18 @@ public abstract class Player extends LivingEntity {
     @Override
     public boolean isAffectedByFluid() {
         return !(this.flying || this.noClip) && super.isAffectedByFluid();
+    }
+
+    @Override
+    public void setRotation(Vec2f position) {
+        super.setRotation(position);
+        this.xHeadRot = position.x;
+    }
+
+    public void rotateHead(float x, float y) {
+        this.xHeadRot += x;
+        this.yRot += y;
+        this.xRot = Mth.clamp(this.xRot, this.xHeadRot - 50, this.xHeadRot + 50);
     }
 
     public float getEyeHeight() {

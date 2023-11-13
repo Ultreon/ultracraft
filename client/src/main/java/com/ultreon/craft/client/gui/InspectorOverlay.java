@@ -20,9 +20,9 @@ public class InspectorOverlay {
 
         Comparator<InspectionNode<?>> comparator = Comparator.comparing(InspectionNode::getName);
 
-        debugGui.entryLine(renderer, TextObject.literal(this.inspectIdxInput).setColor(Color.WHITE));
-        debugGui.entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true));
-        debugGui.entryLine(renderer);
+        debugGui.entryLine(renderer, TextObject.literal(this.inspectIdxInput).setColor(Color.WHITE))
+                .entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true))
+                .entryLine(renderer);
 
         if (this.renderNodes(renderer, debugGui, path, comparator)) return;
 

@@ -18,7 +18,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
@@ -65,11 +65,11 @@ public class ItemRenderer {
 
         Identifier curKey = Registries.ITEMS.getKey(item);
         if (curKey == null) {
-            renderer.setTextureColor(Color.WHITE);
+            renderer.blitColor(Color.WHITE);
             renderer.blit((TextureRegion) null, x, y, 16, 16);
         } else {
             TextureRegion texture = this.client.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
-            renderer.setTextureColor(Color.WHITE);
+            renderer.blitColor(Color.WHITE);
             renderer.blit(texture, x, y, 16, 16);
         }
     }

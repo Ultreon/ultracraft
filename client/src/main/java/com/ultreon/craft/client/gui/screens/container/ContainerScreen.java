@@ -77,7 +77,7 @@ public abstract class ContainerScreen extends Screen {
 
             if (!slotItem.isEmpty() && slotItem.getCount() > 1) {
                 String text = Integer.toString(slotItem.getCount());
-                renderer.drawTextLeft(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
+                renderer.textLeft(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
             }
         }
     }
@@ -125,16 +125,16 @@ public abstract class ContainerScreen extends Screen {
         renderer.fill(x, y + 1, textWidth + 6, textHeight + 4, Color.rgb(0x202020));
         renderer.box(x + 1, y + 1, textWidth + 4, textHeight + 4, Color.rgb(0x303030));
 
-        renderer.drawTextLeft(title, x + 3, y + 3, Color.WHITE);
+        renderer.textLeft(title, x + 3, y + 3, Color.WHITE);
 
         int lineNr = 0;
         for (TextObject line : description) {
-            renderer.drawTextLeft(line, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0xa0a0a0));
+            renderer.textLeft(line, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0xa0a0a0));
             lineNr++;
         }
 
         if (subTitle != null)
-            renderer.drawTextLeft(subTitle, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0x606060));
+            renderer.textLeft(subTitle, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0x606060));
     }
 
     protected @Nullable ItemSlot getSlotAt(int mouseX, int mouseY) {

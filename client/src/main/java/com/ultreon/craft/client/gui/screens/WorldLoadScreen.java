@@ -45,14 +45,18 @@ public class WorldLoadScreen extends Screen {
         this.client.integratedServer = server;
         this.world = server.getWorld();
 
-        this.titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 - 25));
-        this.titleLabel.text().set(this.title);
-        this.titleLabel.scale().set(2);
+        this.titleLabel = builder.add(Label.of(this.title)
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 - 25))
+                .scale(2));
 
-        this.descriptionLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 + 3));
-        this.descriptionLabel.text().setRaw("Preparing");
+        this.descriptionLabel = builder.add(Label.of("Preparing")
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 + 3)));
 
-        this.subTitleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 + 31));
+        this.subTitleLabel = builder.add(Label.of()
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 + 31)));
 
         new Thread(this::run, "World Loading").start();
     }

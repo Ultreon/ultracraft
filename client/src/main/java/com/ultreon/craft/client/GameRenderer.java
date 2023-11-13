@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.ultreon.craft.client.gui.Renderer;
@@ -20,6 +21,7 @@ public class GameRenderer {
     private final UltracraftClient client;
     private final ModelBatch modelBatch;
     private final SpriteBatch spriteBatch;
+    private final Vector2 tmp = new Vector2();
 
     public GameRenderer(UltracraftClient client, ModelBatch modelBatch, SpriteBatch spriteBatch) {
         this.client = client;
@@ -36,13 +38,13 @@ public class GameRenderer {
         if (player != null) {
             UltracraftClient.PROFILER.section("camera", () -> {
                 if (this.client.screen == null && !ImGuiOverlay.isShown()) {
-                    player.rotate(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
+                    player.rotateHead(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
                 }
 
                 this.client.camera.update(player);
                 this.client.camera.far = (this.client.settings.renderDistance.get() - 1) * World.CHUNK_SIZE;
 
-                var rotation = player.getRotation();
+                var rotation = this.tmp.set(player.xHeadRot, player.yRot);
                 var quaternion = new Quaternion();
                 quaternion.setFromAxis(Vector3.Y, rotation.x);
                 quaternion.mul(new Quaternion(Vector3.X, rotation.y));
@@ -55,10 +57,26 @@ public class GameRenderer {
                 ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
                 Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+                worldRenderer.renderEntities();
+
                 this.modelBatch.begin(this.client.camera);
                 this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
                 this.modelBatch.getRenderContext().setDepthTest(GL_DEPTH_FUNC);
+
+                world.getAllEntities().sorted((e1, e2) -> {
+                    var d1 = e1.getPosition().dst(this.client.player.getPosition());
+                    var d2 = e2.getPosition().dst(this.client.player.getPosition());
+                    return Double.compare(d1, d2);
+                }).forEachOrdered(entity -> this.modelBatch.render((output, pool) -> worldRenderer.renderEntity(entity, output, pool)));
+
                 this.modelBatch.render(worldRenderer::draw, worldRenderer.getEnvironment());
+
+                UltracraftClient.PROFILER.section("(Local Player)", () -> {
+                    LocalPlayer localPlayer = this.client.player;
+                    if (localPlayer == null || !this.client.isInThirdPerson()) return;
+
+                    this.modelBatch.render((output, pool) -> worldRenderer.renderEntity(localPlayer, output, pool));
+                });
                 this.modelBatch.end();
             });
         }

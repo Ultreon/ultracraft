@@ -10,7 +10,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BlockPos;
@@ -184,84 +184,84 @@ public class ChunkMeshBuilder {
         return side == null || side == Blocks.AIR || side.isTransparent() || !side.doesRender();
     }
 
-    static float[] backUv = {
+    public static float[] backUv = {
             1, 1,
             1, 0,
             0, 0,
             0, 1,
     };
 
-    static float[] frontUv = {
+    public static float[] frontUv = {
             1, 1,
             0, 1,
             0, 0,
             1, 0,
     };
 
-    static float[] rightUv = {
+    public static float[] rightUv = {
             1, 1,
             0, 1,
             0, 0,
             1, 0,
     };
 
-    static float[] leftUv = {
+    public static float[] leftUv = {
             1, 1,
             1, 0,
             0, 0,
             0, 1,
     };
 
-    static float[] bottomUv = {
+    public static float[] bottomUv = {
             0, 0,
             0, 1,
             1, 1,
             0, 1,
     };
 
-    static float[] topUv = {
+    public static float[] topUv = {
             0, 0,
             1, 0,
             1, 1,
             0, 1
     };
 
-    static float[] topVertices = {
+    public static float[] topVertices = {
             0, 1, 0,
             1, 1, 0,
             1, 1, 1,
             0, 1, 1
     };
 
-    static float[] bottomVertices = {
+    public static float[] bottomVertices = {
             0, 0, 0,
             0, 0, 1,
             1, 0, 1,
             1, 0, 0
     };
 
-    static float[] leftVertices = {
+    public static float[] leftVertices = {
             0, 0, 0,
             0, 1, 0,
             0, 1, 1,
             0, 0, 1
     };
 
-    static float[] rightVertices = {
+    public static float[] rightVertices = {
             1, 0, 0,
             1, 0, 1,
             1, 1, 1,
             1, 1, 0
     };
 
-    static float[] frontVertices = {
+    public static float[] frontVertices = {
             0, 0, 0,
             1, 0, 0,
             1, 1, 0,
             0, 1, 0,
     };
 
-    static float[] backVertices = {
+    public static float[] backVertices = {
             0, 0, 1,
             0, 1, 1,
             1, 1, 1,

@@ -9,6 +9,7 @@ import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +24,7 @@ public class LivingEntity extends Entity {
     public boolean jumping = false;
     public boolean invincible = false;
     protected float oldHealth;
+    public float xHeadRot;
 
     public LivingEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -79,15 +81,28 @@ public class LivingEntity extends Entity {
         if (this.health <= 0) {
             this.health = 0;
 
-            if (!this.isDead) {
-                if (!EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
-                    this.isDead = true;
-                    this.onDeath();
-                }
+            if (!this.isDead && !EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
+                this.isDead = true;
+                this.onDeath();
             }
         }
 
         super.tick();
+    }
+
+    @Override
+    public Vec3d getLookVector() {
+        // Calculate the direction vector
+        Vec3d direction = new Vec3d();
+
+        this.yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
+        direction.x = (float) (Math.cos(Math.toRadians(this.yRot)) * Math.sin(Math.toRadians(this.xHeadRot)));
+        direction.z = (float) (Math.cos(Math.toRadians(this.yRot)) * Math.cos(Math.toRadians(this.xHeadRot)));
+        direction.y = (float) (Math.sin(Math.toRadians(this.yRot)));
+
+        // Normalize the direction vector
+        direction.nor();
+        return direction;
     }
 
     protected void hurtFromVoid() {

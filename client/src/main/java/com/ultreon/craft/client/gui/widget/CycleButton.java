@@ -1,13 +1,16 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class CycleButton<T extends Enum<T>> extends Button {
+public class CycleButton<T extends Enum<T>> extends TextButton {
     private TextObject label = TextObject.empty();
     private T[] values;
     private Function<T, TextObject> formatter;
@@ -39,6 +42,16 @@ public class CycleButton<T extends Enum<T>> extends Button {
 
     public final CycleButton<T> formatter(Function<T, TextObject> formatter) {
         this.formatter = formatter;
+        return this;
+    }
+
+    public CycleButton<T> position(Supplier<Position> position) {
+        this.onRevalidate(widget -> this.setPos(position.get()));
+        return this;
+    }
+
+    public CycleButton<T> bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> this.setBounds(position.get()));
         return this;
     }
 

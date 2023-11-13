@@ -3,10 +3,7 @@ package com.ultreon.craft.client.gui.widget;
 import com.badlogic.gdx.utils.Array;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.client.gui.Callback;
-import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.Size;
+import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
@@ -16,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @ApiStatus.NonExtendable
 public class SelectionList<T> extends UIContainer<SelectionList<T>> {
@@ -50,23 +48,11 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
 
     public SelectionList(int itemHeight) {
         this();
-        this.withItemHeight(itemHeight);
-    }
-
-    @CanIgnoreReturnValue
-    public SelectionList<T> withItemRenderer(ItemRenderer<T> itemRenderer) {
-        this.itemRenderer = itemRenderer;
-        return this;
+        this.itemHeight(itemHeight);
     }
 
     public boolean isSelectable() {
         return this.selectable;
-    }
-
-    @CanIgnoreReturnValue
-    public SelectionList<T> withSelectable(boolean selectable) {
-        this.selectable = selectable;
-        return this;
     }
 
     @Override
@@ -74,7 +60,6 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         renderer.fill(this.pos.x, this.pos.y, this.size.width, this.size.height, Color.argb(0x40000000));
 
         renderer.pushMatrix();
-
         if (renderer.pushScissors(this.getBounds())) {
             this.renderChildren(renderer, mouseX, mouseY, deltaTime);
             renderer.popScissors();
@@ -222,13 +207,6 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     @CanIgnoreReturnValue
-    public Entry<T> addEntry(T value) {
-        Entry<T> entry = new Entry<>(value, this);
-        this.entries.add(entry);
-        return entry;
-    }
-
-    @CanIgnoreReturnValue
     public Entry<T> removeEntry(Entry<T> entry) {
         this.entries.removeValue(entry, true);
         return entry;
@@ -260,18 +238,49 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.entries;
     }
 
-    public SelectionList<T> withEntries(Collection<? extends T> values) {
-        values.forEach(this::addEntry);
+    @CanIgnoreReturnValue
+    public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
+        this.itemRenderer = itemRenderer;
         return this;
     }
 
-    public SelectionList<T> withCallback(Callback<T> onSelected) {
+    @CanIgnoreReturnValue
+    public SelectionList<T> selectable(boolean selectable) {
+        this.selectable = selectable;
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Entry<T> entry(T value) {
+        Entry<T> entry = new Entry<>(value, this);
+        this.entries.add(entry);
+        return entry;
+    }
+
+    public SelectionList<T> entries(Collection<? extends T> values) {
+        values.forEach(this::entry);
+        return this;
+    }
+
+    public SelectionList<T> callback(Callback<T> onSelected) {
         this.onSelected = onSelected;
         return this;
     }
 
-    public SelectionList<T> withItemHeight(int itemHeight) {
+    public SelectionList<T> itemHeight(int itemHeight) {
         this.itemHeight = itemHeight;
+        return this;
+    }
+
+    @Override
+    public SelectionList<T> position(Supplier<Position> position) {
+        this.onRevalidate(widget -> widget.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public SelectionList<T> bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> widget.setBounds(position.get()));
         return this;
     }
 
@@ -302,6 +311,16 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
 
         public T getValue() {
             return this.value;
+        }
+
+        @Override
+        public Entry<T> position(Supplier<Position> position) {
+            return this;
+        }
+
+        @Override
+        public Entry<T> bounds(Supplier<Bounds> position) {
+            return this;
         }
 
         @Override

@@ -2,19 +2,25 @@ package com.ultreon.craft.client.gui.widget;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Callback;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.components.CallbackComponent;
 import com.ultreon.craft.client.gui.widget.components.TextComponent;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.function.Supplier;
+
 import static com.ultreon.craft.client.UltracraftClient.id;
 
 @SuppressWarnings("unchecked")
 public class TextEntry extends Widget {
-    private CharPredicate charPredicate = c -> true;
+    private CharPredicate filter = c -> true;
 
     private int cursorIdx = 0;
     private float cursorX;
@@ -32,6 +38,28 @@ public class TextEntry extends Widget {
         this.hint = this.register(id("hint"), new TextComponent());
         this.callback = this.register(id("callback"), new CallbackComponent<>(caller -> {
         }));
+    }
+
+    public static TextEntry of(String value) {
+        TextEntry textEntry = new TextEntry();
+        textEntry.value = value;
+        return textEntry;
+    }
+
+    public static TextEntry of() {
+        return new TextEntry();
+    }
+
+    @Override
+    public TextEntry position(Supplier<Position> position) {
+        this.onRevalidate(widget -> widget.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public Widget bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> widget.setBounds(position.get()));
+        return this;
     }
 
     public TextEntry() {
@@ -57,30 +85,30 @@ public class TextEntry extends Widget {
         final int th = this.size.height + 3;
 
         Texture texture = this.client.getTextureManager().getTexture(id("textures/gui/text_entry.png"));
-        renderer.setTextureColor(Color.WHITE);
-        renderer.blit(texture, tx, ty, 4, 4, u, v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + 4, ty, tw - 8, 4, 4 + u, v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + tw - 4, ty, 4, 4, 8 + u, v, 4, 4, 36, 12);
-        renderer.blit(texture, tx, ty + 4, 4, th - 8, u, 4 + v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + 4, ty + 4, tw - 8, th - 8, 4 + u, 4 + v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + tw - 4, ty + 4, 4, th - 8, 8 + u, 4 + v, 4, 4, 36, 12);
-        renderer.blit(texture, tx, ty + th - 4, 4, 4, u, 8 + v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
-        renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
+        renderer.blitColor(Color.WHITE)
+                .blit(texture, tx, ty, 4, 4, u, v, 4, 4, 36, 12)
+                .blit(texture, tx + 4, ty, tw - 8, 4, 4 + u, v, 4, 4, 36, 12)
+                .blit(texture, tx + tw - 4, ty, 4, 4, 8 + u, v, 4, 4, 36, 12)
+                .blit(texture, tx, ty + 4, 4, th - 8, u, 4 + v, 4, 4, 36, 12)
+                .blit(texture, tx + 4, ty + 4, tw - 8, th - 8, 4 + u, 4 + v, 4, 4, 36, 12)
+                .blit(texture, tx + tw - 4, ty + 4, 4, th - 8, 8 + u, 4 + v, 4, 4, 36, 12)
+                .blit(texture, tx, ty + th - 4, 4, 4, u, 8 + v, 4, 4, 36, 12)
+                .blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12)
+                .blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawTextLeft(this.value, this.pos.x + 5, this.pos.y + 6, false);
+        renderer.textLeft(this.value, this.pos.x + 5, this.pos.y + 6, false);
         if (this.value.isEmpty()) {
-            renderer.drawTextLeft(this.hint.get(), this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
+            renderer.textLeft(this.hint.get(), this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
         }
 
         if (this.focused) {
-            renderer.drawLine(this.pos.x + 3 + this.cursorX, this.pos.y + 5, this.pos.x + 3 + this.cursorX, this.pos.y + this.size.height - 6, Color.WHITE);
+            renderer.line(this.pos.x + 3 + this.cursorX, this.pos.y + 5, this.pos.x + 3 + this.cursorX, this.pos.y + this.size.height - 6, Color.WHITE);
         }
     }
 
     @Override
     public boolean charType(char character) {
-        if (!Character.isISOControl(character) && this.charPredicate.test(character)) {
+        if (!Character.isISOControl(character) && this.filter.test(character)) {
             this.value += character;
             this.cursorIdx++;
             this.revalidateCursor();
@@ -132,8 +160,24 @@ public class TextEntry extends Widget {
         return this.value;
     }
 
-    public void setValue(String value) {
+    public TextEntry value(String value) {
         this.value = value;
+        return this;
+    }
+
+    public TextEntry hint(TextObject text) {
+        this.hint.set(text);
+        return this;
+    }
+
+    public TextEntry filter(CharPredicate filter) {
+        this.filter = filter;
+        return this;
+    }
+
+    public TextEntry callback(Callback<TextEntry> callback) {
+        this.callback.set(callback);
+        return this;
     }
 
     public TextComponent hint() {
@@ -141,12 +185,8 @@ public class TextEntry extends Widget {
     }
 
     @ApiStatus.Internal
-    public CharPredicate getCharPredicate() {
-        return this.charPredicate;
-    }
-
-    public void setCharPredicate(CharPredicate charPredicate) {
-        this.charPredicate = charPredicate;
+    public CharPredicate getFilter() {
+        return this.filter;
     }
 
     public int getCursorIdx() {

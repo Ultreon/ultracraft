@@ -3,7 +3,7 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.widget.Button;
+import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.gui.widget.TextEntry;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.translations.v1.Language;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class MultiplayerScreen extends Screen {
     private TextEntry entry;
-    private Button joinButton;
+    private TextButton joinButton;
 
     public MultiplayerScreen() {
         super(Language.translate("ultracraft.screen.multiplayer"));
@@ -23,16 +23,17 @@ public class MultiplayerScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.entry = builder.addWithPos(new TextEntry(), () -> new Position(this.size.width / 2 - 100, this.size.height / 2 - 10));
-        this.entry.callback().set(this::validateServerIp);
+        this.entry = builder.add(TextEntry.of().position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 - 10)))
+                .callback(this::validateServerIp)
+                .hint(TextObject.translation("ultracraft.screen.multiplayer.server_ip"));
 
-        this.joinButton = builder.addWithPos(new Button(200), () -> new Position(this.size.width / 2 - 100, this.size.height / 2 + 15));
-        this.joinButton.callback().set(this::joinServer);
-        this.joinButton.text().translate("ultracraft.screen.multiplayer.join");
-        this.joinButton.setEnabled(false);
+        this.joinButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.multiplayer.join"), 200)
+                        .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 + 15)))
+                .callback(this::joinServer);
+        this.joinButton.disable();
     }
 
-    private void joinServer(Button caller) {
+    private void joinServer(TextButton caller) {
         caller.enabled = false;
         MessageScreen messageScreen = new MessageScreen(TextObject.translation("ultracraft.screen.message.joining_server"));
         this.client.showScreen(messageScreen);

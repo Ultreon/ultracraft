@@ -1,12 +1,18 @@
 package com.ultreon.craft.client.gui.widget;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Callback;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.components.CallbackComponent;
 import com.ultreon.craft.client.gui.widget.components.RangedValueComponent;
 import com.ultreon.craft.client.gui.widget.components.TextComponent;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Identifier;
 import org.checkerframework.common.value.qual.IntRange;
+
+import java.util.function.Supplier;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
@@ -36,6 +42,26 @@ public class Slider extends Widget {
         this.text = this.register(id("text"), new TextComponent());
     }
 
+    public static Slider of(int width, int min, int max) {
+        return new Slider(min, min, max);
+    }
+
+    public static Slider of(int min, int max) {
+        return new Slider(min, min, max);
+    }
+
+    @Override
+    public Slider position(Supplier<Position> position) {
+        this.onRevalidate(widget -> widget.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public Slider bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> widget.setBounds(position.get()));
+        return this;
+    }
+
     @Override
     public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         super.renderWidget(renderer, mouseX, mouseY, deltaTime);
@@ -51,7 +77,7 @@ public class Slider extends Widget {
         renderer.blit(Slider.TEXTURE, thumbX, this.pos.y, 18, 15, 21, 0, 18, 15);
 
         // Text
-        renderer.drawTextCenter(this.text.get().copy().append(": ").append(this.value.get()), this.pos.x + this.size.width / 2, this.pos.y + 5, true);
+        renderer.textCenter(this.text.get().copy().append(": ").append(this.value.get()), this.pos.x + this.size.width / 2, this.pos.y + 5, true);
     }
 
     @Override
@@ -75,11 +101,6 @@ public class Slider extends Widget {
     }
 
     @Override
-    public void mouseMove(int mouseX, int mouseY) {
-        super.mouseMove(mouseX, mouseY);
-    }
-
-    @Override
     public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int pointer) {
         if (this.isHolding) {
             this.value.set(this.originalValue + (this.value.max() - this.value.min()) * (mouseX - this.holdStart) / (this.size.width - 21));
@@ -88,6 +109,26 @@ public class Slider extends Widget {
         }
 
         return super.mouseDrag(mouseX, mouseY, deltaX, deltaY, pointer);
+    }
+
+    public Slider callback(Callback<Slider> callback) {
+        this.callback.set(callback);
+        return this;
+    }
+
+    public Slider value(int value) {
+        this.value.set(value);
+        return this;
+    }
+
+    public Slider text(TextObject text) {
+        this.text.set(text);
+        return this;
+    }
+
+    public Slider text(String text) {
+        this.text.setRaw(text);
+        return this;
     }
 
     public CallbackComponent<Slider> callback() {
