@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
+public class UIContainer<T extends UIContainer<T>> extends Widget {
     @SuppressWarnings("rawtypes")
     public static final UIContainer<?> ROOT = new UIContainer(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE) {
         @Override
@@ -29,13 +29,13 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     };
 
     @ApiStatus.Internal
-    protected final Array<Widget<?>> widgets = new Array<>();
+    protected final Array<Widget> widgets = new Array<>();
 
     private Layout layout = new StandardLayout();
-    protected Widget<?> focused;
+    protected Widget focused;
 
     public UIContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
-        super(x, y, width, height);
+        super(width, height);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         }
     }
 
-    public Array<? extends Widget<?>> children() {
+    public Array<? extends Widget> children() {
         return this.widgets;
     }
 
@@ -75,11 +75,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         }
     }
 
-    public void renderChild(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime, Widget<?> widget) {
+    public void renderChild(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime, Widget widget) {
         widget.render(renderer, mouseX, mouseY, deltaTime);
     }
 
-    public Array<? extends Widget<?>> getWidgets() {
+    public Array<? extends Widget> getWidgets() {
         return this.widgets;
     }
 
@@ -91,7 +91,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         this.layout = layout;
     }
 
-    public Widget<?> getExactWidgetAt(int x, int y) {
+    public Widget getExactWidgetAt(int x, int y) {
         for (int i = this.widgets.size - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
             if (!widget.visible) continue;
@@ -103,8 +103,8 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         return null;
     }
 
-    public @NotNull List<Widget<?>> getWidgetsAt(int x, int y) {
-        List<Widget<?>> output = new ArrayList<>();
+    public @NotNull List<Widget> getWidgetsAt(int x, int y) {
+        List<Widget> output = new ArrayList<>();
         for (int i = this.widgets.size - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
 
@@ -120,7 +120,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         return output;
     }
 
-    public @Nullable Widget<?> getWidgetAt(int x, int y) {
+    public @Nullable Widget getWidgetAt(int x, int y) {
         for (int i = this.widgets.size - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
 
@@ -133,7 +133,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
         return null;
     }
 
-    public <C extends Widget<?>> C add(C widget) {
+    public <C extends Widget> C add(C widget) {
         widget.parent = this;
         widget.root = this.root;
         this.widgets.add(widget);
@@ -210,16 +210,16 @@ public class UIContainer<T extends UIContainer<T>> extends Widget<T> {
     }
 
     @Override
-    public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int button) {
+    public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int pointer) {
         for (var widget : this.widgets) {
             if (!widget.visible) {
-                if (widget.ignoreBounds && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button)) return true;
+                if (widget.ignoreBounds && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, pointer)) return true;
                 continue;
             }
-            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, button))
+            if (widget.isWithinBounds(mouseX, mouseY) && widget.mouseDrag(mouseX, mouseY, deltaX, deltaY, pointer))
                 return true;
         }
-        return super.mouseDrag(mouseX, mouseY, deltaX, deltaY, button);
+        return super.mouseDrag(mouseX, mouseY, deltaX, deltaY, pointer);
     }
 
     @Override

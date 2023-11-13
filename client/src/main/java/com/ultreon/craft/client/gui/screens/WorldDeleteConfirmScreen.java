@@ -7,6 +7,7 @@ import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.Button;
+import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.WorldStorage;
@@ -26,23 +27,26 @@ public class WorldDeleteConfirmScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.label(Alignment.CENTER, () -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 30))
-                .text(this.getTitle())
-                .scale(2)
-                .textColor(Color.RED);
-        builder.label(Alignment.CENTER, () -> new Position(this.getWidth() / 2, this.getHeight() / 2))
-                .translation("ultracraft.screen.world_delete_confirm.message1", this.storage.getDirectory().getFileName().toString());
-        builder.label(Alignment.CENTER, () -> new Position(this.getWidth() / 2, this.getHeight() / 2 + 15))
-                .translation("ultracraft.screen.world_delete_confirm.message2");
-        builder.button(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 50), this::deleteWorld)
-                .translation("ultracraft.ui.yes")
-                .width(95);
-        builder.button(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 50), this::onBack)
-                .translation("ultracraft.ui.no")
-                .width(95);
+        Label titleLabel = builder.addWithPos(new Label(Alignment.CENTER, Color.RED), () -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 30));
+        titleLabel.text().set(this.getTitle());
+        titleLabel.scale().set(2);
+
+        builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.getWidth() / 2, this.getHeight() / 2))
+                .text().translate("ultracraft.screen.world_delete_confirm.message1", this.storage.getDirectory().getFileName().toString());
+
+        builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.getWidth() / 2, this.getHeight() / 2 + 15))
+                .text().translate("ultracraft.screen.world_delete_confirm.message2");
+
+        var yesBtn = builder.addWithPos(new Button(95), () -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 50));
+        yesBtn.callback().set(this::deleteWorld);
+        yesBtn.text().translate("ultracraft.ui.yes");
+
+        var noBtn = builder.addWithPos(new Button(95), () -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 50));
+        noBtn.callback().set(this::onBack);
+        noBtn.text().translate("ultracraft.ui.no");
     }
 
-    private void deleteWorld(Button<?> caller) {
+    private void deleteWorld(Button caller) {
         try {
             Path name = this.storage.getDirectory().getFileName();
             this.storage.delete();
@@ -53,7 +57,7 @@ public class WorldDeleteConfirmScreen extends Screen {
         this.back();
     }
 
-    private void onBack(Button<?> caller) {
+    private void onBack(Button caller) {
         this.back();
     }
 

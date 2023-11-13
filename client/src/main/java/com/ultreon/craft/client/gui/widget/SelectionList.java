@@ -48,7 +48,13 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         super(0, 0, 400, 500);
     }
 
-    public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
+    public SelectionList(int itemHeight) {
+        this();
+        this.withItemHeight(itemHeight);
+    }
+
+    @CanIgnoreReturnValue
+    public SelectionList<T> withItemRenderer(ItemRenderer<T> itemRenderer) {
         this.itemRenderer = itemRenderer;
         return this;
     }
@@ -57,7 +63,8 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.selectable;
     }
 
-    public SelectionList<T> selectable(boolean selectable) {
+    @CanIgnoreReturnValue
+    public SelectionList<T> withSelectable(boolean selectable) {
         this.selectable = selectable;
         return this;
     }
@@ -172,14 +179,15 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     @Override
-    public boolean mouseDrag(int x, int y, int drawX, int dragY, int button) {
+    public boolean mouseDrag(int x, int y, int drawX, int dragY, int pointer) {
         @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         x -= this.pos.x + this.innerXOffset;
         y -= this.pos.y + this.innerYOffset;
         drawX -= this.pos.x + this.innerXOffset;
         dragY -= this.pos.y + this.innerYOffset;
-        if (widgetAt != null) return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), drawX, dragY, button);
-        return super.mouseDrag(x, y, drawX, dragY, button);
+        if (widgetAt != null)
+            return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), drawX, dragY, pointer);
+        return super.mouseDrag(x, y, drawX, dragY, pointer);
     }
 
     @Override
@@ -252,27 +260,27 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.entries;
     }
 
-    public SelectionList<T> entries(Collection<? extends T> values) {
+    public SelectionList<T> withEntries(Collection<? extends T> values) {
         values.forEach(this::addEntry);
         return this;
     }
 
-    public SelectionList<T> onSelected(Callback<T> onSelected) {
+    public SelectionList<T> withCallback(Callback<T> onSelected) {
         this.onSelected = onSelected;
         return this;
     }
 
-    public SelectionList<T> itemHeight(int itemHeight) {
+    public SelectionList<T> withItemHeight(int itemHeight) {
         this.itemHeight = itemHeight;
         return this;
     }
 
-    public static class Entry<T> extends Widget<Entry<T>> {
+    public static class Entry<T> extends Widget {
         private final T value;
         private final SelectionList<T> list;
 
         public Entry(T value, SelectionList<T> list) {
-            super(list.pos.x, list.pos.y, list.size.width, list.itemHeight);
+            super(list.size.width, list.itemHeight);
             this.value = value;
             this.list = list;
         }

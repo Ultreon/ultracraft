@@ -4,20 +4,25 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
-import com.ultreon.craft.client.gui.*;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.Size;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.client.gui.widget.components.UIComponent;
 import com.ultreon.craft.component.GameComponent;
+import com.ultreon.craft.component.GameComponentHolder;
+import com.ultreon.libs.commons.v0.Identifier;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
-public abstract class Widget<T extends Widget<T>> implements StaticWidget {
+public abstract class Widget implements StaticWidget, GameComponentHolder<UIComponent> {
     protected boolean ignoreBounds = false;
     private final Position preferredPos = new Position(0, 0);
     protected final Position pos = new Position(0, 0);
@@ -35,26 +40,43 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     protected final long createTime = System.nanoTime();
     protected final UltracraftClient client = UltracraftClient.get();
     protected Font font = this.client.font;
-    private final List<Callback<T>> revalidateListeners = new ArrayList<>();
-    private final List<GameComponent<?>> components = new ArrayList<>();
+    private final List<RevalidateListener> revalidateListeners = new ArrayList<>();
+    private final Map<Identifier, UIComponent> components = new HashMap<>();
 
-    @SafeVarargs
-    protected Widget(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
-        this.preferredPos.x = x;
-        this.preferredPos.y = y;
-        this.preferredSize.width = width;
-        this.preferredSize.height = height;
+    protected Widget(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
+        this.preferredSize.set(width, height);
         this.size.set(this.preferredSize);
     }
 
+    public static boolean isPosWithin(int mouseX, int mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    }
+
     @CheckReturnValue
-    protected final <C extends GameComponent<?>> C register(C component) {
-        this.components.add(component);
+    protected final <C extends UIComponent> C register(Identifier id, C component) {
+        this.components.put(id, component);
         return component;
     }
 
-    public List<GameComponent<?>> getComponents() {
-        return Collections.unmodifiableList(this.components);
+    @Override
+    public Map<Identifier, UIComponent> componentRegistry() {
+        return Collections.unmodifiableMap(this.components);
+    }
+
+    @Override
+    public <T extends GameComponent<?>> T getComponent(Identifier id, T... typeGetter) {
+        UIComponent component = this.components.get(id);
+        if (component == null) throw new IllegalArgumentException("Component not found: " + id);
+        if (!component.getClass().isAssignableFrom(typeGetter.getClass().getComponentType()))
+            throw new ClassCastException(typeGetter.getClass().getComponentType().getName() + " does not extend " + component.getHolder() + ".");
+
+        return (T) component;
+    }
+
+    @SafeVarargs
+    public final <T extends GameComponent<?>> void withComponent(Identifier id, Consumer<T> consumer, T... typeGetter) {
+        UIComponent uiComponent = this.getComponent(id);
+        if (uiComponent == null) throw new IllegalArgumentException("Component not found: " + id);
     }
 
     @Override
@@ -92,36 +114,30 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
         return this.preferredSize.height;
     }
 
-    public T setPreferredPos(int x, int y) {
+    public void setPreferredPos(int x, int y) {
         this.preferredPos.x = x;
         this.preferredPos.y = y;
-        return (T) this;
     }
 
-    public T setPreferredSize(int width, int height) {
+    public void setPreferredSize(int width, int height) {
         this.preferredSize.width = width;
         this.preferredSize.height = height;
-        return (T) this;
     }
 
-    public T setPreferredX(int x) {
+    public void setPreferredX(int x) {
         this.preferredPos.x = x;
-        return (T) this;
     }
 
-    public T setPreferredY(int y) {
+    public void setPreferredY(int y) {
         this.preferredPos.y = y;
-        return (T) this;
     }
 
-    public T setPreferredWidth(int width) {
+    public void setPreferredWidth(int width) {
         this.preferredSize.width = width;
-        return (T) this;
     }
 
-    public T setPreferredHeight(int height) {
+    public void setPreferredHeight(int height) {
         this.preferredSize.height = height;
-        return (T) this;
     }
 
     public int getX() {
@@ -141,66 +157,72 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     }
 
     @CanIgnoreReturnValue
-    public T pos(int x, int y) {
+    public void setPos(int x, int y) {
         this.pos.x = x;
         this.pos.y = y;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T pos(Position pos) {
+    public void setPos(Position pos) {
         this.pos.x = pos.x;
         this.pos.y = pos.y;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T size(int width, int height) {
+    public void setSize(int width, int height) {
         this.size.width = width;
         this.size.height = height;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T size(Size size) {
+    public void setSize(Size size) {
         this.size.width = size.width;
         this.size.height = size.height;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T x(int x) {
+    public void x(int x) {
         this.pos.x = x;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T y(int y) {
+    public void y(int y) {
         this.pos.y = y;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T width(int width) {
+    public void width(int width) {
         this.size.width = width;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T height(int height) {
+    public void height(int height) {
         this.size.height = height;
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T visible(boolean visible) {
+    public void setVisible(boolean visible) {
         this.visible = visible;
-        return (T) this;
     }
 
-    public T enabled(boolean enabled) {
+    public void show() {
+        this.visible = true;
+    }
+
+    public void hide() {
+        this.visible = false;
+    }
+
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        return (T) this;
+    }
+
+    public void enable() {
+        this.enabled = true;
+    }
+
+    public void disable() {
+        this.enabled = false;
     }
 
     public boolean isVisible() {
@@ -238,8 +260,8 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
         return this.preferredSize;
     }
 
-    protected boolean isWithinBounds(int x, int y) {
-        return this.getBounds().contains(x, y);
+    protected final boolean isWithinBounds(int x, int y) {
+        return this.getBounds().contains(x, y) || this.ignoreBounds;
     }
 
     @CanIgnoreReturnValue
@@ -268,7 +290,7 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
     }
 
     @CanIgnoreReturnValue
-    public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int button) {
+    public boolean mouseDrag(int mouseX, int mouseY, int deltaX, int deltaY, int pointer) {
         return false;
     }
 
@@ -289,7 +311,7 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
 
     public void revalidate() {
         for (var listener : this.revalidateListeners) {
-            listener.call((T) this);
+            listener.revalidate(this);
         }
     }
 
@@ -318,18 +340,16 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
         return false;
     }
 
-    public T onRevalidate(Callback<T> o) {
+    public void onRevalidate(RevalidateListener o) {
         this.revalidateListeners.add(o);
-        return (T) this;
     }
 
     @CanIgnoreReturnValue
-    public T bounds(Bounds bounds) {
+    public void setBounds(Bounds bounds) {
         this.pos.x = bounds.pos().x;
         this.pos.y = bounds.pos().y;
         this.size.width = bounds.size().width;
         this.size.height = bounds.size().height;
-        return (T) this;
     }
 
     public void onFocusLost() {
@@ -338,5 +358,10 @@ public abstract class Widget<T extends Widget<T>> implements StaticWidget {
 
     public void onFocusGained() {
         this.focused = true;
+    }
+
+    @FunctionalInterface
+    public interface RevalidateListener {
+        void revalidate(Widget widget);
     }
 }

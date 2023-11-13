@@ -5,15 +5,15 @@ import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.input.DesktopInput;
-import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.ServerWorld;
 
 public class PauseScreen extends Screen {
-    private Button<?> backToGameButton;
-    private Button<?> optionsButton;
-    private Button<?> exitWorldButton;
+    private Button backToGameButton;
+    private Button optionsButton;
+    private Button exitWorldButton;
 
     public PauseScreen() {
         super("Game Paused");
@@ -26,18 +26,17 @@ public class PauseScreen extends Screen {
         if (world != null)
             this.client.addFuture(world.saveAsync(false));
 
-        this.backToGameButton = builder.button(() -> new Position(this.size.width / 2 - 100, this.size.height / 3 - 25), this::resumeGame)
-                .translation("ultracraft.ui.backToGame");
+        this.backToGameButton = builder.addWithPos(new Button(), () -> new Position(this.size.width / 2 - 100, this.size.height / 3 - 25));
+        this.backToGameButton.callback().set(this::resumeGame);
+        this.backToGameButton.text().translate("ultracraft.ui.backToGame");
 
-        this.optionsButton = builder.button(() -> new Position(this.size.width / 2 - 100, this.size.height / 3), caller -> UltracraftClient.get().showScreen(new LanguageScreen()))
-                .width(95)
-                .translation("ultracraft.screen.title.options");
+        this.optionsButton = builder.addWithPos(new Button(95), () -> new Position(this.size.width / 2 - 100, this.size.height / 3));
+        this.optionsButton.callback().set(caller -> UltracraftClient.get().showScreen(new OptionsScreen()));
+        this.optionsButton.text().translate("ultracraft.screen.options");
 
-        this.exitWorldButton = builder.button(() -> new Position(this.size.width / 2 + 5, this.size.height / 3), this::exitWorld)
-                .width(95)
-                .color(Color.RED)
-                .textColor(Color.WHITE)
-                .translation("ultracraft.screen.pause.exit_world");
+        this.exitWorldButton = builder.addWithPos(new Button(95), () -> new Position(this.size.width / 2 + 5, this.size.height / 3));
+        this.exitWorldButton.callback().set(this::exitWorld);
+        this.exitWorldButton.text().translate("ultracraft.screen.pause.exit_world");
 
         if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
             this.client.showScreen(null);
@@ -49,23 +48,23 @@ public class PauseScreen extends Screen {
         return false;
     }
 
-    public Button<?> getBackToGameButton() {
+    public Button getBackToGameButton() {
         return this.backToGameButton;
     }
 
-    public Button<?> getOptionsButton() {
+    public Button getOptionsButton() {
         return this.optionsButton;
     }
 
-    public Button<?> getExitWorldButton() {
+    public Button getExitWorldButton() {
         return this.exitWorldButton;
     }
 
-    private void exitWorld(Button<?> caller) {
+    private void exitWorld(Button caller) {
         this.client.exitWorldToTitle();
     }
 
-    private void resumeGame(Button<?> caller) {
+    private void resumeGame(Button caller) {
         this.client.resume();
     }
 }

@@ -6,6 +6,7 @@ import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.Button;
+import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.TextEntry;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.WorldStorage;
@@ -16,9 +17,9 @@ import java.nio.file.Paths;
 
 public class WorldCreationScreen extends Screen {
     @MonotonicNonNull
-    private TextEntry<?> worldNameEntry;
+    private TextEntry worldNameEntry;
     @MonotonicNonNull
-    private Button<?> createButton;
+    private Button createButton;
     private String worldName;
 
     public WorldCreationScreen() {
@@ -27,25 +28,28 @@ public class WorldCreationScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.label(Alignment.CENTER, () -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 40))
-                .text(this.getTitle());
-        this.worldNameEntry = builder.textEntry(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 - 20), this::updateWorldName)
-                .width(200)
-                .hint(TextObject.translation("ultracraft.screen.world_creation.name"));
+        var titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 45));
+        titleLabel.text().set(this.getTitle());
+        titleLabel.scale().set(2);
 
-        this.createButton = builder.button(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 5), this::createWorld)
-                .width(95)
-                .translation("ultracraft.screen.world_creation.create");
-        builder.button(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 5), this::onBack)
-                .width(95)
-                .translation("ultracraft.ui.cancel");
+        this.worldNameEntry = builder.addWithPos(new TextEntry(200), () -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 - 20));
+        this.worldNameEntry.callback().set(this::updateWorldName);
+        this.worldNameEntry.hint().translate("ultracraft.screen.world_creation.name");
+
+        this.createButton = builder.addWithPos(new Button(95), () -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 5));
+        this.createButton.callback().set(this::createWorld);
+        this.createButton.text().translate("ultracraft.screen.world_creation.create");
+
+        var cancelButton = builder.addWithPos(new Button(95), () -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 5));
+        cancelButton.callback().set(this::onBack);
+        cancelButton.text().translate("ultracraft.ui.cancel");
     }
 
-    private void onBack(Button<?> caller) {
+    private void onBack(Button caller) {
         this.back();
     }
 
-    private void createWorld(Button<?> caller) {
+    private void createWorld(Button caller) {
         WorldStorage storage = new WorldStorage(Paths.get("worlds", this.worldName));
         try {
             storage.delete();
@@ -56,15 +60,15 @@ public class WorldCreationScreen extends Screen {
         }
     }
 
-    private void updateWorldName(TextEntry<?> caller) {
-        this.worldName = caller.getRawText();
+    private void updateWorldName(TextEntry caller) {
+        this.worldName = caller.getValue();
     }
 
-    public TextEntry<?> getWorldNameEntry() {
+    public TextEntry getWorldNameEntry() {
         return this.worldNameEntry;
     }
 
-    public Button<?> getCreateButton() {
+    public Button getCreateButton() {
         return this.createButton;
     }
 

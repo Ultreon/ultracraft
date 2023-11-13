@@ -47,7 +47,7 @@ public class TextureStitcher {
 
         ImmutableMap.Builder<Identifier, TextureOffset> uvMap = new ImmutableMap.Builder<>();
 
-        for (Map.Entry<Identifier, Texture> e : this.textures.entrySet()) {
+        for (var e : this.textures.entrySet()) {
             Texture texture = e.getValue();
             Identifier id = e.getKey();
             spriteBatch.draw(texture, x, y);
@@ -96,6 +96,7 @@ public class TextureStitcher {
     }
 
     public void dispose() {
+        this.textures.values().forEach(Texture::dispose);
         this.fbo.dispose();
     }
 }

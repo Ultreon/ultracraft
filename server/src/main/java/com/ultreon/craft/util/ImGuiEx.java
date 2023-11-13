@@ -1,6 +1,5 @@
-package com.ultreon.craft.client.imgui;
+package com.ultreon.craft.util;
 
-import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.functions.v0.consumer.DoubleConsumer;
 import com.ultreon.libs.functions.v0.consumer.*;

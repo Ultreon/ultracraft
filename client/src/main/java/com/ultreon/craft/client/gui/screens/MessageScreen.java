@@ -1,29 +1,31 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.Color;
 
 public class MessageScreen extends Screen {
+    private Label messageLabel;
 
-    public MessageScreen(TextObject message) {
-        super(message);
+    public MessageScreen(TextObject title) {
+        super(title);
     }
 
     @Override
     public void build(GuiBuilder builder) {
+        Label titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 - 40));
+        titleLabel.text().set(this.title);
+        titleLabel.scale().set(2);
 
+        this.messageLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3));
     }
 
     @Override
     public void renderBackground(Renderer renderer) {
-        super.renderBackground(renderer);
-
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.rgb(0x202020));
-
-        renderer.setColor(Color.rgb(0xffffff));
-        renderer.drawTextCenter(this.title, this.size.width / 2, this.size.height / 3);
+        super.renderSolidBackground(renderer);
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.ultreon.craft.client.gui.widget.StaticWidget;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class LoadingOverlay implements StaticWidget {
     }
 
     @Override
-    public void render(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
+    public void render(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         int width = this.client.getScaledWidth();
         int height = this.client.getScaledHeight();
 

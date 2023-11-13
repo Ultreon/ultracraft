@@ -150,7 +150,7 @@ public class DebugGui {
             return compare;
         };
 
-        this.entryLine(renderer, TextObject.nullToEmpty(this.idxInput).setColor(Color.WHITE));
+        this.entryLine(renderer, TextObject.literal(this.idxInput).setColor(Color.WHITE));
 
         if (thread == null) {
             this.entryLine(renderer, TextObject.literal("Thread View").setColor(Color.GREEN).setBold(true).setUnderlined(true));

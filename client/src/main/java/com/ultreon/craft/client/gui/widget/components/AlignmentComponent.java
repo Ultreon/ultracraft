@@ -1,21 +1,28 @@
 package com.ultreon.craft.client.gui.widget.components;
 
 import com.ultreon.craft.client.gui.Alignment;
-import com.ultreon.craft.component.GameComponent;
+import com.ultreon.craft.client.gui.widget.Widget;
+import com.ultreon.craft.util.ImGuiEx;
+import com.ultreon.libs.commons.v0.Identifier;
 
-public class AlignmentComponent extends GameComponent {
+public class AlignmentComponent extends UIComponent {
     private Alignment alignment;
 
     public AlignmentComponent(Alignment alignment) {
-        super(Alignment.class);
+        super();
         this.alignment = alignment;
     }
 
-    public Alignment getAlignment() {
+    public Alignment get() {
         return alignment;
     }
 
-    public void setAlignment(Alignment alignment) {
+    public void set(Alignment alignment) {
         this.alignment = alignment;
+    }
+
+    @Override
+    public void handleImGui(String path, Identifier key, Widget widget) {
+        ImGuiEx.editEnum("Alignment (" + key + "): ", path, this::get, this::set);
     }
 }

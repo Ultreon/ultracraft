@@ -6,6 +6,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.craft.world.ChunkPos;
 import imgui.ImGui;
 import imgui.ImGuiIO;

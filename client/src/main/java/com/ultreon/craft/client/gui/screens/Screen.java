@@ -19,8 +19,8 @@ import java.util.List;
 public abstract class Screen extends UIContainer<Screen> {
     protected TextObject title;
     public Screen parentScreen;
-    public Widget<?> directHovered;
-    public @Nullable Widget<?> focused;
+    public Widget directHovered;
+    public @Nullable Widget focused;
 
     protected Screen(String title) {
         this(TextObject.literal(title));
@@ -67,7 +67,7 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     public final void init(int width, int height) {
-        this.size(width, height);
+        this.setSize(width, height);
         this.build(new GuiBuilder(this));
         this.revalidate();
     }
@@ -183,12 +183,12 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     @Override
-    public <C extends Widget<?>> C add(C widget) {
+    public <C extends Widget> C add(C widget) {
         return super.add(widget);
     }
 
     public boolean isHoveringClickable() {
-        Widget<?> hovered = this.directHovered;
+        Widget hovered = this.directHovered;
         return hovered != null && hovered.isClickable();
     }
 
@@ -198,7 +198,7 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean mouseClick(int mouseX, int mouseY, int button, int clicks) {
-        Widget<?> widgetsAt = this.getWidgetAt(mouseX, mouseY);
+        Widget widgetsAt = this.getWidgetAt(mouseX, mouseY);
         if (this.focused != null) this.focused.onFocusLost();
         this.focused = widgetsAt;
         if (this.focused != null) this.focused.onFocusGained();
@@ -208,7 +208,7 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE) {
+        if (keyCode == Input.Keys.ESCAPE && this.canCloseWithEsc()) {
             this.back();
             return true;
         }

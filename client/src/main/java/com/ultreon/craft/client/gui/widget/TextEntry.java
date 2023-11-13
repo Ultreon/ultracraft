@@ -2,11 +2,9 @@ package com.ultreon.craft.client.gui.widget;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
-import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.widget.properties.CallbackProperty;
-import com.ultreon.craft.client.gui.widget.properties.TextProperty;
-import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.client.gui.widget.components.CallbackComponent;
+import com.ultreon.craft.client.gui.widget.components.TextComponent;
 import com.ultreon.craft.util.Color;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
 import org.checkerframework.common.value.qual.IntRange;
@@ -15,28 +13,33 @@ import org.jetbrains.annotations.ApiStatus;
 import static com.ultreon.craft.client.UltracraftClient.id;
 
 @SuppressWarnings("unchecked")
-public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements TextProperty<T>, CallbackProperty<T> {
-    private String text = "";
-    private TextObject hint = TextObject.empty();
+public class TextEntry extends Widget {
     private CharPredicate charPredicate = c -> true;
 
     private int cursorIdx = 0;
     private float cursorX;
-    private Callback<T> callback = caller -> {
-    };
+    private String value = "";
+    private TextComponent hint;
+    private CallbackComponent<TextEntry> callback;
 
     /**
-     * @param x      the X position to create the text entry at
-     * @param y      the Y position to create the text entry at
      * @param width  the width of the text entry.
      * @param height the height of the text entry.
      */
-    public TextEntry(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height, T... typeGetter) {
-        super(x, y, width, height, typeGetter);
+    public TextEntry(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
+        super(width, height);
+
+        this.hint = this.register(id("hint"), new TextComponent());
+        this.callback = this.register(id("callback"), new CallbackComponent<>(caller -> {
+        }));
     }
 
     public TextEntry() {
-        super(0, 0, 200, 21);
+        this(200, 21);
+    }
+
+    public TextEntry(int width) {
+        this(width, 21);
     }
 
     @Override
@@ -65,9 +68,9 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
         renderer.blit(texture, tx + 4, ty + th - 4, tw - 8, 4, 4 + u, 8 + v, 4, 4, 36, 12);
         renderer.blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
-        renderer.drawTextLeft(this.text, this.pos.x + 5, this.pos.y + 6, false);
-        if (this.text.isEmpty()) {
-            renderer.drawTextLeft(this.hint, this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
+        renderer.drawTextLeft(this.value, this.pos.x + 5, this.pos.y + 6, false);
+        if (this.value.isEmpty()) {
+            renderer.drawTextLeft(this.hint.get(), this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
         }
 
         if (this.focused) {
@@ -78,7 +81,7 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
     @Override
     public boolean charType(char character) {
         if (!Character.isISOControl(character) && this.charPredicate.test(character)) {
-            this.text += character;
+            this.value += character;
             this.cursorIdx++;
             this.revalidateCursor();
             return true;
@@ -89,16 +92,16 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
     @Override
     public boolean keyPress(int keyCode) {
         if (keyCode == Input.Keys.BACKSPACE && this.cursorIdx > 0) {
-            var start = this.text.substring(0, this.cursorIdx - 1);
-            var end = this.text.substring(this.cursorIdx);
-            this.text = start + end;
+            var start = this.value.substring(0, this.cursorIdx - 1);
+            var end = this.value.substring(this.cursorIdx);
+            this.value = start + end;
             this.cursorIdx--;
             this.revalidateCursor();
         }
-        if (keyCode == Input.Keys.FORWARD_DEL && this.cursorIdx < this.text.length()) {
-            var start = this.text.substring(0, this.cursorIdx);
-            var end = this.text.substring(this.cursorIdx + 1);
-            this.text = start + end;
+        if (keyCode == Input.Keys.FORWARD_DEL && this.cursorIdx < this.value.length()) {
+            var start = this.value.substring(0, this.cursorIdx);
+            var end = this.value.substring(this.cursorIdx + 1);
+            this.value = start + end;
             this.revalidateCursor();
         }
 
@@ -106,7 +109,7 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
             this.cursorIdx--;
             this.revalidateCursor();
         }
-        if (keyCode == Input.Keys.RIGHT && this.cursorIdx < this.text.length()) {
+        if (keyCode == Input.Keys.RIGHT && this.cursorIdx < this.value.length()) {
             this.cursorIdx++;
             this.revalidateCursor();
         }
@@ -115,9 +118,9 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
     }
 
     public void revalidateCursor() {
-        this.cursorX = this.font.width(this.text.substring(0, this.cursorIdx));
+        this.cursorX = this.font.width(this.value.substring(0, this.cursorIdx));
 
-        this.callback.call((T) this);
+        this.callback.call(this);
     }
 
     @Override
@@ -125,28 +128,16 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
         return "TextEntry";
     }
 
-    public TextObject getText() {
-        return TextObject.nullToEmpty(this.text);
+    public String getValue() {
+        return this.value;
     }
 
-    @Override
-    public T text(TextObject text) {
-        this.text = text.getText();
-        return (T) this;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    @Override
-    public String getRawText() {
-        return this.text;
-    }
-
-    public TextObject getHint() {
+    public TextComponent hint() {
         return this.hint;
-    }
-
-    public T hint(TextObject hint) {
-        this.hint = hint;
-        return (T) this;
     }
 
     @ApiStatus.Internal
@@ -158,22 +149,15 @@ public class TextEntry<T extends TextEntry<T>> extends Widget<T> implements Text
         this.charPredicate = charPredicate;
     }
 
-    @ApiStatus.Internal
-    public Callback<T> getCallback() {
-        return this.callback;
-    }
-
-    @Override
-    public T callback(Callback<T> callback) {
-        this.callback = callback;
-        return (T) this;
-    }
-
     public int getCursorIdx() {
         return this.cursorIdx;
     }
 
     public void setCursorIdx(int cursorIdx) {
         this.cursorIdx = cursorIdx;
+    }
+
+    public CallbackComponent<TextEntry> callback() {
+        return this.callback;
     }
 }

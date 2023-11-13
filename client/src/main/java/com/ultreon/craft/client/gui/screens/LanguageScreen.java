@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class LanguageScreen extends Screen {
     private Label titleLabel;
-    private Button<?> backButton;
+    private Button backButton;
     private SelectionList<Locale> list;
 
     public LanguageScreen() {
@@ -23,21 +23,20 @@ public class LanguageScreen extends Screen {
     @Override
     public void build(GuiBuilder builder) {
         List<Locale> locales = LanguageManager.INSTANCE.getLocales().stream().sorted((a, b) -> a.getDisplayLanguage().compareToIgnoreCase(b.getDisplayLanguage())).collect(Collectors.toList());
-        ;
 
-        this.titleLabel = builder.label(Alignment.CENTER, () -> new Position(this.size.width / 2, 15))
-                .text(this.title)
-                .scale(2);
-        this.list = builder.<Locale>selectionList(21, () -> new Bounds(this.size.width / 2 - 200, 50, 400, this.size.height - 90))
-                .selectable(true)
-                .itemRenderer(this::renderItem)
-                .entries(locales)
-                .onSelected(locale -> {
-                    this.client.settings.language.set(locale);
-                    this.client.settings.save();
-                });
-        this.backButton = builder.button(() -> new Position(this.size.width / 2 - 100, this.size.height - 30), caller -> this.back())
-                .translation("ultracraft.ui.back");
+        this.titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, 15));
+        this.titleLabel.text().set(this.title);
+        this.titleLabel.scale().set(2);
+
+        this.list = builder.addWithBounds(new SelectionList<>(21), () -> new Bounds(this.size.width / 2 - 200, 50, 400, this.size.height - 90));
+        this.list.withSelectable(true).withItemRenderer(this::renderItem).withEntries(locales).withCallback(locale -> {
+            this.client.settings.language.set(locale);
+            this.client.settings.save();
+        });
+
+        this.backButton = builder.addWithPos(new Button(), () -> new Position(this.size.width / 2 - 100, this.size.height - 30));
+        this.backButton.callback().set(caller -> this.back());
+        this.backButton.text().translate("ultracraft.ui.back");
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
@@ -54,7 +53,7 @@ public class LanguageScreen extends Screen {
         return this.list;
     }
 
-    public Button<?> getBackButton() {
+    public Button getBackButton() {
         return this.backButton;
     }
 }
