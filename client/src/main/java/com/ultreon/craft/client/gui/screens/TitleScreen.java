@@ -3,8 +3,10 @@ package com.ultreon.craft.client.gui.screens;
 import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
+import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
 import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.Label;
+import com.ultreon.craft.client.gui.widget.Panel;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.text.TextObject;
@@ -13,11 +15,11 @@ import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 public class TitleScreen extends Screen {
     private Label titleLabel;
-    private Button<?> singleplayerButton;
-    private Button<?> multiplayerButton;
-    private Button<?> modListButton;
-    private Button<?> optionsButton;
-    private Button<?> quitButton;
+    private Button singleplayerButton;
+    private Button multiplayerButton;
+    private Button modListButton;
+    private Button optionsButton;
+    private Button quitButton;
     private final Resizer resizer;
 
     public TitleScreen() {
@@ -30,49 +32,52 @@ public class TitleScreen extends Screen {
     public void build(GuiBuilder builder) {
         this.client.setActivity(Activity.MAIN_MENU);
 
-        builder.panelBounds(() -> new Bounds(0, 0, 250, this.size.height))
-                .backgroundColor(Color.BLACK.withAlpha(0x80));
+        Panel panel = builder.addWithBounds(new Panel(), () -> new Bounds(0, 0, 250, this.size.height));
+        panel.backgroundColor().set(Color.BLACK.withAlpha(0x80));
 
-        this.titleLabel = builder.label(() -> new Position(125, 40)).text(TextObject.literal("Ultracraft").setBold(true)).alignment(Alignment.CENTER).scale(3);
+        this.titleLabel = builder.addWithPos(new Label(), () -> new Position(125, 40));
+        this.titleLabel.text().set(TextObject.literal("Ultracraft").setBold(true));
+        this.titleLabel.alignment().set(Alignment.CENTER);
+        this.titleLabel.scale().set(3);
 
-        this.singleplayerButton = builder.button(() -> new Position(50, this.size.height / 2 - 35), this::openSingleplayer)
-                .translation("ultracraft.screen.title.singleplayer")
-                .width(150);
+        this.singleplayerButton = builder.addWithPos(new Button(150), () -> new Position(50, this.size.height / 2 - 35));
+        this.singleplayerButton.callback().set(this::openSingleplayer);
+        this.singleplayerButton.text().translate("ultracraft.screen.title.singleplayer");
 
-        this.multiplayerButton = builder.button(() -> new Position(50, this.size.height / 2 - 10), this::openMultiplayer)
-                .translation("ultracraft.screen.multiplayer")
-                .width(150);
+        this.multiplayerButton = builder.addWithPos(new Button(150), () -> new Position(50, this.size.height / 2 - 10));
+        this.multiplayerButton.callback().set(this::openMultiplayer);
+        this.multiplayerButton.text().translate("ultracraft.screen.multiplayer");
 
-        this.modListButton = builder.button(() -> new Position(50, this.size.height / 2 + 15), this::showModList)
-                .translation("ultracraft.screen.mod_list")
-                .width(150);
+        this.modListButton = builder.addWithPos(new Button(150), () -> new Position(50, this.size.height / 2 + 15));
+        this.modListButton.callback().set(this::showModList);
+        this.modListButton.text().translate("ultracraft.screen.mod_list");
 
-        this.optionsButton = builder.button(() -> new Position(50, this.size.height / 2 + 40), this::showOptions)
-                .translation("ultracraft.screen.title.options")
-                .width(150);
+        this.optionsButton = builder.addWithPos(new Button(150), () -> new Position(50, this.size.height / 2 + 40));
+        this.optionsButton.callback().set(this::showOptions);
+        this.optionsButton.text().translate("ultracraft.screen.options");
 
-        this.quitButton = builder.button(() -> new Position(50, this.size.height / 2 + 78), this::quitGame)
-                .translation("ultracraft.screen.title.quit")
-                .width(150);
+        this.quitButton = builder.addWithPos(new Button(150), () -> new Position(50, this.size.height / 2 + 78));
+        this.quitButton.callback().set(this::quitGame);
+        this.quitButton.text().translate("ultracraft.screen.title.quit");
     }
 
-    private void quitGame(Button<?> caller) {
+    private void quitGame(Button caller) {
         Gdx.app.exit();
     }
 
-    private void openSingleplayer(Button<?> caller) {
+    private void openSingleplayer(Button caller) {
         this.client.showScreen(new WorldSelectionScreen());
     }
 
-    private void openMultiplayer(Button<?> caller) {
+    private void openMultiplayer(Button caller) {
         this.client.showScreen(new MultiplayerScreen());
     }
 
-    private void showOptions(Button<?> caller) {
-        this.client.showScreen(new LanguageScreen());
+    private void showOptions(Button caller) {
+        this.client.showScreen(new OptionsScreen());
     }
 
-    private void showModList(Button<?> caller) {
+    private void showModList(Button caller) {
         this.client.showScreen(new ModListScreen(this));
     }
 
@@ -90,23 +95,23 @@ public class TitleScreen extends Screen {
         renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, this.resizer.getSourceWidth(), this.resizer.getSourceHeight(), (int) this.resizer.getSourceWidth(), (int) this.resizer.getSourceHeight());
     }
 
-    public Button<?> getSingleplayerButton() {
+    public Button getSingleplayerButton() {
         return this.singleplayerButton;
     }
 
-    public Button<?> getMultiplayerButton() {
+    public Button getMultiplayerButton() {
         return this.multiplayerButton;
     }
 
-    public Button<?> getModListButton() {
+    public Button getModListButton() {
         return this.modListButton;
     }
 
-    public Button<?> getOptionsButton() {
+    public Button getOptionsButton() {
         return this.optionsButton;
     }
 
-    public Button<?> getQuitButton() {
+    public Button getQuitButton() {
         return this.quitButton;
     }
 

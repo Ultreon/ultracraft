@@ -13,12 +13,12 @@
   "ultracraft.item.air.name": "Powietrze",
   "ultracraft.screen.world_load.loading_world": "Ładowanie świata",
   "ultracraft.screen.mod_list": "Lista modów",
+  "ultracraft.screen.options": "Opcje...",
   "ultracraft.screen.death.respawn": "Odrodź się",
   "ultracraft.screen.death.title": "Umarłeś",
   "ultracraft.screen.pause.back_to_game": "Powrót do gry",
   "ultracraft.screen.pause.exit_world": "Wyjdź ze świata",
   "ultracraft.screen.title.start_world": "Stwórz nowy świat",
   "ultracraft.screen.title.reset_world": "Zresetuj świat",
-  "ultracraft.screen.title.options": "Opcje...",
   "ultracraft.screen.title.quit": "Wyjdź"
 }

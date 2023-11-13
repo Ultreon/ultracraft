@@ -7,29 +7,36 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Iterator;
 
 public abstract class TextObject implements Iterable<TextObject> {
-    public abstract String createString();
+    public abstract @NotNull String createString();
 
     public String getText() {
         return this.createString();
     }
 
-    public static MutableText empty() {
-        return new LiteralText("");
+    public static TextObject empty() {
+        return new TextObject() {
+            @Override
+            public @NotNull String createString() {
+                return "";
+            }
+
+            @Override
+            public MutableText copy() {
+                return new LiteralText(this.createString());
+            }
+        };
     }
 
-    public static LiteralText literal(String text) {
-        return new LiteralText(text);
+    public static LiteralText literal(@Nullable String text) {
+        return new LiteralText(text != null ? text : "");
     }
 
     public static TranslationText translation(String path, Object... args) {
         return new TranslationText(path, args);
     }
 
-    public static MutableText nullToEmpty(@Nullable String text) {
-        if (text == null || text.isEmpty()) {
-            return TextObject.empty();
-        }
-        return TextObject.literal(text);
+    public static TextObject nullToEmpty(@Nullable String text) {
+        return text == null ? TextObject.empty() : TextObject.literal(text);
     }
 
     public abstract MutableText copy();

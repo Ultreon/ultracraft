@@ -3,6 +3,7 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,9 +17,9 @@ public class DisconnectedScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.button(() -> new Position(this.size.width / 2 - 75, this.size.height / 2 - 10), caller -> new TitleScreen())
-                .width(150)
-                .translation("ultracraft.ui.backToTitle");
+        var backButton = builder.addWithPos(new Button(150), () -> new Position(this.size.width / 2 - 75, this.size.height / 2 - 10));
+        backButton.callback().set(caller -> new TitleScreen());
+        backButton.text().translate("ultracraft.ui.backToTitle");
     }
 
     @Override
@@ -31,6 +32,5 @@ public class DisconnectedScreen extends Screen {
             renderer.drawTextCenter(line, this.size.width / 2, this.size.height / 3 + 30 + lineY * (this.font.lineHeight + 1) - 1, Color.WHITE, false);
             lineY++;
         }
-
     }
 }

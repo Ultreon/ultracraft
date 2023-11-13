@@ -463,7 +463,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.scheduler.schedule(runnable, time, unit);
     }
 
-    private void close() {
+    public void close() {
         for (ServerDisposable disposable : this.disposables) {
             disposable.dispose();
         }

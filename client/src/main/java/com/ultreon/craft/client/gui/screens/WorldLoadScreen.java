@@ -45,18 +45,14 @@ public class WorldLoadScreen extends Screen {
         this.client.integratedServer = server;
         this.world = server.getWorld();
 
-        this.titleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 - 25))
-                .alignment(Alignment.CENTER)
-                .text(this.title)
-                .scale(2);
+        this.titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 - 25));
+        this.titleLabel.text().set(this.title);
+        this.titleLabel.scale().set(2);
 
-        this.descriptionLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 3))
-                .alignment(Alignment.CENTER)
-                .text("Preparing");
+        this.descriptionLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 + 3));
+        this.descriptionLabel.text().setRaw("Preparing");
 
-        this.subTitleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 31))
-                .alignment(Alignment.CENTER)
-                .text("");
+        this.subTitleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 + 31));
 
         new Thread(this::run, "World Loading").start();
     }
@@ -110,7 +106,7 @@ public class WorldLoadScreen extends Screen {
 
     private void message(String message) {
         WorldLoadScreen.LOGGER.debug(message);
-        this.descriptionLabel.text(message);
+        this.descriptionLabel.text().setRaw(message);
     }
 
     @Override
@@ -122,17 +118,17 @@ public class WorldLoadScreen extends Screen {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                this.subTitleLabel.text(s);
+                this.subTitleLabel.text().setRaw(s);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;
                     UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", s);
                 }
             } else {
-                this.subTitleLabel.text("");
+                this.subTitleLabel.text().setRaw("");
             }
         } else {
-            this.subTitleLabel.text("");
+            this.subTitleLabel.text().setRaw("");
         }
     }
 

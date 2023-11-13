@@ -9,6 +9,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
@@ -93,6 +94,8 @@ public class DesktopInput extends GameInput {
             this.handleImGuiFocus();
         } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen == null && player != null) {
             player.openInventory();
+        } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen instanceof InventoryScreen && player != null) {
+            player.closeMenu();
         } else if (DesktopInput.DEBUG_KEY.isJustPressed()) {
             this.handleDebugKey();
         } else if (DesktopInput.INSPECT_KEY.isJustPressed()) {
@@ -104,7 +107,9 @@ public class DesktopInput extends GameInput {
         } else if (DesktopInput.THIRD_PERSON_KEY.isJustPressed()) {
             this.client.setInThirdPerson(!this.client.isInThirdPerson());
         } else if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
-            UltracraftClient.invoke(() -> this.client.showScreen(new PauseScreen()));
+            this.client.showScreen(new PauseScreen());
+        } else if (DesktopInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched()) {
+            this.client.showScreen(null);
         }
     }
 
@@ -171,7 +176,9 @@ public class DesktopInput extends GameInput {
 
         if (!Gdx.input.isCursorCatched()) {
             Screen currentScreen = this.client.screen;
-            if (currentScreen != null) currentScreen.mouseMove(screenX, screenY);
+            if (currentScreen != null) currentScreen.mouseDrag(
+                    (int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()),
+                    (int) (Gdx.input.getDeltaX(pointer) / this.client.getGuiScale()), (int) (Gdx.input.getDeltaY(pointer) / this.client.getGuiScale()), pointer);
         }
         return true;
     }

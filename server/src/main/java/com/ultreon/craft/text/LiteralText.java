@@ -1,14 +1,16 @@
 package com.ultreon.craft.text;
 
-public class LiteralText extends MutableText {
-    private final String text;
+import org.jetbrains.annotations.NotNull;
 
-    LiteralText(String text) {
+public class LiteralText extends MutableText {
+    private final @NotNull String text;
+
+    LiteralText(@NotNull String text) {
         this.text = text;
     }
 
     @Override
-    public String createString() {
+    public @NotNull String createString() {
         return this.text;
     }
 

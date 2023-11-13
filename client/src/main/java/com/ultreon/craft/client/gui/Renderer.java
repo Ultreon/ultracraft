@@ -393,6 +393,14 @@ public class Renderer {
         this.batch.draw(textureRegion, x, y + height, width, -height);
     }
 
+    public void drawSprite(Sprite sprite, int x, int y) {
+        drawSprite(sprite, x, y, sprite.getWidth(), sprite.getHeight());
+    }
+
+    public void drawSprite(Sprite sprite, int x, int y, int width, int height) {
+        sprite.render(this, x, y, width, height);
+    }
+
     //////////////////
     //     Text     //
 

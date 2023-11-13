@@ -24,8 +24,8 @@ import java.util.Map;
 public class ModListScreen extends Screen {
     private static final Identifier DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
-    private Button<?> configButton;
-    private Button<?> backButton;
+    private Button configButton;
+    private Button backButton;
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
     public ModListScreen(Screen back) {
@@ -34,28 +34,26 @@ public class ModListScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.list = builder.<ModContainer>selectionList(48, () -> new Bounds(0, 0, 200, this.size.height - 52))
-                .itemRenderer(this::renderItem)
-                .selectable(true)
-                .entries(FabricLoader.getInstance()
+        this.list = builder.addWithBounds(new SelectionList<ModContainer>().withItemHeight(48), () -> new Bounds(0, 0, 200, this.size.height - 52));
+        this.list.withItemRenderer(this::renderItem);
+        this.list.withSelectable(true);
+        this.list.withEntries(FabricLoader.getInstance()
                         .getAllMods()
                         .stream()
                         .sorted((a, b) -> a.getMetadata().getName().compareToIgnoreCase(b.getMetadata().getName()))
                         .filter(modContainer -> modContainer.getOrigin().getKind() != ModOrigin.Kind.NESTED)
                         .toList());
 
-        this.configButton = builder.button(() -> new Position(5, this.size.height - 51), caller -> {
-                })
-                .width(190)
-                .translation("ultracraft.screen.mod_list.config")
-                .enabled(false);
+        this.configButton = builder.addWithPos(new Button(190), () -> new Position(5, this.size.height - 51));
+        this.configButton.text().translate("ultracraft.screen.mod_list.config");
+        this.configButton.disable();
 
-        this.backButton = builder.button(() -> new Position(5, this.size.height - 26), this::onBack)
-                .translation("ultracraft.ui.back")
-                .width(190);
+        this.backButton = builder.addWithPos(new Button(190), () -> new Position(5, this.size.height - 26));
+        this.backButton.callback().set(this::onBack);
+        this.backButton.text().translate("ultracraft.ui.back");
     }
 
-    public void onBack(Button<?> button) {
+    public void onBack(Button button) {
         this.back();
     }
 
@@ -127,11 +125,11 @@ public class ModListScreen extends Screen {
         return this.list;
     }
 
-    public Button<?> getConfigButton() {
+    public Button getConfigButton() {
         return this.configButton;
     }
 
-    public Button<?> getBackButton() {
+    public Button getBackButton() {
         return this.backButton;
     }
 }
