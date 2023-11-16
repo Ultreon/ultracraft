@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
-import com.ultreon.craft.client.init.Shaders;
+import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.util.Color;
 
 public class OutlineShader extends BaseShader {
@@ -13,7 +13,7 @@ public class OutlineShader extends BaseShader {
 
     public OutlineShader(Color outlineColor) {
         this.outlineColor = outlineColor;
-        this.program = Shaders.OUTLINE;
+        this.program = ShaderPrograms.OUTLINE;
     }
 
     @Override

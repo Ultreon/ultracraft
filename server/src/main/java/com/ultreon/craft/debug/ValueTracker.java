@@ -7,6 +7,7 @@ public class ValueTracker {
     private static int packetsReceived;
     private static int packetsReceivedTotal;
     private static int chunkLoads;
+    public static long chunkMeshFrees;
 
     public static long getMeshDisposes() {
         return ValueTracker.meshDisposes;

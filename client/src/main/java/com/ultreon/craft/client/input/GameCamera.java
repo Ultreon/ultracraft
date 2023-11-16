@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.util.HitResult;
@@ -20,10 +21,10 @@ import com.ultreon.libs.commons.v0.vector.Vec3f;
  * @since 0.1.0
  */
 public class GameCamera extends PerspectiveCamera {
-    private final UltracraftClient client = UltracraftClient.get();
+    public final UltracraftClient client = UltracraftClient.get();
     private final InspectionNode<GameCamera> node;
     private Vector3 hitPosition;
-    private Vec3d eyePosition;
+    private Vec3d camPos;
     private HitResult hitResult;
     private LocalPlayer player;
     private float cameraBop;
@@ -45,7 +46,7 @@ public class GameCamera extends PerspectiveCamera {
             this.node.create("fieldOfView", () -> this.fieldOfView);
             this.node.create("hitPosition", () -> this.hitResult.getPosition());
             this.node.create("relHitPosition", () -> this.hitPosition);
-            this.node.create("eyePosition", () -> this.eyePosition);
+            this.node.create("eyePosition", () -> this.camPos);
             this.node.create("playerPosition", () -> this.player.getPosition());
         }
     }
@@ -57,12 +58,13 @@ public class GameCamera extends PerspectiveCamera {
      */
     public void update(LocalPlayer player) {
         var lookVec = player.getLookVector();
-        this.eyePosition = player.getPosition().add(0, player.getEyeHeight(), 0);
+        this.camPos = player.getPosition().div(WorldRenderer.SCALE).add(0, player.getEyeHeight() / WorldRenderer.SCALE, 0);
         this.player = player;
 
         if (this.client.isInThirdPerson()) {
             this.updateThirdPerson(lookVec);
         } else {
+//            this.updateThirdPerson(lookVec);
             this.node.remove("hitPosition");
             this.node.remove("eyePosition");
             this.node.remove("playerPosition");
@@ -106,7 +108,7 @@ public class GameCamera extends PerspectiveCamera {
 
     private void updateThirdPerson(Vec3d lookVec) {
         // Move camera backwards when player is in third person.
-        var ray = new Ray(this.eyePosition, lookVec.cpy().neg().nor());
+        var ray = new Ray(this.camPos, lookVec.cpy().neg().nor());
         var world = this.client.world;
         if (world != null) {
             this.hitResult = world.rayCast(ray, 5.1f);
@@ -129,8 +131,8 @@ public class GameCamera extends PerspectiveCamera {
     /**
      * @return the eye position in world-coordinates.
      */
-    public Vec3d getEyePosition() {
-        return this.eyePosition;
+    public Vec3d getCamPos() {
+        return this.camPos;
     }
 
     public Vector3 relative(Vec3d position) {

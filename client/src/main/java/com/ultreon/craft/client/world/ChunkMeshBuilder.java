@@ -192,17 +192,17 @@ public class ChunkMeshBuilder {
     };
 
     public static float[] frontUv = {
-            1, 1,
-            0, 1,
-            0, 0,
             1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
     };
 
     public static float[] rightUv = {
-            1, 1,
-            0, 1,
-            0, 0,
             1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
     };
 
     public static float[] leftUv = {
@@ -289,17 +289,17 @@ public class ChunkMeshBuilder {
 
         Vector3 normal = face.getNormal();
 
-        // FIXME Random rotation is broken.
-        if (faceProperties.randomRotation) {
-            // Generate seed for offset.
-            vertices = MathHelper.rotate(vertices, new Vector3().add(0.5f), face.getAxis());
-        }
+//        // FIXME Random rotation is broken.
+//        if (faceProperties.randomRotation) {
+//            // Generate seed for offset.
+//            vertices = MathHelper.rotate(vertices, new Vector3().add(0.5f), face.getAxis());
+//        }
 
         // Loop vertices and uvs and add them to the output.
         for (int vertex = 0, uv = 0; vertex < vertices.length; vertex += 3, uv += 2) {
-            float x = offset.x + vertices[vertex];
-            float y = offset.y + vertices[vertex + 1];
-            float z = offset.z + vertices[vertex + 2];
+            float x = offset.x + vertices[vertices.length - 3 - vertex];
+            float y = offset.y + vertices[vertices.length - 3 - vertex + 1];
+            float z = offset.z + vertices[vertices.length - 3 - vertex + 2];
 
             // Calculate the UV coordinates from the texture region.
             float u = MathHelper.lerp(uvs[uv], region.getU(), region.getU2());
