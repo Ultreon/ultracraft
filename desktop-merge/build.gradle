@@ -37,6 +37,7 @@ plugins {
     id 'java'
     id 'java-library'
     id "org.panteleyev.jpackageplugin" version "1.5.0"
+    id 'org.graalvm.buildtools.native' version '0.9.28'
 }
 
 apply plugin: 'java'
@@ -63,7 +64,25 @@ java {
     withSourcesJar()
     withJavadocJar()
 }
-
+graalvmNative {
+    binaries {
+        main {
+            imageName = "Ultracraft"
+            mainClass = "com.ultreon.craft.premain.PreMain"
+            sharedLibrary = false
+            buildArgs.add("-O4")
+        }
+        test {
+            buildArgs.add("-O0")
+        }
+    }
+    binaries.all {
+        buildArgs.add("--verbose")
+        buildArgs.add("--trace-class-initialization=org.slf4j.LoggerFactory")
+        buildArgs.add("--initialize-at-run-time=io.netty.buffer,io.netty.channel,io.netty.util,io.netty.handler")
+    }
+    toolchainDetection = true
+}
 repositories {
     maven {
         url = "https://maven.fabricmc.net"

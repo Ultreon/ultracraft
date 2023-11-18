@@ -9,6 +9,10 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+
+        maven {
+            url "https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots"
+        }
         gradlePluginPortal()
     }
 }
