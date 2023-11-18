@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.init;
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -29,7 +30,13 @@ public class ShaderPrograms {
         ResourceFileHandle vertexResource = new ResourceFileHandle(id.mapPath(s -> "shaders/" + s + ".vert"));
         ResourceFileHandle fragmentResource = new ResourceFileHandle(id.mapPath(s -> "shaders/" + s + ".frag"));
 
-        return new ShaderProgram(vertexResource, fragmentResource);
+        ShaderProgram program = new ShaderProgram(vertexResource, fragmentResource);
+        String shaderLog = program.getLog();
+        if (program.isCompiled()) {
+            if (shaderLog.isEmpty()) UltracraftClient.LOGGER.debug("Shader compilation success");
+            else UltracraftClient.LOGGER.warn("Shader compilation warnings:\n{}", shaderLog);
+        } else throw new GdxRuntimeException("Shader compilation failed:\n" + shaderLog);
+        return program;
     }
 
     public static void nopInit() {

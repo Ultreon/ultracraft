@@ -74,7 +74,9 @@ uniform mat4 u_bones[numBones];
 #endif//numBones
 #endif
 
+#ifdef PackedDepthFlag
 varying float v_depth;
+#endif//PackedDepthFlag
 
 void main() {
     #ifdef blendedTextureFlag
@@ -115,7 +117,9 @@ void main() {
     vec4 pos = u_projViewWorldTrans * vec4(a_position, 1.0);
     #endif
 
-    v_depth = pos.z / pos.w;
+    #ifdef PackedDepthFlag
+    v_depth = pos.z / pos.w * 0.5 + 0.5;
+    #endif//PackedDepthFlag
 
     gl_Position = pos;
 }

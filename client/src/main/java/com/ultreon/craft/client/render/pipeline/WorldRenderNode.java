@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.render.pipeline;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
@@ -15,8 +16,19 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.io.PrintStream;
 
+import static com.badlogic.gdx.Gdx.gl;
+import static com.badlogic.gdx.graphics.GL20.GL_NONE;
+import static com.badlogic.gdx.graphics.GL20.GL_TEXTURE0;
+
 public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
     private Shader shader;
+
+    public void setTexture(Texture texture) {
+        if (texture == null) {
+            gl.glActiveTexture(GL_NONE);
+        }
+        texture.bind(GL_TEXTURE0);
+    }
 
     protected void render(ModelBatch modelBatch, ShaderProvider shaderProvider, Array<Renderable> input) {
         for (Renderable renderable : input) {

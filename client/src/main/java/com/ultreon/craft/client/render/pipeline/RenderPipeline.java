@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.zip.Deflater;
 
+import static com.badlogic.gdx.Gdx.gl;
 import static com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder.LRU;
 
 public class RenderPipeline implements Disposable {
@@ -41,18 +42,19 @@ public class RenderPipeline implements Disposable {
     }
 
     public void render(ModelBatch modelBatch) {
-        Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         var input = new Array<Renderable>();
         var textures = new ObjectMap<String, Texture>();
         for (var node : this.nodes) {
             FrameBuffer frameBuffer = node.getFrameBuffer();
             frameBuffer.begin();
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+            gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
             modelBatch.begin(this.camera);
             node.textureBinder.begin();
+            node.time += Gdx.graphics.getDeltaTime();
             input = node.render(textures, modelBatch, this.camera, input);
             try {
                 modelBatch.end();
@@ -101,6 +103,7 @@ public class RenderPipeline implements Disposable {
     public abstract static class RenderNode {
         protected static final Matrix4 IDENTITY_MATRIX = new Matrix4();
         protected final TextureBinder textureBinder = new DefaultTextureBinder(LRU);
+        private float time = 0;
         private final FlushablePool<Renderable> pool = new FlushablePool<>() {
             @Override
             protected Renderable newObject() {
@@ -161,6 +164,10 @@ public class RenderPipeline implements Disposable {
                 this.dumpInfo(printStream);
             }
             return stream.toString();
+        }
+
+        public float getTime() {
+            return time;
         }
     }
 }

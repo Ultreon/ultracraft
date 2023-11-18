@@ -1,5 +1,3 @@
-#extension GL_ARB_gpu_shader_fp64 : enable
-
 #ifdef GL_ES
 #define LOWP lowp
 #define MED mediump
@@ -17,7 +15,7 @@ precision mediump float;
 
 #ifdef normalFlag
 varying vec3 v_normal;
-#endif//normalFlag
+#endif //normalFlag
 
 #if defined(colorFlag)
 varying vec4 v_color;
@@ -27,8 +25,8 @@ varying vec4 v_color;
 varying float v_opacity;
 #ifdef alphaTestFlag
 varying float v_alphaTest;
-#endif//alphaTestFlag
-#endif//blendedFlag
+#endif //alphaTestFlag
+#endif //blendedFlag
 
 #if defined(diffuseTextureFlag) || defined(specularTextureFlag) || defined(emissiveTextureFlag)
 #define textureFlag
@@ -79,11 +77,11 @@ varying vec3 v_lightDiffuse;
 
 #if    defined(ambientLightFlag) || defined(ambientCubemapFlag) || defined(sphericalHarmonicsFlag)
 #define ambientFlag
-#endif//ambientFlag
+#endif //ambientFlag
 
 #ifdef specularFlag
 varying vec3 v_lightSpecular;
-#endif//specularFlag
+#endif //specularFlag
 
 #ifdef shadowMapFlag
 uniform sampler2D u_shadowTexture;
@@ -105,23 +103,23 @@ float getShadow()
     getShadowness(vec2(u_shadowPCFOffset, -u_shadowPCFOffset)) +
     getShadowness(vec2(-u_shadowPCFOffset, -u_shadowPCFOffset))) * 0.25;
 }
-#endif//shadowMapFlag
+#endif //shadowMapFlag
 
 #if defined(ambientFlag) && defined(separateAmbientFlag)
 varying vec3 v_ambientLight;
-#endif//separateAmbientFlag
+#endif //separateAmbientFlag
 
-#endif//lightingFlag
+#endif //lightingFlag
 
 #ifdef fogFlag
 uniform vec4 u_fogColor;
 varying float v_fog;
-#endif// fogFlag
+#endif // fogFlag
 
 void main() {
     #if defined(normalFlag)
     vec3 normal = v_normal;
-    #endif// normalFlag
+#endif // normalFlag
 
     #if defined(diffuseTextureFlag) && defined(diffuseColorFlag) && defined(colorFlag)
     vec4 diffuse = texture2D(u_diffuseTexture, v_diffuseUV) * u_diffuseColor * v_color;
@@ -160,13 +158,13 @@ void main() {
     //gl_FragColor.rgb = texture2D(u_shadowTexture, v_shadowMapUv.xy);
     #else
     gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_lightDiffuse)) + emissive.rgb;
-    #endif//shadowMapFlag
+#endif //shadowMapFlag
     #else
     #ifdef shadowMapFlag
     gl_FragColor.rgb = getShadow() * (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
     #else
     gl_FragColor.rgb = (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
-    #endif//shadowMapFlag
+#endif //shadowMapFlag
     #endif
     #else
     #if defined(specularTextureFlag) && defined(specularColorFlag)
@@ -185,19 +183,19 @@ void main() {
     //gl_FragColor.rgb = texture2D(u_shadowTexture, v_shadowMapUv.xy);
     #else
     gl_FragColor.rgb = (diffuse.rgb * (v_lightDiffuse + v_ambientLight)) + specular + emissive.rgb;
-    #endif//shadowMapFlag
+#endif //shadowMapFlag
     #else
     #ifdef shadowMapFlag
     gl_FragColor.rgb = getShadow() * ((diffuse.rgb * v_lightDiffuse) + specular) + emissive.rgb;
     #else
     gl_FragColor.rgb = (diffuse.rgb * v_lightDiffuse) + specular + emissive.rgb;
-    #endif//shadowMapFlag
+#endif //shadowMapFlag
     #endif
-    #endif//lightingFlag
+    #endif //lightingFlag
 
     #ifdef fogFlag
     gl_FragColor.rgb = mix(gl_FragColor.rgb, u_fogColor.rgb, v_fog);
-    #endif// end fogFlag
+#endif // end fogFlag
 
     #ifdef blendedFlag
     gl_FragColor.a = diffuse.a * v_opacity;

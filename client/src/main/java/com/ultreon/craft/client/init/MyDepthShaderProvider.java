@@ -26,27 +26,32 @@ class MyDepthShaderProvider extends DepthShaderProvider implements OpenShaderPro
 
     @Override
     public Shader createShader(Renderable renderable) {
-        DepthShader depthShader = new DepthShader(renderable, this.config) {
-            @Override
-            public boolean canRender(Renderable r) {
-//                    if (r != renderable) LOGGER.warn("Requested renderable does not equal to the original renderable.");
-//                    if (r.shader == null && renderable.shader == null) return super.canRender(renderable);
-//                    if (r.shader != renderable.shader) {
-//                        LOGGER.warn("Identity error: " + r.shader + " is not " + renderable.shader);
-//                        return false;
-//                    }
-                return super.canRender(r);
-            }
-
-            @Override
-            public String toString() {
-                return String.valueOf(this.program);
-            }
-        };
-        Shaders.checkShaderCompilation(depthShader.program);
-
-        return depthShader;
+        return super.createShader(renderable);
     }
+
+//    @Override
+//    public Shader createShader(Renderable renderable) {
+//        DepthShader depthShader = new DepthShader(renderable, this.config) {
+//            @Override
+//            public boolean canRender(Renderable r) {
+////                    if (r != renderable) LOGGER.warn("Requested renderable does not equal to the original renderable.");
+////                    if (r.shader == null && renderable.shader == null) return super.canRender(renderable);
+////                    if (r.shader != renderable.shader) {
+////                        LOGGER.warn("Identity error: " + r.shader + " is not " + renderable.shader);
+////                        return false;
+////                    }
+//                return super.canRender(r);
+//            }
+//
+//            @Override
+//            public String toString() {
+//                return String.valueOf(this.program);
+//            }
+//        };
+//        Shaders.checkShaderCompilation(depthShader.program);
+//
+//        return depthShader;
+//    }
 
 
 }

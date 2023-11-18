@@ -69,11 +69,11 @@ import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.registry.ModelRegistry;
 import com.ultreon.craft.client.registry.RendererRegistry;
 import com.ultreon.craft.client.render.pipeline.*;
+import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
 import com.ultreon.craft.client.rpc.Activity;
 import com.ultreon.craft.client.rpc.RpcHandler;
-import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.sound.ClientSoundRegistry;
 import com.ultreon.craft.client.text.LanguageData;
 import com.ultreon.craft.client.texture.TextureManager;
@@ -287,7 +287,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private boolean wasClicking;
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
-    private G3dModelLoader modelLoader;
+    private final G3dModelLoader modelLoader;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -323,9 +323,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.pipeline = new RenderPipeline(new MainRenderNode(), this.camera)
                 .node(new CollectNode())
                 .node(new PlainNode())
-                .node(new CollectNode())
                 .node(new DepthNode())
-                .node(new SSAONode());
+                .node(new SSAONode())
+        ;
 
         // White pixel for the shape drawer.
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);

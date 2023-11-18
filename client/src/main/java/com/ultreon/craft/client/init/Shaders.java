@@ -14,27 +14,28 @@ import static com.ultreon.craft.client.UltracraftClient.id;
 public class Shaders {
     public static final Registry<ShaderProvider> REGISTRY = Registry.create(id("shaders"));
 
-    public static final DepthShaderProvider DEPTH = Shaders.register("depth", new MyDepthShaderProvider());
+    public static final DepthShaderProvider DEPTH = Shaders.registerDepth("depth");
 
     public static final DefaultShaderProvider DEFAULT = Shaders.register("default", new MyDefaultShaderProvider());
+    public static final DefaultShaderProvider SSAO = Shaders.registerDefault("ssao");
 
     private static <T extends ShaderProvider> T register(String name, T provider) {
         Shaders.REGISTRY.register(id(name), provider);
         return provider;
     }
 
-    private static DepthShaderProvider registerDepth(String name, ShaderProgram program) {
+    private static DepthShaderProvider registerDepth(String name) {
         DepthShaderProvider provider = new MyDepthShaderProvider(
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + s + ".vert")),
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + s + ".frag")));
+                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".vert")),
+                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".frag")));
         Shaders.REGISTRY.register(UltracraftClient.id(name), provider);
         return provider;
     }
 
-    private static DefaultShaderProvider registerDefault(String name, ShaderProgram program) {
+    private static DefaultShaderProvider registerDefault(String name) {
         DefaultShaderProvider provider = new MyDefaultShaderProvider(
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + s + ".vert")),
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + s + ".frag")));
+                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".vert")),
+                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".frag")));
         Shaders.REGISTRY.register(UltracraftClient.id(name), provider);
         return provider;
     }
