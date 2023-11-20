@@ -69,9 +69,13 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.ubo</a></div>
-<h1 title="Interface DataWriter" class="title">Interface DataWriter&lt;T&gt;</h1>
+<h1 title="Interface DataWriter" class="title">Interface DataWriter&lt;T extends <a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/IType.html" title="class or interface in com.ultreon.data.types" class="external-link">IType</a>&lt;?&gt;&gt;</h1>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - </dd>
+</dl>
 <dl class="notes">
 <dt>All Known Subinterfaces:</dt>
 <dd><code><a href="DataHolder.html" title="interface in com.ultreon.craft.ubo">DataHolder</a>&lt;T&gt;</code></dd>
@@ -86,7 +90,8 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="type-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/FunctionalInterface.html" title="class or interface in java.lang" class="external-link">@FunctionalInterface</a>
-</span><span class="modifiers">public interface </span><span class="element-name type-name-label">DataWriter&lt;T&gt;</span></div>
+</span><span class="modifiers">public interface </span><span class="element-name type-name-label">DataWriter&lt;T extends <a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/IType.html" title="class or interface in com.ultreon.data.types" class="external-link">IType</a>&lt;?&gt;&gt;</span></div>
+<div class="block">Interface for data writers.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -103,7 +108,9 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="DataWriter.html" title="type parameter in DataWriter">T</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#save()" class="member-name-link">save</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Saves this object to a UBO object.</div>
+</div>
 </div>
 </div>
 </div>
@@ -122,6 +129,11 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="save()">
 <h3>save</h3>
 <div class="member-signature"><span class="return-type"><a href="DataWriter.html" title="type parameter in DataWriter">T</a></span>&nbsp;<span class="element-name">save</span>()</div>
+<div class="block">Saves this object to a UBO object.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the UBO object</dd>
+</dl>
 </section>
 </li>
 </ul>

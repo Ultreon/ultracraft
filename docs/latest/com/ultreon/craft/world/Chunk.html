@@ -89,6 +89,13 @@ loadScripts(document, 'script');</script>
 </span><span class="modifiers">public abstract class </span><span class="element-name type-name-label">Chunk</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
 implements <a href="../server/ServerDisposable.html" title="interface in com.ultreon.craft.server">ServerDisposable</a></span></div>
+<div class="block">Represents a chunk in the world.
+ <p style="color: red;">NOTE: This class isn't meant to be extended</p>
+ <p style="color: red;">NOTE: This class isn't thread safe</p></div>
+<dl class="notes">
+<dt>Since:</dt>
+<dd>0.1.0</dd>
+</dl>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -103,7 +110,9 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static enum&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="Chunk.Status.html" class="type-name-link" title="enum class in com.ultreon.craft.world">Chunk.Status</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Chunk status for client chunk load response.</div>
+</div>
 </div>
 </section>
 </li>
@@ -119,8 +128,8 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-first even-row-color"><code>protected boolean</code></div>
 <div class="col-second even-row-color"><code><a href="#active" class="member-name-link">active</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;@NotNull <a href="Palette.Index.html" title="class in com.ultreon.craft.world">Palette.Index</a>&gt;</code></div>
-<div class="col-second odd-row-color"><code><a href="#blockData" class="member-name-link">blockData</a></code></div>
+<div class="col-first odd-row-color"><code>protected final <a href="../collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a>&lt;<a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a>&gt;</code></div>
+<div class="col-second odd-row-color"><code><a href="#biomeStorage" class="member-name-link">biomeStorage</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>final int</code></div>
 <div class="col-second even-row-color"><code><a href="#height" class="member-name-link">height</a></code></div>
@@ -128,32 +137,31 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-first odd-row-color"><code>protected final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#lock" class="member-name-link">lock</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#modifiedByPlayer" class="member-name-link">modifiedByPlayer</a></code></div>
+<div class="col-first even-row-color"><code>protected final <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
+<div class="col-second even-row-color"><code><a href="#offset" class="member-name-link">offset</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected final <a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#offset" class="member-name-link">offset</a></code></div>
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#ready" class="member-name-link">ready</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#ready" class="member-name-link">ready</a></code></div>
+<div class="col-first even-row-color"><code>final int</code></div>
+<div class="col-second even-row-color"><code><a href="#size" class="member-name-link">size</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#size" class="member-name-link">size</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>final <a href="../collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a>&lt;<a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&gt;</code></div>
-<div class="col-second even-row-color"><code><a href="#storage" class="member-name-link">storage</a></code></div>
+<div class="col-first odd-row-color"><code>final <a href="../collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a>&lt;<a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&gt;</code></div>
+<div class="col-second odd-row-color"><code><a href="#storage" class="member-name-link">storage</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Field for block data in palette storage format.</div>
+</div>
+<div class="col-first even-row-color"><code>@MonotonicNonNull <a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></code></div>
+<div class="col-second even-row-color"><code><a href="#treeData" class="member-name-link">treeData</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>@Nullable <a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#treeData" class="member-name-link">treeData</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#updateNeighbours" class="member-name-link">updateNeighbours</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#updateNeighbours" class="member-name-link">updateNeighbours</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block"><span class="deprecated-label">Deprecated.</span></div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#VERTEX_SIZE" class="member-name-link">VERTEX_SIZE</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#VERTEX_SIZE" class="member-name-link">VERTEX_SIZE</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -197,29 +205,48 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#ascend(int,int,int)" class="member-name-link">ascend</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#continueBreaking(int,int,int,float)" class="member-name-link">continueBreaking</a><wbr>(int&nbsp;x,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Find an empty space above the given position.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#ascend(int,int,int,int)" class="member-name-link">ascend</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z,
+ int&nbsp;height)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Find an empty space with a given <code>height</code> above the given position.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#continueBreaking(int,int,int,float)" class="member-name-link">continueBreaking</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z,
  float&nbsp;amount)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#decodeBlock(com.ultreon.data.types.MapType)" class="member-name-link">decodeBlock</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.1+patch.1/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;inputData)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#deserializeChunk(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">deserializeChunk</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#dispose()" class="member-name-link">dispose</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(int,int,int)" class="member-name-link">get</a><wbr>(int&nbsp;x,
- int&nbsp;y,
- int&nbsp;z)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#decodeBlock(com.ultreon.data.types.MapType)" class="member-name-link">decodeBlock</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;inputData)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Decodes a block from a UBO object.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#deserializeChunk(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">deserializeChunk</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Deserialize the chunk from the packet buffer.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#dispose()" class="member-name-link">dispose</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">get</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(int,int,int)" class="member-name-link">get</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">get</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBiome(int,int,int)" class="member-name-link">getBiome</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Float.html" title="class or interface in java.lang" class="external-link">Float</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBreaking()" class="member-name-link">getBreaking</a>()</code></div>
@@ -230,13 +257,15 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
  int&nbsp;z)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">getFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">getFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getHighest(int,int)" class="member-name-link">getHighest</a><wbr>(int&nbsp;x,
  int&nbsp;z)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Find the highest block at the given position.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getOffset()" class="member-name-link">getOffset</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a></code></div>
@@ -264,7 +293,9 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serializeChunk(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">serializeChunk</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Serialize the chunk to the packet buffer.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(int&nbsp;x,
  int&nbsp;y,
@@ -272,7 +303,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
@@ -282,17 +313,24 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#startBreaking(int,int,int)" class="member-name-link">startBreaking</a><wbr>(int&nbsp;x,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTreeData(com.ultreon.craft.world.gen.TreeData)" class="member-name-link">setTreeData</a><wbr>(<a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a>&nbsp;treeData)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#startBreaking(int,int,int)" class="member-name-link">startBreaking</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stopBreaking(int,int,int)" class="member-name-link">stopBreaking</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stopBreaking(int,int,int)" class="member-name-link">stopBreaking</a><wbr>(int&nbsp;x,
- int&nbsp;y,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toFlatIndex(int,int)" class="member-name-link">toFlatIndex</a><wbr>(int&nbsp;x,
  int&nbsp;z)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
@@ -342,12 +380,6 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 </section>
 </li>
 <li>
-<section class="detail" id="modifiedByPlayer">
-<h3>modifiedByPlayer</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">modifiedByPlayer</span></div>
-</section>
-</li>
-<li>
 <section class="detail" id="ready">
 <h3>ready</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">ready</span></div>
@@ -368,14 +400,14 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="offset">
 <h3>offset</h3>
-<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">offset</span></div>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">offset</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="treeData">
 <h3>treeData</h3>
-<div class="member-signature"><span class="annotations">@Nullable
-</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></span>&nbsp;<span class="element-name">treeData</span></div>
+<div class="member-signature"><span class="annotations">@Internal
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@MonotonicNonNull <a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></span>&nbsp;<span class="element-name">treeData</span></div>
 </section>
 </li>
 <li>
@@ -387,15 +419,17 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 </section>
 </li>
 <li>
-<section class="detail" id="blockData">
-<h3>blockData</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;@NotNull <a href="Palette.Index.html" title="class in com.ultreon.craft.world">Palette.Index</a>&gt;</span>&nbsp;<span class="element-name">blockData</span></div>
-</section>
-</li>
-<li>
 <section class="detail" id="storage">
 <h3>storage</h3>
 <div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="../collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a>&lt;<a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&gt;</span>&nbsp;<span class="element-name">storage</span></div>
+<div class="block">Field for block data in palette storage format.
+ Palette storage is used for improving memory usage.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="biomeStorage">
+<h3>biomeStorage</h3>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="../collection/PaletteStorage.html" title="class in com.ultreon.craft.collection">PaletteStorage</a>&lt;<a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a>&gt;</span>&nbsp;<span class="element-name">biomeStorage</span></div>
 </section>
 </li>
 </ul>
@@ -436,25 +470,42 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="decodeBlock(com.ultreon.data.types.MapType)">
 <h3>decodeBlock</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">decodeBlock</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.1+patch.1/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;inputData)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">decodeBlock</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;inputData)</span></div>
+<div class="block">Decodes a block from a UBO object.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>inputData</code> - The input data.</dd>
+<dt>Returns:</dt>
+<dd>The decoded block data.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="serializeChunk(com.ultreon.craft.network.PacketBuffer)">
 <h3>serializeChunk</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">serializeChunk</span><wbr><span class="parameters">(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</span></div>
+<div class="block">Serialize the chunk to the packet buffer.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>buffer</code> - The packet buffer.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="deserializeChunk(com.ultreon.craft.network.PacketBuffer)">
 <h3>deserializeChunk</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">deserializeChunk</span><wbr><span class="parameters">(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</span></div>
+<div class="block">Deserialize the chunk from the packet buffer.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>buffer</code> - The packet buffer.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="get(com.ultreon.libs.commons.v0.vector.Vec3i)">
 <h3>get</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">get</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">get</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</span></div>
 </section>
 </li>
 <li>
@@ -468,7 +519,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">
 <h3>getFast</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">getFast</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">getFast</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos)</span></div>
 </section>
 </li>
 <li>
@@ -482,7 +533,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">
 <h3>set</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
 </section>
 </li>
@@ -498,7 +549,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">
 <h3>setFast</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFast</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFast</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
 </section>
 </li>
@@ -534,7 +585,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="getOffset()">
 <h3>getOffset</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">getOffset</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">getOffset</span>()</div>
 </section>
 </li>
 <li>
@@ -619,12 +670,69 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <h3>getHighest</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getHighest</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;z)</span></div>
+<div class="block">Find the highest block at the given position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x coordinate</dd>
+<dd><code>z</code> - the z coordinate</dd>
+<dt>Returns:</dt>
+<dd>The highest block Y coordinate.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="ascend(int,int,int)">
 <h3>ascend</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">ascend</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</span></div>
+<div class="block">Find an empty space above the given position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - The x position.</dd>
+<dd><code>y</code> - The y position to use as base.</dd>
+<dd><code>z</code> - The z position.</dd>
+<dt>Returns:</dt>
+<dd>The found position.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="ascend(int,int,int,int)">
+<h3>ascend</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">ascend</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z,
+ int&nbsp;height)</span></div>
+<div class="block">Find an empty space with a given <code>height</code> above the given position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - The x position.</dd>
+<dd><code>y</code> - The y position to use as base.</dd>
+<dd><code>z</code> - The z position.</dd>
+<dd><code>height</code> - The height of the space.</dd>
+<dt>Returns:</dt>
+<dd>The found position.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setTreeData(com.ultreon.craft.world.gen.TreeData)">
+<h3>setTreeData</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTreeData</span><wbr><span class="parameters">(<a href="gen/TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a>&nbsp;treeData)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="toFlatIndex(int,int)">
+<h3>toFlatIndex</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">toFlatIndex</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;z)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getBiome(int,int,int)">
+<h3>getBiome</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a></span>&nbsp;<span class="element-name">getBiome</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</span></div>
 </section>

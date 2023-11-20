@@ -128,17 +128,35 @@ loadScripts(document, 'script');</script>
 <div class="block">Linear interpolation between two values.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static float[]</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#rotate(float%5B%5D,java.util.Random)" class="member-name-link">rotate</a><wbr>(float[]&nbsp;vertices,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Random.html" title="class or interface in java.util" class="external-link">Random</a>&nbsp;random)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#rotate(float%5B%5D,com.badlogic.gdx.math.Vector3,com.ultreon.craft.util.Axis)" class="member-name-link">rotate</a><wbr>(float[]&nbsp;vertices,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin,
+ <a href="Axis.html" title="enum class in com.ultreon.craft.util">Axis</a>&nbsp;axis)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Randomly rotates the given vertices.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec2i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2i</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#round(com.ultreon.libs.commons.v0.vector.Vec2f)" class="member-name-link">round</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a>&nbsp;vec)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#rotateX(float%5B%5D,float,com.badlogic.gdx.math.Vector3)" class="member-name-link">rotateX</a><wbr>(float[]&nbsp;vertices,
+ float&nbsp;angleInRadians,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#round(com.ultreon.libs.commons.v0.vector.Vec3f)" class="member-name-link">round</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3f</a>&nbsp;vec)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#rotateY(float%5B%5D,float,com.badlogic.gdx.math.Vector3)" class="member-name-link">rotateY</a><wbr>(float[]&nbsp;vertices,
+ float&nbsp;angle,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Rotates the given vertices around the Y axis.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#rotateZ(float%5B%5D,float,com.badlogic.gdx.math.Vector3)" class="member-name-link">rotateZ</a><wbr>(float[]&nbsp;vertices,
+ float&nbsp;angleInRadians,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2i</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#round(com.ultreon.libs.commons.v0.vector.Vec2f)" class="member-name-link">round</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a>&nbsp;vec)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#round(com.ultreon.libs.commons.v0.vector.Vec3f)" class="member-name-link">round</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3f</a>&nbsp;vec)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -173,13 +191,13 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="round(com.ultreon.libs.commons.v0.vector.Vec2f)">
 <h3>round</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec2i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2i</a></span>&nbsp;<span class="element-name">round</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a>&nbsp;vec)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2i</a></span>&nbsp;<span class="element-name">round</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a>&nbsp;vec)</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="round(com.ultreon.libs.commons.v0.vector.Vec3f)">
 <h3>round</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">round</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3f</a>&nbsp;vec)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">round</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3f</a>&nbsp;vec)</span></div>
 </section>
 </li>
 <li>
@@ -200,18 +218,49 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="rotate(float[],java.util.Random)">
+<section class="detail" id="rotate(float[],com.badlogic.gdx.math.Vector3,com.ultreon.craft.util.Axis)">
 <h3>rotate</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">float[]</span>&nbsp;<span class="element-name">rotate</span><wbr><span class="parameters">(float[]&nbsp;vertices,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Random.html" title="class or interface in java.util" class="external-link">Random</a>&nbsp;random)</span></div>
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin,
+ <a href="Axis.html" title="enum class in com.ultreon.craft.util">Axis</a>&nbsp;axis)</span></div>
 <div class="block">Randomly rotates the given vertices.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>vertices</code> - The vertices to rotate.</dd>
-<dd><code>random</code> - The random number generator.</dd>
 <dt>Returns:</dt>
 <dd>The rotated vertices.</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="rotateX(float[],float,com.badlogic.gdx.math.Vector3)">
+<h3>rotateX</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">rotateX</span><wbr><span class="parameters">(float[]&nbsp;vertices,
+ float&nbsp;angleInRadians,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="rotateY(float[],float,com.badlogic.gdx.math.Vector3)">
+<h3>rotateY</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">rotateY</span><wbr><span class="parameters">(float[]&nbsp;vertices,
+ float&nbsp;angle,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</span></div>
+<div class="block">Rotates the given vertices around the Y axis.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>vertices</code> - The vertices to rotate.</dd>
+<dd><code>angle</code> - The angle to rotate the vertices (in radians).</dd>
+<dd><code>origin</code> - The origin point of the rotation.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="rotateZ(float[],float,com.badlogic.gdx.math.Vector3)">
+<h3>rotateZ</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">rotateZ</span><wbr><span class="parameters">(float[]&nbsp;vertices,
+ float&nbsp;angleInRadians,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/math/Vector3.html" title="class or interface in com.badlogic.gdx.math" class="external-link">Vector3</a>&nbsp;origin)</span></div>
 </section>
 </li>
 </ul>

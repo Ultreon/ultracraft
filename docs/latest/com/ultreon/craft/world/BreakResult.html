@@ -84,6 +84,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public enum </span><span class="element-name type-name-label">BreakResult</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;<a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a>&gt;</span></div>
+<div class="block">Enum representing the result of a block breaking operation.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -105,11 +106,17 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Enum Constant</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code><a href="#BROKEN" class="member-name-link">BROKEN</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Indicates that the block has been broken.</div>
+</div>
 <div class="col-first odd-row-color"><code><a href="#CONTINUE" class="member-name-link">CONTINUE</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">Indicates that the block can still continue to break.</div>
+</div>
 <div class="col-first even-row-color"><code><a href="#FAILED" class="member-name-link">FAILED</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Indicates that the block either doesn't exist or an event cancelled the block breaking.</div>
+</div>
 </div>
 </section>
 </li>
@@ -159,18 +166,21 @@ the order they are declared.</div>
 <section class="detail" id="BROKEN">
 <h3>BROKEN</h3>
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a></span>&nbsp;<span class="element-name">BROKEN</span></div>
+<div class="block">Indicates that the block has been broken.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="CONTINUE">
 <h3>CONTINUE</h3>
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a></span>&nbsp;<span class="element-name">CONTINUE</span></div>
+<div class="block">Indicates that the block can still continue to break.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="FAILED">
 <h3>FAILED</h3>
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="BreakResult.html" title="enum class in com.ultreon.craft.world">BreakResult</a></span>&nbsp;<span class="element-name">FAILED</span></div>
+<div class="block">Indicates that the block either doesn't exist or an event cancelled the block breaking.</div>
 </section>
 </li>
 </ul>

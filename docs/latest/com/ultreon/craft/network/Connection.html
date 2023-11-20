@@ -121,9 +121,12 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color"><code>static final <a href="https://javadoc.io/doc/org.slf4j/slf4j-api/1.6.6/org/slf4j/Logger.html" title="class or interface in org.slf4j" class="external-link">Logger</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#LOGGER" class="member-name-link">LOGGER</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/nio/NioEventLoopGroup.html" title="class or interface in io.netty.channel.nio" class="external-link">NioEventLoopGroup</a>&gt;</code></div>
-<div class="col-second even-row-color"><code><a href="#NETWORK_WORKER_GROUP" class="member-name-link">NETWORK_WORKER_GROUP</a></code></div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://javadoc.io/doc/io.netty/netty-transport-classes-epoll/4.1.86.Final/io/netty/channel/epoll/EpollEventLoopGroup.html" title="class or interface in io.netty.channel.epoll" class="external-link">EpollEventLoopGroup</a>&gt;</code></div>
+<div class="col-second even-row-color"><code><a href="#NETWORK_EPOLL_WORKER_GROUP" class="member-name-link">NETWORK_EPOLL_WORKER_GROUP</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/nio/NioEventLoopGroup.html" title="class or interface in io.netty.channel.nio" class="external-link">NioEventLoopGroup</a>&gt;</code></div>
+<div class="col-second odd-row-color"><code><a href="#NETWORK_WORKER_GROUP" class="member-name-link">NETWORK_WORKER_GROUP</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -251,32 +254,29 @@ loadScripts(document, 'script');</script>
  boolean&nbsp;flush)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setGroup(io.netty.channel.EventLoopGroup)" class="member-name-link">setGroup</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/EventLoopGroup.html" title="class or interface in io.netty.channel" class="external-link">EventLoopGroup</a>&nbsp;eventLoopGroup)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHandler(com.ultreon.craft.network.PacketHandler)" class="member-name-link">setHandler</a><wbr>(<a href="PacketHandler.html" title="interface in com.ultreon.craft.network">PacketHandler</a>&nbsp;handler)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setInitAttributes(io.netty.channel.Channel)" class="member-name-link">setInitAttributes</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/Channel.html" title="class or interface in io.netty.channel" class="external-link">Channel</a>&nbsp;channel)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPlayer(com.ultreon.craft.server.player.ServerPlayer)" class="member-name-link">setPlayer</a><wbr>(<a href="../server/player/ServerPlayer.html" title="class in com.ultreon.craft.server.player">ServerPlayer</a>&nbsp;player)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHandler(com.ultreon.craft.network.PacketHandler)" class="member-name-link">setHandler</a><wbr>(<a href="PacketHandler.html" title="interface in com.ultreon.craft.network">PacketHandler</a>&nbsp;handler)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setInitAttributes(io.netty.channel.Channel)" class="member-name-link">setInitAttributes</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/Channel.html" title="class or interface in io.netty.channel" class="external-link">Channel</a>&nbsp;channel)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPlayer(com.ultreon.craft.server.player.ServerPlayer)" class="member-name-link">setPlayer</a><wbr>(<a href="../server/player/ServerPlayer.html" title="class in com.ultreon.craft.server.player">ServerPlayer</a>&nbsp;player)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setReadOnly()" class="member-name-link">setReadOnly</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setReadOnly()" class="member-name-link">setReadOnly</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setup(io.netty.channel.ChannelPipeline)" class="member-name-link">setup</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/ChannelPipeline.html" title="class or interface in io.netty.channel" class="external-link">ChannelPipeline</a>&nbsp;pipeline)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setup(io.netty.channel.ChannelPipeline)" class="member-name-link">setup</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/ChannelPipeline.html" title="class or interface in io.netty.channel" class="external-link">ChannelPipeline</a>&nbsp;pipeline)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setupPacketHandler(io.netty.channel.ChannelPipeline)" class="member-name-link">setupPacketHandler</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/ChannelPipeline.html" title="class or interface in io.netty.channel" class="external-link">ChannelPipeline</a>&nbsp;pipeline)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setupPacketHandler(io.netty.channel.ChannelPipeline)" class="member-name-link">setupPacketHandler</a><wbr>(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/ChannelPipeline.html" title="class or interface in io.netty.channel" class="external-link">ChannelPipeline</a>&nbsp;pipeline)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tick()" class="member-name-link">tick</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tick()" class="member-name-link">tick</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tickKeepAlive()" class="member-name-link">tickKeepAlive</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#tickKeepAlive()" class="member-name-link">tickKeepAlive</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Tick the keep-alive timer, and returns true if the keep-alive packet should be sent.</div>
 </div>
 </div>
@@ -330,6 +330,12 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="LOCAL_WORKER_GROUP">
 <h3>LOCAL_WORKER_GROUP</h3>
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/nio/NioEventLoopGroup.html" title="class or interface in io.netty.channel.nio" class="external-link">NioEventLoopGroup</a>&gt;</span>&nbsp;<span class="element-name">LOCAL_WORKER_GROUP</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="NETWORK_EPOLL_WORKER_GROUP">
+<h3>NETWORK_EPOLL_WORKER_GROUP</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://javadoc.io/doc/io.netty/netty-transport-classes-epoll/4.1.86.Final/io/netty/channel/epoll/EpollEventLoopGroup.html" title="class or interface in io.netty.channel.epoll" class="external-link">EpollEventLoopGroup</a>&gt;</span>&nbsp;<span class="element-name">NETWORK_EPOLL_WORKER_GROUP</span></div>
 </section>
 </li>
 <li>
@@ -632,12 +638,6 @@ loadScripts(document, 'script');</script>
 <dt>Returns:</dt>
 <dd>true, if the keep-alive packet should be sent.</dd>
 </dl>
-</section>
-</li>
-<li>
-<section class="detail" id="setGroup(io.netty.channel.EventLoopGroup)">
-<h3>setGroup</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setGroup</span><wbr><span class="parameters">(<a href="https://javadoc.io/doc/io.netty/netty-transport/4.1.86.Final/io/netty/channel/EventLoopGroup.html" title="class or interface in io.netty.channel" class="external-link">EventLoopGroup</a>&nbsp;eventLoopGroup)</span></div>
 </section>
 </li>
 <li>

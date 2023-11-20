@@ -104,8 +104,9 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseSettings,it.unimi.dsi.fastutil.longs.Long2ReferenceFunction)" class="member-name-link">Biome</a><wbr>(<a href="gen/noise/NoiseSettings.html" title="class in com.ultreon.craft.world.gen.noise">NoiseSettings</a>&nbsp;settings,
- <a href="https://javadoc.io/doc/it.unimi.dsi/fastutil/8.5.12/it/unimi/dsi/fastutil/longs/Long2ReferenceFunction.html" title="class or interface in it.unimi.dsi.fastutil.longs" class="external-link">Long2ReferenceFunction</a>&lt;<a href="gen/noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&gt;&nbsp;domainWarping)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseConfig,float,float)" class="member-name-link">Biome</a><wbr>(<a href="gen/noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a>&nbsp;settings,
+ float&nbsp;temperatureStart,
+ float&nbsp;temperatureEnd)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -127,17 +128,29 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buildLayers()" class="member-name-link">buildLayers</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen">BiomeGenerator</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/biome/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen.biome">BiomeGenerator</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#create(com.ultreon.craft.world.ServerWorld,long)" class="member-name-link">create</a><wbr>(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
  long&nbsp;seed)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/noise/NoiseSettings.html" title="class in com.ultreon.craft.world.gen.noise">NoiseSettings</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSettings()" class="member-name-link">getSettings</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>protected abstract void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onBuildLayers(java.util.List,java.util.List)" class="member-name-link">onBuildLayers</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="gen/layer/TerrainLayer.html" title="class in com.ultreon.craft.world.gen.layer">TerrainLayer</a>&gt;&nbsp;layers,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTemperatureEnd()" class="member-name-link">getTemperatureEnd</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTemperatureStart()" class="member-name-link">getTemperatureStart</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#load(com.ultreon.data.types.MapType)" class="member-name-link">load</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;mapType)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>protected abstract void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onBuildLayers(java.util.List,java.util.List)" class="member-name-link">onBuildLayers</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="gen/layer/TerrainLayer.html" title="class in com.ultreon.craft.world.gen.layer">TerrainLayer</a>&gt;&nbsp;layers,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="gen/layer/TerrainLayer.html" title="class in com.ultreon.craft.world.gen.layer">TerrainLayer</a>&gt;&nbsp;extraLayers)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save()" class="member-name-link">save</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -156,10 +169,11 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.gen.noise.NoiseSettings,it.unimi.dsi.fastutil.longs.Long2ReferenceFunction)">
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.gen.noise.NoiseConfig,float,float)">
 <h3>Biome</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Biome</span><wbr><span class="parameters">(<a href="gen/noise/NoiseSettings.html" title="class in com.ultreon.craft.world.gen.noise">NoiseSettings</a>&nbsp;settings,
- <a href="https://javadoc.io/doc/it.unimi.dsi/fastutil/8.5.12/it/unimi/dsi/fastutil/longs/Long2ReferenceFunction.html" title="class or interface in it.unimi.dsi.fastutil.longs" class="external-link">Long2ReferenceFunction</a>&lt;<a href="gen/noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&gt;&nbsp;domainWarping)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Biome</span><wbr><span class="parameters">(<a href="gen/noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a>&nbsp;settings,
+ float&nbsp;temperatureStart,
+ float&nbsp;temperatureEnd)</span></div>
 </section>
 </li>
 </ul>
@@ -192,14 +206,38 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="create(com.ultreon.craft.world.ServerWorld,long)">
 <h3>create</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="gen/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen">BiomeGenerator</a></span>&nbsp;<span class="element-name">create</span><wbr><span class="parameters">(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="gen/biome/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen.biome">BiomeGenerator</a></span>&nbsp;<span class="element-name">create</span><wbr><span class="parameters">(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
  long&nbsp;seed)</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="getSettings()">
 <h3>getSettings</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="gen/noise/NoiseSettings.html" title="class in com.ultreon.craft.world.gen.noise">NoiseSettings</a></span>&nbsp;<span class="element-name">getSettings</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="gen/noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a></span>&nbsp;<span class="element-name">getSettings</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getTemperatureStart()">
+<h3>getTemperatureStart</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getTemperatureStart</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getTemperatureEnd()">
+<h3>getTemperatureEnd</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getTemperatureEnd</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="save()">
+<h3>save</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></span>&nbsp;<span class="element-name">save</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="load(com.ultreon.data.types.MapType)">
+<h3>load</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Biome.html" title="class in com.ultreon.craft.world">Biome</a></span>&nbsp;<span class="element-name">load</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;mapType)</span></div>
 </section>
 </li>
 </ul>

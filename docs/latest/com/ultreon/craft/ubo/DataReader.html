@@ -69,15 +69,20 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.ubo</a></div>
-<h1 title="Interface DataReader" class="title">Interface DataReader&lt;T&gt;</h1>
+<h1 title="Interface DataReader" class="title">Interface DataReader&lt;T extends <a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/IType.html" title="class or interface in com.ultreon.data.types" class="external-link">IType</a>&lt;?&gt;&gt;</h1>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - </dd>
+</dl>
 <dl class="notes">
 <dt>All Known Subinterfaces:</dt>
 <dd><code><a href="DataHolder.html" title="interface in com.ultreon.craft.ubo">DataHolder</a>&lt;T&gt;</code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">DataReader&lt;T&gt;</span></div>
+<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">DataReader&lt;T extends <a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/IType.html" title="class or interface in com.ultreon.data.types" class="external-link">IType</a>&lt;?&gt;&gt;</span></div>
+<div class="block">Interface for data readers.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -94,7 +99,9 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#load(T)" class="member-name-link">load</a><wbr>(<a href="DataReader.html" title="type parameter in DataReader">T</a>&nbsp;data)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Loads this object from a UBO object.</div>
+</div>
 </div>
 </div>
 </div>
@@ -111,8 +118,13 @@ loadScripts(document, 'script');</script>
 <ul class="member-list">
 <li>
 <section class="detail" id="load(T)">
-<h3 id="load(java.lang.Object)">load</h3>
+<h3 id="load(com.ultreon.data.types.IType)">load</h3>
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">load</span><wbr><span class="parameters">(<a href="DataReader.html" title="type parameter in DataReader">T</a>&nbsp;data)</span></div>
+<div class="block">Loads this object from a UBO object.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>data</code> - the UBO object</dd>
+</dl>
 </section>
 </li>
 </ul>

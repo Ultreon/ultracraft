@@ -44,7 +44,7 @@ loadScripts(document, 'script');</script>
 <div>
 <ul class="sub-nav-list">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested-class-summary">Nested</a>&nbsp;|&nbsp;</li>
 <li><a href="#field-summary">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor-summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method-summary">Method</a></li>
@@ -72,14 +72,14 @@ loadScripts(document, 'script');</script>
 <h1 title="Class UIContainer" class="title">Class UIContainer&lt;T extends UIContainer&lt;T&gt;&gt;</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.Widget</a>&lt;T&gt;
+<div class="inheritance"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.Widget</a>
 <div class="inheritance">com.ultreon.craft.client.gui.widget.UIContainer&lt;T&gt;</div>
 </div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="StaticWidget.html" title="interface in com.ultreon.craft.client.gui.widget">StaticWidget</a></code></dd>
+<dd><code><a href="StaticWidget.html" title="interface in com.ultreon.craft.client.gui.widget">StaticWidget</a></code>, <code><a href="../../../component/GameComponentHolder.html" title="interface in com.ultreon.craft.component">GameComponentHolder</a>&lt;<a href="components/UIComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">UIComponent</a>&gt;</code></dd>
 </dl>
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
@@ -87,10 +87,19 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">UIContainer&lt;T extends UIContainer&lt;T&gt;&gt;</span>
-<span class="extends-implements">extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;T&gt;</span></div>
+<span class="extends-implements">extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<li>
+<section class="nested-class-summary" id="nested-class-summary">
+<h2>Nested Class Summary</h2>
+<div class="inherited-list">
+<h2 id="nested-classes-inherited-from-class-com.ultreon.craft.client.gui.widget.Widget">Nested classes/interfaces inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></h2>
+<code><a href="Widget.RevalidateListener.html" title="interface in com.ultreon.craft.client.gui.widget">Widget.RevalidateListener</a></code></div>
+</section>
+</li>
 <!-- =========== FIELD SUMMARY =========== -->
 <li>
 <section class="field-summary" id="field-summary">
@@ -100,13 +109,13 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>protected <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;</code></div>
+<div class="col-first even-row-color"><code>protected <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></div>
 <div class="col-second even-row-color"><code><a href="#focused" class="member-name-link">focused</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;?&gt;</code></div>
 <div class="col-second odd-row-color"><code><a href="#ROOT" class="member-name-link">ROOT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected final <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</code></div>
+<div class="col-first even-row-color"><code>protected final <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</code></div>
 <div class="col-second even-row-color"><code><a href="#widgets" class="member-name-link">widgets</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
@@ -142,16 +151,16 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;C extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;<br>C</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;C extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;<br>C</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#add(C)" class="member-name-link">add</a><wbr>(C&nbsp;widget)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#charType(char)" class="member-name-link">charType</a><wbr>(char&nbsp;character)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#children()" class="member-name-link">children</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getExactWidgetAt(int,int)" class="member-name-link">getExactWidgetAt</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -161,85 +170,92 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getName()" class="member-name-link">getName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidgets()" class="member-name-link">getWidgets</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidgetsAt(int,int)" class="member-name-link">getWidgetsAt</a><wbr>(int&nbsp;x,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidgetAt(int,int)" class="member-name-link">getWidgetAt</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidgets()" class="member-name-link">getWidgets</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyPress(int)" class="member-name-link">keyPress</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidgetsAt(int,int)" class="member-name-link">getWidgetsAt</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyRelease(int)" class="member-name-link">keyRelease</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyPress(int)" class="member-name-link">keyPress</a><wbr>(int&nbsp;keyCode)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseClick(int,int,int,int)" class="member-name-link">mouseClick</a><wbr>(int&nbsp;mouseX,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyRelease(int)" class="member-name-link">keyRelease</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseClick(int,int,int,int)" class="member-name-link">mouseClick</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  int&nbsp;button,
  int&nbsp;clicks)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseDrag(int,int,int,int,int)" class="member-name-link">mouseDrag</a><wbr>(int&nbsp;mouseX,
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseDrag(int,int,int,int,int)" class="member-name-link">mouseDrag</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  int&nbsp;deltaX,
  int&nbsp;deltaY,
- int&nbsp;button)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseMove(int,int)" class="member-name-link">mouseMove</a><wbr>(int&nbsp;mouseX,
+ int&nbsp;pointer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseMove(int,int)" class="member-name-link">mouseMove</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mousePress(int,int,int)" class="member-name-link">mousePress</a><wbr>(int&nbsp;mouseX,
+ int&nbsp;mouseY,
+ int&nbsp;button)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mousePress(int,int,int)" class="member-name-link">mousePress</a><wbr>(int&nbsp;mouseX,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseRelease(int,int,int)" class="member-name-link">mouseRelease</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  int&nbsp;button)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseRelease(int,int,int)" class="member-name-link">mouseRelease</a><wbr>(int&nbsp;mouseX,
- int&nbsp;mouseY,
- int&nbsp;button)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseWheel(int,int,double)" class="member-name-link">mouseWheel</a><wbr>(int&nbsp;mouseX,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseWheel(int,int,double)" class="member-name-link">mouseWheel</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  double&nbsp;rotation)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChild(com.ultreon.craft.client.gui.Renderer,int,int,float,com.ultreon.craft.client.gui.widget.Widget)" class="member-name-link">renderChild</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChild(com.ultreon.craft.client.gui.Renderer,int,int,float,com.ultreon.craft.client.gui.widget.Widget)" class="member-name-link">renderChild</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime,
- <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&nbsp;widget)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChildren(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderChildren</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+ <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&nbsp;widget)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChildren(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderChildren</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(@NotNull <a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  @org.checkerframework.common.value.qual.IntRange(from=0L) float&nbsp;deltaTime)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revalidate()" class="member-name-link">revalidate</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLayout(com.ultreon.craft.client.gui.widget.layout.Layout)" class="member-name-link">setLayout</a><wbr>(<a href="layout/Layout.html" title="interface in com.ultreon.craft.client.gui.widget.layout">Layout</a>&nbsp;layout)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revalidate()" class="member-name-link">revalidate</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLayout(com.ultreon.craft.client.gui.widget.layout.Layout)" class="member-name-link">setLayout</a><wbr>(<a href="layout/Layout.html" title="interface in com.ultreon.craft.client.gui.widget.layout">Layout</a>&nbsp;layout)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.Widget">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></h3>
-<code><a href="Widget.html#bounds(com.ultreon.craft.client.gui.Bounds)">bounds</a>, <a href="Widget.html#enabled(boolean)">enabled</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#isClickable()">isClickable</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.Callback)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#pos(int,int)">pos</a>, <a href="Widget.html#pos(com.ultreon.craft.client.gui.Position)">pos</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#size(int,int)">size</a>, <a href="Widget.html#size(com.ultreon.craft.client.gui.Size)">size</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#visible(boolean)">visible</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
+<code><a href="Widget.html#componentRegistry()">componentRegistry</a>, <a href="Widget.html#disable()">disable</a>, <a href="Widget.html#enable()">enable</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getComponent(com.ultreon.libs.commons.v0.Identifier,T...)">getComponent</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#hide()">hide</a>, <a href="Widget.html#isClickable()">isClickable</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPosWithin(int,int,int,int,int,int)">isPosWithin</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#onFocusGained()">onFocusGained</a>, <a href="Widget.html#onFocusLost()">onFocusLost</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.widget.Widget.RevalidateListener)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#register(com.ultreon.libs.commons.v0.Identifier,C)">register</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#setBounds(com.ultreon.craft.client.gui.Bounds)">setBounds</a>, <a href="Widget.html#setEnabled(boolean)">setEnabled</a>, <a href="Widget.html#setPos(int,int)">setPos</a>, <a href="Widget.html#setPos(com.ultreon.craft.client.gui.Position)">setPos</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#setSize(int,int)">setSize</a>, <a href="Widget.html#setSize(com.ultreon.craft.client.gui.Size)">setSize</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#show()">show</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#withComponent(com.ultreon.libs.commons.v0.Identifier,java.util.function.Consumer,T...)">withComponent</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-com.ultreon.craft.component.GameComponentHolder">Methods inherited from interface&nbsp;com.ultreon.craft.component.<a href="../../../component/GameComponentHolder.html" title="interface in com.ultreon.craft.component">GameComponentHolder</a></h3>
+<code><a href="../../../component/GameComponentHolder.html#components()">components</a></code></div>
 </section>
 </li>
 </ul>
@@ -261,13 +277,13 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="widgets">
 <h3>widgets</h3>
 <div class="member-signature"><span class="annotations">@Internal
-</span><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">widgets</span></div>
+</span><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="element-name">widgets</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="focused">
 <h3>focused</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;</span>&nbsp;<span class="element-name">focused</span></div>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></span>&nbsp;<span class="element-name">focused</span></div>
 </section>
 </li>
 </ul>
@@ -305,7 +321,7 @@ loadScripts(document, 'script');</script>
  @org.checkerframework.common.value.qual.IntRange(from=0L) float&nbsp;deltaTime)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">renderWidget</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">renderWidget</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -315,14 +331,14 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">revalidate</span>()</div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#revalidate()">revalidate</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#revalidate()">revalidate</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="children()">
 <h3>children</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">children</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="element-name">children</span>()</div>
 </section>
 </li>
 <li>
@@ -343,13 +359,13 @@ loadScripts(document, 'script');</script>
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime,
- <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&nbsp;widget)</span></div>
+ <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&nbsp;widget)</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="getWidgets()">
 <h3>getWidgets</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">getWidgets</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;? extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="element-name">getWidgets</span>()</div>
 </section>
 </li>
 <li>
@@ -367,7 +383,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getExactWidgetAt(int,int)">
 <h3>getExactWidgetAt</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;</span>&nbsp;<span class="element-name">getExactWidgetAt</span><wbr><span class="parameters">(int&nbsp;x,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></span>&nbsp;<span class="element-name">getExactWidgetAt</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
 </section>
 </li>
@@ -375,14 +391,22 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getWidgetsAt(int,int)">
 <h3>getWidgetsAt</h3>
 <div class="member-signature"><span class="annotations">@NotNull
-</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">getWidgetsAt</span><wbr><span class="parameters">(int&nbsp;x,
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="element-name">getWidgetsAt</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getWidgetAt(int,int)">
+<h3>getWidgetAt</h3>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></span>&nbsp;<span class="element-name">getWidgetAt</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
 </section>
 </li>
 <li>
 <section class="detail" id="add(C)">
 <h3 id="add(com.ultreon.craft.client.gui.widget.Widget)">add</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;C extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;?&gt;&gt;</span>&nbsp;<span class="return-type">C</span>&nbsp;<span class="element-name">add</span><wbr><span class="parameters">(C&nbsp;widget)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;C extends <a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="return-type">C</span>&nbsp;<span class="element-name">add</span><wbr><span class="parameters">(C&nbsp;widget)</span></div>
 </section>
 </li>
 <li>
@@ -391,7 +415,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getName</span>()</div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#getName()">getName</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#getName()">getName</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -404,7 +428,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;clicks)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseClick(int,int,int,int)">mouseClick</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mouseClick(int,int,int,int)">mouseClick</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -416,7 +440,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;button)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mousePress(int,int,int)">mousePress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mousePress(int,int,int)">mousePress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -428,7 +452,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;button)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseRelease(int,int,int)">mouseRelease</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mouseRelease(int,int,int)">mouseRelease</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -440,7 +464,7 @@ loadScripts(document, 'script');</script>
  double&nbsp;rotation)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -451,7 +475,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;mouseY)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseMove(int,int)">mouseMove</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mouseMove(int,int)">mouseMove</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -462,10 +486,10 @@ loadScripts(document, 'script');</script>
  int&nbsp;mouseY,
  int&nbsp;deltaX,
  int&nbsp;deltaY,
- int&nbsp;button)</span></div>
+ int&nbsp;pointer)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseDrag(int,int,int,int,int)">mouseDrag</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#mouseDrag(int,int,int,int,int)">mouseDrag</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -475,7 +499,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">keyPress</span><wbr><span class="parameters">(int&nbsp;keyCode)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#keyPress(int)">keyPress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#keyPress(int)">keyPress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -485,7 +509,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">keyRelease</span><wbr><span class="parameters">(int&nbsp;keyCode)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#keyRelease(int)">keyRelease</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#keyRelease(int)">keyRelease</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -495,7 +519,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">charType</span><wbr><span class="parameters">(char&nbsp;character)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#charType(char)">charType</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a> extends <a href="UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="UIContainer.html" title="type parameter in UIContainer">T</a>&gt;&gt;</code></dd>
+<dd><code><a href="Widget.html#charType(char)">charType</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>

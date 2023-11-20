@@ -95,7 +95,7 @@ loadScripts(document, 'script');</script>
 <h2>Field Summary</h2>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.ultreon.craft.server.UltracraftServer">Fields inherited from class&nbsp;com.ultreon.craft.server.<a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></h3>
-<code><a href="../server/UltracraftServer.html#entityRenderDistance">entityRenderDistance</a>, <a href="../server/UltracraftServer.html#LOGGER">LOGGER</a>, <a href="../server/UltracraftServer.html#maxPlayers">maxPlayers</a>, <a href="../server/UltracraftServer.html#NANOSECONDS_PER_SECOND">NANOSECONDS_PER_SECOND</a>, <a href="../server/UltracraftServer.html#NANOSECONDS_PER_TICK">NANOSECONDS_PER_TICK</a>, <a href="../server/UltracraftServer.html#node">node</a>, <a href="../server/UltracraftServer.html#port">port</a>, <a href="../server/UltracraftServer.html#renderDistance">renderDistance</a>, <a href="../server/UltracraftServer.html#running">running</a>, <a href="../server/UltracraftServer.html#TPS">TPS</a>, <a href="../server/UltracraftServer.html#world">world</a></code></div>
+<code><a href="../server/UltracraftServer.html#entityRenderDistance">entityRenderDistance</a>, <a href="../server/UltracraftServer.html#LOGGER">LOGGER</a>, <a href="../server/UltracraftServer.html#maxPlayers">maxPlayers</a>, <a href="../server/UltracraftServer.html#NAMESPACE">NAMESPACE</a>, <a href="../server/UltracraftServer.html#NANOSECONDS_PER_SECOND">NANOSECONDS_PER_SECOND</a>, <a href="../server/UltracraftServer.html#NANOSECONDS_PER_TICK">NANOSECONDS_PER_TICK</a>, <a href="../server/UltracraftServer.html#node">node</a>, <a href="../server/UltracraftServer.html#port">port</a>, <a href="../server/UltracraftServer.html#renderDistance">renderDistance</a>, <a href="../server/UltracraftServer.html#running">running</a>, <a href="../server/UltracraftServer.html#TPS">TPS</a>, <a href="../server/UltracraftServer.html#world">world</a></code></div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.ultreon.craft.util.PollingExecutorService">Fields inherited from class&nbsp;com.ultreon.craft.util.<a href="../util/PollingExecutorService.html" title="class in com.ultreon.craft.util">PollingExecutorService</a></h3>
 <code><a href="../util/PollingExecutorService.html#profiler">profiler</a>, <a href="../util/PollingExecutorService.html#thread">thread</a></code></div>
@@ -136,6 +136,12 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getHost()" class="member-name-link">getHost</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#handleChunkLoadFailure(com.ultreon.craft.world.ChunkPos)" class="member-name-link">handleChunkLoadFailure</a><wbr>(<a href="../world/ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;globalPos)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#handleWorldSaveError(java.lang.Exception)" class="member-name-link">handleWorldSaveError</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Exception.html" title="class or interface in java.lang" class="external-link">Exception</a>&nbsp;e)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isIntegrated()" class="member-name-link">isIntegrated</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -143,42 +149,39 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOpenToLan()" class="member-name-link">isOpenToLan</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#load()" class="member-name-link">load</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadPlayer(com.ultreon.craft.client.player.LocalPlayer)" class="member-name-link">loadPlayer</a><wbr>(@NotNull <a href="player/LocalPlayer.html" title="class in com.ultreon.craft.client.player">LocalPlayer</a>&nbsp;localPlayer)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadPlayer(com.ultreon.craft.client.player.LocalPlayer)" class="member-name-link">loadPlayer</a><wbr>(@NotNull <a href="player/LocalPlayer.html" title="class in com.ultreon.craft.client.player">LocalPlayer</a>&nbsp;localPlayer)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onTerminationFailed()" class="member-name-link">onTerminationFailed</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onTerminationFailed()" class="member-name-link">onTerminationFailed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Handles the failed termination of the server.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#openToLan()" class="member-name-link">openToLan</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#placePlayer(com.ultreon.craft.server.player.ServerPlayer)" class="member-name-link">placePlayer</a><wbr>(<a href="../server/player/ServerPlayer.html" title="class in com.ultreon.craft.server.player">ServerPlayer</a>&nbsp;player)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#openToLan()" class="member-name-link">openToLan</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#placePlayer(com.ultreon.craft.server.player.ServerPlayer)" class="member-name-link">placePlayer</a><wbr>(<a href="../server/player/ServerPlayer.html" title="class in com.ultreon.craft.server.player">ServerPlayer</a>&nbsp;player)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Places a player into the server.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#runTick()" class="member-name-link">runTick</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save(boolean)" class="member-name-link">save</a><wbr>(boolean&nbsp;silent)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#runTick()" class="member-name-link">runTick</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#savePlayer()" class="member-name-link">savePlayer</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save(boolean)" class="member-name-link">save</a><wbr>(boolean&nbsp;silent)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#savePlayer()" class="member-name-link">savePlayer</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.server.UltracraftServer">Methods inherited from class&nbsp;com.ultreon.craft.server.<a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></h3>
-<code><a href="../server/UltracraftServer.html#addPlayer(com.ultreon.craft.server.player.ServerPlayer)">addPlayer</a>, <a href="../server/UltracraftServer.html#disposeOnClose(T)">disposeOnClose</a>, <a href="../server/UltracraftServer.html#get()">get</a>, <a href="../server/UltracraftServer.html#getCachedPlayer(java.lang.String)">getCachedPlayer</a>, <a href="../server/UltracraftServer.html#getConnections()">getConnections</a>, <a href="../server/UltracraftServer.html#getCurrentTps()">getCurrentTps</a>, <a href="../server/UltracraftServer.html#getEntityRenderDistance()">getEntityRenderDistance</a>, <a href="../server/UltracraftServer.html#getGameVersion()">getGameVersion</a>, <a href="../server/UltracraftServer.html#getMaxPlayers()">getMaxPlayers</a>, <a href="../server/UltracraftServer.html#getOnlineTicks()">getOnlineTicks</a>, <a href="../server/UltracraftServer.html#getPlayer(java.lang.String)">getPlayer</a>, <a href="../server/UltracraftServer.html#getPlayer(java.util.UUID)">getPlayer</a>, <a href="../server/UltracraftServer.html#getPlayerCount()">getPlayerCount</a>, <a href="../server/UltracraftServer.html#getPlayers()">getPlayers</a>, <a href="../server/UltracraftServer.html#getPlayersInChunk(com.ultreon.craft.world.ChunkPos)">getPlayersInChunk</a>, <a href="../server/UltracraftServer.html#getPort()">getPort</a>, <a href="../server/UltracraftServer.html#getRenderDistance()">getRenderDistance</a>, <a href="../server/UltracraftServer.html#getStorage()">getStorage</a>, <a href="../server/UltracraftServer.html#getWorld()">getWorld</a>, <a href="../server/UltracraftServer.html#hasPlayedBefore(com.ultreon.craft.server.player.CacheablePlayer)">hasPlayedBefore</a>, <a href="../server/UltracraftServer.html#hours2ticks(float)">hours2ticks</a>, <a href="../server/UltracraftServer.html#invoke(java.lang.Runnable)">invoke</a>, <a href="../server/UltracraftServer.html#invoke(java.util.concurrent.Callable)">invoke</a>, <a href="../server/UltracraftServer.html#invokeAndWait(java.util.concurrent.Callable)">invokeAndWait</a>, <a href="../server/UltracraftServer.html#invokeAndWait(java.lang.Runnable)">invokeAndWait</a>, <a href="../server/UltracraftServer.html#isDedicated()">isDedicated</a>, <a href="../server/UltracraftServer.html#isOnServerThread()">isOnServerThread</a>, <a href="../server/UltracraftServer.html#isRunning()">isRunning</a>, <a href="../server/UltracraftServer.html#loadPlayer(java.lang.String,java.util.UUID,com.ultreon.craft.network.Connection)">loadPlayer</a>, <a href="../server/UltracraftServer.html#minutes2ticks(float)">minutes2ticks</a>, <a href="../server/UltracraftServer.html#onDisconnected(com.ultreon.craft.server.player.ServerPlayer,java.lang.String)">onDisconnected</a>, <a href="../server/UltracraftServer.html#run()">run</a>, <a href="../server/UltracraftServer.html#schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)">schedule</a>, <a href="../server/UltracraftServer.html#seconds2ticks(float)">seconds2ticks</a>, <a href="../server/UltracraftServer.html#sendChunk(com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.Chunk)">sendChunk</a>, <a href="../server/UltracraftServer.html#shutdown()">shutdown</a>, <a href="../server/UltracraftServer.html#start()">start</a></code></div>
+<code><a href="../server/UltracraftServer.html#addPlayer(com.ultreon.craft.server.player.ServerPlayer)">addPlayer</a>, <a href="../server/UltracraftServer.html#close()">close</a>, <a href="../server/UltracraftServer.html#disposeOnClose(T)">disposeOnClose</a>, <a href="../server/UltracraftServer.html#get()">get</a>, <a href="../server/UltracraftServer.html#getCachedPlayer(java.lang.String)">getCachedPlayer</a>, <a href="../server/UltracraftServer.html#getConnections()">getConnections</a>, <a href="../server/UltracraftServer.html#getCurrentTps()">getCurrentTps</a>, <a href="../server/UltracraftServer.html#getEntityRenderDistance()">getEntityRenderDistance</a>, <a href="../server/UltracraftServer.html#getGameVersion()">getGameVersion</a>, <a href="../server/UltracraftServer.html#getMaxPlayers()">getMaxPlayers</a>, <a href="../server/UltracraftServer.html#getOnlineTicks()">getOnlineTicks</a>, <a href="../server/UltracraftServer.html#getPlayer(java.lang.String)">getPlayer</a>, <a href="../server/UltracraftServer.html#getPlayer(java.util.UUID)">getPlayer</a>, <a href="../server/UltracraftServer.html#getPlayerCount()">getPlayerCount</a>, <a href="../server/UltracraftServer.html#getPlayers()">getPlayers</a>, <a href="../server/UltracraftServer.html#getPlayersInChunk(com.ultreon.craft.world.ChunkPos)">getPlayersInChunk</a>, <a href="../server/UltracraftServer.html#getPort()">getPort</a>, <a href="../server/UltracraftServer.html#getRenderDistance()">getRenderDistance</a>, <a href="../server/UltracraftServer.html#getStorage()">getStorage</a>, <a href="../server/UltracraftServer.html#getWatchManager()">getWatchManager</a>, <a href="../server/UltracraftServer.html#getWorld()">getWorld</a>, <a href="../server/UltracraftServer.html#hasPlayedBefore(com.ultreon.craft.server.player.CacheablePlayer)">hasPlayedBefore</a>, <a href="../server/UltracraftServer.html#hours2ticks(float)">hours2ticks</a>, <a href="../server/UltracraftServer.html#invoke(java.lang.Runnable)">invoke</a>, <a href="../server/UltracraftServer.html#invoke(java.util.concurrent.Callable)">invoke</a>, <a href="../server/UltracraftServer.html#invokeAndWait(java.util.concurrent.Callable)">invokeAndWait</a>, <a href="../server/UltracraftServer.html#invokeAndWait(java.lang.Runnable)">invokeAndWait</a>, <a href="../server/UltracraftServer.html#isDedicated()">isDedicated</a>, <a href="../server/UltracraftServer.html#isOnServerThread()">isOnServerThread</a>, <a href="../server/UltracraftServer.html#isRunning()">isRunning</a>, <a href="../server/UltracraftServer.html#load()">load</a>, <a href="../server/UltracraftServer.html#loadPlayer(java.lang.String,java.util.UUID,com.ultreon.craft.network.Connection)">loadPlayer</a>, <a href="../server/UltracraftServer.html#minutes2ticks(float)">minutes2ticks</a>, <a href="../server/UltracraftServer.html#onDisconnected(com.ultreon.craft.server.player.ServerPlayer,java.lang.String)">onDisconnected</a>, <a href="../server/UltracraftServer.html#run()">run</a>, <a href="../server/UltracraftServer.html#schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)">schedule</a>, <a href="../server/UltracraftServer.html#seconds2ticks(float)">seconds2ticks</a>, <a href="../server/UltracraftServer.html#sendChunk(com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.Chunk)">sendChunk</a>, <a href="../server/UltracraftServer.html#shutdown()">shutdown</a>, <a href="../server/UltracraftServer.html#start()">start</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.util.PollingExecutorService">Methods inherited from class&nbsp;com.ultreon.craft.util.<a href="../util/PollingExecutorService.html" title="class in com.ultreon.craft.util">PollingExecutorService</a></h3>
 <code><a href="../util/PollingExecutorService.html#awaitTermination(long,java.util.concurrent.TimeUnit)">awaitTermination</a>, <a href="../util/PollingExecutorService.html#execute(java.lang.Runnable)">execute</a>, <a href="../util/PollingExecutorService.html#invokeAll(java.util.Collection)">invokeAll</a>, <a href="../util/PollingExecutorService.html#invokeAll(java.util.Collection,long,java.util.concurrent.TimeUnit)">invokeAll</a>, <a href="../util/PollingExecutorService.html#invokeAny(java.util.Collection)">invokeAny</a>, <a href="../util/PollingExecutorService.html#invokeAny(java.util.Collection,long,java.util.concurrent.TimeUnit)">invokeAny</a>, <a href="../util/PollingExecutorService.html#isShutdown()">isShutdown</a>, <a href="../util/PollingExecutorService.html#isTerminated()">isTerminated</a>, <a href="../util/PollingExecutorService.html#poll()">poll</a>, <a href="../util/PollingExecutorService.html#pollAll()">pollAll</a>, <a href="../util/PollingExecutorService.html#shutdownNow()">shutdownNow</a>, <a href="../util/PollingExecutorService.html#submit(java.lang.Runnable)">submit</a>, <a href="../util/PollingExecutorService.html#submit(java.lang.Runnable,T)">submit</a>, <a href="../util/PollingExecutorService.html#submit(java.util.concurrent.Callable)">submit</a></code></div>
@@ -287,19 +290,6 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="load()">
-<h3>load</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">load</span>()
-          throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></span></div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../server/UltracraftServer.html#load()">load</a></code>&nbsp;in class&nbsp;<code><a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></code></dd>
-<dt>Throws:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></code></dd>
-</dl>
-</section>
-</li>
-<li>
 <section class="detail" id="save(boolean)">
 <h3>save</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">save</span><wbr><span class="parameters">(boolean&nbsp;silent)</span>
@@ -339,6 +329,26 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="../server/UltracraftServer.html#getHost()">getHost</a></code>&nbsp;in class&nbsp;<code><a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="handleWorldSaveError(java.lang.Exception)">
+<h3>handleWorldSaveError</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">handleWorldSaveError</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Exception.html" title="class or interface in java.lang" class="external-link">Exception</a>&nbsp;e)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="../server/UltracraftServer.html#handleWorldSaveError(java.lang.Exception)">handleWorldSaveError</a></code>&nbsp;in class&nbsp;<code><a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="handleChunkLoadFailure(com.ultreon.craft.world.ChunkPos)">
+<h3>handleChunkLoadFailure</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">handleChunkLoadFailure</span><wbr><span class="parameters">(<a href="../world/ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;globalPos)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="../server/UltracraftServer.html#handleChunkLoadFailure(com.ultreon.craft.world.ChunkPos)">handleChunkLoadFailure</a></code>&nbsp;in class&nbsp;<code><a href="../server/UltracraftServer.html" title="class in com.ultreon.craft.server">UltracraftServer</a></code></dd>
 </dl>
 </section>
 </li>

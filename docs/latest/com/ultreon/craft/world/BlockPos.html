@@ -77,9 +77,16 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>Record Components:</dt>
+<dd><code><span id="param-x">x</span></code> - </dd>
+<dd><code><span id="param-y">y</span></code> - </dd>
+<dd><code><span id="param-z">z</span></code> - </dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">BlockPos</span>(int&nbsp;x, int&nbsp;y, int&nbsp;z)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
+<div class="block">Represents a block position in the world.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -92,19 +99,25 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">BlockPos</a>()</code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Creates a new block position at <code>0,0,0</code>.</div>
+</div>
 <div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(double,double,double)" class="member-name-link">BlockPos</a><wbr>(double&nbsp;x,
  double&nbsp;y,
  double&nbsp;z)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">Creates a new block position at the given coordinates.</div>
+</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int,int,int)" class="member-name-link">BlockPos</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>BlockPos</code> record class.</div>
 </div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">BlockPos</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;vec)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.ultreon.libs.commons.v0.vector.Vec3i)" class="member-name-link">BlockPos</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;vec)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates a new block position from a <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link"><code>vector</code></a>.</div>
+</div>
 </div>
 </section>
 </li>
@@ -139,29 +152,33 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#offset(int,int,int)" class="member-name-link">offset</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Creates a new block position with an offset from the current position.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#vec()" class="member-name-link">vec</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Converts this block position to a <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link"><code>vector</code></a>.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#x()" class="member-name-link">x</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>x</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-x"><code>x</code></a> record component.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#y()" class="member-name-link">y</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>y</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-y"><code>y</code></a> record component.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#z()" class="member-name-link">z</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>z</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-z"><code>z</code></a> record component.</div>
 </div>
 </div>
 </div>
@@ -186,18 +203,31 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BlockPos</span><wbr><span class="parameters">(double&nbsp;x,
  double&nbsp;y,
  double&nbsp;z)</span></div>
+<div class="block">Creates a new block position at the given coordinates.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x-coordinate.</dd>
+<dd><code>y</code> - the y-coordinate.</dd>
+<dd><code>z</code> - the z-coordinate.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="&lt;init&gt;()">
 <h3>BlockPos</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BlockPos</span>()</div>
+<div class="block">Creates a new block position at <code>0,0,0</code>.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="&lt;init&gt;(com.ultreon.libs.commons.v0.vector.Vec3i)">
 <h3>BlockPos</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BlockPos</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;vec)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BlockPos</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;vec)</span></div>
+<div class="block">Creates a new block position from a <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link"><code>vector</code></a>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>vec</code> - the vector.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -209,9 +239,9 @@ loadScripts(document, 'script');</script>
 <div class="block">Creates an instance of a <code>BlockPos</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>x</code> - the value for the <code>x</code> record component</dd>
-<dd><code>y</code> - the value for the <code>y</code> record component</dd>
-<dd><code>z</code> - the value for the <code>z</code> record component</dd>
+<dd><code>x</code> - the value for the <a href="#param-x"><code>x</code></a> record component</dd>
+<dd><code>y</code> - the value for the <a href="#param-y"><code>y</code></a> record component</dd>
+<dd><code>z</code> - the value for the <a href="#param-z"><code>z</code></a> record component</dd>
 </dl>
 </section>
 </li>
@@ -230,12 +260,26 @@ loadScripts(document, 'script');</script>
 </span><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></span>&nbsp;<span class="element-name">offset</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</span></div>
+<div class="block">Creates a new block position with an offset from the current position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the offset in the x-axis.</dd>
+<dd><code>y</code> - the offset in the y-axis.</dd>
+<dd><code>z</code> - the offset in the z-axis.</dd>
+<dt>Returns:</dt>
+<dd>The new block position.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="vec()">
 <h3>vec</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.1.2/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">vec</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a></span>&nbsp;<span class="element-name">vec</span>()</div>
+<div class="block">Converts this block position to a <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link"><code>vector</code></a>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The vector.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -255,12 +299,20 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="below()">
 <h3>below</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></span>&nbsp;<span class="element-name">below</span>()</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The block position below the current position.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="above()">
 <h3>above</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></span>&nbsp;<span class="element-name">above</span>()</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The block position above the current position.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -295,10 +347,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="x()">
 <h3>x</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">x</span>()</div>
-<div class="block">Returns the value of the <code>x</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-x"><code>x</code></a> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>x</code> record component</dd>
+<dd>the value of the <a href="#param-x"><code>x</code></a> record component</dd>
 </dl>
 </section>
 </li>
@@ -306,10 +358,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="y()">
 <h3>y</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">y</span>()</div>
-<div class="block">Returns the value of the <code>y</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-y"><code>y</code></a> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>y</code> record component</dd>
+<dd>the value of the <a href="#param-y"><code>y</code></a> record component</dd>
 </dl>
 </section>
 </li>
@@ -317,10 +369,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="z()">
 <h3>z</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">z</span>()</div>
-<div class="block">Returns the value of the <code>z</code> record component.</div>
+<div class="block">Returns the value of the <a href="#param-z"><code>z</code></a> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>z</code> record component</dd>
+<dd>the value of the <a href="#param-z"><code>z</code></a> record component</dd>
 </dl>
 </section>
 </li>

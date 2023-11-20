@@ -89,7 +89,9 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.gen.noise.DomainWarping)" class="member-name-link">TerrainGenerator</a><wbr>(<a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;biomeDomainWarping)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.gen.noise.DomainWarping,com.ultreon.craft.world.gen.noise.DomainWarping,com.ultreon.craft.world.gen.noise.NoiseConfig)" class="member-name-link">TerrainGenerator</a><wbr>(<a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;biomeDomain,
+ <a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;layerDomain,
+ <a href="noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a>&nbsp;noiseConfig)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -105,10 +107,29 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#generateChunkData(com.ultreon.craft.world.Chunk,long)" class="member-name-link">generateChunkData</a><wbr>(<a href="../Chunk.html" title="class in com.ultreon.craft.world">Chunk</a>&nbsp;chunk,
- long&nbsp;seed)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buildBiomeCenters(com.ultreon.craft.world.BuilderChunk)" class="member-name-link">buildBiomeCenters</a><wbr>(<a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a>&nbsp;chunk)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#create(com.ultreon.craft.world.ServerWorld,long)" class="member-name-link">create</a><wbr>(<a href="../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
+ long&nbsp;seed)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#dispose()" class="member-name-link">dispose</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#generate(com.ultreon.craft.world.BuilderChunk)" class="member-name-link">generate</a><wbr>(<a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a>&nbsp;chunk)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLayerDomain()" class="member-name-link">getLayerDomain</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="biome/BiomeData.html" title="class in com.ultreon.craft.world.gen.biome">BiomeData</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerBiome(com.ultreon.craft.world.ServerWorld,long,com.ultreon.craft.world.Biome,float,float)" class="member-name-link">registerBiome</a><wbr>(<a href="../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
+ long&nbsp;seed,
+ <a href="../Biome.html" title="class in com.ultreon.craft.world">Biome</a>&nbsp;biome,
+ float&nbsp;temperatureStart,
+ float&nbsp;temperatureEnd)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -127,9 +148,11 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.gen.noise.DomainWarping)">
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.gen.noise.DomainWarping,com.ultreon.craft.world.gen.noise.DomainWarping,com.ultreon.craft.world.gen.noise.NoiseConfig)">
 <h3>TerrainGenerator</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">TerrainGenerator</span><wbr><span class="parameters">(<a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;biomeDomainWarping)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">TerrainGenerator</span><wbr><span class="parameters">(<a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;biomeDomain,
+ <a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a>&nbsp;layerDomain,
+ <a href="noise/NoiseConfig.html" title="class in com.ultreon.craft.world.gen.noise">NoiseConfig</a>&nbsp;noiseConfig)</span></div>
 </section>
 </li>
 </ul>
@@ -141,10 +164,46 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="generateChunkData(com.ultreon.craft.world.Chunk,long)">
-<h3>generateChunkData</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></span>&nbsp;<span class="element-name">generateChunkData</span><wbr><span class="parameters">(<a href="../Chunk.html" title="class in com.ultreon.craft.world">Chunk</a>&nbsp;chunk,
+<section class="detail" id="create(com.ultreon.craft.world.ServerWorld,long)">
+<h3>create</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">create</span><wbr><span class="parameters">(<a href="../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
  long&nbsp;seed)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="registerBiome(com.ultreon.craft.world.ServerWorld,long,com.ultreon.craft.world.Biome,float,float)">
+<h3>registerBiome</h3>
+<div class="member-signature"><span class="annotations">@CanIgnoreReturnValue
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="biome/BiomeData.html" title="class in com.ultreon.craft.world.gen.biome">BiomeData</a></span>&nbsp;<span class="element-name">registerBiome</span><wbr><span class="parameters">(<a href="../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
+ long&nbsp;seed,
+ <a href="../Biome.html" title="class in com.ultreon.craft.world">Biome</a>&nbsp;biome,
+ float&nbsp;temperatureStart,
+ float&nbsp;temperatureEnd)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="generate(com.ultreon.craft.world.BuilderChunk)">
+<h3>generate</h3>
+<div class="member-signature"><span class="annotations">@CanIgnoreReturnValue
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a></span>&nbsp;<span class="element-name">generate</span><wbr><span class="parameters">(<a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a>&nbsp;chunk)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="buildBiomeCenters(com.ultreon.craft.world.BuilderChunk)">
+<h3>buildBiomeCenters</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">buildBiomeCenters</span><wbr><span class="parameters">(<a href="../BuilderChunk.html" title="class in com.ultreon.craft.world">BuilderChunk</a>&nbsp;chunk)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getLayerDomain()">
+<h3>getLayerDomain</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="noise/DomainWarping.html" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a></span>&nbsp;<span class="element-name">getLayerDomain</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="dispose()">
+<h3>dispose</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">dispose</span>()</div>
 </section>
 </li>
 </ul>

@@ -72,16 +72,10 @@ loadScripts(document, 'script');</script>
 <h1 title="Interface Drawable" class="title">Interface Drawable</h1>
 </div>
 <section class="class-description" id="class-description">
-<dl class="notes">
-<dt>All Known Subinterfaces:</dt>
-<dd><code><a href="../gui/old/Widget.html" title="interface in com.ultreon.craft.client.gui.old">Widget</a></code></dd>
-</dl>
-<dl class="notes">
-<dt>All Known Implementing Classes:</dt>
-<dd><code><a href="../gui/GuiComponent.html" title="class in com.ultreon.craft.client.gui">GuiComponent</a></code>, <code><a href="../gui/GuiContainer.html" title="class in com.ultreon.craft.client.gui">GuiContainer</a></code>, <code><a href="../gui/LoadingOverlay.html" title="class in com.ultreon.craft.client.gui">LoadingOverlay</a></code></dd>
-</dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Drawable</span></div>
+<div class="type-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Deprecated.html" title="class or interface in java.lang" class="external-link">@Deprecated</a>
+</span><span class="modifiers">public interface </span><span class="element-name type-name-label">Drawable</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -90,18 +84,19 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab6" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab6', 3)" class="table-tab">Deprecated Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel">
 <div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#render(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">render</a><wbr>(<a href="../gui/Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3 method-summary-table-tab6"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3 method-summary-table-tab6"><code><a href="#render(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">render</a><wbr>(<a href="../gui/Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3 method-summary-table-tab6">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Rendering method, should not be called if you don't know what you are doing.</div>
 </div>
 </div>
@@ -125,13 +120,14 @@ loadScripts(document, 'script');</script>
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime)</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Rendering method, should not be called if you don't know what you are doing.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>renderer</code> - renderer to draw/render with.</dd>
 <dd><code>mouseX</code> - </dd>
 <dd><code>mouseY</code> - </dd>
-<dd><code>deltaTime</code> - value of <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.0/com/badlogic/gdx/Graphics.html#getDeltaTime()" title="class or interface in com.badlogic.gdx" class="external-link"><code>Graphics.getDeltaTime()</code></a></dd>
+<dd><code>deltaTime</code> - value of <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/Graphics.html#getDeltaTime()" title="class or interface in com.badlogic.gdx" class="external-link"><code>Graphics.getDeltaTime()</code></a></dd>
 </dl>
 </section>
 </li>

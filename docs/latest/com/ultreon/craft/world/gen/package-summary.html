@@ -15,7 +15,11 @@
 <script type="text/javascript" src="../../../../../script-dir/jquery-ui.min.js"></script>
 </head>
 <body class="package-declaration-page">
-<script type="text/javascript">var pathtoroot = "../../../../../";
+<script type="text/javascript">var evenRowColor = "even-row-color";
+var oddRowColor = "odd-row-color";
+var tableTab = "table-tab";
+var activeTableTab = "active-table-tab";
+var pathtoroot = "../../../../../";
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -75,37 +79,37 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">com.ultreon.craft.world</a></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><a href="layer/package-summary.html">com.ultreon.craft.world.gen.layer</a></div>
+<div class="col-first odd-row-color"><a href="biome/package-summary.html">com.ultreon.craft.world.gen.biome</a></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><a href="noise/package-summary.html">com.ultreon.craft.world.gen.noise</a></div>
+<div class="col-first even-row-color"><a href="layer/package-summary.html">com.ultreon.craft.world.gen.layer</a></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><a href="trees/package-summary.html">com.ultreon.craft.world.gen.trees</a></div>
+<div class="col-first odd-row-color"><a href="noise/package-summary.html">com.ultreon.craft.world.gen.noise</a></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </div>
 </li>
 <li>
 <div id="class-summary">
-<div class="caption"><span>Classes</span></div>
-<div class="summary-table two-column-summary">
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
+<div id="class-summary.tabpanel" role="tabpanel">
+<div class="summary-table two-column-summary" aria-labelledby="class-summary-tab0">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="BiomeGenerator.html" title="class in com.ultreon.craft.world.gen">BiomeGenerator</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="BiomeGeneratorSelection.html" title="class in com.ultreon.craft.world.gen">BiomeGeneratorSelection</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PerlinNoiseGenerator.html" title="class in com.ultreon.craft.world.gen">PerlinNoiseGenerator</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="Neighbour8Direction.html" title="enum class in com.ultreon.craft.world.gen">Neighbour8Direction</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="PerlinNoiseGenerator.html" title="class in com.ultreon.craft.world.gen">PerlinNoiseGenerator</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Adapted from <a href="http://devmag.org.za/2009/04/25/perlin-noise/">http://devmag.org.za/2009/04/25/perlin-noise/</a></div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="TerrainGenerator.html" title="class in com.ultreon.craft.world.gen">TerrainGenerator</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="TerrainGenerator.html" title="class in com.ultreon.craft.world.gen">TerrainGenerator</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="TreeGenerator.html" title="class in com.ultreon.craft.world.gen">TreeGenerator</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="TreeData.html" title="class in com.ultreon.craft.world.gen">TreeData</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="WorldGenInfo.html" title="class in com.ultreon.craft.world.gen">WorldGenInfo</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="TreeGenerator.html" title="class in com.ultreon.craft.world.gen">TreeGenerator</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="WorldGenInfo.html" title="class in com.ultreon.craft.world.gen">WorldGenInfo</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
+</div>
 </div>
 </div>
 </li>

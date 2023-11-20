@@ -10,12 +10,13 @@ com.ultreon.craft.client.events
 com.ultreon.craft.client.filehandle
 com.ultreon.craft.client.font
 com.ultreon.craft.client.gui
-com.ultreon.craft.client.gui.old
+com.ultreon.craft.client.gui.icon
 com.ultreon.craft.client.gui.screens
 com.ultreon.craft.client.gui.screens.container
+com.ultreon.craft.client.gui.screens.options
 com.ultreon.craft.client.gui.widget
+com.ultreon.craft.client.gui.widget.components
 com.ultreon.craft.client.gui.widget.layout
-com.ultreon.craft.client.gui.widget.properties
 com.ultreon.craft.client.imgui
 com.ultreon.craft.client.init
 com.ultreon.craft.client.input
@@ -29,7 +30,6 @@ com.ultreon.craft.client.player
 com.ultreon.craft.client.registry
 com.ultreon.craft.client.resources
 com.ultreon.craft.client.rpc
-com.ultreon.craft.client.shader
 com.ultreon.craft.client.sound
 com.ultreon.craft.client.text
 com.ultreon.craft.client.texture
@@ -38,8 +38,11 @@ com.ultreon.craft.client.util
 com.ultreon.craft.client.util.exceptions
 com.ultreon.craft.client.world
 com.ultreon.craft.collection
+com.ultreon.craft.component
+com.ultreon.craft.config
 com.ultreon.craft.debug
 com.ultreon.craft.debug.inspect
+com.ultreon.craft.debug.profiler
 com.ultreon.craft.entity
 com.ultreon.craft.entity.damagesource
 com.ultreon.craft.entity.util
@@ -72,7 +75,7 @@ com.ultreon.craft.ubo
 com.ultreon.craft.util
 com.ultreon.craft.world
 com.ultreon.craft.world.gen
+com.ultreon.craft.world.gen.biome
 com.ultreon.craft.world.gen.layer
 com.ultreon.craft.world.gen.noise
-com.ultreon.craft.world.gen.trees
 com.ultreon.gameprovider.craft
