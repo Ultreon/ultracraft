@@ -12,13 +12,12 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * <h1>Palette Storage Implementation.</h1>
- * Palette storage is used for storing data in palettes.
+ * <p>Palette storage is used for storing data in palettes.
  * It's used for optimizing memory and storage usage.
- * Generally used for advanced voxel games.
- * <p>
- * It makes use of short arrays to store {@link #getPalette() index pointers} to the {@linkplain #getData() data}.
- * While the data itself is stored without any duplicates.
+ * Generally used for advanced voxel games.</p>
+ *
+ * <p>It makes use of short arrays to store {@link #getPalette() index pointers} to the {@linkplain #getData() data}.
+ * While the data itself is stored without any duplicates.</p>
  *
  * @param <D> the data type.
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
