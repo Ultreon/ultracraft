@@ -197,7 +197,7 @@ public abstract class Player extends LivingEntity {
 
     /**
      * Set the item cursor for menu containers.
-     * <p color="red"><b>Not recommended to be called on client side, only do it when you know what you're doing.</b></p>
+     * <p style="color:red;"><b>Not recommended to be called on client side, only do it when you know what you're doing.</b></p>
      *
      * @param cursor the item stack to set.
      */
