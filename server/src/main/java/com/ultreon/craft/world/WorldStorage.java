@@ -81,7 +81,6 @@ public final class WorldStorage {
      *
      * @param path the path to the UBO object.
      * @return {@code true} if the path exists, {@code false} otherwise.
-     * @throws IOException if an I/O error occurs.
      */
     public boolean exists(String path) {
         try {

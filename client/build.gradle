@@ -146,6 +146,9 @@ dependencies {
     runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 }
 
 processResources {
@@ -210,6 +213,10 @@ publishing {
             from components.java
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 compileJava {

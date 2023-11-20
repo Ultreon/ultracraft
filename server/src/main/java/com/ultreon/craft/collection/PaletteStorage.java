@@ -8,10 +8,7 @@ import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -54,7 +51,7 @@ public class PaletteStorage<D> implements ServerDisposable {
     public void load(MapType inputData, Function<MapType, D> decoder) {
         this.data.clear();
         var data = inputData.<MapType>getList(DataKeys.PALETTE_DATA);
-        for (MapType entryData : data) {
+        for (MapType entryData : data.getValue()) {
             D entry = decoder.apply(entryData);
             this.data.add(entry);
         }
@@ -178,5 +175,20 @@ public class PaletteStorage<D> implements ServerDisposable {
 
         this.palette = palette;
         this.data = data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        PaletteStorage<?> that = (PaletteStorage<?>) o;
+        return Arrays.equals(this.palette, that.palette) && Objects.equals(this.data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.data.hashCode();
+        result = 31 * result + Arrays.hashCode(this.palette);
+        return result;
     }
 }
