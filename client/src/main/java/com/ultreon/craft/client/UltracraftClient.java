@@ -172,6 +172,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static Profiler PROFILER = new Profiler();
     public final InspectionRoot<UltracraftClient> inspection = new InspectionRoot<>(this);
     public UcConfiguration<UltracraftClientConfig> config;
+    public boolean hideHud = false;
 
     private Duration bootTime;
     private GarbageCollector garbageCollector;

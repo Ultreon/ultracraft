@@ -73,7 +73,7 @@ public abstract class World implements ServerDisposable {
 
     protected World() {
         // Shh, the original seed was 512.
-        this(new Random().nextLong());
+        this(512/*new Random().nextLong()*/);
     }
 
     protected World(long seed) {

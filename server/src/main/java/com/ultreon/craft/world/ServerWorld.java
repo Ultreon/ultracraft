@@ -845,12 +845,12 @@ public final class ServerWorld extends World {
      * The spawn point is set randomly.
      */
     public void setupSpawn() {
-//        int spawnChunkX = MathUtils.random(-32, 31);
-//        int spawnChunkZ = MathUtils.random(-32, 31);
-//        int spawnX = MathUtils.random(spawnChunkX * 16, spawnChunkX * 16 + 15);
-//        int spawnZ = MathUtils.random(spawnChunkZ * 16, spawnChunkZ * 16 + 15);
+        int spawnChunkX = MathUtils.random(-32, 31);
+        int spawnChunkZ = MathUtils.random(-32, 31);
+        int spawnX = MathUtils.random(spawnChunkX * 16, spawnChunkX * 16 + 15);
+        int spawnZ = MathUtils.random(spawnChunkZ * 16, spawnChunkZ * 16 + 15);
 
-        this.setSpawnPoint(0, 0);
+        this.setSpawnPoint(spawnX, spawnZ);
     }
 
     public TerrainGenerator getTerrainGenerator() {

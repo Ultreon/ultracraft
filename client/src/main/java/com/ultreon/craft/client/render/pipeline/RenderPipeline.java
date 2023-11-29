@@ -43,8 +43,7 @@ public class RenderPipeline implements Disposable {
     }
 
     public void render(ModelBatch modelBatch) {
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
 
         var input = new Array<Renderable>();
         var textures = new ObjectMap<String, Texture>();

@@ -127,22 +127,6 @@ public class GameRenderer {
     }
 
     private void renderWorld(WorldRenderer worldRenderer, ClientWorld world) {
-//        ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
-//        Gdx.gl20.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//        var localPlayer = this.client.player;
-//        if (localPlayer == null) return;
-//
-//        this.renderWorld0(worldRenderer, world);
-//
-//        this.spriteBatch.begin();
-//        this.spriteBatch.draw(this.fbo.getTextureAttachments().get(0), 3 * Gdx.graphics.getWidth() / 4f, 0,
-//                Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 4f, 0f, 1f, 1f, 0f);
-//        this.spriteBatch.flush();
-//        this.spriteBatch.draw(this.depthFbo.getTextureAttachments().get(0), 2 * Gdx.graphics.getWidth() / 4f, 0,
-//                Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 4f, 0f, 1f, 1f, 0f);
-//        this.spriteBatch.end();
-
         this.pipeline.render(this.modelBatch);
     }
 
@@ -240,7 +224,10 @@ public class GameRenderer {
 
     private void renderOverlays(Renderer renderer, @Nullable Screen screen, @Nullable World world, float deltaTime) {
         if (world != null) {
-            UltracraftClient.PROFILER.section("hud", () -> this.client.hud.render(renderer, deltaTime));
+            UltracraftClient.PROFILER.section("hud", () -> {
+                if (this.client.hideHud) return;
+                this.client.hud.render(renderer, deltaTime);
+            });
         }
 
         if (screen != null) {
@@ -251,7 +238,10 @@ public class GameRenderer {
             });
         }
 
-        UltracraftClient.PROFILER.section("debug", () -> this.client.debugRenderer.render(renderer));
+        UltracraftClient.PROFILER.section("debug", () -> {
+            if (this.client.hideHud) return;
+            this.client.debugRenderer.render(renderer);
+        });
     }
 
     public RenderContext getContext() {

@@ -26,6 +26,7 @@ public class DesktopInput extends GameInput {
     public static final KeyBind IM_GUI_FOCUS_KEY = KeyBinds.imGuiFocusKey;
     public static final KeyBind DEBUG_KEY = KeyBinds.debugKey;
     public static final KeyBind INSPECT_KEY = KeyBinds.inspectKey;
+    public static final KeyBind HIDE_HUD_KEY = KeyBinds.hideHudKey;
     public static final KeyBind SCREENSHOT_KEY = KeyBinds.screenshotKey;
     public static final KeyBind INVENTORY_KEY = KeyBinds.inventoryKey;
     public static final KeyBind FULL_SCREEN_KEY = KeyBinds.fullScreenKey;
@@ -102,6 +103,8 @@ public class DesktopInput extends GameInput {
             this.handleInspectKey();
         } else if (DesktopInput.SCREENSHOT_KEY.isJustPressed()) {
             this.client.screenshot();
+        } else if (DesktopInput.HIDE_HUD_KEY.isJustPressed()) {
+            this.client.hideHud = !this.client.hideHud;
         } else if (DesktopInput.FULL_SCREEN_KEY.isJustPressed()) {
             this.client.setFullScreen(!this.client.isFullScreen());
         } else if (DesktopInput.THIRD_PERSON_KEY.isJustPressed()) {

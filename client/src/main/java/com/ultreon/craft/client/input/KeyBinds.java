@@ -14,6 +14,7 @@ public class KeyBinds {
     public static final KeyBind inspectKey = KeyBindRegistry.register(new KeyBind("inspect", Input.Keys.F4));
     public static final KeyBind inventoryKey = KeyBindRegistry.register(new KeyBind("inventory", Input.Keys.E));
     public static final KeyBind thirdPersonKey = KeyBindRegistry.register(new KeyBind("thirdPerson", Input.Keys.F5));
+    public static final KeyBind hideHudKey = KeyBindRegistry.register(new KeyBind("hideHud", Input.Keys.F1));
     public static final KeyBind screenshotKey = KeyBindRegistry.register(new KeyBind("screenshot", Input.Keys.F2));
     public static final KeyBind fullScreenKey = KeyBindRegistry.register(new KeyBind("fullScreen", Input.Keys.F11));
     public static final KeyBind debugKey = KeyBindRegistry.register(new KeyBind("debug", Input.Keys.F3));
