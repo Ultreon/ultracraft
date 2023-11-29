@@ -7,7 +7,7 @@ import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.Panel;
 import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.rpc.Activity;
+import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -30,7 +30,7 @@ public class TitleScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.client.setActivity(Activity.MAIN_MENU);
+        this.client.setActivity(GameActivity.MAIN_MENU);
 
         builder.add(Panel.create()
                 .bounds(() -> new Bounds(0, 0, 250, this.size.height))

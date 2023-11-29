@@ -72,7 +72,7 @@ import com.ultreon.craft.client.render.pipeline.*;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
-import com.ultreon.craft.client.rpc.Activity;
+import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.rpc.RpcHandler;
 import com.ultreon.craft.client.sound.ClientSoundRegistry;
 import com.ultreon.craft.client.text.LanguageData;
@@ -139,6 +139,7 @@ import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -272,8 +273,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private int ticksPassed = 0;
 
     double time = System.currentTimeMillis();
-    private Activity activity = null;
-    private Activity oldActivity = null;
+    private GameActivity activity = null;
+    private GameActivity oldActivity = null;
     private Vec2i oldMode;
     private boolean isInThirdPerson;
     private boolean triggerScreenshot;
@@ -289,6 +290,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
     private final G3dModelLoader modelLoader;
+    private File gameSdkPath;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -296,6 +298,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         UltracraftClient.instance = this;
 
         Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
+        RpcHandler.start(this.gameSdkPath);
 
         this.resourceManager = new ResourceManager("assets");
         this.textureManager = new TextureManager(this.resourceManager);
@@ -780,7 +783,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltracraftClient.BOOT_TIMESTAMP);
         UltracraftClient.LOGGER.info("Game booted in {}.", this.bootTime.toSimpleString());
 
-        UltracraftClient.invoke(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
+        UltracraftClient.invokeAndWait(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
         this.loadingOverlay = null;
     }
 
@@ -1952,7 +1955,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return this.currentTps;
     }
 
-    public void setActivity(Activity activity) {
+    public void setActivity(GameActivity activity) {
         this.activity = activity;
     }
 

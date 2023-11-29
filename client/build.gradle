@@ -149,6 +149,9 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+
+    // Discord API
+    implementation api('com.github.jagrosh:DiscordIPC:master-SNAPSHOT')
 }
 
 processResources {

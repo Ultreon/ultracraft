@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.Callable;
 
-public enum Activity {
+public enum GameActivity {
     MAIN_MENU("Main menu"),
     SINGLEPLAYER("Playing singleplayer"),
     MULTIPLAYER("Playing multiplayer", () -> "On " + UltracraftClient.get().serverData.name()),
@@ -14,11 +14,11 @@ public enum Activity {
     private final String displayName;
     private final Callable<@Nullable String> description;
 
-    Activity(String displayName) {
+    GameActivity(String displayName) {
         this(displayName, () -> null);
     }
 
-    Activity(String displayName, Callable<@Nullable String> description) {
+    GameActivity(String displayName, Callable<@Nullable String> description) {
         this.displayName = displayName;
         this.description = description;
     }
