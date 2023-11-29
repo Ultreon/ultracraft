@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline.RenderNode;
@@ -47,15 +48,17 @@ public class MainRenderNode extends RenderNode {
 
         gl.glActiveTexture(GL_TEXTURE0);
 
-        this.client.spriteBatch.begin();
-        this.client.spriteBatch.draw(depthMap, (float) (3 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
-        this.client.spriteBatch.flush();
-        this.client.spriteBatch.draw(ssaoTexture, (float) (Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
-        this.client.spriteBatch.flush();
-        this.client.spriteBatch.draw(ssaoTexture, 0, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
-        this.client.spriteBatch.flush();
-        this.client.spriteBatch.draw(diffuseTexture, (float) (2 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
-        this.client.spriteBatch.end();
+        if (ImGuiOverlay.SHOW_RENDER_PIPELINE.get()) {
+            this.client.spriteBatch.begin();
+            this.client.spriteBatch.draw(depthMap, (float) (3 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            this.client.spriteBatch.flush();
+            this.client.spriteBatch.draw(ssaoTexture, (float) (Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            this.client.spriteBatch.flush();
+            this.client.spriteBatch.draw(ssaoTexture, 0, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            this.client.spriteBatch.flush();
+            this.client.spriteBatch.draw(diffuseTexture, (float) (2 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            this.client.spriteBatch.end();
+        }
 
         return input;
     }

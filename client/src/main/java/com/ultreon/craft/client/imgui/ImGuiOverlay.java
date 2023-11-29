@@ -28,11 +28,13 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class ImGuiOverlay {
+    public static final ImFloat I_GAMMA = new ImFloat(1.5f);
     public static final ImFloat U_CAP = new ImFloat(0.45f);
     public static final ImFloat U_RADIUS = new ImFloat(0.45f);
     public static final ImFloat U_INTENSITY = new ImFloat(1.5f);
     public static final ImFloat U_MULTIPLIER = new ImFloat(1000.0f);
     public static final ImFloat U_DEPTH_TOLERANCE = new ImFloat(0.0001f);
+    public static final ImBoolean SHOW_RENDER_PIPELINE = new ImBoolean(false);
     private static final ImBoolean SHOW_IM_GUI = new ImBoolean(false);
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
@@ -181,6 +183,7 @@ public class ImGuiOverlay {
                 ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
                 ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
                 ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
+                ImGui.menuItem("Render Pipeline", null, ImGuiOverlay.SHOW_RENDER_PIPELINE);
                 ImGui.endMenu();
             }
 
@@ -221,11 +224,7 @@ public class ImGuiOverlay {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (ImGui.begin("Shader Editor", ImGuiOverlay.getDefaultFlags())) {
-            ImGuiEx.editFloat("u_radius", "Shader::SSAO::u_radius", ImGuiOverlay.U_RADIUS::get, ImGuiOverlay.U_RADIUS::set);
-            ImGuiEx.editFloat("u_intensity", "Shader::SSAO::u_intensity", ImGuiOverlay.U_INTENSITY::get, ImGuiOverlay.U_INTENSITY::set);
-            ImGuiEx.editFloat("u_cap", "Shader::SSAO::u_cap", ImGuiOverlay.U_CAP::get, ImGuiOverlay.U_CAP::set);
-            ImGuiEx.editFloat("u_multiplier", "Shader::SSAO::u_multiplier", ImGuiOverlay.U_MULTIPLIER::get, ImGuiOverlay.U_MULTIPLIER::set);
-            ImGuiEx.editFloat("u_depthTolerance", "Shader::SSAO::u_depthTolerance", ImGuiOverlay.U_DEPTH_TOLERANCE::get, ImGuiOverlay.U_DEPTH_TOLERANCE::set);
+            ImGuiEx.editFloat("iGamma", "Shader::SSAO::iGamma", ImGuiOverlay.I_GAMMA::get, ImGuiOverlay.I_GAMMA::set);
             ImGui.end();
         }
     }

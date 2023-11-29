@@ -5,14 +5,19 @@ uniform sampler2D u_diffuseTexture;
 uniform float u_alphaTest;
 #endif
 
-varying float v_depth;
-
 void main() {
-	// Sample the depth value from the depth texture
-	float depth = v_depth;
+	float depth = gl_FragCoord.z / gl_FragCoord.w;
 
-	vec3 color = vec3(depth, fract(depth * 256.0), fract(depth * 65536.0)/**, fract(depth * 16777216.0)*/);
+	vec3 depthIn3Channels;
+	depthIn3Channels.r = mod(depth, 1.0);
+	depth -= depthIn3Channels.r;
+	depth /= 256.0;
 
-	// Output the final color
-	gl_FragColor = vec4(color, 1.0);
+	depthIn3Channels.g = mod(depth, 1.0);
+	depth -= depthIn3Channels.g;
+	depth /= 256.0;
+
+	depthIn3Channels.b = depth;
+
+	gl_FragColor = vec4(depthIn3Channels, 1.0);
 }

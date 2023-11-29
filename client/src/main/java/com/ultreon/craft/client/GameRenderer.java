@@ -69,6 +69,7 @@ public class GameRenderer {
         this.fbo.dispose();
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        this.pipeline.resize(width, height);
     }
 
     public void render(Renderer renderer, float deltaTime) {

@@ -74,8 +74,6 @@ uniform mat4 u_bones[numBones];
 #endif//numBones
 #endif
 
-varying float v_depth;
-
 void main() {
     #ifdef blendedTextureFlag
     v_texCoords0 = a_texCoord0;
@@ -114,8 +112,6 @@ void main() {
     #else
     vec4 pos = u_projViewWorldTrans * vec4(a_position, 1.0);
     #endif
-
-    v_depth = pos.z / pos.w;
 
     gl_Position = pos;
 }

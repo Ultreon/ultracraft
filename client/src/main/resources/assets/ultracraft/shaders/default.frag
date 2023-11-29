@@ -75,7 +75,7 @@ uniform sampler2D u_emissiveTexture;
 #ifdef lightingFlag
 varying vec3 v_lightDiffuse;
 
-#if    defined(ambientLightFlag) || defined(ambientCubemapFlag) || defined(sphericalHarmonicsFlag)
+#if	defined(ambientLightFlag) || defined(ambientCubemapFlag) || defined(sphericalHarmonicsFlag)
 #define ambientFlag
 #endif //ambientFlag
 
@@ -119,7 +119,7 @@ varying float v_fog;
 void main() {
     #if defined(normalFlag)
     vec3 normal = v_normal;
-#endif // normalFlag
+    #endif // normalFlag
 
     #if defined(diffuseTextureFlag) && defined(diffuseColorFlag) && defined(colorFlag)
     vec4 diffuse = texture2D(u_diffuseTexture, v_diffuseUV) * u_diffuseColor * v_color;
@@ -158,13 +158,13 @@ void main() {
     //gl_FragColor.rgb = texture2D(u_shadowTexture, v_shadowMapUv.xy);
     #else
     gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_lightDiffuse)) + emissive.rgb;
-#endif //shadowMapFlag
+    #endif //shadowMapFlag
     #else
     #ifdef shadowMapFlag
     gl_FragColor.rgb = getShadow() * (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
     #else
     gl_FragColor.rgb = (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
-#endif //shadowMapFlag
+    #endif //shadowMapFlag
     #endif
     #else
     #if defined(specularTextureFlag) && defined(specularColorFlag)
@@ -183,19 +183,19 @@ void main() {
     //gl_FragColor.rgb = texture2D(u_shadowTexture, v_shadowMapUv.xy);
     #else
     gl_FragColor.rgb = (diffuse.rgb * (v_lightDiffuse + v_ambientLight)) + specular + emissive.rgb;
-#endif //shadowMapFlag
+    #endif //shadowMapFlag
     #else
     #ifdef shadowMapFlag
     gl_FragColor.rgb = getShadow() * ((diffuse.rgb * v_lightDiffuse) + specular) + emissive.rgb;
     #else
     gl_FragColor.rgb = (diffuse.rgb * v_lightDiffuse) + specular + emissive.rgb;
-#endif //shadowMapFlag
+    #endif //shadowMapFlag
     #endif
     #endif //lightingFlag
 
     #ifdef fogFlag
     gl_FragColor.rgb = mix(gl_FragColor.rgb, u_fogColor.rgb, v_fog);
-#endif // end fogFlag
+    #endif // end fogFlag
 
     #ifdef blendedFlag
     gl_FragColor.a = diffuse.a * v_opacity;
@@ -206,5 +206,4 @@ void main() {
     #else
     gl_FragColor.a = 1.0;
     #endif
-
 }

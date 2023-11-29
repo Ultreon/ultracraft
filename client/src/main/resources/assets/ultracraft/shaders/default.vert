@@ -173,7 +173,7 @@ struct PointLight
 uniform PointLight u_pointLights[numPointLights];
 #endif // numPointLights
 
-#if    defined(ambientLightFlag) || defined(ambientCubemapFlag) || defined(sphericalHarmonicsFlag)
+#if	defined(ambientLightFlag) || defined(ambientCubemapFlag) || defined(sphericalHarmonicsFlag)
 #define ambientFlag
 #endif //ambientFlag
 
@@ -271,7 +271,7 @@ void main() {
     #endif
 
     #ifdef lightingFlag
-    #if    defined(ambientLightFlag)
+    #if	defined(ambientLightFlag)
     vec3 ambientLight = u_ambientLight;
     #elif defined(ambientFlag)
     vec3 ambientLight = vec3(0.0);
