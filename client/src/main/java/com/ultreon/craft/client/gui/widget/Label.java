@@ -1,6 +1,8 @@
 package com.ultreon.craft.client.gui.widget;
 
 import com.ultreon.craft.client.gui.Alignment;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.components.AlignmentComponent;
 import com.ultreon.craft.client.gui.widget.components.ColorComponent;
@@ -9,6 +11,8 @@ import com.ultreon.craft.client.gui.widget.components.TextComponent;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
+
+import java.util.function.Supplier;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
@@ -39,6 +43,51 @@ public class Label extends Widget {
         this.scale = this.register(id("scale"), new ScaleComponent(1));
     }
 
+    public static Label of(TextObject text) {
+        Label label = new Label();
+        label.text.set(text);
+        return label;
+    }
+
+    public static Label of(String text) {
+        Label label = new Label();
+        label.text.setRaw(text);
+        return label;
+    }
+
+    public static Label of() {
+        Label label = new Label();
+        label.text.set(TextObject.empty());
+        return label;
+    }
+
+    @Override
+    public Label position(Supplier<Position> position) {
+        this.onRevalidate(widget -> this.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public Label bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> this.setBounds(position.get()));
+        return this;
+    }
+
+    public Label alignment(Alignment alignment) {
+        this.alignment.set(alignment);
+        return this;
+    }
+
+    public Label textColor(Color textColor) {
+        this.textColor.set(textColor);
+        return this;
+    }
+
+    public Label scale(int scale) {
+        this.scale.set(scale);
+        return this;
+    }
+
     @Override
     public void renderBackground(Renderer renderer, float deltaTime) {
         this.size.idt();
@@ -47,17 +96,9 @@ public class Label extends Widget {
         var textColor = this.textColor.get();
 
         switch (this.alignment.get()) {
-            case LEFT:
-                renderer.drawTextScaledLeft(text, scale, this.pos.x, this.pos.y, textColor);
-                break;
-
-            case CENTER:
-                renderer.drawTextScaledCenter(text, scale, this.pos.x, this.pos.y, textColor);
-                break;
-
-            case RIGHT:
-                renderer.drawTextScaledRight(text, scale, this.pos.x, this.pos.y, textColor);
-                break;
+            case LEFT -> renderer.textLeft(text, scale, this.pos.x, this.pos.y, textColor);
+            case CENTER -> renderer.textCenter(text, scale, this.pos.x, this.pos.y, textColor);
+            case RIGHT -> renderer.textRight(text, scale, this.pos.x, this.pos.y, textColor);
         }
     }
 

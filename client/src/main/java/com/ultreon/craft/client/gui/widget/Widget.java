@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 public abstract class Widget implements StaticWidget, GameComponentHolder<UIComponent> {
@@ -89,6 +90,10 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
         this.renderBackground(renderer, deltaTime);
         this.renderWidget(renderer, mouseX, mouseY, deltaTime);
     }
+
+    public abstract Widget position(Supplier<Position> position);
+
+    public abstract Widget bounds(Supplier<Bounds> position);
 
     public void renderWidget(Renderer renderer, int mouseX, int mouseY, float deltaTime) {
 

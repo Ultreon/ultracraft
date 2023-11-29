@@ -31,14 +31,14 @@ public class TextureStitcher {
         int width = 1024; // calculate the width of the atlas
         int height = this.calcHeight(width);
 
-        // Create a temporary FrameBuffer to hold the packed textures
+        // Create a temporary DepthFrameBuffer to hold the packed textures
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
 
-        // Create a SpriteBatch to draw the packed textures to the FrameBuffer
+        // Create a SpriteBatch to draw the packed textures to the DepthFrameBuffer
         SpriteBatch spriteBatch = new SpriteBatch();
         spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 
-        // Draw each texture to the appropriate location on the FrameBuffer
+        // Draw each texture to the appropriate location on the DepthFrameBuffer
         this.fbo.begin();
         spriteBatch.begin();
         int x = 0;
@@ -66,7 +66,7 @@ public class TextureStitcher {
         spriteBatch.end();
         this.fbo.end();
 
-        // Create a new Texture from the packed FrameBuffer
+        // Create a new Texture from the packed DepthFrameBuffer
         Texture textureAtlas = this.fbo.getColorBufferTexture();
         textureAtlas.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         textureAtlas.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);

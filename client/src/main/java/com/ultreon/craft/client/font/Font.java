@@ -92,10 +92,10 @@ public class Font {
             this.draw(renderer, font, color, batch, text, x + 1, y, false, italic, underlined, strikethrough, scale);
 
         if (underlined)
-            renderer.drawLine(x, (int) (y + (font.getLineHeight() + 2)) - 0.5f, x + (this.width(text)), (int) (y + (font.getLineHeight() + 2)) - 0.5f, color);
+            renderer.line(x, (int) (y + (font.getLineHeight() + 2)) - 0.5f, x + (this.width(text)), (int) (y + (font.getLineHeight() + 2)) - 0.5f, color);
 
         if (strikethrough)
-            renderer.drawLine(x, (int) (y + (font.getLineHeight()) / 2), x + (this.width(text)), (int) (y + (font.getLineHeight()) / 2), color);
+            renderer.line(x, (int) (y + (font.getLineHeight()) / 2), x + (this.width(text)), (int) (y + (font.getLineHeight()) / 2), color);
     }
 
     public float width(String text) {

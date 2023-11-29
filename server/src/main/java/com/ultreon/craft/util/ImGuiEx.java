@@ -98,7 +98,7 @@ public class ImGuiEx {
         ImGui.sameLine();
         try {
             ImFloat i = new ImFloat(value.getFloat());
-            if (ImGui.inputFloat("##" + id, i)) {
+            if (ImGui.inputFloat("##" + id, i, 0, 0, "%.6f")) {
                 setter.accept(i.get());
             }
         } catch (Exception e) {

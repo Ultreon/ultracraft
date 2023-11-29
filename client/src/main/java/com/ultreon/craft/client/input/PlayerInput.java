@@ -1,7 +1,6 @@
 package com.ultreon.craft.client.input;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
@@ -36,18 +35,28 @@ public class PlayerInput {
         this.moveX = 0;
         this.moveY = 0;
 
-        this.forward = Gdx.input.isKeyPressed(Input.Keys.W) && Gdx.input.isCursorCatched();
-        this.backward = Gdx.input.isKeyPressed(Input.Keys.S) && Gdx.input.isCursorCatched();
-        this.strafeLeft = Gdx.input.isKeyPressed(Input.Keys.A) && Gdx.input.isCursorCatched();
-        this.strafeRight = Gdx.input.isKeyPressed(Input.Keys.D) && Gdx.input.isCursorCatched();
-        this.up = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
-        this.down = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isCursorCatched();
+        this.forward = KeyBinds.walkForwardsKey.isPressed() && Gdx.input.isCursorCatched();
+        this.backward = KeyBinds.walkBackwardsKey.isPressed() && Gdx.input.isCursorCatched();
+        this.strafeLeft = KeyBinds.walkLeftKey.isPressed() && Gdx.input.isCursorCatched();
+        this.strafeRight = KeyBinds.walkRightKey.isPressed() && Gdx.input.isCursorCatched();
+        this.up = KeyBinds.jumpKey.isPressed() && Gdx.input.isCursorCatched();
+        this.down = KeyBinds.crouchKey.isPressed() && Gdx.input.isCursorCatched();
+        player.setRunning(KeyBinds.runningKey.isPressed() && Gdx.input.isCursorCatched());
 
         this.move();
 
         this.controllerMove();
 
-        this.tmp.set(-speed * this.moveX, 0, speed * this.moveY).rotate(player.getXRot(), 0, 1, 0);
+        if (this.moveX > 0)
+            player.xRot = Math.max(player.xRot - 25 / (player.xHeadRot - player.xRot + 50), player.xRot - 50);
+        else if (this.moveX < -0)
+            player.xRot = Math.min(player.xRot + 25 / (player.xRot - player.xHeadRot + 50), player.xRot + 50);
+        else if (this.moveY != 0 && player.xRot > player.xHeadRot)
+            player.xRot = Math.max(player.xRot - (10 / (player.xRot - player.xHeadRot)), player.xHeadRot);
+        else if (this.moveY != 0 && player.xRot < player.xHeadRot)
+            player.xRot = Math.min(player.xRot + (10 / (player.xHeadRot - player.xRot)), player.xHeadRot);
+
+        this.tmp.set(-speed * this.moveX, 0, speed * this.moveY).rotate(player.xHeadRot, 0, 1, 0);
         this.vel.set(this.tmp);
     }
 
@@ -87,5 +96,9 @@ public class PlayerInput {
 
     public Vector3 getVelocity() {
         return this.vel;
+    }
+
+    public boolean isWalking() {
+        return this.forward || this.backward || this.strafeLeft || this.strafeRight;
     }
 }

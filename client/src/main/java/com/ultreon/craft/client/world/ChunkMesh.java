@@ -38,6 +38,7 @@ public class ChunkMesh implements Pool.Poolable {
         this.renderable = renderable;
         this.meshPart = renderable.meshPart;
         this.transform = renderable.worldTransform;
+        this.renderable.userData = this;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class ChunkMesh implements Pool.Poolable {
             ValueTracker.setVertexCount(ValueTracker.getVertexCount() - this.meshPart.mesh.getMaxVertices());
             this.meshPart.mesh.dispose();
 
-            this.meshPart.mesh = null;
+//            this.meshPart.mesh = null;
         }
         this.meshPart.id = null;
         this.meshPart.center.setZero();
@@ -60,7 +61,7 @@ public class ChunkMesh implements Pool.Poolable {
         this.renderable.material = null;
         this.renderable.environment = null;
         this.renderable.bones = null;
-        this.renderable.shader = null;
+//        this.renderable.shader = null;
         this.renderable.userData = null;
     }
 }

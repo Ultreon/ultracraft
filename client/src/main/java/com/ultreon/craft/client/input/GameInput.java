@@ -30,7 +30,6 @@ import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2BooleanArrayMap;
@@ -175,9 +174,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
         float deltaY = joystick.y * deltaTime * Constants.CTRL_CAMERA_SPEED;
 
-        Vec2f rotation = player.getRotation();
-        rotation.add(deltaX * GameInput.DEG_PER_PIXEL, deltaY * GameInput.DEG_PER_PIXEL);
-        player.setRotation(rotation);
+        player.rotateHead(deltaX * GameInput.DEG_PER_PIXEL, deltaY * GameInput.DEG_PER_PIXEL);
 
         @Nullable World world = this.client.world;
         if (world != null)

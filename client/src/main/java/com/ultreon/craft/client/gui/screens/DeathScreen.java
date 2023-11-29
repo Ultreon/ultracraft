@@ -4,14 +4,15 @@ import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.Label;
+import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.network.packets.c2s.C2SRespawnPacket;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.translations.v1.Language;
 
 public class DeathScreen extends Screen {
-    private Button respawnButton;
-    private Button exitWorldButton;
+    private TextButton respawnButton;
+    private TextButton exitWorldButton;
 
     public DeathScreen() {
         super(Language.translate("ultracraft.screen.death.title"));
@@ -19,18 +20,22 @@ public class DeathScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        var titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 2 - 50));
-        titleLabel.text().set(this.title);
-        this.respawnButton = builder.addWithPos(new Button(), () -> new Position(this.size.width / 2 - 100, this.size.height / 3));
-        this.respawnButton.callback().set(this::respawn);
-        this.respawnButton.text().translate("ultracraft.screen.death.respawn");
+        builder.add(Label.of(this.title)
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 2 - 50)));
 
-        this.exitWorldButton = builder.addWithPos(new Button(), () -> new Position(this.size.width / 2 - 100, this.size.height / 3 + 25));
-        this.exitWorldButton.callback().set(this::exitWorld);
-        this.exitWorldButton.text().translate("ultracraft.ui.exitWorld");
+        this.respawnButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.death.respawn"))
+                .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3))
+                .callback(this::respawn)
+                .translation("ultracraft.screen.death.respawn"));
+
+        this.exitWorldButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"))
+                        .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3 + 25)))
+                .callback(this::exitWorld)
+                .translation("ultracraft.ui.exitWorld");
     }
 
-    private void respawn(Button button) {
+    private void respawn(TextButton button) {
         this.client.connection.send(new C2SRespawnPacket());
     }
 
@@ -39,15 +44,15 @@ public class DeathScreen extends Screen {
         super.renderBackground(renderer);
     }
 
-    private void exitWorld(Button caller) {
+    private void exitWorld(TextButton caller) {
         this.client.exitWorldToTitle();
     }
 
-    public Button getRespawnButton() {
+    public TextButton getRespawnButton() {
         return this.respawnButton;
     }
 
-    public Button getExitWorldButton() {
+    public TextButton getExitWorldButton() {
         return this.exitWorldButton;
     }
 }

@@ -9,15 +9,18 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.GLVersion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.google.common.base.Preconditions;
@@ -45,12 +48,17 @@ import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
+import com.ultreon.craft.client.init.ShaderPrograms;
+import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
-import com.ultreon.craft.client.model.*;
+import com.ultreon.craft.client.model.block.*;
+import com.ultreon.craft.client.model.entity.EntityModel;
+import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
+import com.ultreon.craft.client.model.entity.renderer.PlayerRenderer;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
@@ -58,6 +66,10 @@ import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.registry.MenuRegistry;
+import com.ultreon.craft.client.registry.ModelRegistry;
+import com.ultreon.craft.client.registry.RendererRegistry;
+import com.ultreon.craft.client.render.pipeline.*;
+import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
 import com.ultreon.craft.client.rpc.Activity;
@@ -76,6 +88,7 @@ import com.ultreon.craft.debug.inspect.DefaultInspections;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.debug.profiler.Profiler;
+import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ConfigEvents;
@@ -114,6 +127,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
+import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -135,8 +149,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.zip.Deflater;
 
-import static com.badlogic.gdx.graphics.GL20.GL_CULL_FACE;
-import static com.badlogic.gdx.graphics.GL20.GL_FRONT;
+import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.math.MathUtils.ceil;
 
 @SuppressWarnings("UnusedReturnValue")
@@ -145,13 +158,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static final Logger LOGGER = LoggerFactory.getLogger("UltracraftClient");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     public static final int[] SIZES = new int[]{16, 24, 32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
-    static final int CULL_FACE = GL_FRONT;
+    static final int CULL_FACE = GL_BACK;
     public static final float FROM_ZOOM = 2.0f;
     public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
     private static ArgParser arguments;
     private final Cursor normalCursor;
     private final Cursor clickCursor;
+    private final RenderPipeline pipeline;
     public Connection connection;
     public ServerData serverData;
     public ExecutorService chunkLoadingExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
@@ -194,7 +208,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @Nullable
     public LocalPlayer player;
     @NotNull
-    private final SpriteBatch spriteBatch;
+    public final SpriteBatch spriteBatch;
     public final ModelBatch modelBatch;
     public final GameCamera camera;
     public final PlayerInput playerInput = new PlayerInput(this);
@@ -251,8 +265,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public IntegratedServer integratedServer;
     private final User user;
     private int currentTps;
-    private double tickTime = 0d;
-    private double gameFrameTime = 0d;
+    private float tickTime = 0f;
+    public float partialTick = 0f;
+    public float frameTime = 0f;
     private int ticksPassed = 0;
 
     double time = System.currentTimeMillis();
@@ -272,11 +287,19 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private boolean wasClicking;
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
+    private final G3dModelLoader modelLoader;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
         UltracraftClient.LOGGER.info("Booting game!");
         UltracraftClient.instance = this;
+
+        Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
+
+        this.resourceManager = new ResourceManager("assets");
+        this.textureManager = new TextureManager(this.resourceManager);
+
+        this.resourceManager.importDeferredPackage(this.getClass());
 
         this.config = new UcConfiguration<>("ultracraft-client", EnvType.CLIENT, new UltracraftClientConfig());
         this.config.event.listen(this::onReloadConfig);
@@ -291,12 +314,18 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         ImGuiOverlay.preInitImGui();
 
-        this.resourceManager = new ResourceManager("assets");
-        this.textureManager = new TextureManager(this.resourceManager);
+        this.modelLoader = new G3dModelLoader(new JsonReader());
 
         this.camera = new GameCamera(67, this.getWidth(), this.getHeight());
         this.camera.near = 0.01f;
         this.camera.far = 2;
+
+        this.pipeline = new RenderPipeline(new MainRenderNode(), this.camera)
+                .node(new CollectNode())
+                .node(new PlainNode())
+                .node(new DepthNode())
+                .node(new SSAONode())
+        ;
 
         // White pixel for the shape drawer.
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -307,12 +336,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.spriteBatch = new SpriteBatch();
         this.shapes = new ShapeDrawer(this.spriteBatch, white);
 
-        var shaderConfig = new DepthShader.Config();
-        shaderConfig.defaultCullFace = GL_FRONT;
-        this.modelBatch = new ModelBatch(new DefaultShaderProvider(shaderConfig));
-        this.modelBatch.getRenderContext().setCullFace(UltracraftClient.CULL_FACE);
+        DepthShader.Config shaderConfig = new DepthShader.Config();
+        shaderConfig.defaultCullFace = GL_BACK;
+        shaderConfig.defaultDepthFunc = GL_DEPTH_FUNC;
+        this.modelBatch = new ModelBatch(new GameShaderProvider(shaderConfig));
 
-        this.gameRenderer = new GameRenderer(this, this.modelBatch, this.spriteBatch);
+        this.gameRenderer = new GameRenderer(this, this.modelBatch, this.spriteBatch, this.pipeline);
 
         // Textures
         this.ultreonBgTex = new Texture("assets/ultracraft/textures/gui/loading_overlay_bg.png");
@@ -352,16 +381,22 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
     }
 
+    private static Texture loadEntityTex(String fileName) {
+        FileHandle handle = UltracraftClient.resource(Identifier.parse(fileName).mapPath(path -> "textures/" + path));
+        Pixmap pixmap = new Pixmap(handle);
+        return new Texture(pixmap);
+    }
+
     private void onReloadConfig() {
         UltracraftClientConfig config = this.config.get();
         if (config.fullscreen) {
             Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
         }
-        String[] split = config.language.split("\\_");
+        String[] split = config.language.split("_");
         if (split.length == 2) {
             LanguageManager.setCurrentLanguage(new Locale(split[0], split[1]));
         } else {
-            UltracraftClient.LOGGER.error("Invalid language: " + config.language);
+            UltracraftClient.LOGGER.error("Invalid language: {}", config.language);
             LanguageManager.setCurrentLanguage(new Locale("en", "us"));
             config.language = "en_us";
             this.config.save();
@@ -511,6 +546,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         config.setForegroundFPS(0);
         config.setIdleFPS(10);
         config.setBackBufferConfig(8, 8, 8, 8, 8, 8, 0);
+        config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL32, 4, 1);
         config.setInitialVisible(false);
         config.setTitle("Ultracraft");
         config.setWindowIcon(UltracraftClient.getIcons());
@@ -594,8 +630,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     @SuppressWarnings("UnstableApiUsage")
     private void load() {
-        Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
-
         var argList = Arrays.asList(this.argv);
         this.isDevMode = argList.contains("--dev") && FabricLoader.getInstance().isDevelopmentEnvironment();
 
@@ -630,7 +664,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.loadingOverlay.setProgress(0.15F);
 
         UltracraftClient.LOGGER.info("Importing resources");
-        this.resourceManager.importDeferredPackage(this.getClass());
         this.importModResources(this.resourceManager);
 
         this.loadingOverlay.setProgress(0.35F);
@@ -681,6 +714,11 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         Fonts.nopInit();
         SoundEvents.nopInit();
 
+        UltracraftClient.invokeAndWait(() -> {
+            Shaders.nopInit();
+            ShaderPrograms.nopInit();
+        });
+
         Biomes.nopInit();
 
         this.registerMenuScreens();
@@ -692,7 +730,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         Registry.freeze();
 
         UltracraftClient.LOGGER.info("Registering models");
-        this.registerModels();
+        this.registerRendering();
 
         this.loadingOverlay.setProgress(0.95F);
 
@@ -800,7 +838,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @param id the identifier.
      * @return the resource file handle.
      */
-    public static FileHandle resource(Identifier id) {
+    public static @NotNull
+    @NewInstance FileHandle resource(Identifier id) {
         return new ResourceFileHandle(id);
     }
 
@@ -950,7 +989,28 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.itemTextureAtlas = itemTextures.stitch();
     }
 
-    private void registerModels() {
+    private void registerRendering() {
+        this.registerBlockModels();
+        this.registerEntityModels();
+        this.registerEntityRenderers();
+
+        for (var e : Registries.ENTITIES.entries()) {
+            EntityType<?> type = e.getValue();
+            @SuppressWarnings("unchecked") EntityRenderer<EntityModel<?>, ?> renderer = (EntityRenderer<EntityModel<?>, ?>) RendererRegistry.get(type);
+            EntityModel<?> entityModel = ModelRegistry.get(type);
+
+            FileHandle handle = UltracraftClient.resource(e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
+            if (handle.exists()) {
+                Model model = UltracraftClient.invokeAndWait(() -> this.modelLoader.loadModel(handle, UltracraftClient::loadEntityTex));
+                model.materials.forEach(modelModel -> modelModel.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)));
+                ModelRegistry.registerFinished(type, model);
+            } else {
+                ModelRegistry.registerFinished(type, entityModel.finish(renderer.getTextures()));
+            }
+        }
+    }
+
+    private void registerBlockModels() {
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.registerDefault(Blocks.ERROR);
         BlockModelRegistry.registerDefault(Blocks.DIRT);
@@ -958,6 +1018,16 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         BlockModelRegistry.registerDefault(Blocks.WATER);
         BlockModelRegistry.registerDefault(Blocks.STONE);
         BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
+    }
+
+    private void registerEntityModels() {
+        ClientLifecycleEvents.REGISTER_MODELS.factory().onRegisterModels();
+    }
+
+    private void registerEntityRenderers() {
+        RendererRegistry.register(EntityTypes.PLAYER, new PlayerRenderer(null));
+
+        ClientLifecycleEvents.REGISTER_RENDERERS.factory().onRegisterRenderers();
     }
 
     private GameInput createInput() {
@@ -1289,14 +1359,15 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         double time2 = System.currentTimeMillis();
         var passed = time2 - this.time;
-        this.gameFrameTime += passed;
-        this.tickTime += passed;
+        this.frameTime += (float) passed;
+        this.tickTime += (float) passed;
 
         this.time = time2;
 
-        double tickCap = 1000.0 / UltracraftServer.TPS;
-        while (this.gameFrameTime >= tickCap) {
-            this.gameFrameTime -= tickCap;
+        float tickCap = 1000f / UltracraftServer.TPS;
+        while (this.frameTime >= tickCap) {
+            this.frameTime -= tickCap;
+            this.partialTick = this.frameTime / tickCap;
 
             canTick = true;
         }
@@ -1546,6 +1617,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.itemRenderer.resize(width, height);
         }
 
+        this.gameRenderer.resize(width, height);
+
         var cur = this.screen;
         if (cur != null) {
             cur.resize(ceil(width / this.getGuiScale()), ceil(height / this.getGuiScale()));
@@ -1568,6 +1641,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
             UltracraftClient.cleanUp(this.input);
             UltracraftClient.cleanUp(this.integratedServer);
+            UltracraftClient.cleanUp(this.pipeline);
 
             if (this.scheduler != null) this.scheduler.shutdownNow();
             if (this.chunkLoadingExecutor != null) this.chunkLoadingExecutor.shutdownNow();

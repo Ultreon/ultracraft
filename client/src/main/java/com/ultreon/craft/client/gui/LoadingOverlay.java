@@ -44,8 +44,8 @@ public class LoadingOverlay implements StaticWidget {
         float drawY = (height - drawHeight) / 2;
         renderer.blit(this.ultreonLogoTex, (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1920, 1080, 1920, 1080);
 
-        renderer.fill(200, height - height / 3, width - 400, 8, Color.argb(0x7fffffff));
-        renderer.fill(200, height - height / 3, (int) ((width - 400) * this.progress), 8, Color.rgb(0xffffff));
+        renderer.fill(200, height - height / 3, width - 400, 8, Color.argb(0x7fffffff))
+                .fill(200, height - height / 3, (int) ((width - 400) * this.progress), 8, Color.rgb(0xffffff));
     }
 
     public void setProgress(@Range(from = 0, to = 1) float progress) {

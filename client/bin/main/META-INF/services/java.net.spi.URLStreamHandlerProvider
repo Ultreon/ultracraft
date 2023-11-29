@@ -1,7 +1,0 @@
-com.ultreon.craft.client.uri.GdxAbsoluteUrlHandler
-com.ultreon.craft.client.uri.GdxClasspathUrlHandler
-com.ultreon.craft.client.uri.GdxExternalUrlHandler
-com.ultreon.craft.client.uri.GdxInternalUrlHandler
-com.ultreon.craft.client.uri.GdxLocalUrlHandler
-com.ultreon.craft.client.uri.MemoryUrlHandler
-com.ultreon.craft.client.uri.ResourceUrlHandler

@@ -20,6 +20,7 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
+import imgui.type.ImFloat;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
@@ -27,10 +28,18 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class ImGuiOverlay {
+    public static final ImFloat I_GAMMA = new ImFloat(1.5f);
+    public static final ImFloat U_CAP = new ImFloat(0.45f);
+    public static final ImFloat U_RADIUS = new ImFloat(0.45f);
+    public static final ImFloat U_INTENSITY = new ImFloat(1.5f);
+    public static final ImFloat U_MULTIPLIER = new ImFloat(1000.0f);
+    public static final ImFloat U_DEPTH_TOLERANCE = new ImFloat(0.0001f);
+    public static final ImBoolean SHOW_RENDER_PIPELINE = new ImBoolean(false);
     private static final ImBoolean SHOW_IM_GUI = new ImBoolean(false);
     private static final ImBoolean SHOW_PLAYER_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_GUI_UTILS = new ImBoolean(false);
     private static final ImBoolean SHOW_UTILS = new ImBoolean(false);
+    private static final ImBoolean SHOW_SHADER_EDITOR = new ImBoolean(false);
     private static final ImBoolean SHOW_CHUNK_SECTION_BORDERS = new ImBoolean(false);
     private static final ImBoolean SHOW_CHUNK_DEBUGGER = new ImBoolean(false);
     private static final ImBoolean SHOW_PROFILER = new ImBoolean(false);
@@ -139,6 +148,7 @@ public class ImGuiOverlay {
         if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiEditor(client);
         if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
         if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
+        if (ImGuiOverlay.SHOW_SHADER_EDITOR.get()) ImGuiOverlay.showShaderEditor(client);
     }
 
     private static void handleInput() {
@@ -165,6 +175,7 @@ public class ImGuiOverlay {
             if (ImGui.beginMenu("Edit")) {
                 ImGui.menuItem("Player Editor", "Ctrl+P", ImGuiOverlay.SHOW_PLAYER_UTILS);
                 ImGui.menuItem("Gui Editor", "Ctrl+G", ImGuiOverlay.SHOW_GUI_UTILS);
+                ImGui.menuItem("Shader Editor", "", ImGuiOverlay.SHOW_SHADER_EDITOR);
                 ImGui.endMenu();
             }
             if (ImGui.beginMenu("View")) {
@@ -172,6 +183,7 @@ public class ImGuiOverlay {
                 ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
                 ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
                 ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
+                ImGui.menuItem("Render Pipeline", null, ImGuiOverlay.SHOW_RENDER_PIPELINE);
                 ImGui.endMenu();
             }
 
@@ -204,6 +216,15 @@ public class ImGuiOverlay {
                     UltracraftServer.invokeAndWait(() -> client.integratedServer.getWorld().regenerateChunk(ImGuiOverlay.RESET_CHUNK));
                 });
             }
+            ImGui.end();
+        }
+    }
+
+    private static void showShaderEditor(UltracraftClient client) {
+        ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
+        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
+        if (ImGui.begin("Shader Editor", ImGuiOverlay.getDefaultFlags())) {
+            ImGuiEx.editFloat("iGamma", "Shader::SSAO::iGamma", ImGuiOverlay.I_GAMMA::get, ImGuiOverlay.I_GAMMA::set);
             ImGui.end();
         }
     }

@@ -61,6 +61,11 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
+    public boolean isWalking() {
+        return this.client.playerInput.isWalking();
+    }
+
+    @Override
     protected void hurtFromVoid() {
         // Player void damage should be handled by the server.
     }
@@ -97,6 +102,11 @@ public class LocalPlayer extends ClientPlayer {
         GameInput.startVibration(200, 1.0F);
 
         super.onVoidDamage();
+    }
+
+    @Override
+    public float getWalkingSpeed() {
+        return this.isRunning() ? super.getWalkingSpeed() * this.runModifier : super.getWalkingSpeed();
     }
 
     @Override

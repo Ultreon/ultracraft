@@ -396,20 +396,6 @@ public class Entity {
         return direction;
     }
 
-    public static Vec3d getLookVector(float xRot, float yRot) {
-        // Calculate the direction vector
-        Vec3d direction = new Vec3d();
-
-        float yRot0 = Mth.clamp(yRot, -89.9F, 89.9F);
-        direction.x = (float)(Math.cos(Math.toRadians(yRot0)) * Math.sin(Math.toRadians(xRot)));
-        direction.z = (float)(Math.cos(Math.toRadians(yRot0)) * Math.cos(Math.toRadians(xRot)));
-        direction.y = (float)(Math.sin(Math.toRadians(yRot0)));
-
-        // Normalize the direction vector
-        direction.nor();
-        return direction;
-    }
-
     public void setRotation(Vec2f position) {
         this.xRot = position.x;
         this.yRot = Mth.clamp(position.y, -90, 90);

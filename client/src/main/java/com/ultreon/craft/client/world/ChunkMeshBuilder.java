@@ -10,7 +10,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.BlockPos;
@@ -184,84 +184,84 @@ public class ChunkMeshBuilder {
         return side == null || side == Blocks.AIR || side.isTransparent() || !side.doesRender();
     }
 
-    static float[] backUv = {
+    public static float[] backUv = {
             1, 1,
             1, 0,
             0, 0,
             0, 1,
     };
 
-    static float[] frontUv = {
-            1, 1,
-            0, 1,
-            0, 0,
-            1, 0,
-    };
-
-    static float[] rightUv = {
-            1, 1,
-            0, 1,
-            0, 0,
-            1, 0,
-    };
-
-    static float[] leftUv = {
-            1, 1,
+    public static float[] frontUv = {
             1, 0,
             0, 0,
             0, 1,
+            1, 1,
     };
 
-    static float[] bottomUv = {
+    public static float[] rightUv = {
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+    };
+
+    public static float[] leftUv = {
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+    };
+
+    public static float[] bottomUv = {
             0, 0,
             0, 1,
             1, 1,
             0, 1,
     };
 
-    static float[] topUv = {
+    public static float[] topUv = {
             0, 0,
             1, 0,
             1, 1,
             0, 1
     };
 
-    static float[] topVertices = {
+    public static float[] topVertices = {
             0, 1, 0,
             1, 1, 0,
             1, 1, 1,
             0, 1, 1
     };
 
-    static float[] bottomVertices = {
+    public static float[] bottomVertices = {
             0, 0, 0,
             0, 0, 1,
             1, 0, 1,
             1, 0, 0
     };
 
-    static float[] leftVertices = {
+    public static float[] leftVertices = {
             0, 0, 0,
             0, 1, 0,
             0, 1, 1,
             0, 0, 1
     };
 
-    static float[] rightVertices = {
+    public static float[] rightVertices = {
             1, 0, 0,
             1, 0, 1,
             1, 1, 1,
             1, 1, 0
     };
 
-    static float[] frontVertices = {
+    public static float[] frontVertices = {
             0, 0, 0,
             1, 0, 0,
             1, 1, 0,
             0, 1, 0,
     };
 
-    static float[] backVertices = {
+    public static float[] backVertices = {
             0, 0, 1,
             0, 1, 1,
             1, 1, 1,
@@ -289,17 +289,17 @@ public class ChunkMeshBuilder {
 
         Vector3 normal = face.getNormal();
 
-        // FIXME Random rotation is broken.
-        if (faceProperties.randomRotation) {
-            // Generate seed for offset.
-            vertices = MathHelper.rotate(vertices, new Vector3().add(0.5f), face.getAxis());
-        }
+//        // FIXME Random rotation is broken.
+//        if (faceProperties.randomRotation) {
+//            // Generate seed for offset.
+//            vertices = MathHelper.rotate(vertices, new Vector3().add(0.5f), face.getAxis());
+//        }
 
         // Loop vertices and uvs and add them to the output.
         for (int vertex = 0, uv = 0; vertex < vertices.length; vertex += 3, uv += 2) {
-            float x = offset.x + vertices[vertex];
-            float y = offset.y + vertices[vertex + 1];
-            float z = offset.z + vertices[vertex + 2];
+            float x = offset.x + vertices[vertices.length - 3 - vertex];
+            float y = offset.y + vertices[vertices.length - 3 - vertex + 1];
+            float z = offset.z + vertices[vertices.length - 3 - vertex + 2];
 
             // Calculate the UV coordinates from the texture region.
             float u = MathHelper.lerp(uvs[uv], region.getU(), region.getU2());

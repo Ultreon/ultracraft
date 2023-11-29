@@ -16,11 +16,14 @@ public class MessageScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        Label titleLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3 - 40));
-        titleLabel.text().set(this.title);
-        titleLabel.scale().set(2);
+        builder.add(Label.of(this.title)
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 - 40))
+                .scale(2));
 
-        this.messageLabel = builder.addWithPos(new Label(Alignment.CENTER), () -> new Position(this.size.width / 2, this.size.height / 3));
+        this.messageLabel = builder.add(Label.of()
+                .alignment(Alignment.CENTER)
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3)));
     }
 
     @Override
@@ -31,5 +34,15 @@ public class MessageScreen extends Screen {
     @Override
     public boolean canClose() {
         return false;
+    }
+
+    public MessageScreen message(TextObject message) {
+        this.messageLabel.text().set(message);
+        return this;
+    }
+
+    public MessageScreen message(String message) {
+        this.messageLabel.text().setRaw(message);
+        return this;
     }
 }

@@ -5,8 +5,8 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.widget.Button;
 import com.ultreon.craft.client.gui.widget.SelectionList;
+import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -24,8 +24,8 @@ import java.util.Map;
 public class ModListScreen extends Screen {
     private static final Identifier DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
-    private Button configButton;
-    private Button backButton;
+    private TextButton configButton;
+    private TextButton backButton;
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
     public ModListScreen(Screen back) {
@@ -34,26 +34,27 @@ public class ModListScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.list = builder.addWithBounds(new SelectionList<ModContainer>().withItemHeight(48), () -> new Bounds(0, 0, 200, this.size.height - 52));
-        this.list.withItemRenderer(this::renderItem);
-        this.list.withSelectable(true);
-        this.list.withEntries(FabricLoader.getInstance()
+        this.list = builder.add(new SelectionList<ModContainer>()
+                .itemHeight(48)
+                .bounds(() -> new Bounds(0, 0, 200, this.size.height - 52))
+                .itemRenderer(this::renderItem)
+                .selectable(true)
+                .entries(FabricLoader.getInstance()
                         .getAllMods()
                         .stream()
                         .sorted((a, b) -> a.getMetadata().getName().compareToIgnoreCase(b.getMetadata().getName()))
                         .filter(modContainer -> modContainer.getOrigin().getKind() != ModOrigin.Kind.NESTED)
-                        .toList());
+                        .toList()));
 
-        this.configButton = builder.addWithPos(new Button(190), () -> new Position(5, this.size.height - 51));
-        this.configButton.text().translate("ultracraft.screen.mod_list.config");
+        this.configButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.mod_list.config"), 190)
+                .position(() -> new Position(5, this.size.height - 51)));
         this.configButton.disable();
 
-        this.backButton = builder.addWithPos(new Button(190), () -> new Position(5, this.size.height - 26));
-        this.backButton.callback().set(this::onBack);
-        this.backButton.text().translate("ultracraft.ui.back");
+        this.backButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.back"), 190).position(() -> new Position(5, this.size.height - 26)))
+                .callback(this::onBack);
     }
 
-    public void onBack(Button button) {
+    public void onBack(TextButton button) {
         this.back();
     }
 
@@ -61,8 +62,8 @@ public class ModListScreen extends Screen {
         ModMetadata metadata = modContainer.getMetadata();
         var x = this.list.getX();
 
-        renderer.drawTextLeft(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
-        renderer.drawTextLeft("Version: " + metadata.getVersion().getFriendlyString(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
+        renderer.textLeft(metadata.getName(), x + 50, y + this.list.getItemHeight() - 34);
+        renderer.textLeft("Version: " + metadata.getVersion().getFriendlyString(), x + 50, y + this.list.getItemHeight() - 34 + 12, Color.rgb(0x808080));
 
         this.drawIcon(renderer, metadata, x + 7, y + 7, 32);
     }
@@ -111,13 +112,13 @@ public class ModListScreen extends Screen {
             this.drawIcon(renderer, metadata, x, y, 64);
 
             int xIcon = x + 84;
-            renderer.drawTextScaledLeft(metadata.getName(), 2, xIcon, y);
-            renderer.drawTextLeft("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
-            renderer.drawTextLeft("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
-            renderer.drawTextLeft(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
+            renderer.textLeft(metadata.getName(), 2, xIcon, y);
+            renderer.textLeft("ID: " + metadata.getId(), xIcon, y + 24, Color.rgb(0x808080));
+            renderer.textLeft("Version: " + metadata.getVersion().getFriendlyString(), xIcon, y + 36, Color.rgb(0x808080));
+            renderer.textLeft(metadata.getAuthors().stream().findFirst().map(modContributor -> "Made By: " + modContributor.getName()).orElse("Made By Anonymous"), xIcon, y + 54, Color.rgb(0x505050));
 
             y += 84;
-            renderer.multiLineText(metadata.getDescription(), x, y, Color.rgb(0x808080));
+            renderer.textMultiline(metadata.getDescription(), x, y, Color.rgb(0x808080));
         }
     }
 
@@ -125,11 +126,11 @@ public class ModListScreen extends Screen {
         return this.list;
     }
 
-    public Button getConfigButton() {
+    public TextButton getConfigButton() {
         return this.configButton;
     }
 
-    public Button getBackButton() {
+    public TextButton getBackButton() {
         return this.backButton;
     }
 }
