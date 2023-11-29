@@ -130,14 +130,20 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel">
 <div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/CallbackComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">CallbackComponent</a>&lt;<a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#callback()" class="member-name-link">callback</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bounds(java.util.function.Supplier)" class="member-name-link">bounds</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/CallbackComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">CallbackComponent</a>&lt;<a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#callback()" class="member-name-link">callback</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#callback(com.ultreon.craft.client.gui.Callback)" class="member-name-link">callback</a><wbr>(<a href="../Callback.html" title="interface in com.ultreon.craft.client.gui">Callback</a>&lt;<a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a>&gt;&nbsp;callback)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseDrag(int,int,int,int,int)" class="member-name-link">mouseDrag</a><wbr>(int&nbsp;mouseX,
@@ -146,19 +152,27 @@ loadScripts(document, 'script');</script>
  int&nbsp;deltaY,
  int&nbsp;pointer)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseMove(int,int)" class="member-name-link">mouseMove</a><wbr>(int&nbsp;mouseX,
- int&nbsp;mouseY)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mousePress(int,int,int)" class="member-name-link">mousePress</a><wbr>(int&nbsp;mouseX,
+ int&nbsp;mouseY,
+ int&nbsp;button)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mousePress(int,int,int)" class="member-name-link">mousePress</a><wbr>(int&nbsp;mouseX,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseRelease(int,int,int)" class="member-name-link">mouseRelease</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  int&nbsp;button)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseRelease(int,int,int)" class="member-name-link">mouseRelease</a><wbr>(int&nbsp;mouseX,
- int&nbsp;mouseY,
- int&nbsp;button)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#of(int,int)" class="member-name-link">of</a><wbr>(int&nbsp;min,
+ int&nbsp;max)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#of(int,int,int)" class="member-name-link">of</a><wbr>(int&nbsp;width,
+ int&nbsp;min,
+ int&nbsp;max)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#position(java.util.function.Supplier)" class="member-name-link">position</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
@@ -169,15 +183,24 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/TextComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">TextComponent</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#text(com.ultreon.craft.text.TextObject)" class="member-name-link">text</a><wbr>(<a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;text)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#text(java.lang.String)" class="member-name-link">text</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/RangedValueComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">RangedValueComponent</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#value()" class="member-name-link">value</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#value(int)" class="member-name-link">value</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.Widget">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></h3>
-<code><a href="Widget.html#charType(char)">charType</a>, <a href="Widget.html#componentRegistry()">componentRegistry</a>, <a href="Widget.html#disable()">disable</a>, <a href="Widget.html#enable()">enable</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getComponent(com.ultreon.libs.commons.v0.Identifier,T...)">getComponent</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getName()">getName</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#hide()">hide</a>, <a href="Widget.html#isClickable()">isClickable</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPosWithin(int,int,int,int,int,int)">isPosWithin</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#keyPress(int)">keyPress</a>, <a href="Widget.html#keyRelease(int)">keyRelease</a>, <a href="Widget.html#mouseClick(int,int,int,int)">mouseClick</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a>, <a href="Widget.html#onFocusGained()">onFocusGained</a>, <a href="Widget.html#onFocusLost()">onFocusLost</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.widget.Widget.RevalidateListener)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#register(com.ultreon.libs.commons.v0.Identifier,C)">register</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#revalidate()">revalidate</a>, <a href="Widget.html#setBounds(com.ultreon.craft.client.gui.Bounds)">setBounds</a>, <a href="Widget.html#setEnabled(boolean)">setEnabled</a>, <a href="Widget.html#setPos(int,int)">setPos</a>, <a href="Widget.html#setPos(com.ultreon.craft.client.gui.Position)">setPos</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#setSize(int,int)">setSize</a>, <a href="Widget.html#setSize(com.ultreon.craft.client.gui.Size)">setSize</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#show()">show</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#withComponent(com.ultreon.libs.commons.v0.Identifier,java.util.function.Consumer,T...)">withComponent</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
+<code><a href="Widget.html#charType(char)">charType</a>, <a href="Widget.html#componentRegistry()">componentRegistry</a>, <a href="Widget.html#disable()">disable</a>, <a href="Widget.html#enable()">enable</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getComponent(com.ultreon.libs.commons.v0.Identifier,T...)">getComponent</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getName()">getName</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#hide()">hide</a>, <a href="Widget.html#isClickable()">isClickable</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPosWithin(int,int,int,int,int,int)">isPosWithin</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#keyPress(int)">keyPress</a>, <a href="Widget.html#keyRelease(int)">keyRelease</a>, <a href="Widget.html#mouseClick(int,int,int,int)">mouseClick</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#mouseMove(int,int)">mouseMove</a>, <a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a>, <a href="Widget.html#onFocusGained()">onFocusGained</a>, <a href="Widget.html#onFocusLost()">onFocusLost</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.widget.Widget.RevalidateListener)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#register(com.ultreon.libs.commons.v0.Identifier,C)">register</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#revalidate()">revalidate</a>, <a href="Widget.html#setBounds(com.ultreon.craft.client.gui.Bounds)">setBounds</a>, <a href="Widget.html#setEnabled(boolean)">setEnabled</a>, <a href="Widget.html#setPos(int,int)">setPos</a>, <a href="Widget.html#setPos(com.ultreon.craft.client.gui.Position)">setPos</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#setSize(int,int)">setSize</a>, <a href="Widget.html#setSize(com.ultreon.craft.client.gui.Size)">setSize</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#show()">show</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#withComponent(com.ultreon.libs.commons.v0.Identifier,java.util.function.Consumer,T...)">withComponent</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -221,6 +244,41 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="of(int,int,int)">
+<h3>of</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">of</span><wbr><span class="parameters">(int&nbsp;width,
+ int&nbsp;min,
+ int&nbsp;max)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="of(int,int)">
+<h3>of</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">of</span><wbr><span class="parameters">(int&nbsp;min,
+ int&nbsp;max)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="position(java.util.function.Supplier)">
+<h3>position</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">position</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Widget.html#position(java.util.function.Supplier)">position</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bounds(java.util.function.Supplier)">
+<h3>bounds</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">bounds</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Widget.html#bounds(java.util.function.Supplier)">bounds</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">
 <h3>renderWidget</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">renderWidget</span><wbr><span class="parameters">(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
@@ -258,17 +316,6 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="mouseMove(int,int)">
-<h3>mouseMove</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">mouseMove</span><wbr><span class="parameters">(int&nbsp;mouseX,
- int&nbsp;mouseY)</span></div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="Widget.html#mouseMove(int,int)">mouseMove</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
-</dl>
-</section>
-</li>
-<li>
 <section class="detail" id="mouseDrag(int,int,int,int,int)">
 <h3>mouseDrag</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">mouseDrag</span><wbr><span class="parameters">(int&nbsp;mouseX,
@@ -280,6 +327,30 @@ loadScripts(document, 'script');</script>
 <dt>Overrides:</dt>
 <dd><code><a href="Widget.html#mouseDrag(int,int,int,int,int)">mouseDrag</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="callback(com.ultreon.craft.client.gui.Callback)">
+<h3>callback</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">callback</span><wbr><span class="parameters">(<a href="../Callback.html" title="interface in com.ultreon.craft.client.gui">Callback</a>&lt;<a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a>&gt;&nbsp;callback)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="value(int)">
+<h3>value</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">value</span><wbr><span class="parameters">(int&nbsp;value)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="text(com.ultreon.craft.text.TextObject)">
+<h3>text</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">text</span><wbr><span class="parameters">(<a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;text)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="text(java.lang.String)">
+<h3>text</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Slider.html" title="class in com.ultreon.craft.client.gui.widget">Slider</a></span>&nbsp;<span class="element-name">text</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</span></div>
 </section>
 </li>
 <li>

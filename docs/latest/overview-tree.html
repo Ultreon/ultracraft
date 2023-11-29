@@ -75,14 +75,20 @@ loadScripts(document, 'script');</script>
 <li><a href="com/ultreon/craft/client/input/package-tree.html">com.ultreon.craft.client.input</a>, </li>
 <li><a href="com/ultreon/craft/client/input/util/package-tree.html">com.ultreon.craft.client.input.util</a>, </li>
 <li><a href="com/ultreon/craft/client/item/package-tree.html">com.ultreon.craft.client.item</a>, </li>
-<li><a href="com/ultreon/craft/client/model/package-tree.html">com.ultreon.craft.client.model</a>, </li>
+<li><a href="com/ultreon/craft/client/model/block/package-tree.html">com.ultreon.craft.client.model.block</a>, </li>
+<li><a href="com/ultreon/craft/client/model/entity/package-tree.html">com.ultreon.craft.client.model.entity</a>, </li>
+<li><a href="com/ultreon/craft/client/model/entity/renderer/package-tree.html">com.ultreon.craft.client.model.entity.renderer</a>, </li>
 <li><a href="com/ultreon/craft/client/multiplayer/package-tree.html">com.ultreon.craft.client.multiplayer</a>, </li>
 <li><a href="com/ultreon/craft/client/network/package-tree.html">com.ultreon.craft.client.network</a>, </li>
 <li><a href="com/ultreon/craft/client/platform/package-tree.html">com.ultreon.craft.client.platform</a>, </li>
 <li><a href="com/ultreon/craft/client/player/package-tree.html">com.ultreon.craft.client.player</a>, </li>
 <li><a href="com/ultreon/craft/client/registry/package-tree.html">com.ultreon.craft.client.registry</a>, </li>
+<li><a href="com/ultreon/craft/client/render/package-tree.html">com.ultreon.craft.client.render</a>, </li>
+<li><a href="com/ultreon/craft/client/render/pipeline/package-tree.html">com.ultreon.craft.client.render.pipeline</a>, </li>
+<li><a href="com/ultreon/craft/client/render/shader/package-tree.html">com.ultreon.craft.client.render.shader</a>, </li>
 <li><a href="com/ultreon/craft/client/resources/package-tree.html">com.ultreon.craft.client.resources</a>, </li>
 <li><a href="com/ultreon/craft/client/rpc/package-tree.html">com.ultreon.craft.client.rpc</a>, </li>
+<li><a href="com/ultreon/craft/client/shaders/package-tree.html">com.ultreon.craft.client.shaders</a>, </li>
 <li><a href="com/ultreon/craft/client/sound/package-tree.html">com.ultreon.craft.client.sound</a>, </li>
 <li><a href="com/ultreon/craft/client/text/package-tree.html">com.ultreon.craft.client.text</a>, </li>
 <li><a href="com/ultreon/craft/client/texture/package-tree.html">com.ultreon.craft.client.texture</a>, </li>
@@ -159,8 +165,33 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">com.ultreon.craft.util.<a href="com/ultreon/craft/util/ArgParser.html" class="type-name-link" title="class in com.ultreon.craft.util">ArgParser</a></li>
 <li class="circle">com.ultreon.craft.client.util.<a href="com/ultreon/craft/client/util/AxisAlignedBB.html" class="type-name-link" title="class in com.ultreon.craft.client.util">AxisAlignedBB</a></li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/BakedCubeModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model">BakedCubeModel</a> (implements com.badlogic.gdx.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Disposable.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Disposable</a>)</li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/BakedModelRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.model">BakedModelRegistry</a></li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/BakedCubeModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">BakedCubeModel</a> (implements com.badlogic.gdx.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Disposable.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Disposable</a>)</li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/BakedModelRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">BakedModelRegistry</a></li>
+<li class="circle">com.badlogic.gdx.graphics.g3d.shaders.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/shaders/BaseShader.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.shaders">BaseShader</a> (implements com.badlogic.gdx.graphics.g3d.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Shader.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Shader</a>)
+<ul>
+<li class="circle">com.badlogic.gdx.graphics.g3d.shaders.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/shaders/DefaultShader.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.shaders">DefaultShader</a>
+<ul>
+<li class="circle">com.badlogic.gdx.graphics.g3d.shaders.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/shaders/DepthShader.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.shaders">DepthShader</a>
+<ul>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/Pass1Shader.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">Pass1Shader</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="circle">com.ultreon.craft.client.shaders.<a href="com/ultreon/craft/client/shaders/OutlineShader.html" class="type-name-link" title="class in com.ultreon.craft.client.shaders">OutlineShader</a></li>
+</ul>
+</li>
+<li class="circle">com.badlogic.gdx.graphics.g3d.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/BaseShaderProvider.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.utils">BaseShaderProvider</a> (implements com.badlogic.gdx.graphics.g3d.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a>)
+<ul>
+<li class="circle">com.badlogic.gdx.graphics.g3d.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/DepthShaderProvider.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.utils">DepthShaderProvider</a>
+<ul>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/Pass1ShaderProvider.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">Pass1ShaderProvider</a> (implements com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a>)</li>
+</ul>
+</li>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/GameShaderProvider.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">GameShaderProvider</a></li>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/MRTShaderProvider.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">MRTShaderProvider</a> (implements com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a>)</li>
+</ul>
+</li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/Biome.html" class="type-name-link" title="class in com.ultreon.craft.world">Biome</a></li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/Biome.Builder.html" class="type-name-link" title="class in com.ultreon.craft.world">Biome.Builder</a></li>
 <li class="circle">com.ultreon.craft.world.gen.biome.<a href="com/ultreon/craft/world/gen/biome/BiomeCenterFinder.html" class="type-name-link" title="class in com.ultreon.craft.world.gen.biome">BiomeCenterFinder</a></li>
@@ -171,11 +202,12 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.block.<a href="com/ultreon/craft/block/Block.html" class="type-name-link" title="class in com.ultreon.craft.block">Block</a> (implements com.ultreon.craft.ubo.<a href="com/ultreon/craft/ubo/DataWriter.html" title="interface in com.ultreon.craft.ubo">DataWriter</a>&lt;T&gt;)</li>
 <li class="circle">com.ultreon.craft.block.<a href="com/ultreon/craft/block/Block.Properties.html" class="type-name-link" title="class in com.ultreon.craft.block">Block.Properties</a></li>
 <li class="circle">com.ultreon.craft.events.<a href="com/ultreon/craft/events/BlockEvents.html" class="type-name-link" title="class in com.ultreon.craft.events">BlockEvents</a></li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/BlockModelRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.model">BlockModelRegistry</a></li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/BlockModelRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">BlockModelRegistry</a></li>
 <li class="circle">com.ultreon.craft.util.<a href="com/ultreon/craft/util/BlockPredicate.html" class="type-name-link" title="class in com.ultreon.craft.util">BlockPredicate</a> (implements java.util.function.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;T&gt;)</li>
 <li class="circle">com.ultreon.craft.block.<a href="com/ultreon/craft/block/Blocks.html" class="type-name-link" title="class in com.ultreon.craft.block">Blocks</a></li>
 <li class="circle">com.ultreon.craft.util.<a href="com/ultreon/craft/util/BoundingBox.html" class="type-name-link" title="class in com.ultreon.craft.util">BoundingBox</a> (implements java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)</li>
 <li class="circle">com.ultreon.craft.util.<a href="com/ultreon/craft/util/BoundingBoxUtils.html" class="type-name-link" title="class in com.ultreon.craft.util">BoundingBoxUtils</a></li>
+<li class="circle">com.ultreon.craft.client.model.entity.<a href="com/ultreon/craft/client/model/entity/BoxBuilder.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity">BoxBuilder</a></li>
 <li class="circle">io.netty.buffer.<a href="https://javadoc.io/doc/io.netty/netty-buffer/4.1.86.Final/io/netty/buffer/ByteBuf.html" class="type-name-link external-link" title="class or interface in io.netty.buffer">ByteBuf</a> (implements io.netty.buffer.<a href="https://javadoc.io/doc/io.netty/netty-buffer/4.1.86.Final/io/netty/buffer/ByteBufConvertible.html" title="class or interface in io.netty.buffer" class="external-link">ByteBufConvertible</a>, java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, io.netty.util.<a href="https://javadoc.io/doc/io.netty/netty-common/4.1.86.Final/io/netty/util/ReferenceCounted.html" title="class or interface in io.netty.util" class="external-link">ReferenceCounted</a>)
 <ul>
 <li class="circle">com.ultreon.craft.network.<a href="com/ultreon/craft/network/PacketBuffer.html" class="type-name-link" title="class in com.ultreon.craft.network">PacketBuffer</a></li>
@@ -260,13 +292,22 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">com.ultreon.craft.<a href="com/ultreon/craft/CrashHandler.html" class="type-name-link" title="class in com.ultreon.craft">CrashHandler</a></li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/CubeModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model">CubeModel</a></li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/CubeModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">CubeModel</a></li>
 <li class="circle">com.ultreon.craft.entity.damagesource.<a href="com/ultreon/craft/entity/damagesource/DamageSource.html" class="type-name-link" title="class in com.ultreon.craft.entity.damagesource">DamageSource</a></li>
 <li class="circle">com.ultreon.craft.ubo.<a href="com/ultreon/craft/ubo/DataKeys.html" class="type-name-link" title="class in com.ultreon.craft.ubo">DataKeys</a></li>
 <li class="circle">com.ultreon.craft.debug.<a href="com/ultreon/craft/debug/DebugFlags.html" class="type-name-link" title="class in com.ultreon.craft.debug">DebugFlags</a></li>
 <li class="circle">com.ultreon.craft.debug.<a href="com/ultreon/craft/debug/Debugger.html" class="type-name-link" title="class in com.ultreon.craft.debug">Debugger</a></li>
 <li class="circle">com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/DebugGui.html" class="type-name-link" title="class in com.ultreon.craft.client.gui">DebugGui</a></li>
 <li class="circle">com.ultreon.craft.debug.inspect.<a href="com/ultreon/craft/debug/inspect/DefaultInspections.html" class="type-name-link" title="class in com.ultreon.craft.debug.inspect">DefaultInspections</a></li>
+<li class="circle">com.badlogic.gdx.graphics.g3d.shaders.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/shaders/DefaultShader.Config.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.shaders">DefaultShader.Config</a>
+<ul>
+<li class="circle">com.badlogic.gdx.graphics.g3d.shaders.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/shaders/DepthShader.Config.html" class="type-name-link external-link" title="class or interface in com.badlogic.gdx.graphics.g3d.shaders">DepthShader.Config</a>
+<ul>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/Pass1Shader.Config.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">Pass1Shader.Config</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="circle">com.ultreon.craft.premain.<a href="com/ultreon/craft/premain/DevMain.html" class="type-name-link" title="class in com.ultreon.craft.premain">DevMain</a></li>
 <li class="circle">com.ultreon.craft.world.gen.noise.<a href="com/ultreon/craft/world/gen/noise/DomainWarping.html" class="type-name-link" title="class in com.ultreon.craft.world.gen.noise">DomainWarping</a></li>
 <li class="circle">com.ultreon.craft.entity.<a href="com/ultreon/craft/entity/Entity.html" class="type-name-link" title="class in com.ultreon.craft.entity">Entity</a>
@@ -289,7 +330,26 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">com.ultreon.craft.events.<a href="com/ultreon/craft/events/EntityEvents.html" class="type-name-link" title="class in com.ultreon.craft.events">EntityEvents</a></li>
+<li class="circle">com.ultreon.craft.client.model.entity.<a href="com/ultreon/craft/client/model/entity/EntityModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;T&gt;
+<ul>
+<li class="circle">com.ultreon.craft.client.model.entity.<a href="com/ultreon/craft/client/model/entity/LivingEntityModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity">LivingEntityModel</a>&lt;T&gt;
+<ul>
+<li class="circle">com.ultreon.craft.client.model.entity.<a href="com/ultreon/craft/client/model/entity/PlayerModel.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity">PlayerModel</a>&lt;T&gt;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="circle">com.ultreon.craft.client.model.entity.renderer.<a href="com/ultreon/craft/client/model/entity/renderer/EntityRenderer.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity.renderer">EntityRenderer</a>&lt;M,<wbr>E&gt;
+<ul>
+<li class="circle">com.ultreon.craft.client.model.entity.renderer.<a href="com/ultreon/craft/client/model/entity/renderer/LivingEntityRenderer.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity.renderer">LivingEntityRenderer</a>&lt;M,<wbr>E&gt;
+<ul>
+<li class="circle">com.ultreon.craft.client.model.entity.renderer.<a href="com/ultreon/craft/client/model/entity/renderer/PlayerRenderer.html" class="type-name-link" title="class in com.ultreon.craft.client.model.entity.renderer">PlayerRenderer</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="circle">com.ultreon.craft.entity.util.<a href="com/ultreon/craft/entity/util/EntitySize.html" class="type-name-link" title="class in com.ultreon.craft.entity.util">EntitySize</a></li>
+<li class="circle">com.ultreon.craft.client.render.<a href="com/ultreon/craft/client/render/EntityTextures.html" class="type-name-link" title="class in com.ultreon.craft.client.render">EntityTextures</a></li>
 <li class="circle">com.ultreon.craft.entity.<a href="com/ultreon/craft/entity/EntityType.html" class="type-name-link" title="class in com.ultreon.craft.entity">EntityType</a>&lt;T&gt;</li>
 <li class="circle">com.ultreon.craft.entity.<a href="com/ultreon/craft/entity/EntityType.Builder.html" class="type-name-link" title="class in com.ultreon.craft.entity">EntityType.Builder</a>&lt;T&gt;</li>
 <li class="circle">com.ultreon.craft.entity.<a href="com/ultreon/craft/entity/EntityTypes.html" class="type-name-link" title="class in com.ultreon.craft.entity">EntityTypes</a></li>
@@ -378,8 +438,9 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.menu.<a href="com/ultreon/craft/menu/MenuType.html" class="type-name-link" title="class in com.ultreon.craft.menu">MenuType</a>&lt;T&gt;</li>
 <li class="circle">com.ultreon.craft.menu.<a href="com/ultreon/craft/menu/MenuTypes.html" class="type-name-link" title="class in com.ultreon.craft.menu">MenuTypes</a></li>
 <li class="circle">com.ultreon.craft.client.<a href="com/ultreon/craft/client/Metadata.html" class="type-name-link" title="class in com.ultreon.craft.client">Metadata</a></li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/ModelProperties.html" class="type-name-link" title="class in com.ultreon.craft.client.model">ModelProperties</a></li>
-<li class="circle">com.ultreon.craft.client.model.<a href="com/ultreon/craft/client/model/ModelProperties.Builder.html" class="type-name-link" title="class in com.ultreon.craft.client.model">ModelProperties.Builder</a></li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/ModelProperties.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">ModelProperties</a></li>
+<li class="circle">com.ultreon.craft.client.model.block.<a href="com/ultreon/craft/client/model/block/ModelProperties.Builder.html" class="type-name-link" title="class in com.ultreon.craft.client.model.block">ModelProperties.Builder</a></li>
+<li class="circle">com.ultreon.craft.client.registry.<a href="com/ultreon/craft/client/registry/ModelRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.registry">ModelRegistry</a></li>
 <li class="circle">com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/ModIconOverrides.html" class="type-name-link" title="class in com.ultreon.craft.client.gui">ModIconOverrides</a></li>
 <li class="circle">com.ultreon.craft.network.api.packet.<a href="com/ultreon/craft/network/api/packet/ModPacket.html" class="type-name-link" title="class in com.ultreon.craft.network.api.packet">ModPacket</a>&lt;T&gt;
 <ul>
@@ -388,6 +449,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.network.api.packet.<a href="com/ultreon/craft/network/api/packet/ModPacketToServer.html" class="type-name-link" title="class in com.ultreon.craft.network.api.packet">ModPacketToServer</a>&lt;T&gt; (implements com.ultreon.craft.network.api.packet.<a href="com/ultreon/craft/network/api/packet/ServerEndpoint.html" title="interface in com.ultreon.craft.network.api.packet">ServerEndpoint</a>)</li>
 </ul>
 </li>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/MRTShader.html" class="type-name-link" title="class in com.ultreon.craft.client.render.shader">MRTShader</a> (implements com.badlogic.gdx.graphics.g3d.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Shader.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Shader</a>)</li>
 <li class="circle">com.ultreon.craft.client.multiplayer.<a href="com/ultreon/craft/client/multiplayer/MultiplayerData.html" class="type-name-link" title="class in com.ultreon.craft.client.multiplayer">MultiplayerData</a></li>
 <li class="circle">com.ultreon.craft.network.api.<a href="com/ultreon/craft/network/api/Network.html" class="type-name-link" title="class in com.ultreon.craft.network.api">Network</a>
 <ul>
@@ -483,6 +545,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/BlockPos.html" class="type-name-link" title="class in com.ultreon.craft.world">BlockPos</a></li>
 <li class="circle">com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/Bounds.html" class="type-name-link" title="class in com.ultreon.craft.client.gui">Bounds</a> (implements com.ultreon.craft.util.<a href="com/ultreon/craft/util/Copyable.html" title="interface in com.ultreon.craft.util">Copyable</a>&lt;T&gt;)</li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/ChunkPos.html" class="type-name-link" title="class in com.ultreon.craft.world">ChunkPos</a> (implements java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)</li>
+<li class="circle">com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/GenericIcon.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.icon">GenericIcon</a> (implements com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/Icon.html" title="interface in com.ultreon.craft.client.gui.icon">Icon</a>)</li>
 <li class="circle">com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/GuiBuilder.html" class="type-name-link" title="class in com.ultreon.craft.client.gui">GuiBuilder</a></li>
 <li class="circle">com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/ImageIcon.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.icon">ImageIcon</a> (implements com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/Icon.html" title="interface in com.ultreon.craft.client.gui.icon">Icon</a>)</li>
 <li class="circle">com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/MessageIcon.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.icon">MessageIcon</a> (implements com.ultreon.craft.client.gui.icon.<a href="com/ultreon/craft/client/gui/icon/Icon.html" title="interface in com.ultreon.craft.client.gui.icon">Icon</a>)</li>
@@ -495,6 +558,22 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">com.ultreon.craft.registry.<a href="com/ultreon/craft/registry/Registries.html" class="type-name-link" title="class in com.ultreon.craft.registry">Registries</a></li>
 <li class="circle">com.ultreon.craft.client.gui.<a href="com/ultreon/craft/client/gui/Renderer.html" class="type-name-link" title="class in com.ultreon.craft.client.gui">Renderer</a></li>
+<li class="circle">com.ultreon.craft.client.registry.<a href="com/ultreon/craft/client/registry/RendererRegistry.html" class="type-name-link" title="class in com.ultreon.craft.client.registry">RendererRegistry</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/RenderPipeline.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline</a> (implements com.badlogic.gdx.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Disposable.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Disposable</a>)</li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/RenderPipeline.RenderNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline.RenderNode</a>
+<ul>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/MainRenderNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">MainRenderNode</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/PostEffectsNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">PostEffectsNode</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/WorldRenderNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">WorldRenderNode</a>
+<ul>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/CollectNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">CollectNode</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/DepthNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">DepthNode</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/PlainNode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">PlainNode</a></li>
+<li class="circle">com.ultreon.craft.client.render.pipeline.<a href="com/ultreon/craft/client/render/pipeline/SSAONode.html" class="type-name-link" title="class in com.ultreon.craft.client.render.pipeline">SSAONode</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="circle">com.ultreon.craft.client.util.<a href="com/ultreon/craft/client/util/Resizer.html" class="type-name-link" title="class in com.ultreon.craft.client.util">Resizer</a></li>
 <li class="circle">com.ultreon.craft.client.rpc.<a href="com/ultreon/craft/client/rpc/RpcHandler.html" class="type-name-link" title="class in com.ultreon.craft.client.rpc">RpcHandler</a></li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ScreenEvents.html" class="type-name-link" title="class in com.ultreon.craft.client.events">ScreenEvents</a></li>
@@ -505,6 +584,8 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.server.dedicated.<a href="com/ultreon/craft/server/dedicated/ServerLoader.html" class="type-name-link" title="class in com.ultreon.craft.server.dedicated">ServerLoader</a></li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/ServerWorld.Region.html" class="type-name-link" title="class in com.ultreon.craft.world">ServerWorld.Region</a> (implements com.ultreon.craft.server.<a href="com/ultreon/craft/server/ServerDisposable.html" title="interface in com.ultreon.craft.server">ServerDisposable</a>)</li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/ServerWorld.RegionStorage.html" class="type-name-link" title="class in com.ultreon.craft.world">ServerWorld.RegionStorage</a></li>
+<li class="circle">com.ultreon.craft.client.<a href="com/ultreon/craft/client/ShaderContext.html" class="type-name-link" title="class in com.ultreon.craft.client">ShaderContext</a></li>
+<li class="circle">com.ultreon.craft.client.init.<a href="com/ultreon/craft/client/init/ShaderPrograms.html" class="type-name-link" title="class in com.ultreon.craft.client.init">ShaderPrograms</a></li>
 <li class="circle">com.ultreon.craft.client.init.<a href="com/ultreon/craft/client/init/Shaders.html" class="type-name-link" title="class in com.ultreon.craft.client.init">Shaders</a></li>
 <li class="circle">com.ultreon.craft.client.world.<a href="com/ultreon/craft/client/world/SimpleVertexBuilder.html" class="type-name-link" title="class in com.ultreon.craft.client.world">SimpleVertexBuilder</a></li>
 <li class="circle">com.ultreon.craft.client.world.<a href="com/ultreon/craft/client/world/SimpleVertexBuilder.OffsetBuilder.html" class="type-name-link" title="class in com.ultreon.craft.client.world">SimpleVertexBuilder.OffsetBuilder</a></li>
@@ -617,9 +698,14 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Widget.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">Widget</a> (implements com.ultreon.craft.component.<a href="com/ultreon/craft/component/GameComponentHolder.html" title="interface in com.ultreon.craft.component">GameComponentHolder</a>&lt;T&gt;, com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/StaticWidget.html" title="interface in com.ultreon.craft.client.gui.widget">StaticWidget</a>)
 <ul>
-<li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Button.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">Button</a>
+<li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Button.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;T&gt;
+<ul>
+<li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/IconButton.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">IconButton</a></li>
+<li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/TextButton.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">TextButton</a>
 <ul>
 <li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/CycleButton.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;T&gt;</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="circle">com.ultreon.craft.client.gui.widget.<a href="com/ultreon/craft/client/gui/widget/Label.html" class="type-name-link" title="class in com.ultreon.craft.client.gui.widget">Label</a></li>
@@ -657,6 +743,8 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/WindowEvents.html" class="type-name-link" title="class in com.ultreon.craft.client.events">WindowEvents</a></li>
+<li class="circle">com.ultreon.craft.client.text.<a href="com/ultreon/craft/client/text/WordGenerator.html" class="type-name-link" title="class in com.ultreon.craft.client.text">WordGenerator</a></li>
+<li class="circle">com.ultreon.craft.client.text.<a href="com/ultreon/craft/client/text/WordGenerator.Config.html" class="type-name-link" title="class in com.ultreon.craft.client.text">WordGenerator.Config</a></li>
 <li class="circle">com.ultreon.craft.world.<a href="com/ultreon/craft/world/World.html" class="type-name-link" title="class in com.ultreon.craft.world">World</a> (implements com.ultreon.craft.server.<a href="com/ultreon/craft/server/ServerDisposable.html" title="interface in com.ultreon.craft.server">ServerDisposable</a>)
 <ul>
 <li class="circle">com.ultreon.craft.client.world.<a href="com/ultreon/craft/client/world/ClientWorld.html" class="type-name-link" title="class in com.ultreon.craft.client.world">ClientWorld</a> (implements com.badlogic.gdx.utils.<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Disposable.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Disposable</a>)</li>
@@ -681,6 +769,8 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.network.api.packet.<a href="com/ultreon/craft/network/api/packet/ClientEndpoint.html" class="type-name-link" title="interface in com.ultreon.craft.network.api.packet">ClientEndpoint</a></li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientLifecycleEvents.GameDisposed.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientLifecycleEvents.GameDisposed</a></li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientLifecycleEvents.GameLoaded.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientLifecycleEvents.GameLoaded</a></li>
+<li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientLifecycleEvents.RegisterModels.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientLifecycleEvents.RegisterModels</a></li>
+<li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientLifecycleEvents.RegisterRenderers.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientLifecycleEvents.RegisterRenderers</a></li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientLifecycleEvents.WindowClosed.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientLifecycleEvents.WindowClosed</a></li>
 <li class="circle">com.ultreon.craft.client.<a href="com/ultreon/craft/client/ClientModInit.html" class="type-name-link" title="interface in com.ultreon.craft.client">ClientModInit</a></li>
 <li class="circle">com.ultreon.craft.client.events.<a href="com/ultreon/craft/client/events/ClientPlayerEvents.PlayerJoined.html" class="type-name-link" title="interface in com.ultreon.craft.client.events">ClientPlayerEvents.PlayerJoined</a></li>
@@ -729,6 +819,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.menu.<a href="com/ultreon/craft/menu/MenuType.MenuBuilder.html" class="type-name-link" title="interface in com.ultreon.craft.menu">MenuType.MenuBuilder</a>&lt;T&gt;</li>
 <li class="circle">com.ultreon.craft.<a href="com/ultreon/craft/ModInit.html" class="type-name-link" title="interface in com.ultreon.craft">ModInit</a></li>
 <li class="circle">com.ultreon.craft.client.util.<a href="com/ultreon/craft/client/util/Named.html" class="type-name-link" title="interface in com.ultreon.craft.client.util">Named</a></li>
+<li class="circle">com.ultreon.craft.client.render.shader.<a href="com/ultreon/craft/client/render/shader/OpenShaderProvider.html" class="type-name-link" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a></li>
 <li class="circle">com.ultreon.craft.network.<a href="com/ultreon/craft/network/PacketHandler.html" class="type-name-link" title="interface in com.ultreon.craft.network">PacketHandler</a>
 <ul>
 <li class="circle">com.ultreon.craft.network.client.<a href="com/ultreon/craft/network/client/ClientPacketHandler.html" class="type-name-link" title="interface in com.ultreon.craft.network.client">ClientPacketHandler</a>
@@ -826,6 +917,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.ultreon.craft.network.api.<a href="com/ultreon/craft/network/api/PacketDestination.html" class="type-name-link" title="enum class in com.ultreon.craft.network.api">PacketDestination</a></li>
 <li class="circle">com.ultreon.craft.client.platform.<a href="com/ultreon/craft/client/platform/PlatformType.html" class="type-name-link" title="enum class in com.ultreon.craft.client.platform">PlatformType</a></li>
 <li class="circle">com.ultreon.craft.client.util.<a href="com/ultreon/craft/client/util/Resizer.Orientation.html" class="type-name-link" title="enum class in com.ultreon.craft.client.util">Resizer.Orientation</a></li>
+<li class="circle">com.ultreon.craft.client.<a href="com/ultreon/craft/client/ShaderContext.ShaderMode.html" class="type-name-link" title="enum class in com.ultreon.craft.client">ShaderContext.ShaderMode</a></li>
 <li class="circle">com.ultreon.craft.item.tool.<a href="com/ultreon/craft/item/tool/ToolType.html" class="type-name-link" title="enum class in com.ultreon.craft.item.tool">ToolType</a></li>
 <li class="circle">com.ultreon.craft.client.input.util.<a href="com/ultreon/craft/client/input/util/TriggerType.html" class="type-name-link" title="enum class in com.ultreon.craft.client.input.util">TriggerType</a></li>
 </ul>

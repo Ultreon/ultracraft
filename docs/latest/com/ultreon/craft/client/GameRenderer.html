@@ -89,9 +89,10 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.client.UltracraftClient,com.badlogic.gdx.graphics.g3d.ModelBatch,com.badlogic.gdx.graphics.g2d.SpriteBatch)" class="member-name-link">GameRenderer</a><wbr>(<a href="UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a>&nbsp;client,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.client.UltracraftClient,com.badlogic.gdx.graphics.g3d.ModelBatch,com.badlogic.gdx.graphics.g2d.SpriteBatch,com.ultreon.craft.client.render.pipeline.RenderPipeline)" class="member-name-link">GameRenderer</a><wbr>(<a href="UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a>&nbsp;client,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelBatch.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelBatch</a>&nbsp;modelBatch,
- <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/SpriteBatch.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">SpriteBatch</a>&nbsp;spriteBatch)</code></div>
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/SpriteBatch.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">SpriteBatch</a>&nbsp;spriteBatch,
+ <a href="render/pipeline/RenderPipeline.html" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline</a>&nbsp;pipeline)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -107,10 +108,20 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Mesh.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Mesh</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createFullScreenQuad()" class="member-name-link">createFullScreenQuad</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/RenderContext.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">RenderContext</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getContext()" class="member-name-link">getContext</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render(com.ultreon.craft.client.gui.Renderer,float)" class="member-name-link">render</a><wbr>(<a href="gui/Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  float&nbsp;deltaTime)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resize(int,int)" class="member-name-link">resize</a><wbr>(int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -129,11 +140,12 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.ultreon.craft.client.UltracraftClient,com.badlogic.gdx.graphics.g3d.ModelBatch,com.badlogic.gdx.graphics.g2d.SpriteBatch)">
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.client.UltracraftClient,com.badlogic.gdx.graphics.g3d.ModelBatch,com.badlogic.gdx.graphics.g2d.SpriteBatch,com.ultreon.craft.client.render.pipeline.RenderPipeline)">
 <h3>GameRenderer</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GameRenderer</span><wbr><span class="parameters">(<a href="UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a>&nbsp;client,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelBatch.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelBatch</a>&nbsp;modelBatch,
- <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/SpriteBatch.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">SpriteBatch</a>&nbsp;spriteBatch)</span></div>
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/SpriteBatch.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">SpriteBatch</a>&nbsp;spriteBatch,
+ <a href="render/pipeline/RenderPipeline.html" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline</a>&nbsp;pipeline)</span></div>
 </section>
 </li>
 </ul>
@@ -145,10 +157,29 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="resize(int,int)">
+<h3>resize</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">resize</span><wbr><span class="parameters">(int&nbsp;width,
+ int&nbsp;height)</span></div>
+</section>
+</li>
+<li>
 <section class="detail" id="render(com.ultreon.craft.client.gui.Renderer,float)">
 <h3>render</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">render</span><wbr><span class="parameters">(<a href="gui/Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  float&nbsp;deltaTime)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="createFullScreenQuad()">
+<h3>createFullScreenQuad</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Mesh.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Mesh</a></span>&nbsp;<span class="element-name">createFullScreenQuad</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getContext()">
+<h3>getContext</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/RenderContext.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">RenderContext</a></span>&nbsp;<span class="element-name">getContext</span>()</div>
 </section>
 </li>
 </ul>
