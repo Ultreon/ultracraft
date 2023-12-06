@@ -21,7 +21,7 @@ public class Items {
     public static final ShovelItem WOODEN_SHOVEL = Items.register("wooden_shovel", new ShovelItem(new Properties().stackSize(1), ItemMaterials.WOOD));
 
     private static <T extends Item> T register(String name, T block) {
-        Registries.ITEMS.register(new Identifier(name), block);
+        Registries.ITEM.register(new Identifier(name), block);
         return block;
     }
 

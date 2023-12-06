@@ -8,6 +8,7 @@ import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.WorldStorage;
@@ -38,11 +39,11 @@ public class WorldDeleteConfirmScreen extends Screen {
                 .alignment(Alignment.CENTER)
                 .position(() -> new Position(this.getWidth() / 2, this.getHeight() / 2 + 15)));
 
-        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.yes"), 95)
+        builder.add(TextButton.of(UITranslations.PROCEED, 95)
                 .position(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 50))
                 .callback(this::deleteWorld));
 
-        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.no"), 95)
+        builder.add(TextButton.of(UITranslations.CANCEL, 95)
                 .position(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 50))
                 .callback(this::onBack));
     }

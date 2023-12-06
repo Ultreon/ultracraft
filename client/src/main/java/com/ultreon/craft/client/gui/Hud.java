@@ -87,7 +87,7 @@ public class Hud implements GameRenderable {
     private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
-        Identifier key = Registries.ITEMS.getKey(selectedItem.getItem());
+        Identifier key = Registries.ITEM.getKey(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);

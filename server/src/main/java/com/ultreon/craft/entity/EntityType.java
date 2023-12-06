@@ -35,7 +35,7 @@ public abstract class EntityType<T extends Entity> {
     }
 
     public @Nullable Identifier getId() {
-        return Registries.ENTITIES.getKey(this);
+        return Registries.ENTITY_TYPE.getKey(this);
     }
 
     public static class Builder<T extends Entity> {
@@ -64,7 +64,7 @@ public abstract class EntityType<T extends Entity> {
         public EntityType<T> build() {
             Preconditions.checkNotNull(this.factory, "Entity factory is not set");
 
-            return new EntityType<T>(this) {
+            return new EntityType<>(this) {
                 @Override
                 public T create(World world) {
                     return Builder.this.factory.create(this, world);

@@ -8,21 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 public class RemotePlayer extends ClientPlayer {
-    @LazyInit private UUID uuid;
     private String name = "<Player>";
 
     public RemotePlayer(World world) {
         super(EntityTypes.PLAYER, world);
-    }
-
-    @Override
-    public @NotNull UUID getUuid() {
-        return this.uuid;
-    }
-
-    @Override
-    public void setUuid(@NotNull UUID uuid) {
-        this.uuid = uuid;
     }
 
     public String getName() {

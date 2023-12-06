@@ -7,6 +7,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -50,7 +51,7 @@ public class ModListScreen extends Screen {
                 .position(() -> new Position(5, this.size.height - 51)));
         this.configButton.disable();
 
-        this.backButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.back"), 190).position(() -> new Position(5, this.size.height - 26)))
+        this.backButton = builder.add(TextButton.of(UITranslations.BACK, 190).position(() -> new Position(5, this.size.height - 26)))
                 .callback(this::onBack);
     }
 

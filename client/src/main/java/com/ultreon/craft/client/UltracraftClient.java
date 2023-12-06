@@ -42,7 +42,6 @@ import com.ultreon.craft.client.events.WindowEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.font.FontRegistry;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.icon.ImageIcon;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
@@ -102,6 +101,7 @@ import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.server.GameCommands;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.text.TextObject;
@@ -139,7 +139,6 @@ import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -159,7 +158,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static final Logger LOGGER = LoggerFactory.getLogger("UltracraftClient");
     public static final Gson GSON = new GsonBuilder().disableJdkUnsafe().setPrettyPrinting().create();
     public static final int[] SIZES = new int[]{16, 24, 32, 40, 48, 64, 72, 80, 96, 108, 128, 160, 192, 256, 1024};
-    static final int CULL_FACE = GL_BACK;
     public static final float FROM_ZOOM = 2.0f;
     public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
@@ -290,7 +288,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
     private final G3dModelLoader modelLoader;
-    private File gameSdkPath;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -298,7 +295,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         UltracraftClient.instance = this;
 
         Identifier.setDefaultNamespace(UltracraftClient.NAMESPACE);
-        RpcHandler.start(this.gameSdkPath);
+        RpcHandler.start();
 
         this.resourceManager = new ResourceManager("assets");
         this.textureManager = new TextureManager(this.resourceManager);
@@ -709,7 +706,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.loadLanguages();
 
         UltracraftClient.LOGGER.info("Registering stuff");
-        Registries.init();
+        Registries.nopInit();
 
         Blocks.nopInit();
         Items.nopInit();
@@ -717,6 +714,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         EntityTypes.nopInit();
         Fonts.nopInit();
         SoundEvents.nopInit();
+
+        GameCommands.register();
 
         UltracraftClient.invokeAndWait(() -> {
             Shaders.nopInit();
@@ -817,33 +816,62 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         ConfigEvents.LOAD.factory().onConfigLoad(EnvType.CLIENT);
     }
 
+    /**
+     * Executes the specified {@link Callable} function on the client thread and waits until it completes.
+     * This method is designed to be invoked from a different thread to ensure that the function is executed on the
+     * client thread.
+     *
+     * @param func the Callable task to be executed
+     * @param <T> the type of result returned by the Callable task
+     * @return the result returned by the Callable task
+     */
     @CanIgnoreReturnValue
     public static <T> T invokeAndWait(@NotNull Callable<T> func) {
         return UltracraftClient.instance.submit(func).join();
     }
 
+    /**
+     * Executes the specified {@link Runnable} function on the client thread and waits until it completes.
+     * This method is designed to be invoked from a different thread to ensure that the function is executed on the
+     * client thread.
+     *
+     * @param func the {@link Runnable} function to be executed on the UltracraftClient thread
+     */
     public static void invokeAndWait(Runnable func) {
         UltracraftClient.instance.submit(func).join();
     }
 
+    /**
+     * Invokes the given runnable asynchronously and returns a {@link CompletableFuture} that completes with Void.
+     *
+     * @param func the runnable to be invoked
+     * @return a CompletableFuture that completes with Void once the runnable has been invoked
+     */
     @CanIgnoreReturnValue
     public static @NotNull CompletableFuture<Void> invoke(Runnable func) {
         return UltracraftClient.instance.submit(func);
     }
 
+    /**
+     * Invokes the given callable function asynchronously and returns a {@link CompletableFuture}.
+     *
+     * @param func the callable function to be invoked
+     * @param <T> the type parameter of the callable function's return value
+     * @return a CompletableFuture representing the pending result of the callable function
+     */
     @CanIgnoreReturnValue
     public static <T> @NotNull CompletableFuture<T> invoke(Callable<T> func) {
         return UltracraftClient.instance.submit(func);
     }
 
     /**
-     * Gets the resource file handle for the given identifier.
+     * Returns a new instance of FileHandle for the specified resource identifier.
      *
-     * @param id the identifier.
-     * @return the resource file handle.
+     * @param id The identifier of the resource.
+     * @return A new instance of FileHandle for the specified resource.
      */
-    public static @NotNull
-    @NewInstance FileHandle resource(Identifier id) {
+    @NewInstance
+    public static @NotNull FileHandle resource(Identifier id) {
         return new ResourceFileHandle(id);
     }
 
@@ -948,7 +976,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @return the identifier for the given path.
      */
     public static Identifier id(String path) {
-        return new Identifier(path);
+        return new Identifier(UltracraftClient.NAMESPACE, path);
     }
 
     public static GG ggBro() {
@@ -982,7 +1010,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
         TextureStitcher itemTextures = new TextureStitcher();
-        for (Map.Entry<Identifier, Item> e : Registries.ITEMS.entries()) {
+        for (Map.Entry<Identifier, Item> e : Registries.ITEM.entries()) {
             if (e.getValue() == Items.AIR) continue;
             if (e.getValue() instanceof BlockItem) continue;
 
@@ -998,7 +1026,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.registerEntityModels();
         this.registerEntityRenderers();
 
-        for (var e : Registries.ENTITIES.entries()) {
+        for (var e : Registries.ENTITY_TYPE.entries()) {
             EntityType<?> type = e.getValue();
             @SuppressWarnings("unchecked") EntityRenderer<EntityModel<?>, ?> renderer = (EntityRenderer<EntityModel<?>, ?>) RendererRegistry.get(type);
             EntityModel<?> entityModel = ModelRegistry.get(type);
@@ -1006,7 +1034,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             FileHandle handle = UltracraftClient.resource(e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
             if (handle.exists()) {
                 Model model = UltracraftClient.invokeAndWait(() -> this.modelLoader.loadModel(handle, UltracraftClient::loadEntityTex));
-                model.materials.forEach(modelModel -> modelModel.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)));
+                model.materials.forEach(modelModel -> modelModel.set(new BlendingAttribute(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)));
                 ModelRegistry.registerFinished(type, model);
             } else {
                 ModelRegistry.registerFinished(type, entityModel.finish(renderer.getTextures()));
@@ -1049,12 +1077,21 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return directory;
     }
 
+    /**
+     * Pauses the game by showing the pause screen.
+     * If the current screen is not null and the world is not null, it will show the pause screen.
+     */
     public void pause() {
         if (this.screen == null && this.world != null) {
             this.showScreen(new PauseScreen());
         }
     }
 
+    /**
+     * Resumes the game by hiding the pause screen.
+     * If the current screen is a PauseScreen and the world is not null,
+     * the screen is set to null to resume the game.
+     */
     public void resume() {
         if (this.screen instanceof PauseScreen && this.world != null) {
             this.showScreen(null);
@@ -1141,13 +1178,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         try {
             UltracraftClient.PROFILER.update();
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                this.notifications.add(Notification.builder("Hello Word", "Lorem ipsum dolor sit amet")
-                        .subText("Test Notification")
-                        .icon(new ImageIcon(UltracraftClient.id("textures/hello.png"), 16, 16))
-                        .build());
-            }
 
             if (this.debugRenderer != null && this.showDebugHud) {
                 this.debugRenderer.updateProfiler();
@@ -1354,6 +1384,11 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         });
     }
 
+    /**
+     * Retrieves the game version of the UltraCraft mod.
+     *
+     * @return The game version as a {@code String}.
+     */
     public static String getGameVersion() {
         return FabricLoader.getInstance().getModContainer("ultracraft").orElseThrow().getMetadata().getVersion().getFriendlyString();
     }
@@ -2015,6 +2050,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         while ((task = this.serverTickQueue.poll()) != null) {
             task.run();
         }
+    }
+
+    public User getUser() {
+        return this.user;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

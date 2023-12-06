@@ -31,7 +31,7 @@ public class Item {
     }
 
     public Identifier getId() {
-        return Registries.ITEMS.getKey(this);
+        return Registries.ITEM.getKey(this);
     }
 
     public List<TextObject> getDescription(ItemStack itemStack) {

@@ -8,6 +8,7 @@ import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.Slider;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
 
 public class OptionsScreen extends Screen {
@@ -45,7 +46,7 @@ public class OptionsScreen extends Screen {
                 .position(() -> new Position(this.size.width / 2 + 5, this.size.height / 2 - 25))
                 .callback(caller -> this.client.showScreen(new LanguageScreen())));
 
-        this.okButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.ok"))
+        this.okButton = builder.add(TextButton.of(UITranslations.OK)
                 .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 + 25))
                 .callback(caller -> {
                     this.client.config.save();

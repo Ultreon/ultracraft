@@ -32,29 +32,24 @@ public class WorldSelectionScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.add(Label.of(this.title)
-                .alignment(Alignment.CENTER)
-                .position(() -> new Position(this.getWidth() / 2, 10))
-                .scale(2));
-
         this.worldList = builder.add(new SelectionList<WorldStorage>()
-                .itemHeight(20)
-                .bounds(() -> new Bounds(170, 40, this.getWidth() - 170, this.getHeight()))
+                .itemHeight(50)
+                .bounds(() -> new Bounds(0, 0, this.getWidth(), this.getHeight() - 41))
                 .entries(this.locateWorlds())
                 .itemRenderer(this::renderItem)
                 .selectable(true)
                 .callback(this::selectWorld));
 
         this.createButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.world_selection.create"), 150)
-                .position(() -> new Position(10, this.getHeight() / 2 - 20))
+                .position(() -> new Position(this.getWidth() / 2 - 227, this.getHeight() - 31))
                 .callback(this::createWorld));
 
         this.playButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.world_selection.play"), 150)
-                .position(() -> new Position(10, this.getHeight() / 2 + 5))
+                .position(() -> new Position(this.getWidth() / 2 - 75, this.getHeight() - 31))
                 .callback(this::playWorld));
 
         this.deleteWorld = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.world_selection.delete"), 150)
-                .position(() -> new Position(10, this.getHeight() / 2 + 30))
+                .position(() -> new Position(this.getWidth() / 2 + 77, this.getHeight() - 31))
                 .callback(this::deleteWorld));
     }
 
@@ -81,7 +76,9 @@ public class WorldSelectionScreen extends Screen {
     }
 
     private void renderItem(Renderer renderer, WorldStorage storage, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
-        renderer.textLeft(storage.getDirectory().getFileName().toString(), this.worldList.getX(), y + 5, selected ? Color.WHITE : Color.GRAY);
+        int x = this.worldList.getX() + this.worldList.getWidth() / 2 - 200;
+        renderer.textLeft(TextObject.literal(storage.getDirectory().getFileName().toString()).setBold(true), x, y + 5, Color.WHITE);
+        storage.loadInfo();
     }
 
     public List<WorldStorage> locateWorlds() {

@@ -2,21 +2,16 @@ package com.ultreon.craft.text;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.util.Color;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.common.reflection.qual.NewInstance;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public abstract class MutableText extends TextObject {
-    final List<TextObject> extras = new ArrayList<>();
-    private Color color;
-    private int size;
-    private boolean underlined = false;
-    private boolean bold = false;
-    private boolean italic = false;
-    private boolean strikethrough = false;
+    List<TextObject> extras = new ArrayList<>();
+    TextStyle style = new TextStyle();
 
     protected MutableText() {
 
@@ -32,61 +27,72 @@ public abstract class MutableText extends TextObject {
         return builder.toString();
     }
 
+    public MutableText style(Consumer<TextStyle> consumer) {
+        consumer.accept(this.style);
+        return this;
+    }
+
     public Color getColor() {
-        return this.color;
+        return this.style.getColor();
     }
 
     public MutableText setColor(Color color) {
-        this.color = color;
+        this.style.color(color);
         return this;
     }
 
     public boolean isUnderlined() {
-        return this.underlined;
+        return this.style.isUnderline();
     }
 
     public MutableText setUnderlined(boolean underlined) {
-        this.underlined = underlined;
+        this.style.underline(underlined);
         return this;
     }
 
     public boolean isStrikethrough() {
-        return this.strikethrough;
+        return this.style.isStrikethrough();
     }
 
     public MutableText setStrikethrough(boolean strikethrough) {
-        this.strikethrough = strikethrough;
+        this.style.strikethrough(strikethrough);
         return this;
     }
 
     public boolean isBold() {
-        return this.bold;
+        return this.style.isBold();
     }
 
     public MutableText setBold(boolean bold) {
-        this.bold = bold;
+        this.style.bold(bold);
         return this;
     }
 
     public boolean isItalic() {
-        return this.italic;
+        return this.style.isItalic();
     }
 
     public MutableText setItalic(boolean italic) {
-        this.italic = italic;
+        this.style.italic(italic);
         return this;
     }
 
     public int getSize() {
-        return this.size;
+        return this.style.getSize();
     }
 
-    public MutableText setSize(int size) {
-        this.size = size;
-        return this;
+    public void setSize(int size) {
+        this.style.size(size);
     }
 
-    public MutableText append(TextObject append) {
+    /**
+     * Appends a TextObject to the current TextObject, creating a new instance
+     * <b>WARNING: <i>This action is performance intensive, not recommended to use within loops.</i></b>
+     *
+     * @param append The TextObject to append
+     * @return A new instance of MutableText
+     */
+    public @NewInstance MutableText append(TextObject append) {
         Preconditions.checkNotNull(append, "Text object cannot be null");
         this.extras.add(append);
         return this;
@@ -103,29 +109,12 @@ public abstract class MutableText extends TextObject {
     public abstract MutableText copy();
 
     @Override
-    public @NotNull Iterator<TextObject> iterator() {
-        return new MutableTextIterator();
-    }
-
-    private class MutableTextIterator implements Iterator<TextObject> {
-        private int index = -1;
-        private TextObject next = MutableText.this;
-
-        @Override
-        public boolean hasNext() {
-            return this.next != null;
+    protected Stream<TextObject> stream() {
+        var builder = new ArrayList<TextObject>();
+        builder.add(this);
+        for (var extra : this.extras) {
+            builder.addAll(extra.stream().toList());
         }
-
-        @Override
-        public TextObject next() {
-            if (this.next == null) {
-                throw new NoSuchElementException("No more elements in the iterator");
-            }
-
-            this.index++;
-            TextObject next1 = this.next;
-            this.next = this.index >= MutableText.this.extras.size() ? null : MutableText.this.extras.get(this.index);
-            return next1;
-        }
+        return builder.stream();
     }
 }

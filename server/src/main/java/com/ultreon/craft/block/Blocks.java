@@ -19,7 +19,7 @@ public final class Blocks {
     public static final Block WATER = Blocks.register("water", new Block(new Properties().transparent().noCollision().fluid().hardness(120.0F)));
 
     private static <T extends Block> T register(String name, T block) {
-        Registries.BLOCKS.register(new Identifier(name), block);
+        Registries.BLOCK.register(new Identifier(name), block);
         return block;
     }
 

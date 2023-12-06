@@ -156,10 +156,10 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
-    public void handleChunkLoadFailure(ChunkPos globalPos) {
-        super.handleChunkLoadFailure(globalPos);
+    public void handleChunkLoadFailure(ChunkPos globalPos, String reason) {
+        super.handleChunkLoadFailure(globalPos, reason);
 
-        this.client.notifications.add(Notification.builder("Warning", "Failed to load chunk " + globalPos.toString())
+        this.client.notifications.add(Notification.builder("Failed to load: " + globalPos.toString(), reason)
                 .subText("Chunk Loader")
                 .icon(MessageIcon.WARNING)
                 .build());

@@ -92,7 +92,7 @@ public abstract class Chunk implements ServerDisposable {
             LOGGER.error("Unknown block: " + stringId);
             return Blocks.BARRIER;
         }
-        return Registries.BLOCKS.getValue(id);
+        return Registries.BLOCK.getValue(id);
     }
 
     /**

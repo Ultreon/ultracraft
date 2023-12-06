@@ -10,6 +10,7 @@ import com.ultreon.craft.client.gui.widget.IconButton;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.gui.widget.TextEntry;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.client.text.WordGenerator;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.WorldStorage;
@@ -36,7 +37,7 @@ public class WorldCreationScreen extends Screen {
     public void build(GuiBuilder builder) {
         var titleLabel = builder.add(Label.of(this.title)
                 .alignment(Alignment.CENTER)
-                .position(() -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 45))
+                .position(() -> new Position(this.getWidth() / 2, this.getHeight() / 2 - 60))
                 .scale(2));
 
         titleLabel.text().set(this.getTitle());
@@ -54,7 +55,7 @@ public class WorldCreationScreen extends Screen {
                 .position(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 + 5))
                 .callback(this::createWorld));
 
-        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.cancel"), 95)
+        builder.add(TextButton.of(UITranslations.CANCEL, 95)
                 .position(() -> new Position(this.getWidth() / 2 + 5, this.getHeight() / 2 + 5))
                 .callback(this::onBack));
     }

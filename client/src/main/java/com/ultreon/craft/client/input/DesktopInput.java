@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ScreenEvents;
+import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
@@ -29,6 +30,8 @@ public class DesktopInput extends GameInput {
     public static final KeyBind HIDE_HUD_KEY = KeyBinds.hideHudKey;
     public static final KeyBind SCREENSHOT_KEY = KeyBinds.screenshotKey;
     public static final KeyBind INVENTORY_KEY = KeyBinds.inventoryKey;
+    public static final KeyBind CHAT_KEY = KeyBinds.chatKey;
+    public static final KeyBind COMMAND_KEY = KeyBinds.commandKey;
     public static final KeyBind FULL_SCREEN_KEY = KeyBinds.fullScreenKey;
     public static final KeyBind THIRD_PERSON_KEY = KeyBinds.thirdPersonKey;
 
@@ -97,6 +100,10 @@ public class DesktopInput extends GameInput {
             player.openInventory();
         } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen instanceof InventoryScreen && player != null) {
             player.closeMenu();
+        } else if (DesktopInput.CHAT_KEY.isJustPressed() && currentScreen == null) {
+            this.client.showScreen(new ChatScreen());
+        } else if (DesktopInput.COMMAND_KEY.isJustPressed() && currentScreen == null) {
+            this.client.showScreen(new ChatScreen("/"));
         } else if (DesktopInput.DEBUG_KEY.isJustPressed()) {
             this.handleDebugKey();
         } else if (DesktopInput.INSPECT_KEY.isJustPressed()) {

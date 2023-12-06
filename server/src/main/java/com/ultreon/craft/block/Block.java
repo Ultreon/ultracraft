@@ -47,7 +47,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public Identifier getId() {
-        Identifier key = Registries.BLOCKS.getKey(this);
+        Identifier key = Registries.BLOCK.getKey(this);
         return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
     }
 
@@ -89,7 +89,7 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCKS.getValue(id);
+        Block block = Registries.BLOCK.getValue(id);
         return block == null ? Blocks.AIR : block;
     }
 
@@ -99,7 +99,7 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        Identifier key = Registries.BLOCKS.getKey(this);
+        Identifier key = Registries.BLOCK.getKey(this);
         return key == null ? "ultracraft.block.air.name" : key.location() + ".block." + key.path() + ".name";
     }
 

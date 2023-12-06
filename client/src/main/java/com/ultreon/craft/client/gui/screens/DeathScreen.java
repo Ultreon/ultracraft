@@ -40,6 +40,11 @@ public class DeathScreen extends Screen {
     }
 
     @Override
+    public boolean canCloseWithEsc() {
+        return false;
+    }
+
+    @Override
     public void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
     }

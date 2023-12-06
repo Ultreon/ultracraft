@@ -12,7 +12,7 @@ public class MenuTypes {
 
     private static <T extends ContainerMenu> MenuType<T> register(String name, MenuType.MenuBuilder<T> menuBuilder) {
         MenuType<T> menuType = new MenuType<>(menuBuilder);
-        Registries.MENU_TYPES.register(new Identifier(name), menuType);
+        Registries.MENU_TYPE.register(new Identifier(name), menuType);
         return menuType;
     }
 }

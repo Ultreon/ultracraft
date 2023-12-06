@@ -1,12 +1,13 @@
 package com.ultreon.craft.util;
 
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 public class Intersector {
     private final static Vec3d tmp = new Vec3d();
 
     @SuppressWarnings({"UnqualifiedStaticUsage", "ConstantValue"})
-    public static boolean intersectRayBounds (Ray ray, BoundingBox box, Vec3d intersection) {
+    public static boolean intersectRayBounds (Ray ray, BoundingBox box, @Nullable Vec3d intersection) {
         if (box.contains(ray.origin)) {
             if (intersection != null) intersection.set(ray.origin);
             return true;

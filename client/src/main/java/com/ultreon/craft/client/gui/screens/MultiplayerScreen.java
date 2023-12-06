@@ -5,6 +5,7 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.gui.widget.TextEntry;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.Nullable;
@@ -27,9 +28,12 @@ public class MultiplayerScreen extends Screen {
                 .callback(this::validateServerIp)
                 .hint(TextObject.translation("ultracraft.screen.multiplayer.server_ip"));
 
-        this.joinButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.multiplayer.join"), 200)
-                        .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 + 15)))
+        this.joinButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.multiplayer.join"), 98)
+                        .position(() -> new Position(this.size.width / 2 + 2, this.size.height / 2 + 15)))
                 .callback(this::joinServer);
+        builder.add(TextButton.of(UITranslations.BACK, 98)
+                        .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 + 15)))
+                .callback(caller -> this.back());
         this.joinButton.disable();
     }
 

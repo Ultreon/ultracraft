@@ -10,7 +10,7 @@ public class SoundEvents {
     public static final SoundEvent BUTTON_RELEASE = SoundEvents.register("ui.button.release", new SoundEvent(10.0f));
 
     private static SoundEvent register(String name, SoundEvent event) {
-        Registries.SOUND_EVENTS.register(new Identifier(name), event);
+        Registries.SOUND_EVENT.register(new Identifier(name), event);
         return event;
     }
 

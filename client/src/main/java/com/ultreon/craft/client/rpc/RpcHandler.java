@@ -16,34 +16,47 @@ import java.util.concurrent.atomic.AtomicReference;
 @ApiStatus.Experimental
 public class RpcHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("RpcHandler");
-    private static Thread thread;
-    private static final AtomicReference<GameActivity> currentActivity = new AtomicReference<>();
     private static IPCClient client;
     private static OffsetDateTime start;
+    private static boolean failed;
 
-    public static void start(File sdkPath) {
-        RpcHandler.client = new IPCClient(1179421663503323318L);
-        RpcHandler.start = OffsetDateTime.now();
-        RpcHandler.client.setListener(new IPCListener() {
-            @Override
-            public void onReady(IPCClient client) {
-                RichPresence.Builder builder = new RichPresence.Builder();
-                builder.setState(null)
-                        .setDetails("Loading the game!")
-                        .setLargeImage("icon")
-                        .setStartTimestamp(RpcHandler.start);
-                client.sendRichPresence(builder.build());
-            }
-        });
+    public static void start() {
         try {
+            RpcHandler.client = new IPCClient(1179421663503323318L);
+            RpcHandler.start = OffsetDateTime.now();
+            RpcHandler.client.setListener(new IPCListener() {
+                @Override
+                public void onReady(IPCClient client) {
+                    RpcHandler.LOGGER.info("Discord RPC over IPC is ready!");
+
+                    RichPresence.Builder builder = new RichPresence.Builder();
+                    builder.setState(null)
+                            .setDetails("Loading the game!")
+                            .setLargeImage("icon")
+                            .setStartTimestamp(RpcHandler.start);
+                    client.sendRichPresence(builder.build());
+                }
+
+                @Override
+                public void onDisconnect(IPCClient client, Throwable t) {
+                    RpcHandler.LOGGER.warn("Discord RPC over IPC disconnected!", t);
+                }
+
+
+            });
+
             RpcHandler.client.connect();
-        } catch (NoDiscordClientException e) {
-            return;
+            Runtime.getRuntime().addShutdownHook(new Thread(RpcHandler.client::close));
+        } catch (Exception e) {
+            RpcHandler.failed = true;
         }
-//        Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
     }
 
     public static void setActivity(GameActivity newActivity) {
+        if (RpcHandler.failed) {
+            return;
+        }
+
         RichPresence.Builder builder = new RichPresence.Builder();
         String description = null;
         try {

@@ -37,12 +37,12 @@ public class Biomes {
             .build());
 
     private static Biome register(String name, Biome biome) {
-        Registries.BIOMES.register(new Identifier(name), biome);
+        Registries.BIOME.register(new Identifier(name), biome);
         return biome;
     }
 
     public static void nopInit() {
-        for (Biome biome : Registries.BIOMES.values()) {
+        for (Biome biome : Registries.BIOME.values()) {
             biome.buildLayers();
         }
     }

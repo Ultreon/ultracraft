@@ -61,7 +61,7 @@ public class ItemStack {
         @Nullable Identifier id = Identifier.tryParse(data.getString("item"));
         if (id == null) return new ItemStack();
 
-        Item item = Registries.ITEMS.getValue(id);
+        Item item = Registries.ITEM.getValue(id);
         if (item == null || item == Items.AIR) return new ItemStack();
 
         int count = data.getInt("count", 0);

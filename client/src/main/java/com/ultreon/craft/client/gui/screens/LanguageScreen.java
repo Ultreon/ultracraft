@@ -4,6 +4,7 @@ import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.translations.v1.LanguageManager;
 
@@ -38,7 +39,7 @@ public class LanguageScreen extends Screen {
                     this.client.settings.save();
                 });
 
-        this.backButton = builder.add(TextButton.of("ultracraft.ui.back")
+        this.backButton = builder.add(TextButton.of(UITranslations.BACK)
                 .position(() -> new Position(this.size.width / 2 - 100, this.size.height - 30))
                 .callback(caller -> this.back()));
     }

@@ -39,14 +39,14 @@ public class BlockModelRegistry {
     }
 
     public static void registerDefault(Block block) {
-        Identifier key = Registries.BLOCKS.getKey(block);
+        Identifier key = Registries.BLOCK.getKey(block);
         Preconditions.checkNotNull(key, "Block is not registered");
         BlockModelRegistry.register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
     }
 
     public static void registerDefault(Supplier<Block> block) {
         BlockModelRegistry.register(block, Suppliers.memoize(() -> {
-            Identifier key = Registries.BLOCKS.getKey(block.get());
+            Identifier key = Registries.BLOCK.getKey(block.get());
             Preconditions.checkNotNull(key, "Block is not registered");
             return CubeModel.of(key.mapPath(path -> "blocks/" + path));
         }));

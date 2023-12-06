@@ -21,7 +21,7 @@ public class ClientSoundRegistry {
 
     @ApiStatus.Internal
     public void registerSounds() {
-        Registry<SoundEvent> soundEvents = Registries.SOUND_EVENTS;
+        Registry<SoundEvent> soundEvents = Registries.SOUND_EVENT;
         Map<Identifier, Sound> soundMap = new HashMap<>();
         for (Map.Entry<Identifier, SoundEvent> entry : soundEvents.entries()) {
             Identifier key = entry.getKey();

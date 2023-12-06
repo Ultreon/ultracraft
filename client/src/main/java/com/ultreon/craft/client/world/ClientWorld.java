@@ -145,8 +145,12 @@ public final class ClientWorld extends World implements Disposable {
             return;
         }
         LocalPlayer player = this.client.player;
-        if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+        if (player == null) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            return;
+        }
+        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
 
@@ -169,6 +173,7 @@ public final class ClientWorld extends World implements Disposable {
                     if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
                         this.chunks.remove(chunkPos);
                         clientChunk.dispose();
+                        this.updateNeighbours(clientChunk);
 
                         this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.UNLOADED));
                     }

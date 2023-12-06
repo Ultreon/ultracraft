@@ -72,11 +72,11 @@ public abstract class Biome {
     }
 
     private Identifier getId() {
-        return Registries.BIOMES.getKey(this);
+        return Registries.BIOME.getKey(this);
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOMES.getValue(Identifier.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.getValue(Identifier.tryParse(mapType.getString("id", "plains")));
     }
 
     public static class Builder {

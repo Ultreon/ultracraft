@@ -3,6 +3,7 @@ package com.ultreon.craft.network;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.TypeRegistry;
@@ -27,7 +28,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@SuppressWarnings({"deprecation", "EqualsWhichDoesntCheckParameterClass"})
 public class PacketBuffer extends ByteBuf {
     private static final int MAX_UBO_SIZE = 1024 * 1024 * 2;
     private final ByteBuf buf;
@@ -1613,5 +1613,13 @@ public class PacketBuffer extends ByteBuf {
     public ByteBuf writeItemStack(ItemStack stack) {
         this.writeUbo(stack.save());
         return this.buf;
+    }
+
+    public TextObject readTextObject() {
+        return TextObject.deserialize(this.readUbo());
+    }
+
+    public void writeTextObject(TextObject message) {
+        this.writeUbo(message.serialize());
     }
 }

@@ -49,6 +49,8 @@ dependencies {
     implementation api("com.formdev:flatlaf:3.2.1")
     implementation api("com.github.FusionYAML:FusionYAML:$fusion_yaml_version")
 
+    annotationProcessor "com.google.errorprone:error_prone_annotations:2.18.0"
+
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:commons-v0:$corelibs_version")

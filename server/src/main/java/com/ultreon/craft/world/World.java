@@ -19,6 +19,7 @@ import com.ultreon.craft.util.WorldRayCaster;
 import com.ultreon.craft.world.ServerWorld.Region;
 import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -55,6 +56,8 @@ public abstract class World implements ServerDisposable {
     public static final int WORLD_DEPTH = 0;
     public static final Marker MARKER = MarkerFactory.getMarker("World");
     public static final int REGION_SIZE = 32;
+    public static final Identifier OVERWORLD = new Identifier("overworld");
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
 
     protected final Vec3i spawnPoint = new Vec3i();
@@ -70,6 +73,8 @@ public abstract class World implements ServerDisposable {
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new HashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
+    private DimensionInfo info;
+    protected UUID uid = Utils.NULL_UUID;
 
     protected World() {
         // Shh, the original seed was 512.
@@ -657,5 +662,21 @@ public abstract class World implements ServerDisposable {
         Chunk chunk = this.getChunkAt(localPos);
         if (chunk == null) return null;
         return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
+    }
+
+    public DimensionInfo getDimension() {
+        return this.info;
+    }
+
+    public Collection<Entity> getEntities() {
+        return this.entities.values();
+    }
+
+    public <T extends Entity> Collection<Entity> getEntitiesByClass(Class<T> clazz) {
+        return this.entities.values().stream().filter(clazz::isInstance).toList();
+    }
+
+    public UUID getUID() {
+        return this.uid;
     }
 }

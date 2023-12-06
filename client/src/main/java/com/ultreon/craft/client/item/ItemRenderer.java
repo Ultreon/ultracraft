@@ -63,7 +63,7 @@ public class ItemRenderer {
             return;
         }
 
-        Identifier curKey = Registries.ITEMS.getKey(item);
+        Identifier curKey = Registries.ITEM.getKey(item);
         if (curKey == null) {
             renderer.blitColor(Color.WHITE);
             renderer.blit((TextureRegion) null, x, y, 16, 16);

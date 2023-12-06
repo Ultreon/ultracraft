@@ -237,4 +237,8 @@ public abstract class Screen extends UIContainer<Screen> {
 
         return super.charType(character);
     }
+
+    protected final void close() {
+        this.client.showScreen(null);
+    }
 }

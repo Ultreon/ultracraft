@@ -105,7 +105,7 @@ public final class ServerWorld extends World {
 
         this.terrainGen = new TerrainGenerator(biomeDomain, layerDomain, NoiseConfigs.BIOME_MAP);
 
-        for (Biome value : Registries.BIOMES.values()) {
+        for (Biome value : Registries.BIOME.values()) {
             this.terrainGen.registerBiome(this, this.getSeed(), value, value.getTemperatureStart(), value.getTemperatureEnd());
         }
 
@@ -114,12 +114,14 @@ public final class ServerWorld extends World {
 
     private void load(MapType worldData) {
         this.playTime = worldData.getInt("playTime", 0);
+        this.uid = worldData.getUUID("uid", this.uid);
         this.spawnPoint.set(worldData.getInt("spawnX", 0), worldData.getInt("spawnY", 0), worldData.getInt("spawnZ", 0));
     }
 
     private MapType save(MapType worldData) {
         BlockPos spawnPoint = UltracraftServer.invokeAndWait(this::getSpawnPoint);
         worldData.putInt("playTime", this.playTime);
+        worldData.putUUID("uid", this.uid);
         worldData.putInt("spawnX", spawnPoint.x());
         worldData.putInt("spawnY", spawnPoint.y());
         worldData.putInt("spawnZ", spawnPoint.z());
@@ -202,8 +204,6 @@ public final class ServerWorld extends World {
     public ServerChunk loadChunk(int x, int z, boolean overwrite) {
         this.checkThread();
 
-//        if (x != 17 || z != 18) return null;
-
         var globalPos = new ChunkPos(x, z);
         var localPos = World.toLocalChunkPos(x, z);
 
@@ -261,7 +261,7 @@ public final class ServerWorld extends World {
             var region = this.getOrOpenRegionAt(globalPos);
             var chunk = region.openChunkNow(localPos, globalPos);
             if (chunk == null) {
-                this.server.handleChunkLoadFailure(globalPos);
+                this.server.handleChunkLoadFailure(globalPos, "Chunk not loaded on server.");
                 World.LOGGER.warn("Failed to load chunk {}!", globalPos);
                 return null;
             }

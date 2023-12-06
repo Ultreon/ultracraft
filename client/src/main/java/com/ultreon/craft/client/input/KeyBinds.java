@@ -13,6 +13,8 @@ public class KeyBinds {
     public static final KeyBind imGuiFocusKey = KeyBindRegistry.register(new KeyBind("imGuiFocus", Input.Keys.F10));
     public static final KeyBind inspectKey = KeyBindRegistry.register(new KeyBind("inspect", Input.Keys.F4));
     public static final KeyBind inventoryKey = KeyBindRegistry.register(new KeyBind("inventory", Input.Keys.E));
+    public static final KeyBind chatKey = KeyBindRegistry.register(new KeyBind("chat", Input.Keys.PERIOD));
+    public static final KeyBind commandKey = KeyBindRegistry.register(new KeyBind("command", Input.Keys.SLASH));
     public static final KeyBind thirdPersonKey = KeyBindRegistry.register(new KeyBind("thirdPerson", Input.Keys.F5));
     public static final KeyBind hideHudKey = KeyBindRegistry.register(new KeyBind("hideHud", Input.Keys.F1));
     public static final KeyBind screenshotKey = KeyBindRegistry.register(new KeyBind("screenshot", Input.Keys.F2));

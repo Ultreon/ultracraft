@@ -1,10 +1,13 @@
 package com.ultreon.craft.client.player;
 
+import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class ClientPlayer extends Player {
     public float bodyXRot;
@@ -20,7 +23,7 @@ public abstract class ClientPlayer extends Player {
     private float xHeadRot0;
 
     protected ClientPlayer(EntityType<? extends Player> entityType, World world) {
-        super(entityType, world);
+        super(entityType, world, UltracraftClient.get().getUser().name());
     }
 
     public boolean isWalking() {
@@ -56,5 +59,10 @@ public abstract class ClientPlayer extends Player {
         vec.y = MathHelper.lerp(partialTick, this.oy, this.y);
         vec.z = MathHelper.lerp(partialTick, this.oz, this.z);
         return vec;
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return false;
     }
 }

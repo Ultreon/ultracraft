@@ -8,6 +8,7 @@ import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
 import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -15,6 +16,7 @@ import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
 import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
+import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,13 +27,13 @@ public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
     public @Nullable ContainerMenu openMenu;
-    private UUID uuid;
     private int oldSelected;
+    private final ClientPermissionMap permissions = new ClientPermissionMap();
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
         this.world = world;
-        this.uuid = uuid;
+        this.setUuid(uuid);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class LocalPlayer extends ClientPlayer {
 
     @Override
     protected void hurtFromVoid() {
-        // Player void damage should be handled by the server.
+        // The server should handle player void damage.
     }
 
     @Override
@@ -110,16 +112,6 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
-    public @NotNull UUID getUuid() {
-        return this.uuid;
-    }
-
-    @Override
-    protected void setUuid(@NotNull UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    @Override
     public void playSound(@Nullable SoundEvent sound, float volume) {
         super.playSound(sound, volume);
         if (sound != null) {
@@ -151,5 +143,19 @@ public class LocalPlayer extends ClientPlayer {
     public void onOpenMenu(ContainerMenu menu) {
         this.openMenu = menu;
         this.client.showScreen(MenuRegistry.getScreen(menu));
+    }
+
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return this.permissions.has(permission);
+    }
+
+    public ClientPermissionMap getPermissions() {
+        return this.permissions;
     }
 }

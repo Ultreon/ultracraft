@@ -196,4 +196,8 @@ public final class WorldStorage {
         this.createDir("regions");
         this.createDir("data");
     }
+
+    public void loadInfo() {
+
+    }
 }

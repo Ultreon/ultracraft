@@ -1,23 +1,43 @@
 package com.ultreon.craft.text;
 
-import com.google.common.collect.Iterators;
+import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 public abstract class TextObject implements Iterable<TextObject> {
+    public static TextObject deserialize(MapType data) {
+        String type = data.getString("type");
+        return switch (type) {
+            case "literal" -> LiteralText.deserialize(data);
+            case "translation" -> TranslationText.deserialize(data);
+            case "empty" -> TextObject.empty();
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+    }
+
     public abstract @NotNull String createString();
 
     public String getText() {
         return this.createString();
     }
 
+    public abstract MapType serialize();
+
     public static TextObject empty() {
         return new TextObject() {
             @Override
             public @NotNull String createString() {
                 return "";
+            }
+
+            @Override
+            public MapType serialize() {
+                MapType data = new MapType();
+                data.putString("type", "empty");
+                return data;
             }
 
             @Override
@@ -43,6 +63,10 @@ public abstract class TextObject implements Iterable<TextObject> {
 
     @Override
     public @NotNull Iterator<TextObject> iterator() {
-        return Iterators.singletonIterator(this);
+        return this.stream().iterator();
+    }
+
+    protected Stream<TextObject> stream() {
+        return Stream.of(this);
     }
 }

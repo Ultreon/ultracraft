@@ -6,7 +6,9 @@ import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.sound.event.SoundEvents;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Intersector;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
@@ -15,7 +17,8 @@ import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
+import java.util.Collection;
+import java.util.Comparator;
 
 public abstract class Player extends LivingEntity {
     public int selected;
@@ -31,11 +34,13 @@ public abstract class Player extends LivingEntity {
     private boolean spectating = false;
     @Nullable private ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
+    private final String name;
 
-    protected Player(EntityType<? extends Player> entityType, World world) {
+    protected Player(EntityType<? extends Player> entityType, World world, String name) {
         super(entityType, world);
 
         this.inventory = new Inventory(MenuTypes.INVENTORY, world, this, null);
+        this.name = name;
         this.inventory.build();
     }
 
@@ -70,6 +75,11 @@ public abstract class Player extends LivingEntity {
     public void setRotation(Vec2f position) {
         super.setRotation(position);
         this.xHeadRot = position.x;
+    }
+
+    @Override
+    public TextObject getDisplayName() {
+        return TextObject.literal(this.name);
     }
 
     public void rotateHead(float x, float y) {
@@ -171,10 +181,6 @@ public abstract class Player extends LivingEntity {
         return data;
     }
 
-    public abstract UUID getUuid();
-
-    protected abstract void setUuid(UUID uuid);
-
     public void playSound(@Nullable SoundEvent sound, float volume) {
 
     }
@@ -221,5 +227,32 @@ public abstract class Player extends LivingEntity {
 
     public void openInventory() {
         this.openMenu(this.inventory);
+    }
+
+    public @Nullable Entity rayCast(Collection<Entity> entities) {
+        Ray ray = new Ray(this.getPosition(), this.getLookVector());
+        return entities.stream()
+                .filter(entity -> Intersector.intersectRayBounds(ray, entity.getBoundingBox(), null))
+                .sorted(Comparator.comparing(entity -> entity.getPosition().dst(ray.origin)))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public @Nullable Entity nearestEntity() {
+        return this.world.getEntities()
+                .stream()
+                .sorted(Comparator.comparing(entity -> entity.getPosition().dst(this.getPosition())))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public @Nullable <T extends Entity> T nearestEntity(Class<T> clazz) {
+        return this.world.getEntities()
+                .stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .sorted(Comparator.comparing(entity -> entity.getPosition().dst(this.getPosition())))
+                .findFirst()
+                .orElse(null);
     }
 }

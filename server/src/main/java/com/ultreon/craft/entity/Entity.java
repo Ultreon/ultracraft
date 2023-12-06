@@ -1,12 +1,17 @@
 package com.ultreon.craft.entity;
 
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.api.commands.CommandSender;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.text.Translations;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -16,11 +21,13 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
-public class Entity {
+public class Entity implements CommandSender {
     private final EntityType<? extends Entity> type;
     protected final World world;
     protected double x;
@@ -46,6 +53,9 @@ public class Entity {
     private boolean wasInFluid = false;
     private boolean swimUp;
     protected double ox, oy, oz;
+    private @Nullable String formatName;
+    private @Nullable TextObject customName;
+    private UUID uuid;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -54,7 +64,7 @@ public class Entity {
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
         Identifier typeId = Identifier.parse(data.getString("type"));
-        EntityType<?> type = Registries.ENTITIES.getValue(typeId);
+        EntityType<?> type = Registries.ENTITY_TYPE.getValue(typeId);
         Entity entity = type.create(world);
 
         entity.id = data.getInt("id");
@@ -109,7 +119,7 @@ public class Entity {
         data.put("Velocity", velocity);
 
         data.putInt("id", this.id);
-        data.putString("type", Objects.requireNonNull(Registries.ENTITIES.getKey(this.type)).toString());
+        data.putString("type", Objects.requireNonNull(Registries.ENTITY_TYPE.getKey(this.type)).toString());
 
         data.putDouble("fallDistance", this.fallDistance);
         data.putFloat("gravity", this.gravity);
@@ -448,6 +458,60 @@ public class Entity {
     }
 
     public EntityType<?> getType() {
-        return type;
+        return this.type;
+    }
+
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
+    }
+
+    @Override
+    public String getName() {
+        return this.getDisplayName().getText();
+    }
+
+    @Override
+    public @Nullable String getPublicName() {
+        return null;
+    }
+
+    @Override
+    public TextObject getDisplayName() {
+        if (this.customName != null) return this.customName;
+        Identifier id1 = this.getType().getId();
+        if (id1 == null) return Translations.NULL_OBJECT;
+        return TextObject.translation("%s.entity.%s.name".formatted(
+                id1.location(),
+                id1.path().replace('/', '.')
+        ));
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public UUID getUuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public void sendMessage(@NotNull String message) {
+
+    }
+
+    @Override
+    public void sendMessage(@NotNull TextObject component) {
+
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return false;
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return false;
     }
 }

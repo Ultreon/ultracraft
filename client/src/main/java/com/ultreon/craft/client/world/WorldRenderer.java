@@ -274,7 +274,7 @@ public final class WorldRenderer implements Disposable {
                 }
 
                 Vec3i chunkOffset = chunk.getOffset();
-                Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(SCALE);
+                Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
                 chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
                 if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
                     continue;
@@ -285,7 +285,6 @@ public final class WorldRenderer implements Disposable {
                     this.free(chunk);
                     chunk.getWorld().onChunkUpdated(chunk);
                     ref.chunkRendered = true;
-                    continue;
                 }
 
                 chunk.dirty = false;

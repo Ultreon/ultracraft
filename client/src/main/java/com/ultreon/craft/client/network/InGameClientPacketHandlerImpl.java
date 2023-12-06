@@ -4,6 +4,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ClientPlayerEvents;
+import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
@@ -22,15 +23,18 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.AddPermissionPacket;
+import com.ultreon.craft.network.packets.InitialPermissionsPacket;
+import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
@@ -102,7 +106,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     @Override
     public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
         LocalPlayer player = this.client.player;
-        if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+        if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
@@ -214,7 +218,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onPlaySound(Identifier sound, float volume) {
-        this.client.playSound(Registries.SOUND_EVENTS.getValue(sound), volume);
+        this.client.playSound(Registries.SOUND_EVENT.getValue(sound), volume);
     }
 
     @Override
@@ -229,7 +233,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onBlockSet(BlockPos pos, Identifier blockId) {
-        var block = Registries.BLOCKS.getValue(blockId);
+        var block = Registries.BLOCK.getValue(blockId);
 
         ClientWorld world = this.client.world;
         if (this.client.world != null) {
@@ -272,7 +276,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onOpenContainerMenu(Identifier menuTypeId) {
-        var menuType = Registries.MENU_TYPES.getValue(menuTypeId);
+        var menuType = Registries.MENU_TYPE.getValue(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
         ContainerMenu o = menuType.create(this.client.world, player, null);
@@ -281,5 +285,34 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         } else {
             this.client.connection.send(new C2SCloseContainerMenuPacket());
         }
+    }
+
+    @Override
+    public void onAddPermission(AddPermissionPacket packet) {
+        var player = this.client.player;
+        if (player != null) {
+            player.getPermissions().onPacket(packet);
+        }
+    }
+
+    @Override
+    public void onRemovePermission(RemovePermissionPacket packet) {
+        var player = this.client.player;
+        if (player != null) {
+            player.getPermissions().onPacket(packet);
+        }
+    }
+
+    @Override
+    public void onInitialPermissions(InitialPermissionsPacket packet) {
+        var player = this.client.player;
+        if (player != null) {
+            player.getPermissions().onPacket(packet);
+        }
+    }
+
+    @Override
+    public void onChatReceived(TextObject message) {
+        ChatScreen.addMessage(message);
     }
 }

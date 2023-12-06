@@ -3,6 +3,10 @@ package com.ultreon.craft.server.player;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.ultreon.craft.api.commands.Command;
+import com.ultreon.craft.api.commands.CommandContext;
+import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -13,7 +17,12 @@ import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.packets.s2c.*;
+import com.ultreon.craft.registry.CommandRegistry;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.chat.Chat;
+import com.ultreon.craft.text.Formatter;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
@@ -48,7 +57,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public Connection connection;
     private final ServerWorld world;
     public int hotbarIdx;
-    private UUID uuid;
+    private final UUID uuid;
     private final String name;
     private final UltracraftServer server = UltracraftServer.get();
     private final Object2IntMap<ChunkPos> retryChunks = Object2IntMaps.synchronize(new Object2IntArrayMap<>());
@@ -61,14 +70,18 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     private boolean sendingChunk;
     private boolean spawned;
     private boolean playedBefore;
+    private final MutablePermissionMap permissions = new MutablePermissionMap();
+    private boolean isAdmin;
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name, Connection connection) {
-        super(entityType, world);
+        super(entityType, world, name);
         this.world = world;
         this.uuid = uuid;
         this.name = name;
 
         this.connection = connection;
+
+        this.permissions.allows.add(new Permission("*")); // FIXME: Allow custom default permissions.
     }
 
     public void kick(String kick) {
@@ -211,14 +224,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         return false;
     }
 
-    public String getName() {
-        return this.name;
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
     }
 
-    @Override
-    protected void setUuid(@NotNull UUID uuid) {
-        if (this.uuid != null) throw new IllegalStateException("Uuid already set!");
-        this.uuid = uuid;
+    public @NotNull String getName() {
+        return this.name;
     }
 
     @Override
@@ -233,10 +245,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             case SUCCESS -> this.handleClientLoadChunk(pos);
             case UNLOADED -> this.activeChunks.remove(pos);
         }
+
+        if (status == Chunk.Status.FAILED)
+            this.server.handleChunkLoadFailure(pos, "Chunk failed to load on client.");
     }
 
     private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
-        this.setPosition(ox, oy, oz);
+        this.setPosition(this.ox, this.oy, this.oz);
         return this.activeChunks.add(pos);
     }
 
@@ -327,6 +342,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public void sendChunk(ChunkPos pos, Chunk chunk) {
         if (this.sendingChunk) return;
 
+        Debugger.log("Sending chunk: " + pos.toString());
+
         this.onChunkPending(pos);
         this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
     }
@@ -396,5 +413,64 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     public boolean hasPlayedBefore() {
         return this.playedBefore;
+    }
+
+    public void execute(String input) {
+        String command;
+        String[] argv;
+        if (!input.contains(" ")) {
+            argv = new String[0];
+            command = input;
+        } else {
+            argv = input.split(" ");
+            command = argv[0];
+            argv = ArrayUtils.remove(argv, 0);
+        }
+
+        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + input);
+
+        Command baseCommand = CommandRegistry.get(command);
+        if (baseCommand == null) {
+            Chat.sendError(this, "Unknown command&: " + command);
+            return;
+        }
+        baseCommand.onCommand(this, new CommandContext(command), command, argv);
+    }
+
+    public void onMessageSent(String message) {
+        for (ServerPlayer player : this.server.getPlayers()) {
+            player.sendMessage(new Formatter(true, true, message, TextObject.empty(), TextObject.empty(), null, Color.WHITE).parse().getResult());
+        }
+    }
+
+    @Override
+    public void sendMessage(@NotNull TextObject textObj) {
+        String text = textObj.getText();
+        Debugger.log("MESSAGE_SENT: " + text);
+        this.connection.send(new S2CChatPacket(textObj));
+    }
+
+    @Override
+    public void sendMessage(@NotNull String message) {
+        this.sendMessage(new Formatter(true, true, message, TextObject.empty(), TextObject.empty(), null, Color.WHITE).parse().getResult());
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return this.permissions.has(permission);
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return this.isAdmin;
+    }
+
+    public void makeAdmin() {
+        this.isAdmin = true;
+        this.resendCommands();
+    }
+
+    private void resendCommands() {
+        this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().toList()));
     }
 }
