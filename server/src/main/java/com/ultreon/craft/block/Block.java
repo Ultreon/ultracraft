@@ -127,6 +127,22 @@ public class Block implements DataWriter<MapType> {
                 '}';
     }
 
+    public boolean hasOcclusion() {
+        return true;
+    }
+
+    public boolean shouldGreedyMerge() {
+        return true;
+    }
+
+    public boolean hasCustomRender() {
+        return false;
+    }
+
+    public int getRegIdx() {
+        return Registries.BLOCK.values().indexOf(this);
+    }
+
     public static class Properties {
         @Nullable
         private ToolType effectiveTool = null;

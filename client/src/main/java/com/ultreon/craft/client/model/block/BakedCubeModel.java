@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
 
 public final class BakedCubeModel implements Disposable {
+    public static final BakedCubeModel DEFAULT = new BakedCubeModel(TextureManager.DEFAULT_TEX_REG);
     private final TextureRegion top;
     private final TextureRegion bottom;
     private final TextureRegion left;
@@ -48,6 +50,7 @@ public final class BakedCubeModel implements Disposable {
         this.right = right;
         this.front = front;
         this.back = back;
+
         this.mesh = this.createMesh();
         this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
         this.properties = properties;
@@ -61,19 +64,19 @@ public final class BakedCubeModel implements Disposable {
         return this.bottom;
     }
 
-    public TextureRegion left() {
+    public TextureRegion west() {
         return this.left;
     }
 
-    public TextureRegion right() {
+    public TextureRegion east() {
         return this.right;
     }
 
-    public TextureRegion front() {
+    public TextureRegion north() {
         return this.front;
     }
 
-    public TextureRegion back() {
+    public TextureRegion south() {
         return this.back;
     }
     
@@ -98,10 +101,10 @@ public final class BakedCubeModel implements Disposable {
 
         BakedCubeModel.createTop(offset, 0, 0, 0, model.top(), vertices);
         BakedCubeModel.createBottom(offset, 0, 0, 0, model.bottom(), vertices);
-        BakedCubeModel.createLeft(offset, 0, 0, 0, model.left(), vertices);
-        BakedCubeModel.createRight(offset, 0, 0, 0, model.right(), vertices);
-        BakedCubeModel.createFront(offset, 0, 0, 0, model.front(), vertices);
-        BakedCubeModel.createBack(offset, 0, 0, 0, model.back(), vertices);
+        BakedCubeModel.createLeft(offset, 0, 0, 0, model.west(), vertices);
+        BakedCubeModel.createRight(offset, 0, 0, 0, model.east(), vertices);
+        BakedCubeModel.createFront(offset, 0, 0, 0, model.north(), vertices);
+        BakedCubeModel.createBack(offset, 0, 0, 0, model.south(), vertices);
 
         int numVertices = vertices.size() / VERTEX_SIZE + 1;
         Mesh mesh = new Mesh(false, false, numVertices, indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));

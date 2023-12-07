@@ -12,7 +12,7 @@ import org.checkerframework.common.reflection.qual.NewInstance;
 
 import static com.ultreon.craft.client.UltracraftClient.LOGGER;
 
-public class CollectNode extends WorldRenderNode {
+public class CollectNode extends RenderPipeline.RenderNode {
     @NewInstance
     @Override
     public Array<Renderable> render(ObjectMap<String, Texture> textures, ModelBatch modelBatch, GameCamera camera, Array<Renderable> input) {

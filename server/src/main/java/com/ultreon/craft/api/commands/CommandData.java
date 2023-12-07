@@ -23,8 +23,9 @@ import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.datetime.v0.Duration;
-import com.ultreon.libs.registries.v0.Registry;
+import com.ultreon.craft.registry.Registry;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
 import org.jetbrains.annotations.NotNull;
@@ -197,12 +198,13 @@ public class CommandData {
         CommandData.registerArgument("command-sender", CommandData::readCommandSender, CommandData::completeCommandSender);
         CommandData.registerArgument("date", CommandData::readDate, CommandData::completeDate);
         CommandData.registerArgument("date-time", CommandData::readDateTime, CommandData::completeDateTime);
+        CommandData.registerArgument("dimension", CommandData::readDimension, CommandData::completeDimensions);
         CommandData.registerArgument("double", CommandReader::readDouble, CommandData::completeFloats);
         CommandData.registerArgument("duration", CommandData::readDuration, CommandData::completeFloats);
         CommandData.registerArgument("entity", CommandData::readEntity, CommandData::completeEntities);
         CommandData.registerArgument("entity-type", CommandData::readEntityTypeExceptPlayer, CommandData::completeEntityTypesExceptPlayer);
         CommandData.registerArgument("entity-type-all", CommandData::readEntityType, CommandData::completeEntityTypes);
-        CommandData.registerArgument("game-mode", CommandData::readGamemode, CommandData::completeGamemode);
+        CommandData.registerArgument("gamemode", CommandData::readGamemode, CommandData::completeGamemode);
         CommandData.registerArgument("give-item", CommandData::readItem, CommandData::completeItems);
         CommandData.registerArgument("int", CommandReader::readInt, CommandData::completeInts);
         CommandData.registerArgument("int8", CommandReader::readByte, CommandData::completeInts);
@@ -215,7 +217,8 @@ public class CommandData {
         CommandData.registerArgument("living-entity", CommandData::readLivingEntity, CommandData::completeLivingEntities);
         CommandData.registerArgument("long", CommandReader::readLong, CommandData::completeInts);
         CommandData.registerArgument("long-int", CommandReader::readLong, CommandData::completeInts);
-        CommandData.registerArgument("location", CommandData::readLocation, CommandData::completeLocation);
+        CommandData.registerArgument("location", CommandData::readLocation, CommandData::completePosition);
+        CommandData.registerArgument("position", CommandData::readPosition, CommandData::completePosition);
         CommandData.registerArgument("message", CommandReader::readMessage, CommandData::completeVoid);
         CommandData.registerArgument("offline-player", CommandData::readOfflinePlayer, CommandData::completeOfflinePlayers);
         CommandData.registerArgument("player", CommandData::readPlayer, CommandData::completeOnlinePlayers);
@@ -226,7 +229,7 @@ public class CommandData {
         CommandData.registerArgument("time", CommandData::readTime, CommandData::completeTime);
         CommandData.registerArgument("uuid", CommandData::readUuid, CommandData::completeVoidArg);
         CommandData.registerArgument("weather", CommandData::readWeather, CommandData::completeWeather);
-        CommandData.registerArgument("dimension", CommandData::readDimension, CommandData::completeDimensions);
+        CommandData.registerArgument("world", CommandData::readDimension, CommandData::completeDimensions);
     }
 
     private static List<String> completeVoid(CommandSender commandSender, CommandContext commandCtx, CommandReader ctx, String[] strings) throws CommandParseException {
@@ -425,7 +428,9 @@ public class CommandData {
     private static Gamemode readGamemode(CommandReader ctx) throws CommandParseException {
         return switch (ctx.readString()) {
             case "survival" -> Gamemode.SURVIVAL;
-            case "building" -> Gamemode.BUILDER;
+            case "mini_game" -> Gamemode.MINI_GAME;
+            case "builder" -> Gamemode.BUILDER;
+            case "builder_plus" -> Gamemode.BUILDER_PLUS;
             default -> throw new CommandParseException.NotFound("gamemode", ctx.getOffset());
         };
     }
@@ -516,6 +521,13 @@ public class CommandData {
         return new Location(x, y, z);
     }
 
+    private static Vec3d readPosition(CommandReader ctx) throws CommandParseException.NotANumber, CommandParseException.NotADigit, CommandParseException.NotAtStartOfArg, CommandParseException.EndOfArgument, CommandParseException.NotAtEndOfArg {
+        var x = ctx.readDouble();
+        var y = ctx.readDouble();
+        var z = ctx.readDouble();
+        return new Vec3d(x, y, z);
+    }
+
     private Location readLocationRot(CommandReader ctx) throws CommandParseException.NotANumber, CommandParseException.NotADigit, CommandParseException.NotAtStartOfArg, CommandParseException.EndOfArgument, CommandParseException.NotAtEndOfArg {
         var x = ctx.readDouble();
         var y = ctx.readDouble();
@@ -548,7 +560,7 @@ public class CommandData {
     }
 
     private static List<String> completeGamemode(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
-        return TabCompleting.strings(ctx.readString(), "survival", "adventure", "creative", "spectator");
+        return TabCompleting.strings(ctx.readString(), "survival", "mini_game", "builder", "builder_plus");
     }
 
     private static List<String> completeBiome(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
@@ -729,7 +741,7 @@ public class CommandData {
         return list;
     }
 
-    private static List<String> completeLocation(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
+    private static List<String> completePosition(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
         var arg = ctx.readString();
         if (ctx.isAtEndOfCmd()) {
             return TabCompleting.doubles(new ArrayList<>(), arg);

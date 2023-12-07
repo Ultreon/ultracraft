@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.font;
 
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.registries.v0.exception.RegistryException;
+import com.ultreon.craft.registry.exception.RegistryException;
 
 import java.util.*;
 

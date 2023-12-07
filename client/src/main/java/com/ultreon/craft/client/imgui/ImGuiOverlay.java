@@ -243,6 +243,7 @@ public class ImGuiOverlay {
             ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", client.player::getMaxHeath, client.player::setMaxHeath);
             ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", () -> client.player.noGravity, v -> client.player.noGravity = v);
             ImGuiEx.editBool("Flying:", "PlayerFlying", client.player::isFlying, client.player::setFlying);
+            ImGuiEx.editBool("Allow Flight:", "PlayerAllowFlight", client.player::isAllowFlight, v -> {});
             ImGuiEx.editBool("Spectating:", "PlayerSpectating", client.player::isSpectating, client.player::setSpectating);
             ImGuiEx.bool("On Ground:", () -> client.player.onGround);
             ImGuiEx.bool("Colliding:", () -> client.player.isColliding);

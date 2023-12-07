@@ -14,6 +14,7 @@ import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -235,6 +236,10 @@ public class DesktopInput extends GameInput {
             return false;
 
         if (button == Input.Buttons.LEFT) {
+            if (player.abilities.instaMine) {
+                this.client.connection.send(new C2SBlockBreakPacket(new BlockPos(hitResult.getPos())));
+                return true;
+            }
             this.client.startBreaking();
             return true;
         }

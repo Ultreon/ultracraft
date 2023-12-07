@@ -1,24 +1,34 @@
 package com.ultreon.craft.entity.damagesource;
 
+import com.google.common.base.Suppliers;
+import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.Formatter;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v1.Language;
+import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("ClassCanBeRecord")
+import java.util.function.Supplier;
+
 public class DamageSource {
-    public static final DamageSource FALLING = new DamageSource(new Identifier("falling"));
-    public static final DamageSource VOID = new DamageSource(new Identifier("void"));
+    public static final DamageSource NOTHING = DamageSource.register(new Identifier("none"), new DamageSource());
+    public static final DamageSource FALLING = DamageSource.register(new Identifier("falling"), new DamageSource());
+    public static final DamageSource VOID = DamageSource.register(new Identifier("void"), new DamageSource());
+    private final Supplier<TextObject> description = Suppliers.memoize(() -> {
+        Identifier type = this.getType();
+        if (type == null) return Formatter.format("<red>NULL</>");
+        return TextObject.translation(type.location() + ".damageSource." + type.path().replaceAll("/", "."));
+    });
 
-    private final Identifier type;
-
-    public DamageSource(Identifier type) {
-        this.type = type;
+    private static <T extends DamageSource> T register(Identifier id, T damageSource) {
+        Registries.DAMAGE_SOURCE.register(id, damageSource);
+        return damageSource;
     }
 
-    public Identifier getType() {
-        return this.type;
+    public @Nullable Identifier getType() {
+        return Registries.DAMAGE_SOURCE.getKey(this);
     }
 
-    public String getDescription() {
-        return Language.translate("damageSource." + this.type.location() + "." + this.type.path().replaceAll("/", "."));
+    public TextObject getDescription() {
+        return this.description.get();
     }
 }

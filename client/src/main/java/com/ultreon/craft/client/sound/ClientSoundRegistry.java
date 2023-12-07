@@ -5,7 +5,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.registries.v0.Registry;
+import com.ultreon.craft.registry.Registry;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collections;

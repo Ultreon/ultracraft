@@ -20,6 +20,8 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.compression.JdkZlibDecoder;
+import io.netty.handler.codec.compression.JdkZlibEncoder;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
@@ -69,6 +71,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private final ExecutorService dispatchExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     private ServerPlayer player;
     private int keepAlive = 100;
+    private long ping;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -76,7 +79,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private static NioEventLoopGroup createLocalWorkerGroup() {
-        return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
+        return new NioEventLoopGroup(1, new ThreadFactoryBuilder().setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     }
 
     private static NioEventLoopGroup createNetworkWorkerGroup() {
@@ -381,10 +384,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             var theirData = Connection.getDataKey(oppositeDirection);
 
             pipeline.addLast("field_decoder", new LengthFieldBasedFrameDecoder(1024 * 1024 * 8, 0, 4, 0, 4))
-                    .addLast("field_prepender", new LengthFieldPrepender(4))
-                    .addLast("decoder", new PacketDecoder(theirData))
-                    .addLast("encoder", new PacketEncoder(ourData))
-            ;
+                    .addLast("field_prepender", new LengthFieldPrepender(4));
+            pipeline.addLast("decoder", new PacketDecoder(theirData))
+                    .addLast("encoder", new PacketEncoder(ourData));
+            if (!this.isMemoryConnection()) {
+                pipeline.addLast("zlib_decoder", new JdkZlibDecoder())
+                        .addLast("zlib_encoder", new JdkZlibEncoder());
+            }
         } catch (Exception e) {
             Connection.LOGGER.error("Failed to setup:", e);
             throw e;
@@ -528,5 +534,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     public void closeAll() {
         this.close();
         this.closeGroup();
+    }
+
+    public void onPing(long ping) {
+        this.ping = ping;
+    }
+
+    public long getPing() {
+        return this.ping;
     }
 }

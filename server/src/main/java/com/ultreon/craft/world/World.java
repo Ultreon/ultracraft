@@ -71,7 +71,7 @@ public abstract class World implements ServerDisposable {
     private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
     final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     private boolean disposed;
-    private final Set<ChunkPos> invalidatedChunks = new HashSet<>();
+    private final Set<ChunkPos> invalidatedChunks = new LinkedHashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
     private DimensionInfo info;
     protected UUID uid = Utils.NULL_UUID;
@@ -269,6 +269,17 @@ public abstract class World implements ServerDisposable {
         return new BlockPos(cx, cy, cz);
     }
 
+    public static Vec3i toLocalBlockPos(int x, int y, int z, Vec3i tmp) {
+        tmp.x = x % World.CHUNK_SIZE;
+        tmp.y = y % World.CHUNK_HEIGHT;
+        tmp.z = z % World.CHUNK_SIZE;
+
+        if (tmp.x < 0) tmp.x += World.CHUNK_SIZE;
+        if (tmp.z < 0) tmp.z += World.CHUNK_SIZE;
+
+        return tmp;
+    }
+
     public static ChunkPos toLocalChunkPos(int x, int z) {
         int cx = x % World.REGION_SIZE;
         int cz = z % World.REGION_SIZE;
@@ -286,24 +297,36 @@ public abstract class World implements ServerDisposable {
     @Nullable
     public abstract Chunk getChunk(ChunkPos pos);
 
-    @Nullable
-    public Chunk getChunkAt(int x, int y, int z) {
-        return this.getChunkAt(new BlockPos(x, y, z));
+    public Chunk getChunk(int x, int z) {
+        return this.getChunk(new ChunkPos(x, z));
     }
 
     @Nullable
-    public Chunk getChunkAt(BlockPos pos) {
-        int chunkX = Math.floorDiv(pos.x(), World.CHUNK_SIZE);
-        int chunkZ = Math.floorDiv(pos.z(), World.CHUNK_SIZE);
+    public Chunk getChunkAt(int x, int y, int z) {
+        int chunkX = Math.floorDiv(x, World.CHUNK_SIZE);
+        int chunkZ = Math.floorDiv(z, World.CHUNK_SIZE);
 
-        if (this.isOutOfWorldBounds(pos)) return null;
+        if (this.isOutOfWorldBounds(x, y, z)) return null;
 
         ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
         return this.getChunk(chunkPos);
     }
 
-    private boolean isOutOfWorldBounds(BlockPos pos) {
-        return pos.y() < World.WORLD_DEPTH || pos.y() > World.WORLD_HEIGHT;
+    @Nullable
+    public Chunk getChunkAt(BlockPos pos) {
+        return this.getChunkAt(pos.x(), pos.y(), pos.z());
+    }
+
+    public boolean isOutOfWorldBounds(BlockPos pos) {
+        return pos.y() < World.WORLD_DEPTH || pos.y() > World.WORLD_HEIGHT
+                || pos.x() < -30000000 || pos.x() > 30000000
+                || pos.z() < -30000000 || pos.z() > 30000000;
+    }
+
+    public boolean isOutOfWorldBounds(int x, int y, int z) {
+        return y < World.WORLD_DEPTH || y > World.WORLD_HEIGHT
+               || x < -30000000 || x > 30000000
+               || z < -30000000 || z > 30000000;
     }
 
     /**
@@ -594,10 +617,6 @@ public abstract class World implements ServerDisposable {
                 this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
     }
 
-    /**
-     *
-     * @return
-     */
     public BlockPos getSpawnPoint() {
         int highest = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
         if (highest != Integer.MIN_VALUE)
@@ -616,9 +635,6 @@ public abstract class World implements ServerDisposable {
 
     public void onChunkUpdated(Chunk chunk) {
         this.invalidatedChunks.remove(chunk.getPos());
-        if (this.isChunkInvalidated(chunk)) {
-            throw new ConcurrentModificationException("Chunk invalidated while updated.");
-        }
     }
 
     /**

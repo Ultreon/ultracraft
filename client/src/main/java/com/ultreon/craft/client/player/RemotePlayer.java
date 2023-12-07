@@ -1,11 +1,10 @@
 package com.ultreon.craft.client.player;
 
-import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.entity.EntityTypes;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
+import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.UUID;
 
 public class RemotePlayer extends ClientPlayer {
     private String name = "<Player>";
@@ -14,11 +13,26 @@ public class RemotePlayer extends ClientPlayer {
         super(EntityTypes.PLAYER, world);
     }
 
-    public String getName() {
+    public @NotNull String getName() {
         return this.name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    protected void sendAbilities() {
+
+    }
+
+    @Override
+    protected void onAbilities(@NotNull AbilitiesPacket packet) {
+
+    }
+
+    @Override
+    public void setGamemode(@NotNull Gamemode gamemode) {
+
     }
 }

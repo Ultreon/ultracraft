@@ -8,6 +8,7 @@ import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;
 import java.util.function.Function;
 
@@ -22,9 +23,10 @@ import java.util.function.Function;
  * @param <D> the data type.
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
+@NotThreadSafe
 public class PaletteStorage<D> implements ServerDisposable {
     private short[] palette;
-    private List<D> data = new ArrayList<>();
+    private List<D> data = new LinkedList<>();
     private int paletteCounter = 0;
 
     public PaletteStorage(int size) {
@@ -92,7 +94,6 @@ public class PaletteStorage<D> implements ServerDisposable {
             return;
         }
 
-
         short old = this.palette[idx];
 
         short setIdx = (short) this.data.indexOf(value);
@@ -113,10 +114,7 @@ public class PaletteStorage<D> implements ServerDisposable {
     }
 
     public short toDataIdx(int idx) {
-        if (idx >= 0 && idx < this.palette.length) {
-            return this.palette[idx];
-        }
-        return -1;
+        return idx >= 0 && idx < this.palette.length ? this.palette[idx] : -1;
     }
 
     public D direct(int dataIdx) {
@@ -156,9 +154,8 @@ public class PaletteStorage<D> implements ServerDisposable {
 
     @Nullable
     public D get(int idx) {
-        int paletteIdx = this.toDataIdx(idx);
-        if (paletteIdx < 0) return null;
-        return this.direct(paletteIdx);
+        short paletteIdx = this.toDataIdx(idx);
+        return paletteIdx < 0 ? null : this.direct(paletteIdx);
     }
 
     public short[] getPalette() {
@@ -170,7 +167,8 @@ public class PaletteStorage<D> implements ServerDisposable {
     }
 
     public void set(short[] palette, List<D> data) {
-        if (this.palette.length != palette.length) throw new IllegalArgumentException("Palette length must be equal.");
+        if (this.palette.length != palette.length)
+            throw new IllegalArgumentException("Palette length must be equal.");
 
         this.palette = palette;
         this.data = data;
@@ -181,7 +179,7 @@ public class PaletteStorage<D> implements ServerDisposable {
         if (this == o) return true;
         if (o == null || this.getClass() != o.getClass()) return false;
         PaletteStorage<?> that = (PaletteStorage<?>) o;
-        return Arrays.equals(this.palette, that.palette) && Objects.equals(this.data, that.data);
+        return Arrays.equals(this.palette, that.palette) && this.data.equals(that.data);
     }
 
     @Override

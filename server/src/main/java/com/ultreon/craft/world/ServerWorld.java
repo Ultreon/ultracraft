@@ -694,10 +694,6 @@ public final class ServerWorld extends World {
      * @param dispose true to also dispose the region.
      */
     public void saveRegion(Region region, boolean dispose) {
-        if (!UltracraftServer.isOnServerThread()) {
-            UltracraftServer.invokeAndWait(() -> this.saveRegion(region, dispose));
-        }
-
         var file = this.storage.regionFile(region.getPos());
         try (var stream = new GZIPOutputStream(new FileOutputStream(file, false), true)) {
             var dataStream = new DataOutputStream(stream);
@@ -1272,6 +1268,7 @@ public final class ServerWorld extends World {
                 var localChunkPos = World.toLocalChunkPos(chunk.getPos());
                 stream.writeByte(localChunkPos.x());
                 stream.writeByte(localChunkPos.z());
+
                 chunk.save().write(stream);
                 stream.flush();
                 idx++;

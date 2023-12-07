@@ -57,7 +57,7 @@ public class BiomeGenerator implements ServerDisposable {
     }
 
     public int getSurfaceHeightNoise(float x, float z) {
-        float height;
+        double height;
 
         if (BiomeGenerator.USE_DOMAIN_WARPING)
             height = this.domainWarping.generateDomainNoise((int) x, (int) z, this.biomeNoise);

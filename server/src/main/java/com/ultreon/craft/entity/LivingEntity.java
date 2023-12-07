@@ -62,6 +62,10 @@ public class LivingEntity extends Entity {
         this.invincible = invincible;
     }
 
+    public double getSpeed() {
+        return this.attributes.get(Attribute.SPEED);
+    }
+
     @Override
     public void tick() {
         if (this.isDead) return;

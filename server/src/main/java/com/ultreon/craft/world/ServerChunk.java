@@ -56,6 +56,10 @@ public final class ServerChunk extends Chunk {
     }
 
     public MapType save() {
+        if (!UltracraftServer.isOnServerThread()) {
+            return UltracraftServer.invokeAndWait(this::save);
+        }
+
         MapType data = new MapType();
         MapType chunkData = new MapType();
         MapType biomeData = new MapType();

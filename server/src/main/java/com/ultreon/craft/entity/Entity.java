@@ -56,10 +56,17 @@ public class Entity implements CommandSender {
     private @Nullable String formatName;
     private @Nullable TextObject customName;
     private UUID uuid;
+    protected AttributeMap attributes = new AttributeMap();
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
         this.world = world;
+
+        this.setupAttributes();
+    }
+
+    protected void setupAttributes() {
+
     }
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
@@ -187,12 +194,12 @@ public class Entity implements CommandSender {
         this.velocityY = 0.3;
     }
 
-    public void move(double deltaX, double deltaY, double deltaZ) {
+    public boolean move(double deltaX, double deltaY, double deltaZ) {
         double dx = deltaX, dy = deltaY, dz = deltaZ;
 
         if (deltaX < 0.01 && deltaY < 0.01 && deltaZ < 0.01 &&
                 deltaX > -0.01 && deltaY > -0.01 && deltaZ > -0.01) {
-            return;
+            return this.isColliding;
         }
 
         ValueEventResult<Vec3d> eventResult = EntityEvents.MOVE.factory().onEntityMove(this, deltaX, deltaY, deltaZ);
@@ -221,12 +228,14 @@ public class Entity implements CommandSender {
             this.z += dz;
             this.onMoved();
         } else {
-            this.playerMovement(ext, dy, dx, dz, oDy, oDx, oDz);
+            this.move0(ext, dy, dx, dz, oDy, oDx, oDz);
             this.onMoved();
         }
+
+        return this.isColliding;
     }
 
-    private void playerMovement(BoundingBox ext, double dy, double dx, double dz, double oDy, double oDx, double oDz) {
+    private void move0(BoundingBox ext, double dy, double dx, double dz, double oDy, double oDx, double oDz) {
         List<BoundingBox> boxes = this.world.collide(ext, false);
         BoundingBox pBox = this.getBoundingBox();
         this.isColliding = false;
@@ -513,5 +522,9 @@ public class Entity implements CommandSender {
     @Override
     public boolean isAdmin() {
         return false;
+    }
+
+    public AttributeMap getAttributes() {
+        return this.attributes;
     }
 }

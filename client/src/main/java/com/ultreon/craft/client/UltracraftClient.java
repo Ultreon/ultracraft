@@ -47,6 +47,7 @@ import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
+import com.ultreon.craft.client.init.Overlays;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.input.DesktopInput;
@@ -119,8 +120,8 @@ import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashException;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.datetime.v0.Duration;
-import com.ultreon.libs.registries.v0.Registry;
-import com.ultreon.libs.registries.v0.event.RegistryEvents;
+import com.ultreon.craft.registry.Registry;
+import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import net.fabricmc.api.EnvType;
@@ -166,6 +167,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Cursor clickCursor;
     private final RenderPipeline pipeline;
     public Connection connection;
+    public ClientConnection clientConn;
     public ServerData serverData;
     public ExecutorService chunkLoadingExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
     public static Profiler PROFILER = new Profiler();
@@ -714,6 +716,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         EntityTypes.nopInit();
         Fonts.nopInit();
         SoundEvents.nopInit();
+
+        Overlays.nopInit();
 
         GameCommands.register();
 
@@ -1577,7 +1581,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
 
         Connection connection = this.connection;
-        if (connection != null) connection.tick();
+        if (connection != null) {
+            connection.tick();
+            this.clientConn.tick(connection);
+        }
 
         if (this.player != null) this.player.tick();
         if (this.world != null) this.world.tick();
@@ -1872,8 +1879,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.futures.add(future);
     }
 
-    public @Nullable BakedCubeModel getBakedBlockModel(Block block) {
-        return this.bakedBlockModels.bakedModels().get(block);
+    public @NotNull BakedCubeModel getBakedBlockModel(Block block) {
+        return this.bakedBlockModels.bakedModels().getOrDefault(block, BakedCubeModel.DEFAULT);
     }
 
     public void resetBreaking() {
@@ -1971,6 +1978,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         SocketAddress localServer = this.integratedServer.getConnections().startMemoryServer();
         this.connection = ClientConnection.connectToLocalServer(localServer);
+        this.clientConn = new ClientConnection(localServer);
 
         // Initialize (memory) connection.
         this.multiplayerData = new MultiplayerData(this);

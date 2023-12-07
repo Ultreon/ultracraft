@@ -4,12 +4,14 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 
 public final class ClientChunk extends Chunk {
+    final transient GreedyMesher mesher;
     private final ClientWorld clientWorld;
     public Vector3 renderOffset = new Vector3();
     public ChunkMesh mesh;
@@ -20,10 +22,15 @@ public final class ClientChunk extends Chunk {
         super(world, size, height, pos, storage);
         this.clientWorld = world;
         this.active = true;
+
+        this.mesher = new GreedyMesher(this, false);
     }
 
     @Override
     public void dispose() {
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+        }
         super.dispose();
 
         WorldRenderer worldRenderer = UltracraftClient.get().worldRenderer;

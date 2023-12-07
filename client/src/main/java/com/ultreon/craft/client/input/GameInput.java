@@ -1,7 +1,6 @@
 package com.ultreon.craft.client.input;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
@@ -181,12 +180,6 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
             this.updateInGame(player, world);
 
         player.setRunning(GameInput.isControllerButtonDown(ControllerButton.LEFT_STICK));
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            boolean doNowFly = !player.isFlying();
-            player.noGravity = doNowFly;
-            player.setFlying(doNowFly);
-        }
 
         if (!player.isFlying()) {
             player.setCrouching(GameInput.isControllerButtonDown(ControllerButton.RIGHT_STICK));
