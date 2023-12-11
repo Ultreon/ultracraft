@@ -8,7 +8,6 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Label;
-import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
@@ -177,12 +176,6 @@ public class WorldLoadScreen extends Screen {
             this.world.doRefreshNow(refresher);
 
             this.message("Spawn chunks loaded!");
-
-            UltracraftClient.invoke(() -> {
-                this.client.worldRenderer = new WorldRenderer(this.client.world);
-                this.client.renderWorld = true;
-                this.client.showScreen(null);
-            });
         } catch (Exception t) {
             UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
         }

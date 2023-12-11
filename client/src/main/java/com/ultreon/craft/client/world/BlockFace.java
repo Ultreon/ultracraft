@@ -12,10 +12,10 @@ import java.util.Locale;
 public enum BlockFace {
     TOP(new Vector3(0, 1, 0), Color.rgb(0xffffff)),
     BOTTOM(new Vector3(0, -1, 0), Color.rgb(0x808080)),
-    LEFT(new Vector3(-1, 0, 0), Color.rgb(0xa0a0a0)),
-    RIGHT(new Vector3(1, 0, 0), Color.rgb(0xa0a0a0)),
-    FRONT(new Vector3(0, 0, 1), Color.rgb(0xd0d0d0)),
-    BACK(new Vector3(0, 0, -1), Color.rgb(0xd0d0d0));
+    WEST(new Vector3(-1, 0, 0), Color.rgb(0xa0a0a0)),
+    EAST(new Vector3(1, 0, 0), Color.rgb(0xa0a0a0)),
+    NORTH(new Vector3(0, 0, 1), Color.rgb(0xd0d0d0)),
+    SOUTH(new Vector3(0, 0, -1), Color.rgb(0xd0d0d0));
 
     private final Vector3 normal;
     private final Color color;
@@ -45,8 +45,8 @@ public enum BlockFace {
     public Axis getAxis() {
         return switch (this) {
             case TOP, BOTTOM -> Axis.Y;
-            case LEFT, RIGHT -> Axis.X;
-            case FRONT, BACK -> Axis.Z;
+            case WEST, EAST -> Axis.X;
+            case NORTH, SOUTH -> Axis.Z;
         };
     }
 
@@ -54,10 +54,10 @@ public enum BlockFace {
         return switch (this) {
             case TOP -> ChunkMeshBuilder.topVertices;
             case BOTTOM -> ChunkMeshBuilder.bottomVertices;
-            case LEFT -> ChunkMeshBuilder.leftVertices;
-            case RIGHT -> ChunkMeshBuilder.rightVertices;
-            case FRONT -> ChunkMeshBuilder.frontVertices;
-            case BACK -> ChunkMeshBuilder.backVertices;
+            case WEST -> ChunkMeshBuilder.leftVertices;
+            case EAST -> ChunkMeshBuilder.rightVertices;
+            case NORTH -> ChunkMeshBuilder.frontVertices;
+            case SOUTH -> ChunkMeshBuilder.backVertices;
         };
     }
 }

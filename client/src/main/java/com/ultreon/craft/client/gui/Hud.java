@@ -3,6 +3,7 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.gui.hud.OverlayManager;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.util.GameRenderable;
 import com.ultreon.craft.client.world.BlockFace;
@@ -42,7 +43,11 @@ public class Hud implements GameRenderable {
         if (player == null) return;
 
         this.renderHotbar(renderer, player);
-        this.renderHealth(renderer, player);
+        if (!player.isInvincible()) {
+            this.renderHealth(renderer, player);
+        }
+
+        OverlayManager.render(renderer, deltaTime);
 
         this.renderCrosshair(renderer);
     }

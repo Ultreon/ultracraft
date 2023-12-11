@@ -1,5 +1,7 @@
 package com.ultreon.craft.client.world;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.*;
@@ -20,6 +22,7 @@ import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.ModelRegistry;
 import com.ultreon.craft.client.registry.RendererRegistry;
 import com.ultreon.craft.debug.ValueTracker;
@@ -40,7 +43,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.client.UltracraftClient.id;
@@ -48,6 +53,8 @@ import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements Disposable {
     public static final float SCALE = 1;
+    private static final Vec3d TMP_3D_A = new Vec3d();
+    private static final Vec3d TMp_3D_B = new Vec3d();
     private final ChunkMeshBuilder meshBuilder;
     private final Material material;
     private final Material transparentMaterial;
@@ -247,107 +254,20 @@ public final class WorldRenderer implements Disposable {
         var player = this.client.player;
         if (player == null) return;
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F7)) { // TODO: DEBUG
+            this.pool.flush();
+        }
+
         output.clear();
 
         var chunks = WorldRenderer.chunksInViewSorted(this.world.getLoadedChunks(), player);
         this.loadedChunks = chunks.size();
         this.visibleChunks = 0;
 
-        var ref = new Object() {
-            boolean chunkRendered = false;
-        };
+        var ref = new ChunkRenderRef();
 
         Array<ChunkPos> positions = new Array<>();
-        UltracraftClient.PROFILER.section("chunks", () -> {
-            for (var chunk : chunks) {
-                if (positions.contains(chunk.getPos(), false)) {
-                    throw new IllegalStateException("Duplicate chunk: " + chunk.getPos());
-                }
-                positions.add(chunk.getPos());
-
-                if (!chunk.isReady()) continue;
-                if (chunk.isDisposed()) {
-                    if (chunk.mesh != null || chunk.transparentMesh != null) {
-                        this.free(chunk);
-                    }
-                    continue;
-                }
-
-                Vec3i chunkOffset = chunk.getOffset();
-                Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
-                chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
-                if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
-                    continue;
-                }
-
-
-                if (chunk.dirty && !ref.chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || chunk.getWorld().isChunkInvalidated(chunk) && (chunk.mesh != null || chunk.transparentMesh != null) && !ref.chunkRendered) {
-                    this.free(chunk);
-                    chunk.getWorld().onChunkUpdated(chunk);
-                    ref.chunkRendered = true;
-                }
-
-                chunk.dirty = false;
-
-                if (chunk.mesh == null)
-                    chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
-
-                if (chunk.transparentMesh == null)
-                    chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
-
-                chunk.mesh.chunk = chunk;
-                chunk.mesh.renderable.material = this.material;
-                chunk.mesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
-
-                chunk.transparentMesh.chunk = chunk;
-                chunk.transparentMesh.renderable.material = this.transparentMaterial;
-                chunk.transparentMesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
-
-                output.add(this.verifyOutput(chunk.mesh.renderable));
-                output.add(this.verifyOutput(chunk.transparentMesh.renderable));
-
-                for (var entry : chunk.getBreaking().entrySet()) {
-                    BlockPos key = entry.getKey();
-                    this.tmp.set(chunk.renderOffset);
-                    this.tmp.add(key.x() + 1, key.y(), key.z());
-
-                    Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
-                    int numIndices = breakingMesh.getMaxIndices();
-                    int numVertices = breakingMesh.getMaxVertices();
-
-                    Renderable renderable = renderablePool.obtain();
-                    renderable.meshPart.mesh = breakingMesh;
-                    renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                    renderable.meshPart.primitiveType = GL_TRIANGLES;
-                    renderable.material = this.breakingMaterial;
-                    renderable.worldTransform.setToTranslationAndScaling(this.tmp, new Vector3(1.01f, 1.01f, 1.01f).scl(1 / WorldRenderer.SCALE));
-
-                    output.add(this.verifyOutput(renderable));
-                }
-
-                if (ImGuiOverlay.isChunkSectionBordersShown()) {
-                    this.tmp.set(chunk.renderOffset);
-                    Mesh mesh = this.sectionBorder;
-
-                    int numIndices = mesh.getNumIndices();
-                    int numVertices = mesh.getNumVertices();
-                    Renderable renderable = renderablePool.obtain();
-                    renderable.meshPart.mesh = mesh;
-                    renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                    renderable.meshPart.offset = 0;
-                    renderable.meshPart.primitiveType = GL_TRIANGLES;
-                    renderable.material = this.sectionBorderMaterial;
-                    Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
-                    renderable.worldTransform.setToTranslationAndScaling(add, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
-
-                    output.add(this.verifyOutput(renderable));
-                }
-
-                this.visibleChunks++;
-
-                this.doPoolStatistics();
-            }
-        });
+        UltracraftClient.PROFILER.section("chunks", () -> this.collectChunks(output, renderablePool, chunks, positions, player, ref));
 
         HitResult gameCursor = this.client.cursor;
         if (gameCursor != null && gameCursor.isCollide()) {
@@ -363,6 +283,13 @@ public final class WorldRenderer implements Disposable {
                 output.add(this.verifyOutput(this.cursor));
             });
         }
+
+        UltracraftClient.PROFILER.section("(Local Player)", () -> {
+            LocalPlayer localPlayer = this.client.player;
+            if (localPlayer == null || !this.client.isInThirdPerson()) return;
+
+            this.collectEntity(localPlayer, output, renderablePool);
+        });
 
         UltracraftClient.PROFILER.section("players", () -> {
             for (var remotePlayer : this.client.getMultiplayerData().getRemotePlayers()) {
@@ -384,10 +311,101 @@ public final class WorldRenderer implements Disposable {
         });
     }
 
+    private void collectChunks(Array<Renderable> output, Pool<Renderable> renderablePool, List<ClientChunk> chunks, Array<ChunkPos> positions, LocalPlayer player, ChunkRenderRef ref) {
+        for (var chunk : chunks) {
+            if (positions.contains(chunk.getPos(), false)) {
+                UltracraftClient.LOGGER.warn("Duplicate chunk: " + chunk.getPos());
+                continue;
+            }
+            positions.add(chunk.getPos());
+
+            if (!chunk.isReady()) continue;
+            if (chunk.isDisposed()) {
+                if (chunk.mesh != null || chunk.transparentMesh != null) {
+                    this.free(chunk);
+                }
+                continue;
+            }
+
+            Vec3i chunkOffset = chunk.getOffset();
+            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
+            chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+            if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
+                continue;
+            }
+
+            if (chunk.dirty && !ref.chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || (chunk.mesh != null || chunk.transparentMesh != null) && !ref.chunkRendered && chunk.getWorld().isChunkInvalidated(chunk)) {
+                this.free(chunk);
+                chunk.getWorld().onChunkUpdated(chunk);
+                ref.chunkRendered = true;
+            }
+
+            chunk.dirty = false;
+
+            if (chunk.mesh == null)
+                chunk.mesh = this.meshBuilder.buildMesh(this.pool.obtain(), chunk);
+
+            if (chunk.transparentMesh == null)
+                chunk.transparentMesh = this.meshBuilder.buildTransparentMesh(this.pool.obtain(), chunk);
+
+            chunk.mesh.chunk = chunk;
+            chunk.mesh.renderable.material = this.material;
+            chunk.mesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+
+            chunk.transparentMesh.chunk = chunk;
+            chunk.transparentMesh.renderable.material = this.transparentMaterial;
+            chunk.transparentMesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+
+            output.add(this.verifyOutput(chunk.mesh.renderable));
+            output.add(this.verifyOutput(chunk.transparentMesh.renderable));
+
+            for (var entry : chunk.getBreaking().entrySet()) {
+                BlockPos key = entry.getKey();
+                this.tmp.set(chunk.renderOffset);
+                this.tmp.add(key.x() + 1, key.y(), key.z());
+
+                Mesh breakingMesh = this.breakingMeshes.get(Math.round(Mth.clamp(entry.getValue() * 5, 0, 5)));
+                int numIndices = breakingMesh.getMaxIndices();
+                int numVertices = breakingMesh.getMaxVertices();
+
+                Renderable renderable = renderablePool.obtain();
+                renderable.meshPart.mesh = breakingMesh;
+                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                renderable.meshPart.primitiveType = GL_TRIANGLES;
+                renderable.material = this.breakingMaterial;
+                renderable.worldTransform.setToTranslationAndScaling(this.tmp, new Vector3(1.01f, 1.01f, 1.01f).scl(1 / WorldRenderer.SCALE));
+
+                output.add(this.verifyOutput(renderable));
+            }
+
+            if (ImGuiOverlay.isChunkSectionBordersShown()) {
+                this.tmp.set(chunk.renderOffset);
+                Mesh mesh = this.sectionBorder;
+
+                int numIndices = mesh.getNumIndices();
+                int numVertices = mesh.getNumVertices();
+                Renderable renderable = renderablePool.obtain();
+                renderable.meshPart.mesh = mesh;
+                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+                renderable.meshPart.offset = 0;
+                renderable.meshPart.primitiveType = GL_TRIANGLES;
+                renderable.material = this.sectionBorderMaterial;
+                Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
+                renderable.worldTransform.setToTranslationAndScaling(add, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+
+                output.add(this.verifyOutput(renderable));
+            }
+
+            this.visibleChunks++;
+
+            this.doPoolStatistics();
+        }
+    }
+
     public void collectEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
         ModelInstance instance = this.modelInstances.get(entity.getId());
         //noinspection unchecked
-        var renderer = (EntityRenderer<EntityModel<?>, Entity>) RendererRegistry.get(entity.getType());
+        var renderer = (EntityRenderer<EntityModel<?>, @NotNull Entity>) RendererRegistry.get(entity.getType());
         if (instance == null) {
             Model model = ModelRegistry.getFinished(entity.getType());
             instance = renderer.createInstance(model);
@@ -444,17 +462,10 @@ public final class WorldRenderer implements Disposable {
     @NotNull
     private static List<ClientChunk> chunksInViewSorted(Collection<ClientChunk> chunks, Player player) {
         List<ClientChunk> list = new ArrayList<>(chunks);
-        Set<ChunkPos> set = new HashSet<>();
         list = list.stream().sorted((o1, o2) -> {
-            Vec3d mid1 = new Vec3d(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
-            Vec3d mid2 = new Vec3d(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
+            Vec3d mid1 = WorldRenderer.TMP_3D_A.set(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
+            Vec3d mid2 = WorldRenderer.TMp_3D_B.set(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
             return Double.compare(mid1.dst(player.getPosition()), mid2.dst(player.getPosition()));
-        }).filter(clientChunk -> {
-            if (set.contains(clientChunk.getPos())) {
-                UltracraftClient.crash(new IllegalStateException("Duplicate chunk: " + clientChunk.getPos()));
-            }
-            set.add(clientChunk.getPos());
-            return true;
         }).toList();
         return list;
     }
@@ -515,4 +526,7 @@ public final class WorldRenderer implements Disposable {
 
     }
 
+    private static class ChunkRenderRef {
+        boolean chunkRendered = false;
+    }
 }

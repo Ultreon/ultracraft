@@ -17,14 +17,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public final class ClientWorld extends World implements Disposable {
     @NotNull
     private final UltracraftClient client;
-    private final Map<ChunkPos, ClientChunk> chunks = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, ClientChunk> chunks = new HashMap<>();
     private int chunkRefresh;
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
 
@@ -39,6 +40,9 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     protected boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos) {
+        if (!UltracraftClient.isOnMainThread()) {
+            return UltracraftClient.invokeAndWait(() -> this.unloadChunk(chunk, pos));
+        }
         return this.chunks.remove(pos) == chunk;
     }
 
@@ -68,16 +72,30 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public Collection<ClientChunk> getLoadedChunks() {
+        ClientWorld.crashOnWrongThread();
+
         return this.chunks.values();
+    }
+
+    private static void crashOnWrongThread() {
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+        }
     }
 
     @Override
     public boolean isChunkInvalidated(@NotNull Chunk chunk) {
-        if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
-        }
-
+        ClientWorld.crashOnWrongThread();
         return super.isChunkInvalidated(chunk);
+    }
+
+    @Override
+    public void updateChunk(@Nullable Chunk chunk) {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invokeAndWait(() -> this.updateChunk(chunk));
+            return;
+        }
+        super.updateChunk(chunk);
     }
 
     @Override
@@ -112,9 +130,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public void onChunkUpdated(@NotNull Chunk chunk) {
-        if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
-        }
+        ClientWorld.crashOnWrongThread();
 
         super.onChunkUpdated(chunk);
     }
@@ -131,10 +147,6 @@ public final class ClientWorld extends World implements Disposable {
     @Override
     public boolean isClientSide() {
         return true;
-    }
-
-    public Map<ChunkPos, ClientChunk> getChunks() {
-        return this.chunks;
     }
 
     public void loadChunk(ChunkPos pos, ClientChunk data) {
@@ -154,11 +166,12 @@ public final class ClientWorld extends World implements Disposable {
             return;
         }
 
-        UltracraftClient.invoke(chunk::ready);
-
-        this.chunks.put(pos, data);
-
-        this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
+        ClientChunk finalChunk = chunk;
+        UltracraftClient.invoke(() -> {
+            finalChunk.ready();
+            this.chunks.put(pos, data);
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
+        });
     }
 
     public void tick() {
@@ -169,15 +182,18 @@ public final class ClientWorld extends World implements Disposable {
             if (player != null) {
                 if (this.oldChunkPos.equals(player.getChunkPos())) return;
                 this.oldChunkPos = player.getChunkPos();
-                this.chunks.forEach((chunkPos, clientChunk) -> {
+                for (Iterator<Map.Entry<ChunkPos, ClientChunk>> iterator = this.chunks.entrySet().iterator(); iterator.hasNext(); ) {
+                    Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
+                    ChunkPos chunkPos = entry.getKey();
+                    ClientChunk clientChunk = entry.getValue();
                     if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
-                        this.chunks.remove(chunkPos);
+                        iterator.remove();
                         clientChunk.dispose();
                         this.updateNeighbours(clientChunk);
 
                         this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.UNLOADED));
                     }
-                });
+                }
             }
         }
     }

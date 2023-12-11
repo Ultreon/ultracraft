@@ -29,10 +29,10 @@ public class PlayerRenderer extends LivingEntityRenderer<PlayerModel<@NotNull Pl
         float yRot = clientPlayer.yRot;
         instance.getNode("LeftArm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -(clientPlayer.bopZ + 3) / 3 + (clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, -(clientPlayer.bop + 3) / 3));
         instance.getNode("RightArm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (clientPlayer.bopZ + 3) / 3 + (-clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, (clientPlayer.bop + 3) / 3));
-        instance.getNode("LeftLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -clientPlayer.walkAnim * 4000 * localPlayer.getWalkingSpeed()));
-        instance.getNode("RightLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, clientPlayer.walkAnim * 4000 * localPlayer.getWalkingSpeed()));
+        instance.getNode("LeftLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
+        instance.getNode("RightLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
 
-        float duration = 0.1f;
+        float duration = 0.15f;
         var walkAnim = clientPlayer.walkAnim;
         float delta = Gdx.graphics.getDeltaTime();
 
@@ -84,6 +84,7 @@ public class PlayerRenderer extends LivingEntityRenderer<PlayerModel<@NotNull Pl
 //                        (float) EntityRenderer.tmp0.x, (float) EntityRenderer.tmp0.y, (float) EntityRenderer.tmp0.z,
 //                        1, 1, 1)
                 .rotate(Vector3.Y, clientPlayer.xRot - 180);
+
         instance.calculateTransforms();
     }
 

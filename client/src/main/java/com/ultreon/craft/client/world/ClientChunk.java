@@ -24,6 +24,9 @@ public final class ClientChunk extends Chunk {
 
     @Override
     public void dispose() {
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+        }
         super.dispose();
 
         WorldRenderer worldRenderer = UltracraftClient.get().worldRenderer;

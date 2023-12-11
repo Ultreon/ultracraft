@@ -21,6 +21,8 @@ public class PlayerInput {
     private final Vector3 vel = new Vector3();
     private final Vector3 tmp = new Vector3();
     private final UltracraftClient client;
+    private int flyCountdown = 0;
+
 
     public PlayerInput(UltracraftClient client) {
         this.client = client;
@@ -43,18 +45,29 @@ public class PlayerInput {
         this.down = KeyBinds.crouchKey.isPressed() && Gdx.input.isCursorCatched();
         player.setRunning(KeyBinds.runningKey.isPressed() && Gdx.input.isCursorCatched());
 
+        if (this.flyCountdown > 0) {
+            this.flyCountdown--;
+
+            if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {
+                player.setFlying(!player.isFlying());
+            }
+        } else if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {
+            this.flyCountdown = 10;
+        }
+
+
         this.move();
 
         this.controllerMove();
 
         if (this.moveX > 0)
-            player.xRot = Math.max(player.xRot - 25 / (player.xHeadRot - player.xRot + 50), player.xRot - 50);
+            player.xRot = Math.max(player.xRot - 45 / (player.xHeadRot - player.xRot + 50), player.xRot - 90);
         else if (this.moveX < -0)
-            player.xRot = Math.min(player.xRot + 25 / (player.xRot - player.xHeadRot + 50), player.xRot + 50);
+            player.xRot = Math.min(player.xRot + 45 / (player.xRot - player.xHeadRot + 50), player.xRot + 90);
         else if (this.moveY != 0 && player.xRot > player.xHeadRot)
-            player.xRot = Math.max(player.xRot - (10 / (player.xRot - player.xHeadRot)), player.xHeadRot);
+            player.xRot = Math.max(player.xRot - (45 / (player.xRot - player.xHeadRot)), player.xHeadRot);
         else if (this.moveY != 0 && player.xRot < player.xHeadRot)
-            player.xRot = Math.min(player.xRot + (10 / (player.xHeadRot - player.xRot)), player.xHeadRot);
+            player.xRot = Math.min(player.xRot + (45 / (player.xHeadRot - player.xRot)), player.xHeadRot);
 
         this.tmp.set(-speed * this.moveX, 0, speed * this.moveY).rotate(player.xHeadRot, 0, 1, 0);
         this.vel.set(this.tmp);

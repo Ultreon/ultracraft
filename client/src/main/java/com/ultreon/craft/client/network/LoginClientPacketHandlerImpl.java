@@ -5,6 +5,7 @@ import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketContext;
@@ -28,6 +29,7 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         ClientWorld clientWorld = new ClientWorld(this.client);
         this.client.world = clientWorld;
         this.client.inspection.createNode("world", () -> this.client.world);
+
         var player = this.client.player = new LocalPlayer(EntityTypes.PLAYER, clientWorld, uuid);
 
         Connection.LOGGER.info("Logged in with uuid: {}", uuid);
@@ -36,6 +38,12 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
         if (this.client.integratedServer != null) this.client.setActivity(GameActivity.SINGLEPLAYER);
         else this.client.setActivity(GameActivity.MULTIPLAYER);
+
+        UltracraftClient.invoke(() -> {
+            this.client.worldRenderer = new WorldRenderer(this.client.world);
+            this.client.renderWorld = true;
+            this.client.showScreen(null);
+        });
     }
 
     @Override

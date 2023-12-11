@@ -61,19 +61,19 @@ public class BoxBuilder {
         float[] vertices = switch (face) {
             case TOP -> BoxBuilder.topVertices;
             case BOTTOM -> BoxBuilder.bottomVertices;
-            case LEFT -> BoxBuilder.leftVertices;
-            case RIGHT -> BoxBuilder.rightVertices;
-            case FRONT -> BoxBuilder.frontVertices;
-            case BACK -> BoxBuilder.backVertices;
+            case WEST -> BoxBuilder.leftVertices;
+            case EAST -> BoxBuilder.rightVertices;
+            case NORTH -> BoxBuilder.frontVertices;
+            case SOUTH -> BoxBuilder.backVertices;
         };
 
         float[] uvs = switch (face) {
             case TOP -> BoxBuilder.topUv;
             case BOTTOM -> BoxBuilder.bottomUv;
-            case LEFT -> BoxBuilder.leftUv;
-            case RIGHT -> BoxBuilder.rightUv;
-            case FRONT -> BoxBuilder.frontUv;
-            case BACK -> BoxBuilder.backUv;
+            case WEST -> BoxBuilder.leftUv;
+            case EAST -> BoxBuilder.rightUv;
+            case NORTH -> BoxBuilder.frontUv;
+            case SOUTH -> BoxBuilder.backUv;
         };
 
         Vector3 normal = face.getNormal();
@@ -125,11 +125,11 @@ public class BoxBuilder {
         this.face(new Vec3i(ix, iy2, iz), BlockFace.TOP, new TextureRegion(texture, iu + id, iv, iw, id), output);
         this.face(new Vec3i(ix, iy, iz), BlockFace.BOTTOM, new TextureRegion(texture, iu + id, iv + id + ih, iw, id), output);
 
-        this.face(new Vec3i(ix, iy, iz), BlockFace.LEFT, new TextureRegion(texture, iu, iv + id, id, ih), output);
-        this.face(new Vec3i(ix2, iy, iz), BlockFace.RIGHT, new TextureRegion(texture, iu + id + iw, iv + id + ih, id, ih), output);
+        this.face(new Vec3i(ix, iy, iz), BlockFace.WEST, new TextureRegion(texture, iu, iv + id, id, ih), output);
+        this.face(new Vec3i(ix2, iy, iz), BlockFace.EAST, new TextureRegion(texture, iu + id + iw, iv + id + ih, id, ih), output);
 
-        this.face(new Vec3i(ix, iy, iz), BlockFace.FRONT, new TextureRegion(texture, iu + id, id + id, iw, ih), output);
-        this.face(new Vec3i(ix, iy, iz2), BlockFace.BACK, new TextureRegion(texture, iu + id * 2 + iw, id + id), output);
+        this.face(new Vec3i(ix, iy, iz), BlockFace.NORTH, new TextureRegion(texture, iu + id, id + id, iw, ih), output);
+        this.face(new Vec3i(ix, iy, iz2), BlockFace.SOUTH, new TextureRegion(texture, iu + id * 2 + iw, id + id), output);
 
         return UltracraftClient.invokeAndWait(() -> {
             var modelBuilder = new ModelBuilder();

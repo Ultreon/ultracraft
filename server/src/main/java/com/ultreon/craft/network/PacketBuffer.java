@@ -10,6 +10,7 @@ import com.ultreon.data.TypeRegistry;
 import com.ultreon.data.types.IType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.tuple.Pair;
+import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.commons.v0.vector.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -1621,5 +1622,9 @@ public class PacketBuffer extends ByteBuf {
 
     public void writeTextObject(TextObject message) {
         this.writeUbo(message.serialize());
+    }
+
+    public <T extends Enum<T>> T readEnum(T fallback) {
+        return EnumUtils.byOrdinal(this.readVarInt(), fallback);
     }
 }

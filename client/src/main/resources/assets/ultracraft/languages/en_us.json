@@ -61,5 +61,6 @@
   "ultracraft.screen.title.quit": "Quit",
   "ultracraft.screen.multiplayer": "Multiplayer",
   "ultracraft.screen.multiplayer.server_ip": "Server IP",
-  "ultracraft.screen.multiplayer.join": "Join"
+  "ultracraft.screen.multiplayer.join": "Join",
+  "ultracraft.dimension.overworld": "Planet Earth"
 }

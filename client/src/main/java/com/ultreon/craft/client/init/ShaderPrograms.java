@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.registries.v0.Registry;
+import com.ultreon.craft.registry.Registry;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 

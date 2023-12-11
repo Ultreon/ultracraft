@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.TextureBinder;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.GLFrameBuffer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.*;
 import com.ultreon.craft.client.UltracraftClient;
@@ -48,30 +47,11 @@ public class RenderPipeline implements Disposable {
         var input = new Array<Renderable>();
         var textures = new ObjectMap<String, Texture>();
         for (var node : this.nodes) {
-            FrameBuffer frameBuffer = node.getFrameBuffer();
-            frameBuffer.begin();
-            gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
-            modelBatch.begin(this.camera);
-            node.textureBinder.begin();
-            node.time += Gdx.graphics.getDeltaTime();
-            input = node.render(textures, modelBatch, this.camera, input);
-            try {
-                modelBatch.end();
-            } catch (Exception e) {
-                throw new GdxRuntimeException("Failed to render node: " + node.getClass().getSimpleName() + "\n" + node.dump(), e);
+            if (node.requiresModel()) {
+                input = this.modelRender(modelBatch, node, input, textures);
+            } else {
+                input = this.plainRender(modelBatch, node, input, textures);
             }
-            node.textureBinder.end();
-
-            if (Gdx.input.isKeyJustPressed(Input.Keys.F8)) {
-                Pixmap screenshot = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
-                PixmapIO.writePNG(Gdx.files.local("FBO_" + node.getClass().getSimpleName() + ".png"), screenshot, Deflater.DEFAULT_COMPRESSION, true);
-                try (var stream = new PrintStream(Gdx.files.local("INFO_" + node.getClass().getSimpleName() + ".txt").write(false))) {
-                    node.dumpInfo(stream);
-                }
-            }
-
-            frameBuffer.end();
         }
 
         this.main.render(textures, modelBatch, this.camera, input);
@@ -81,6 +61,54 @@ public class RenderPipeline implements Disposable {
         }
 
         textures.clear();
+    }
+
+    private Array<Renderable> modelRender(ModelBatch modelBatch, RenderNode node, Array<Renderable> input, ObjectMap<String, Texture> textures) {
+        FrameBuffer frameBuffer = node.getFrameBuffer();
+        frameBuffer.begin();
+        gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        modelBatch.begin(this.camera);
+        node.textureBinder.begin();
+        node.time += Gdx.graphics.getDeltaTime();
+        input = node.render(textures, modelBatch, this.camera, input);
+        try {
+            modelBatch.end();
+        } catch (Exception e) {
+            throw new GdxRuntimeException("Failed to render node: " + node.getClass().getSimpleName() + "\n" + node.dump(), e);
+        }
+        node.textureBinder.end();
+
+        RenderPipeline.capture(node);
+
+        frameBuffer.end();
+        return input;
+    }
+
+    private Array<Renderable> plainRender(ModelBatch modelBatch, RenderNode node, Array<Renderable> input, ObjectMap<String, Texture> textures) {
+        FrameBuffer frameBuffer = node.getFrameBuffer();
+        frameBuffer.begin();
+        gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        node.textureBinder.begin();
+        node.time += Gdx.graphics.getDeltaTime();
+        input = node.render(textures, modelBatch, this.camera, input);
+        node.textureBinder.end();
+
+        RenderPipeline.capture(node);
+
+        frameBuffer.end();
+        return input;
+    }
+
+    private static void capture(RenderNode node) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F8)) {
+            Pixmap screenshot = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+            PixmapIO.writePNG(Gdx.files.local("FBO_" + node.getClass().getSimpleName() + ".png"), screenshot, Deflater.DEFAULT_COMPRESSION, true);
+            try (var stream = new PrintStream(Gdx.files.local("INFO_" + node.getClass().getSimpleName() + ".txt").write(false))) {
+                node.dumpInfo(stream);
+            }
+        }
     }
 
     public void resize(int width, int height) {
@@ -167,7 +195,11 @@ public class RenderPipeline implements Disposable {
         }
 
         public float getTime() {
-            return time;
+            return this.time;
+        }
+
+        public boolean requiresModel() {
+            return false;
         }
     }
 }

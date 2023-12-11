@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.ultreon.craft.util.MathHelper;
-import com.ultreon.libs.commons.v0.vector.Vec2f;
+import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 
 public class DomainWarping {
@@ -19,15 +19,15 @@ public class DomainWarping {
         this.domainY = settingsZ.create(seed);
     }
 
-    public float generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
-        Vec2f domainOffset = this.generateDomainOffset(x, z);
+    public double generateDomainNoise(int x, int z, NoiseInstance defaultNoiseSettings) {
+        Vec2d domainOffset = this.generateDomainOffset(x, z);
         return NoiseUtils.octavePerlin(x + domainOffset.x, z + domainOffset.y, this.domainX);
     }
 
-    public Vec2f generateDomainOffset(int x, int z) {
-        float noiseX = NoiseUtils.octavePerlin(x, z, this.domainX) * this.amplitudeX;
-        float noiseY = NoiseUtils.octavePerlin(x, z, this.domainY) * this.amplitudeY;
-        return new Vec2f(noiseX, noiseY);
+    public Vec2d generateDomainOffset(int x, int z) {
+        double noiseX = NoiseUtils.octavePerlin(x, z, this.domainX) * this.amplitudeX;
+        double noiseY = NoiseUtils.octavePerlin(x, z, this.domainY) * this.amplitudeY;
+        return new Vec2d(noiseX, noiseY);
     }
 
     public Vec2i generateDomainOffsetInt(int x, int z) {

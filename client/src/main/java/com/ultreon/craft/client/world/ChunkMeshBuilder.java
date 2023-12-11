@@ -13,7 +13,6 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.util.MathHelper;
-import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -25,6 +24,7 @@ import static com.ultreon.craft.world.World.*;
 
 public class ChunkMeshBuilder {
     private final short[] indices;
+    private final Vec3i tmp3i = new Vec3i();
 
     public ChunkMeshBuilder(short[] indices) {
         this.indices = indices;
@@ -78,7 +78,6 @@ public class ChunkMeshBuilder {
         mesh.setVertices(vertices.items);
         vertices.clear();
         chunk.updated();
-        vertices.items = null;
 
         ValueTracker.setVertexCount(ValueTracker.getVertexCount() + mesh.getMaxVertices());
 
@@ -106,8 +105,6 @@ public class ChunkMeshBuilder {
         BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
         if (ChunkMeshBuilder.isInvisible(block, model)) return;
 
-        assert model != null;
-
         Block top = this.block(section, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(top))
             ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
@@ -118,19 +115,19 @@ public class ChunkMeshBuilder {
 
         Block left = this.block(section, x - 1, y, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(left))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.WEST, model.west(), vertices, model.properties.left);
 
         Block right = this.block(section, x + 1, y, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(right))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.EAST, model.east(), vertices, model.properties.right);
 
         Block front = this.block(section, x, y, z - 1);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(front))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.NORTH, model.north(), vertices, model.properties.front);
 
         Block back = this.block(section, x, y, z + 1);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(back))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.SOUTH, model.south(), vertices, model.properties.back);
     }
 
     private static boolean isInvisible(Block block, BakedCubeModel model) {
@@ -148,8 +145,6 @@ public class ChunkMeshBuilder {
         BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
         if (ChunkMeshBuilder.isTransparent(block, model)) return;
 
-        assert model != null;
-
         Block top = this.block(chunk, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderFace(top))
             ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
@@ -160,19 +155,19 @@ public class ChunkMeshBuilder {
 
         Block left = this.block(chunk, x - 1, y, z);
         if (ChunkMeshBuilder.shouldRenderFace(left))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.LEFT, model.left(), vertices, model.properties.left);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.WEST, model.west(), vertices, model.properties.left);
 
         Block right = this.block(chunk, x + 1, y, z);
         if (ChunkMeshBuilder.shouldRenderFace(right))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.RIGHT, model.right(), vertices, model.properties.right);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.EAST, model.east(), vertices, model.properties.right);
 
         Block front = this.block(chunk, x, y, z - 1);
         if (ChunkMeshBuilder.shouldRenderFace(front))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.FRONT, model.front(), vertices, model.properties.front);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.NORTH, model.north(), vertices, model.properties.front);
 
         Block back = this.block(chunk, x, y, z + 1);
         if (ChunkMeshBuilder.shouldRenderFace(back))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.BACK, model.back(), vertices, model.properties.back);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.SOUTH, model.south(), vertices, model.properties.back);
     }
 
     @EnsuresNonNullIf(expression = "model", result = true)
@@ -268,23 +263,25 @@ public class ChunkMeshBuilder {
             1, 0, 1,
     };
 
+
+
     public static void drawFace(Vec3i offset, BlockFace face, TextureRegion region, FloatArray output, FaceProperties faceProperties) {
         float[] vertices = switch (face) {
             case TOP -> ChunkMeshBuilder.topVertices;
             case BOTTOM -> ChunkMeshBuilder.bottomVertices;
-            case LEFT -> ChunkMeshBuilder.leftVertices;
-            case RIGHT -> ChunkMeshBuilder.rightVertices;
-            case FRONT -> ChunkMeshBuilder.frontVertices;
-            case BACK -> ChunkMeshBuilder.backVertices;
+            case WEST -> ChunkMeshBuilder.leftVertices;
+            case EAST -> ChunkMeshBuilder.rightVertices;
+            case NORTH -> ChunkMeshBuilder.frontVertices;
+            case SOUTH -> ChunkMeshBuilder.backVertices;
         };
 
         float[] uvs = switch (face) {
             case TOP -> ChunkMeshBuilder.topUv;
             case BOTTOM -> ChunkMeshBuilder.bottomUv;
-            case LEFT -> ChunkMeshBuilder.leftUv;
-            case RIGHT -> ChunkMeshBuilder.rightUv;
-            case FRONT -> ChunkMeshBuilder.frontUv;
-            case BACK -> ChunkMeshBuilder.backUv;
+            case WEST -> ChunkMeshBuilder.leftUv;
+            case EAST -> ChunkMeshBuilder.rightUv;
+            case NORTH -> ChunkMeshBuilder.frontUv;
+            case SOUTH -> ChunkMeshBuilder.backUv;
         };
 
         Vector3 normal = face.getNormal();
@@ -319,11 +316,9 @@ public class ChunkMeshBuilder {
     private Block block(ClientChunk chunk, int x, int y, int z) {
         if (y < WORLD_DEPTH) return null;
         ClientWorld world = chunk.getWorld();
-        Vec3i vec = new Vec3i(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
-        BlockPos pos = new BlockPos(vec);
-        Chunk chunkAt = world.getChunkAt(pos);
-        if (chunkAt != null) return world.get(pos);
+        this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
+        Chunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
+        if (chunkAt != null) return chunkAt.getFast(ClientWorld.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
         return null;
     }
-
 }

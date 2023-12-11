@@ -93,15 +93,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 //    srand( hash(q.x+hash(q.y+hash(1117*iFrame))));
 
     // coordinate
-    vec2 uv = fragCoord/iResolution.xy;
-    vec2 coord = fragCoord/iResolution.y;
-
-    float d = depth(coord);
-    vec3 ao = vec3(0.4) + step(d, 1e5-1.0) * vec3(0.8) * SSAO(coord);
-//    vec3 color = mix(background(uv.y), ao, 1.0 - smoothstep(0.0, 0.99, d*d/1e3));;
-
-    vec3 color = pow(ao,vec3(1.0/iGamma)); // gamma
-    fragColor = vec4(color, 1.0);
+//    vec2 uv = fragCoord/iResolution.xy;
+//    vec2 coord = fragCoord/iResolution.y;
+//
+//    float d = depth(coord);
+//    vec3 ao = vec3(0.4) + step(d, 1e5-1.0) * vec3(0.8) * SSAO(coord);
+////    vec3 color = mix(background(uv.y), ao, 1.0 - smoothstep(0.0, 0.99, d*d/1e3));;
+//
+//    vec3 color = pow(ao,vec3(1.0/iGamma)); // gamma
+    fragColor = vec4(1.0);
 }
 
 void main()

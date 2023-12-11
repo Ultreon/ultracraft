@@ -6,10 +6,8 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.input.GameCamera;
@@ -19,7 +17,7 @@ import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Random;
 
-public class SSAONode extends WorldRenderNode {
+public class SSAONode extends RenderPipeline.RenderNode {
     private static final Texture RAND_TEX = new Texture("noise.png");
     private Mesh quad = this.createFullScreenQuad();
     private final ShaderProgram program = ShaderPrograms.SSAO;
@@ -36,9 +34,6 @@ public class SSAONode extends WorldRenderNode {
     @NewInstance
     @Override
     public Array<Renderable> render(ObjectMap<String, Texture> textures, ModelBatch modelBatch, GameCamera camera, Array<Renderable> input) {
-//        this.render(modelBatch, this.shaderProvider, input);
-//        textures.put("ssao", this.getFrameBuffer().getColorBufferTexture());
-//        return input;
         this.tex0 = textures.get("depth");
         this.tex0.bind(0);
 

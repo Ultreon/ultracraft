@@ -2,7 +2,8 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
+import com.ultreon.craft.network.packets.c2s.C2SKeepAlivePacket;
+import com.ultreon.craft.network.packets.c2s.C2SPingPacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -20,12 +21,10 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClientConnection implements Runnable {
-    private final String host;
-    private final int port;
+    private final SocketAddress address;
 
-    public ClientConnection(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public ClientConnection(SocketAddress address) {
+        this.address = address;
     }
 
     public static Connection connectToLocalServer(SocketAddress address) {
@@ -63,7 +62,8 @@ public class ClientConnection implements Runnable {
 
     public void tick(Connection connection) {
         if (connection.tickKeepAlive()) {
-            connection.send(new S2CKeepAlivePacket());
+            connection.send(new C2SKeepAlivePacket());
+            connection.send(new C2SPingPacket());
         }
     }
 
@@ -85,7 +85,7 @@ public class ClientConnection implements Runnable {
                 }
             });
 
-            ChannelFuture f = b.connect(this.host, this.port).sync();
+            ChannelFuture f = b.connect(this.address).sync();
 
             f.channel().closeFuture().sync();
         } catch (InterruptedException ignored) {

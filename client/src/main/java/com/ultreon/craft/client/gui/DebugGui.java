@@ -55,6 +55,7 @@ public class DebugGui {
         if (UltracraftClient.PROFILER.isProfiling() || this.client.isRenderingWorld()) {
             this.left(renderer, "FPS", Gdx.graphics.getFramesPerSecond())
                     .left(renderer, "TPS", this.client.getCurrentTps())
+                    .left(renderer, "Ping", this.client.connection.getPing() + "ms")
                     .left();
         }
 

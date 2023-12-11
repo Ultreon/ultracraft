@@ -20,6 +20,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.ultreon.craft.world.World.*;
 
@@ -57,6 +58,16 @@ public abstract class Chunk implements ServerDisposable {
      */
     public final PaletteStorage<Block> storage;
     protected final PaletteStorage<Biome> biomeStorage = new PaletteStorage<>(256);
+
+    private static final int MAX_LIGHT_LEVEL = 15;
+    private static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
+
+    static {
+        for (int i = 0; i <= Chunk.MAX_LIGHT_LEVEL; i++) {
+            int reduction = Chunk.MAX_LIGHT_LEVEL - i;
+            Chunk.lightLevelMap[i] = (float) Math.pow(0.8, reduction);
+        }
+    }
 
     protected Chunk(World world, int size, int height, ChunkPos pos) {
         this(world, size, height, pos, new PaletteStorage<>(size * height * size));
@@ -122,6 +133,11 @@ public abstract class Chunk implements ServerDisposable {
         return this.get(pos.x, pos.y, pos.z);
     }
 
+    public Block get(BlockPos pos) {
+        if (this.disposed) return Blocks.BARRIER;
+        return this.get(pos.x(), pos.y(), pos.z());
+    }
+
     public Block get(int x, int y, int z) {
         if (this.disposed) return Blocks.BARRIER;
         if (this.isOutOfBounds(x, y, z)) return Blocks.BARRIER;
@@ -137,8 +153,7 @@ public abstract class Chunk implements ServerDisposable {
         int dataIdx = this.getIndex(x, y, z);
 
         Block block = this.storage.get(dataIdx);
-        if (block == null) return Blocks.AIR;
-        return block;
+        return block == null ? Blocks.AIR : block;
     }
 
     public void set(Vec3i pos, Block block) {
@@ -325,6 +340,27 @@ public abstract class Chunk implements ServerDisposable {
         return this.biomeStorage.get(index);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        Chunk chunk = (Chunk) o;
+        return Objects.equals(this.pos, chunk.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.pos);
+    }
+
+    public float getBrightness(int lightLevel) {
+        if(lightLevel > Chunk.MAX_LIGHT_LEVEL)
+            return 1;
+        if(lightLevel < 0)
+            return 0;
+        return Chunk.lightLevelMap[lightLevel];
+    }
+
     /**
      * Chunk status for client chunk load response.
      *
@@ -335,6 +371,5 @@ public abstract class Chunk implements ServerDisposable {
         SKIP,
         UNLOADED,
         FAILED
-
     }
 }

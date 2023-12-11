@@ -6,16 +6,16 @@ import com.ultreon.craft.server.ServerDisposable;
 public class NoiseInstance implements ServerDisposable {
     private final NoiseType noise;
     private final long seed;
-    private final float noiseZoom;
-    private final float octaves;
+    private final double noiseZoom;
+    private final double octaves;
     private final Vec2f offset;
-    private final float redistributionModifier;
-    private final float exponent;
-    private final float persistence;
-    private final float amplitude;
-    private final float base;
+    private final double redistributionModifier;
+    private final double exponent;
+    private final double persistence;
+    private final double amplitude;
+    private final double base;
 
-    public NoiseInstance(NoiseType noise, long seed, float noiseZoom, float octaves, Vec2f offset, float redistributionModifier, float exponent, float persistence, float amplitude, float base) {
+    public NoiseInstance(NoiseType noise, long seed, double noiseZoom, double octaves, Vec2f offset, double redistributionModifier, double exponent, double persistence, double amplitude, double base) {
         this.noise = noise;
         this.seed = seed;
         this.noiseZoom = noiseZoom;
@@ -40,11 +40,11 @@ public class NoiseInstance implements ServerDisposable {
         return this.seed;
     }
 
-    public float noiseZoom() {
+    public double noiseZoom() {
         return this.noiseZoom;
     }
 
-    public float octaves() {
+    public double octaves() {
         return this.octaves;
     }
 
@@ -52,15 +52,15 @@ public class NoiseInstance implements ServerDisposable {
         return this.offset;
     }
 
-    public float redistributionModifier() {
+    public double redistributionModifier() {
         return this.redistributionModifier;
     }
 
-    public float exponent() {
+    public double exponent() {
         return this.exponent;
     }
 
-    public float persistence() {
+    public double persistence() {
         return this.persistence;
     }
 
@@ -69,11 +69,11 @@ public class NoiseInstance implements ServerDisposable {
         this.noise.dispose();
     }
 
-    public float amplitude() {
+    public double amplitude() {
         return this.amplitude;
     }
 
-    public float base() {
+    public double base() {
         return this.base;
     }
 }

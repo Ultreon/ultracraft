@@ -16,10 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static com.ultreon.craft.api.commands.CommandData.dropLastWhile;
 import static com.ultreon.craft.util.ExceptionMap.getErrorCode;
@@ -164,7 +161,7 @@ public abstract class Command {
                 this.errorMessage("Command not created properly yet.").send(sender);
                 return true;
             }
-            if (args.length == 1 && args[0] == "--help") {
+            if (args.length == 1 && Objects.equals(args[0], "--help")) {
                 this.data.sendHelp("Help", sender, alias);
                 return true;
             }
@@ -246,11 +243,19 @@ public abstract class Command {
         }
 
         String permission = this.getRequiredPermission();
-        if (permission != null && !sender.hasExplicitPermission(permission)){
+        if (permission != null && !sender.hasPermission(permission)){
             return new ArrayList<>();
         }
 
-        return this.requiresPlayer && !(sender instanceof Player) ? new ArrayList<>() : Collections.emptyList();
+        if (this.requiresPlayer && !(sender instanceof Player)) return new ArrayList<>();
+        return this.deduplicate(this.parser.tabComplete(sender, commandCtx, alias, args));
+    }
+
+    private List<String> deduplicate(List<String> strings) {
+        Set<String> set = new LinkedHashSet<>(strings);
+        strings.clear();
+        strings.addAll(set);
+        return strings;
     }
 
     protected CommandOutput voidOutput() {
