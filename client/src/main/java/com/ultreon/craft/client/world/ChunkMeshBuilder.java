@@ -78,7 +78,6 @@ public class ChunkMeshBuilder {
         mesh.setVertices(vertices.items);
         vertices.clear();
         chunk.updated();
-        vertices.items = null;
 
         ValueTracker.setVertexCount(ValueTracker.getVertexCount() + mesh.getMaxVertices());
 
@@ -105,8 +104,6 @@ public class ChunkMeshBuilder {
 
         BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
         if (ChunkMeshBuilder.isInvisible(block, model)) return;
-
-        assert model != null;
 
         Block top = this.block(section, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(top))
@@ -147,8 +144,6 @@ public class ChunkMeshBuilder {
 
         BakedCubeModel model = UltracraftClient.get().getBakedBlockModel(block);
         if (ChunkMeshBuilder.isTransparent(block, model)) return;
-
-        assert model != null;
 
         Block top = this.block(chunk, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderFace(top))
@@ -267,6 +262,8 @@ public class ChunkMeshBuilder {
             1, 1, 1,
             1, 0, 1,
     };
+
+
 
     public static void drawFace(Vec3i offset, BlockFace face, TextureRegion region, FloatArray output, FaceProperties faceProperties) {
         float[] vertices = switch (face) {

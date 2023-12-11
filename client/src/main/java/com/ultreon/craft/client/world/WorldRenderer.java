@@ -55,6 +55,8 @@ public final class WorldRenderer implements Disposable {
     public static final float SCALE = 1;
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
+    private static final Vec3d TMP_3D_A = new Vec3d();
+    private static final Vec3d TMp_3D_B = new Vec3d();
     private final Material material;
     private final Material transparentMaterial;
     private final Texture breakingTex;
