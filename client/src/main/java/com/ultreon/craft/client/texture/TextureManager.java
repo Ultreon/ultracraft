@@ -118,7 +118,9 @@ public class TextureManager {
         FileHandle handle = UltracraftClient.resource(id);
         if (!handle.exists()) return TextureManager.DEFAULT_TEX;
 
-        Texture texture = new Texture(handle);
+        Pixmap pixmap = new Pixmap(handle);
+
+        Texture texture = new Texture(pixmap);
         if (texture.getTextureData() == null) {
             UltracraftClient.LOGGER.warn("Couldn't read texture data: " + id);
             return TextureManager.DEFAULT_TEX;

@@ -16,6 +16,6 @@ public class BlockRendererRegistry {
     }
 
     public static BlockRenderer get(Block block) {
-        return BlockRendererRegistry.MAP.getOrDefault(block, DEFAULT);
+        return BlockRendererRegistry.MAP.computeIfAbsent(block, (v) -> new NormalBlockRenderer());
     }
 }

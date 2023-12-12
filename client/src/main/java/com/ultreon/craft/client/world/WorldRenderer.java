@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
@@ -16,6 +15,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -53,8 +53,6 @@ import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements Disposable {
     public static final float SCALE = 1;
-    private static final Vec3d TMP_3D_A = new Vec3d();
-    private static final Vec3d TMp_3D_B = new Vec3d();
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
     private final Material material;
@@ -163,9 +161,10 @@ public final class WorldRenderer implements Disposable {
 
         // Breaking animation meshes.
         this.breakingTex = this.client.getTextureManager().getTexture(id("textures/break_stages.png"));
-        this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
-        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
-        this.breakingMaterial.set(new BlendingAttribute(0.8f));
+//        this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
+//        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
+//        this.breakingMaterial.set(new BlendingAttribute(0.8f));
+        this.breakingMaterial = material;
         Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
         for (int i = 0; i < 6; i++) {
             TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
@@ -203,12 +202,12 @@ public final class WorldRenderer implements Disposable {
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, v2, v2, v2, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
         this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
-        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
-        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, -1.0f));
-        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, 1.0f, 0, 0.0f));
-        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, -1.0f, 0, 0.0f));
-        this.environment.add(new DirectionalLight().set(1.0f / v1, 1.0f / v1, 1.0f / v1, 0, -1, 0));
-        this.environment.add(new DirectionalLight().set(0.25f / v1, 0.25f / v1, 0.25f / v1, 0, 1, 0));
+//        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
+//        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, -1.0f));
+//        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, 1.0f, 0, 0.0f));
+//        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, -1.0f, 0, 0.0f));
+//        this.environment.add(new DirectionalLight().set(1.0f / v1, 1.0f / v1, 1.0f / v1, 0, -1, 0));
+//        this.environment.add(new DirectionalLight().set(0.25f / v1, 0.25f / v1, 0.25f / v1, 0, 1, 0));
     }
 
     public Environment getEnvironment() {
@@ -345,10 +344,11 @@ public final class WorldRenderer implements Disposable {
 
             if (chunk.mesh == null) {
                 chunk.mesh = this.pool.obtain();
-                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> !block.isTransparent() && block.doesRender());
+                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), Block::doesRender);
                 chunk.mesh.meshPart.size = mesh.getNumIndices();
                 chunk.mesh.meshPart.offset = 0;
                 chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
+                chunk.mesh.renderable.material = this.material;
             }
 
             if (chunk.transparentMesh == null) {

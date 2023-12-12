@@ -3,6 +3,7 @@ package com.ultreon.craft.client.atlas;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.client.UltracraftClient;
@@ -28,8 +29,8 @@ public class TextureStitcher {
         }
 
         // Determine the dimensions of the final texture atlas
-        int width = 1024; // calculate the width of the atlas
-        int height = this.calcHeight(width);
+        int width = 2048; // calculate the width of the atlas
+        int height = 2048;
 
         // Create a temporary DepthFrameBuffer to hold the packed textures
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
@@ -50,7 +51,9 @@ public class TextureStitcher {
         for (var e : this.textures.entrySet()) {
             Texture texture = e.getValue();
             Identifier id = e.getKey();
-            spriteBatch.draw(texture, x, y);
+            TextureRegion region = new TextureRegion(texture);
+            region.flip(false, true);
+            spriteBatch.draw(region, x, y);
 
             TextureOffset textureOffset = new TextureOffset(x, y + texture.getHeight(), texture.getWidth(), -texture.getHeight(), width, height);
             uvMap.put(id, textureOffset);

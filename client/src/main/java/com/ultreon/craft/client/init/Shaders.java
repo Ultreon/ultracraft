@@ -18,6 +18,10 @@ public class Shaders {
 
     public static final DefaultShaderProvider DEFAULT = Shaders.register("default", new MyDefaultShaderProvider());
     public static final DefaultShaderProvider SSAO = Shaders.registerDefault("ssao");
+    public static final DefaultShaderProvider WORLD = Shaders.register("world", new MyDefaultShaderProvider(
+            new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
+            new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
+    ));
 
     private static <T extends ShaderProvider> T register(String name, T provider) {
         Shaders.REGISTRY.register(id(name), provider);

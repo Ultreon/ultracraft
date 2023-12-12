@@ -23,7 +23,9 @@ public class TextureAtlas implements Disposable {
         if (id == null) return null;
         TextureOffset textureOffset = this.uvMap.get(id);
         if (textureOffset == null) return null;
-        return new TextureRegion(this.atlas, textureOffset.u(), textureOffset.v(), textureOffset.uWidth(), textureOffset.vHeight());
+        TextureRegion textureRegion = new TextureRegion(this.atlas, textureOffset.u(), textureOffset.v(), textureOffset.uWidth(), textureOffset.vHeight());
+        textureRegion.flip(false, true);
+        return textureRegion;
     }
 
     public Texture getTexture() {

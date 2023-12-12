@@ -11,7 +11,7 @@ import com.ultreon.craft.client.input.GameCamera;
 import org.checkerframework.common.reflection.qual.NewInstance;
 
 public class PlainNode extends WorldRenderNode {
-    private final ShaderProvider shaderProvider = Shaders.DEFAULT;
+    private final ShaderProvider shaderProvider = Shaders.WORLD;
 
     @NewInstance
     @Override

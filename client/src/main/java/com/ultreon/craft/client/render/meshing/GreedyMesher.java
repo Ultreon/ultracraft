@@ -11,7 +11,6 @@ import com.ultreon.craft.client.registry.BlockRendererRegistry;
 import com.ultreon.craft.client.render.BlockRenderer;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.client.world.ClientChunk;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
@@ -37,14 +36,18 @@ import java.util.List;
  * Example:
  * <p>
  * Source
- * [][][] [][][]
- * [][]   [][][]
- * []
+ * <pre>
+ *  [][][] [][][]
+ *  [][]   [][][]
+ *  []
+ * </pre>
  * <p>
  * Result
- * [   ]  |---|
- * [  ]   |___|
- * []
+ * <pre>
+ *  [   ]  |---|
+ *  [  ]   |___|
+ *  []
+ * </pre>
  */
 public class GreedyMesher implements Mesher {
 
@@ -132,12 +135,12 @@ public class GreedyMesher implements Mesher {
                             }
                         }
                     } catch (PosOutOfBoundsException ex) {
-                        UltracraftClient.LOGGER.error("Greddy Meshing error:", ex);
+                        UltracraftClient.LOGGER.error("Greedy Meshing error:", ex);
                     }
                 }
             }
-            this.greedy(faces, BlockFace.TOP, shouldMerge, topMask, topPcld, y, OFF_X, OFF_Z, OFF_Y);
-            this.greedy(faces, BlockFace.BOTTOM, shouldMerge, btmMask, btmPcld, y, OFF_X, OFF_Z, OFF_Y);
+            this.greedy(faces, BlockFace.TOP, shouldMerge, topMask, topPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
+            this.greedy(faces, BlockFace.BOTTOM, shouldMerge, btmMask, btmPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
         }
 
         // East, west
@@ -161,7 +164,7 @@ public class GreedyMesher implements Mesher {
                         int westNeighborX = x - 1;
                         Chunk westNeighborChunk = this.chunk;
                         if (westNeighborX < 0) {
-                            westNeighborChunk = this.chunk.getWorld().getChunk(OFF_X + westNeighborX, OFF_Z + z);
+                            westNeighborChunk = this.chunk.getWorld().getChunk(GreedyMesher.OFF_X + westNeighborX, GreedyMesher.OFF_Z + z);
                             westNeighborX += World.CHUNK_SIZE;
                         }
                         if (westNeighborChunk != null) {
@@ -183,7 +186,7 @@ public class GreedyMesher implements Mesher {
                         int eastNeighborX = x + 1;
                         Chunk eastNeighborChunk = this.chunk;
                         if (eastNeighborX >= World.CHUNK_SIZE) {
-                            eastNeighborChunk = this.chunk.getWorld().getChunk(OFF_X + eastNeighborX, OFF_Z + z);
+                            eastNeighborChunk = this.chunk.getWorld().getChunk(GreedyMesher.OFF_X + eastNeighborX, GreedyMesher.OFF_Z + z);
                             eastNeighborX -= World.CHUNK_SIZE;
                         }
                         if (eastNeighborChunk != null) {
@@ -202,13 +205,13 @@ public class GreedyMesher implements Mesher {
                             }
                         }
                     } catch (PosOutOfBoundsException ex) {
-                        UltracraftClient.LOGGER.error("Greddy Meshing error:", ex);
+                        UltracraftClient.LOGGER.error("Greedy Meshing error:", ex);
                     }
                 }
             }
 
-            this.greedy(faces, BlockFace.EAST, shouldMerge, eastMask, eastPcld, x, OFF_Z, OFF_Y, OFF_X);
-            this.greedy(faces, BlockFace.WEST, shouldMerge, westMask, westPcld, x, OFF_Z, OFF_Y, OFF_X);
+            this.greedy(faces, BlockFace.EAST, shouldMerge, eastMask, eastPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
+            this.greedy(faces, BlockFace.WEST, shouldMerge, westMask, westPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
         }
 
         // North, south
@@ -234,10 +237,10 @@ public class GreedyMesher implements Mesher {
                         Chunk northNeighborChunk = this.chunk;
                         Chunk southNeighborChunk = this.chunk;
                         if (northNeighborZ >= World.CHUNK_SIZE) {
-                            northNeighborChunk = this.chunk.getWorld().getChunk(OFF_X + x, OFF_Z + northNeighborZ);
+                            northNeighborChunk = this.chunk.getWorld().getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + northNeighborZ);
                             northNeighborZ -= World.CHUNK_SIZE;
                         } else if (southNeighborZ < 0) {
-                            southNeighborChunk = this.chunk.getWorld().getChunk(OFF_X + x, OFF_Z + southNeighborZ);
+                            southNeighborChunk = this.chunk.getWorld().getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + southNeighborZ);
                             southNeighborZ += World.CHUNK_SIZE;
                         }
 
@@ -273,13 +276,13 @@ public class GreedyMesher implements Mesher {
                             }
                         }
                     } catch (PosOutOfBoundsException ex) {
-                        UltracraftClient.LOGGER.error("Greddy Meshing error:", ex);
+                        UltracraftClient.LOGGER.error("Greedy Meshing error:", ex);
                     }
                 }
             }
 
-            this.greedy(faces, BlockFace.NORTH, shouldMerge, northMask, northPcld, z, OFF_X, OFF_Y, OFF_Z);
-            this.greedy(faces, BlockFace.SOUTH, shouldMerge, southMask, southPcld, z, OFF_X, OFF_Y, OFF_Z);
+            this.greedy(faces, BlockFace.NORTH, shouldMerge, northMask, northPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
+            this.greedy(faces, BlockFace.SOUTH, shouldMerge, southMask, southPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
         }
 
         return faces;
@@ -311,16 +314,16 @@ public class GreedyMesher implements Mesher {
         int chunkSize = World.CHUNK_SIZE;
         Chunk sChunk = this.chunk;
         if (z < 0) {
-            sChunk = world.getChunk(OFF_X + x, OFF_Z + z);
+            sChunk = world.getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + z);
             z += chunkSize;
         } else if (z > chunkSize - 1) {
-            sChunk = world.getChunk(OFF_X + x, OFF_Z + z);
+            sChunk = world.getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + z);
             z -= chunkSize;
         } else if (x < 0) {
-            sChunk = world.getChunk(OFF_X + x, OFF_Z + z);
+            sChunk = world.getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + z);
             x += chunkSize;
         } else if (x > chunkSize - 1) {
-            sChunk = world.getChunk(OFF_X + x, OFF_Z + z);
+            sChunk = world.getChunk(GreedyMesher.OFF_X + x, GreedyMesher.OFF_Z + z);
             x -= chunkSize;
         }
 
@@ -331,8 +334,7 @@ public class GreedyMesher implements Mesher {
 
     public List<Face> getFaces(UseCondition condition) {
         return this.getFaces(condition, (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.hasOcclusion() && blockToBlockFace.hasOcclusion()), (id1, light1, lightData1, id2, light2, lightData2) -> {
-            Block block1 = Registries.BLOCK.values().get(id1);
-            if (!block1.shouldGreedyMerge()) return false;
+            if (!id1.shouldGreedyMerge()) return false;
             boolean sameBlock = id1 == id2;
             boolean sameLight = light1 == light2;
             boolean tooDarkToTell = light1 < 0.1f; // Too dark to tell they're not the same block
@@ -340,9 +342,8 @@ public class GreedyMesher implements Mesher {
                 sameLight = lightData1.equals(lightData2);
             }
             if (sameLight && !sameBlock && tooDarkToTell) {
-                Block block2 = Registries.BLOCK.values().get(id2);
                 // Other block renderers may alter shape in an unpredictable way
-                if (!block1.hasCustomRender() && !block2.hasCustomRender() && !block1.isTransparent() && !block2.isTransparent())
+                if (!id1.hasCustomRender() && !id2.hasCustomRender() && !id1.isTransparent() && !id2.isTransparent())
                     sameBlock = true; // Consider them the same block
             }
             return sameBlock && sameLight;
@@ -369,8 +370,8 @@ public class GreedyMesher implements Mesher {
                     int ry = this.realY(side, x, y, z);
                     int rz = this.realZ(side, x, y, z);
 
-                    int blk = this.chunk.get(rx, ry, rz).getRegIdx(); // TODO: Add block states!
-                    if (blk == 0 || used[x][y]) continue;
+                    Block blk = this.chunk.get(rx, ry, rz);
+                    if (blk.isAir() || used[x][y]) continue;
                     used[x][y] = true;
                     float ll = 15;
                     PerCornerLightData lightData = null;
@@ -388,8 +389,7 @@ public class GreedyMesher implements Mesher {
                             int newRX = this.realX(side, newX, y, z);
                             int newRY = this.realY(side, newX, y, z);
                             int newRZ = this.realZ(side, newX, y, z);
-                            int newBlk = this.chunk.get(newRX, newRY, newRZ).getRegIdx();
-//                            int newMeta = this.chunk.getMeta(newRX, newRY, newRZ);
+                            Block newBlk = this.chunk.get(newRX, newRY, newRZ);
                             float newll = 15;
                             PerCornerLightData newPcld = null;
                             if (this.perCornerLight) {
@@ -397,7 +397,7 @@ public class GreedyMesher implements Mesher {
                             } else {
                                 newll = this.calcLightLevel(side, newRX, newRY, newRZ);
                             }
-                            shouldPass = !used[newX][y] && newBlk != 0 && mergeCond.shouldMerge(blk, ll, lightData, newBlk, newll, newPcld);
+                            shouldPass = !used[newX][y] && !newBlk.isAir() && mergeCond.shouldMerge(blk, ll, lightData, newBlk, newll, newPcld);
                         }
                         // expand right if the same block
                         if (shouldPass) {
@@ -414,8 +414,8 @@ public class GreedyMesher implements Mesher {
                                     int lRY = this.realY(side, lx, endY, z);
                                     int lRZ = this.realZ(side, lx, endY, z);
 
-                                    int lblk = this.chunk.get(lRX, lRY, lRZ).getRegIdx();
-                                    if (lblk == 0) {
+                                    Block lblk = this.chunk.get(lRX, lRY, lRZ);
+                                    if (lblk.isAir()) {
                                         allPassed = false;
                                         break;
                                     }
@@ -520,8 +520,8 @@ public class GreedyMesher implements Mesher {
                 for (int sx = cx + negX; sx <= cx + posX; sx++) {
                     Chunk sChunk = this.chunk;
                     boolean getChunk = false; // whether the block is not in the current chunk and a new chunk should be found
-                    int getChunkX = OFF_X + sx;
-                    int getChunkZ = OFF_Z + sz;
+                    int getChunkX = GreedyMesher.OFF_X + sx;
+                    int getChunkZ = GreedyMesher.OFF_Z + sz;
                     int fixedSz = sz;
                     int fixedSx = sx;
                     if (sz < 0) {
@@ -548,7 +548,7 @@ public class GreedyMesher implements Mesher {
                         lightSum += sChunk.getLightLevel(fixedSx, sy, fixedSz);
                         count++;
                     } catch (PosOutOfBoundsException ex) {
-                        UltracraftClient.LOGGER.error("Greddy Meshing error:", ex);
+                        UltracraftClient.LOGGER.error("Greedy Meshing error:", ex);
                     }
                 }
             }
@@ -563,12 +563,12 @@ public class GreedyMesher implements Mesher {
         private final PerCornerLightData lightData;
         private final BlockRenderer renderer;
         private final BakedCubeModel bakedBlockModel;
+        private final UltracraftClient client;
 
         /**
          * @param lightData Per corner light data. Pass null if per corner lighting is disabled.
          */
-        public Face(BlockFace side, int blockIdx, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z) {
-            Block block = Registries.BLOCK.values().get(blockIdx);
+        public Face(BlockFace side, Block block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z) {
             this.lightLevel = lightLevel;
             this.x1 = startX;
             this.y1 = startY;
@@ -577,9 +577,9 @@ public class GreedyMesher implements Mesher {
             this.z = z;
             this.side = side;
             this.lightData = lightData;
-            UltracraftClient client = UltracraftClient.get();
+            this.client = UltracraftClient.get();
             this.renderer = BlockRendererRegistry.get(block);
-            this.bakedBlockModel = client.getBakedBlockModel(block);
+            this.bakedBlockModel = this.client.getBakedBlockModel(block);
         }
 
         public void render(MeshBuilder builder) {
@@ -636,7 +636,7 @@ public class GreedyMesher implements Mesher {
     }
 
     public interface MergeCondition {
-        boolean shouldMerge(int id1, float light1, PerCornerLightData lightData1, int id2, float light2, PerCornerLightData lightData2);
+        boolean shouldMerge(Block id1, float light1, PerCornerLightData lightData1, Block id2, float light2, PerCornerLightData lightData2);
     }
 
 }

@@ -55,7 +55,7 @@ public class GameRenderer {
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
-        ShaderProgram.pedantic = false;
+//        ShaderProgram.pedantic = false;
         this.worldShaderProgram = ShaderPrograms.MODEL;
         if (!this.worldShaderProgram.isCompiled()) {
             LOGGER.error("Failed to compile model shader:\n{}", this.worldShaderProgram.getLog());
