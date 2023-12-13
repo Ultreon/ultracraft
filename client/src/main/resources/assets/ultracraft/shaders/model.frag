@@ -14,7 +14,6 @@ void main() {
 
     // Sample texture
     vec4 diffuse = texture2D(u_texture, texCoord).rgba;
-    vec3 ssao = texture2D(u_ssaoMap, texCoord).rgb;
 
-    gl_FragColor = vec4(ssao, 1.0) * diffuse;
+    gl_FragColor = diffuse;
 }

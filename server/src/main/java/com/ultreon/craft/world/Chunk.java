@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.ultreon.craft.world.World.*;
+import static com.ultreon.libs.commons.v0.Mth.lerp;
 
 /**
  * Represents a chunk in the world.
@@ -66,8 +67,8 @@ public abstract class Chunk implements ServerDisposable {
 
     static {
         for (int i = 0; i <= Chunk.MAX_LIGHT_LEVEL; i++) {
-            int reduction = Chunk.MAX_LIGHT_LEVEL - i;
-            Chunk.lightLevelMap[i] = (float) Math.pow(0.8, reduction);
+            double lerp = lerp(0.15f, 1.5f, (double) i / Chunk.MAX_LIGHT_LEVEL);
+            Chunk.lightLevelMap[i] = (float) lerp;
         }
     }
 
@@ -359,29 +360,31 @@ public abstract class Chunk implements ServerDisposable {
         if(this.isOutOfBounds(x, y, z))
             throw new PosOutOfBoundsException();
 
-        int sy = y & 0xF;
-
-        int sunlight = this.lightMap.getSunlight(x, sy, z);
-        int blockLight = this.lightMap.getBlockLight(x, sy, z);
+        int sunlight = 15;
+        int blockLight = this.lightMap.getBlockLight(x, y, z);
         return Chunk.lightLevelMap[Mth.clamp(sunlight + blockLight, 0, Chunk.MAX_LIGHT_LEVEL)];
     }
 
     public int getSunlight(int x, int y, int z) throws PosOutOfBoundsException {
         if(this.isOutOfBounds(x, y, z))
-            throw new PosOutOfBoundsException();
+            throw new PosOutOfBoundsException(x + ", " + y + ", " + z);
 
-        int sy = y & 0xF;
+        return 15;
+    }
 
-        return this.lightMap.getSunlight(x, sy, z);
+    public int getSunlight(Vec3i localBlockPos) {
+        return this.getSunlight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
     }
 
     public int getBlockLight(int x, int y, int z) throws PosOutOfBoundsException {
         if(this.isOutOfBounds(x, y, z))
             throw new PosOutOfBoundsException();
 
-        int sy = y & 0xF;
+        return this.lightMap.getBlockLight(x, y, z);
+    }
 
-        return this.lightMap.getBlockLight(x, sy, z);
+    public int getBlockLight(Vec3i localBlockPos) {
+        return this.getBlockLight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
     }
 
     public float getBrightness(int lightLevel) {

@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.*;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.GameCamera;
+import com.ultreon.craft.client.world.ClientWorld;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -42,7 +43,12 @@ public class RenderPipeline implements Disposable {
     }
 
     public void render(ModelBatch modelBatch) {
-        ScreenUtils.clear(0.6F, 0.7F, 1.0F, 1.0F, true);
+        ClientWorld world = UltracraftClient.get().world;
+        if (world != null) {
+            ScreenUtils.clear(world.getSkyColor().toGdx(), true);
+        } else {
+            ScreenUtils.clear(0F, 0F, 0F, 1F, true);
+        }
 
         var input = new Array<Renderable>();
         var textures = new ObjectMap<String, Texture>();

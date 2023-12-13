@@ -1,5 +1,10 @@
 {
     "configurations": [
-        
+        {
+            "type": "gradle",
+            "name": "Run Client",
+            "tasks": ["runClient"],
+            "args": ["--console=plain"],
+        }
     ]
 }

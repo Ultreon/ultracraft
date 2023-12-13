@@ -52,7 +52,7 @@ tasks.register('runClient', JavaExec) {
     mainClass = 'com.ultreon.craft.premain.DevMain'
 
     // arguments to pass to the application
-    workingDir "$rootProject.projectDir/run/"
+    workingDir "$rootProject.projectDir/run/client/main/"
 }
 
 archivesBaseName = archives_base_name + "-gameprovider"

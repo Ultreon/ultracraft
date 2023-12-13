@@ -38,7 +38,6 @@ public class ChunkMesh implements Pool.Poolable {
         this.renderable = renderable;
         this.meshPart = renderable.meshPart;
         this.transform = renderable.worldTransform;
-        this.renderable.userData = this;
     }
 
     @Override

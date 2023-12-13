@@ -443,7 +443,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.world.getChunk(this.getChunkPos()) == null) return;
         if (!this.isChunkActive(this.getChunkPos())) return;
 
-        System.out.println("x = " + x + ", y = " + y + ", z = " + z);
 //        double dst = this.getPosition().dst(x, this.y, z);
 //        if (dst > this.getSpeed() * this.runModifier * TPS) {
 //            this.setPosition(this.x, this.y, this.z);

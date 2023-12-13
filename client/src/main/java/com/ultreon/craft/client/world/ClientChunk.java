@@ -7,7 +7,6 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 
@@ -73,16 +72,6 @@ public final class ClientChunk extends Chunk {
         }
 
         super.onUpdated();
-    }
-
-    @Override
-    public float getLightLevel(int x, int y, int z) throws PosOutOfBoundsException {
-        return 15;
-    }
-
-    @Override
-    public int getBlockLight(int x, int y, int z) throws PosOutOfBoundsException {
-        return 15;
     }
 
     @Override

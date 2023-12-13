@@ -22,6 +22,7 @@ import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.ServerWorld;
+import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,12 +99,19 @@ public class DebugGui {
                 Vec3i sectionPos = this.block2sectionPos(blockPosition);
                 ChunkPos chunkPos = player.getChunkPos();
                 ClientChunk chunk = world.getChunk(chunkPos);
+                BlockPos localBlockPos = World.toLocalBlockPos(blockPosition);
+
                 this.left(renderer, "XYZ", player.getPosition())
                         .left(renderer, "Block XYZ", blockPosition)
                         .left(renderer, "Chunk XYZ", sectionPos)
                         .left(renderer, "Biome", world.getBiome(blockPosition));
                 if (chunk != null) {
-                    this.left(renderer, "Chunk Offset", chunk.renderOffset);
+                    int sunlight = chunk.getSunlight(localBlockPos.vec());
+                    int blockLight = chunk.getBlockLight(localBlockPos.vec());
+
+                    this.left(renderer, "Chunk Offset", chunk.renderOffset)
+                            .left(renderer, "Sunlight", sunlight)
+                            .left(renderer, "Block Light", blockLight);
                 }
                 this.left(renderer, "Chunk Shown", world.getChunk(chunkPos) != null);
                 HitResult hitResult = this.client.hitResult;

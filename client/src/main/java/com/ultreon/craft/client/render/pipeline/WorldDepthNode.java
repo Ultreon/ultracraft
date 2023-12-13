@@ -10,14 +10,14 @@ import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.input.GameCamera;
 import org.checkerframework.common.reflection.qual.NewInstance;
 
-public class PlainNode extends WorldRenderNode {
-    private final ShaderProvider shaderProvider = Shaders.WORLD;
+public class WorldDepthNode extends WorldRenderNode {
+    private final ShaderProvider shaderProvider = Shaders.DEPTH;
 
     @NewInstance
     @Override
     public Array<Renderable> render(ObjectMap<String, Texture> textures, ModelBatch modelBatch, GameCamera camera, Array<Renderable> input) {
         this.render(modelBatch, this.shaderProvider, input);
-        textures.put("diffuse", this.getFrameBuffer().getColorBufferTexture());
+        textures.put("depth", this.getFrameBuffer().getColorBufferTexture());
         return input;
     }
 }

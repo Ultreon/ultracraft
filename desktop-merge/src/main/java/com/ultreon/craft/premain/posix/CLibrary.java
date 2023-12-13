@@ -7,7 +7,7 @@ import com.sun.jna.Native;
  * Posix API wrapper for the C library.
  * Used for setting the current working directory.
  */
-@SuppressWarnings({"UnusedReturnValue", "SpellCheckingInspection"})
+@SuppressWarnings({"UnusedReturnValue"})
 public interface CLibrary extends Library {
     CLibrary INSTANCE = Native.load("c", CLibrary.class);
 

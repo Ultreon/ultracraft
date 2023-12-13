@@ -52,7 +52,7 @@ import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements Disposable {
-    public static final float SCALE = 1;
+    public static final float SCALE = 16;
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
     private final Material material;
@@ -199,7 +199,7 @@ public final class WorldRenderer implements Disposable {
 
         float v1 = 2f, v2 = 0.125f;
         this.environment = new Environment();
-        this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, v2, v2, v2, 1f));
+        this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
         this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
 //        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
@@ -344,31 +344,34 @@ public final class WorldRenderer implements Disposable {
 
             if (chunk.mesh == null) {
                 chunk.mesh = this.pool.obtain();
-                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), Block::doesRender);
+                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isFluid());
                 chunk.mesh.meshPart.size = mesh.getNumIndices();
                 chunk.mesh.meshPart.offset = 0;
                 chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
                 chunk.mesh.renderable.material = this.material;
+                chunk.mesh.renderable.userData = chunk;
             }
 
             if (chunk.transparentMesh == null) {
-//                chunk.transparentMesh = this.pool.obtain();
-//                var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> !block.isTransparent() && block.doesRender());
-//                chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
-//                chunk.transparentMesh.meshPart.offset = 0;
-//                chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
+                chunk.transparentMesh = this.pool.obtain();
+                var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isFluid());
+                chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
+                chunk.transparentMesh.meshPart.offset = 0;
+                chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
+                chunk.transparentMesh.renderable.material = this.transparentMaterial;
+                chunk.mesh.renderable.userData = chunk;
             }
 
             chunk.mesh.chunk = chunk;
             chunk.mesh.renderable.material = this.material;
             chunk.mesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
 
-//            chunk.transparentMesh.chunk = chunk;
-//            chunk.transparentMesh.renderable.material = this.transparentMaterial;
-//            chunk.transparentMesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+            chunk.transparentMesh.chunk = chunk;
+            chunk.transparentMesh.renderable.material = this.transparentMaterial;
+            chunk.transparentMesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
 
             output.add(this.verifyOutput(chunk.mesh.renderable));
-//            output.add(this.verifyOutput(chunk.transparentMesh.renderable));
+            output.add(this.verifyOutput(chunk.transparentMesh.renderable));
 
             for (var entry : chunk.getBreaking().entrySet()) {
                 BlockPos key = entry.getKey();

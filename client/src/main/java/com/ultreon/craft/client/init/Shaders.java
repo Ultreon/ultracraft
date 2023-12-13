@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
+import com.ultreon.craft.client.shaders.provider.WorldShaderProvider;
 import com.ultreon.craft.registry.Registry;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
@@ -17,8 +18,7 @@ public class Shaders {
     public static final DepthShaderProvider DEPTH = Shaders.registerDepth("depth");
 
     public static final DefaultShaderProvider DEFAULT = Shaders.register("default", new MyDefaultShaderProvider());
-    public static final DefaultShaderProvider SSAO = Shaders.registerDefault("ssao");
-    public static final DefaultShaderProvider WORLD = Shaders.register("world", new MyDefaultShaderProvider(
+    public static final DefaultShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
             new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
     ));
@@ -44,7 +44,7 @@ public class Shaders {
         return provider;
     }
 
-    protected static void checkShaderCompilation(ShaderProgram program) {
+    public static void checkShaderCompilation(ShaderProgram program) {
         String shaderLog = program.getLog();
         if (program.isCompiled()) {
             if (shaderLog.isEmpty()) UltracraftClient.LOGGER.debug("Shader compilation success");

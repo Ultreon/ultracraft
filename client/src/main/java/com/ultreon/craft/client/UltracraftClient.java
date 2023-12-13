@@ -129,6 +129,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
+import net.fabricmc.loader.impl.util.Arguments;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -144,6 +145,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -167,6 +169,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Cursor normalCursor;
     private final Cursor clickCursor;
     private final RenderPipeline pipeline;
+    private final boolean devWorld;
     public Connection connection;
     public ClientConnection clientConn;
     public ServerData serverData;
@@ -314,6 +317,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.argv = argv;
 
+        this.devWorld = arguments.getFlags().contains("devWorld");
+
         this.user = new User("Player" + MathUtils.random(100, 999));
 
         this.mainThread = Thread.currentThread();
@@ -328,9 +333,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.pipeline = new RenderPipeline(new MainRenderNode(), this.camera)
                 .node(new CollectNode())
-                .node(new PlainNode())
-                .node(new DepthNode())
-                .node(new SSAONode())
+                .node(new WorldDiffuseNode())
+//                .node(new WorldDepthNode())
         ;
 
         // White pixel for the shape drawer.
@@ -789,8 +793,29 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltracraftClient.BOOT_TIMESTAMP);
         UltracraftClient.LOGGER.info("Game booted in {}.", this.bootTime.toSimpleString());
 
-        UltracraftClient.invokeAndWait(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> this.showScreen(new TitleScreen())));
+        UltracraftClient.invokeAndWait(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> {
+            if (this.devWorld) {
+                this.startDevWorld();
+                return;
+            }
+
+            this.showScreen(new TitleScreen());
+        }));
         this.loadingOverlay = null;
+    }
+
+    private void startDevWorld() {
+        WorldStorage storage = new WorldStorage("worlds/dev");
+        try {
+            if (Gdx.files.local("worlds/dev").exists())
+                storage.delete();
+
+            storage.createWorld();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        this.startWorld(storage);
     }
 
     private void registerMenuScreens() {

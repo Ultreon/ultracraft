@@ -10,8 +10,10 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,12 +24,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.badlogic.gdx.math.MathUtils.lerp;
+
 public final class ClientWorld extends World implements Disposable {
+    private static final int DAY_CYCLE = 12000;
+    private static final Color DAY_COLOR = new Color(0.6F, 0.7F, 1.0F, 1.0F);
+    private static final Color NIGHT_COLOR = new Color(0.1F, 0.15F, 0.3F, 1.0F);
     @NotNull
     private final UltracraftClient client;
     private final Map<ChunkPos, ClientChunk> chunks = new HashMap<>();
     private int chunkRefresh;
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
+    private int time = 0;
 
     public ClientWorld(@NotNull UltracraftClient client) {
         super();
@@ -58,6 +66,11 @@ public final class ClientWorld extends World implements Disposable {
             return UltracraftClient.invokeAndWait(() -> this.getChunk(pos));
         }
         return this.chunks.get(pos);
+    }
+
+    @Override
+    public ClientChunk getChunk(int x, int z) {
+        return (ClientChunk) super.getChunk(x, z);
     }
 
     @Override
@@ -175,6 +188,8 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     public void tick() {
+        this.time++;
+
         if (this.chunkRefresh-- <= 0) {
             this.chunkRefresh = 40;
 
@@ -201,4 +216,63 @@ public final class ClientWorld extends World implements Disposable {
     public Stream<Entity> getAllEntities() {
         return this.entities.values().stream();
     }
+
+    public float getGlobalSunlight() {
+        int daytime = this.getDaytime();
+        final int riseSetDuration = ClientWorld.DAY_CYCLE / 24;
+        if (daytime < riseSetDuration / 2) {
+            return lerp(
+                    0.25f, 1.0f,
+                    0.5f + (daytime / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
+            return 1.0f;
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
+            return lerp(
+                    1.0f, 0.25f,
+                    ((daytime - ((float) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
+            return 0.25f;
+        } else {
+            return lerp(
+                    0.25f, 1.0f,
+                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        }
+    }
+
+    public Color getSkyColor() {
+        int daytime = this.getDaytime();
+        final int riseSetDuration = ClientWorld.DAY_CYCLE / 24;
+        if (daytime < riseSetDuration / 2) {
+            return ClientWorld.mixColors(
+                    ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
+                    0.5f + (daytime / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
+            return ClientWorld.DAY_COLOR;
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
+            return ClientWorld.mixColors(
+                    ClientWorld.NIGHT_COLOR, ClientWorld.DAY_COLOR,
+                    ((daytime - ((double) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
+            return ClientWorld.NIGHT_COLOR;
+        } else {
+            return ClientWorld.mixColors(
+                    ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
+                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        }
+    }
+
+    private int getDaytime() {
+        return this.time % DAY_CYCLE;
+    }
+
+    private static Color mixColors(Color color1, Color color2, double percent) {
+        percent = Mth.clamp(percent, 0.0, 1.0);
+        double inverse_percent = 1.0 - percent;
+        int redPart = (int) (color1.getRed() * percent + color2.getRed() * inverse_percent);
+        int greenPart = (int) (color1.getGreen() * percent + color2.getGreen() * inverse_percent);
+        int bluePart = (int) (color1.getBlue() * percent + color2.getBlue() * inverse_percent);
+        int alphaPart = (int) (color1.getAlpha() * percent + color2.getAlpha() * inverse_percent);
+        return Color.rgba(redPart, greenPart, bluePart, alphaPart);
+    }
+
 }
