@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 import static com.badlogic.gdx.math.MathUtils.lerp;
 
 public final class ClientWorld extends World implements Disposable {
-    private static final int DAY_CYCLE = 12000;
+    private static final int DAY_CYCLE = 500;
     private static final Color DAY_COLOR = new Color(0.6F, 0.7F, 1.0F, 1.0F);
-    private static final Color NIGHT_COLOR = new Color(0.1F, 0.15F, 0.3F, 1.0F);
+    private static final Color NIGHT_COLOR = new Color(0.05F, 0.075F, 0.15F, 1.0F);
     @NotNull
     private final UltracraftClient client;
     private final Map<ChunkPos, ClientChunk> chunks = new HashMap<>();

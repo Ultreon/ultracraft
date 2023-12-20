@@ -33,6 +33,11 @@ uniform vec4 u_diffuseUVTransform;
 varying vec2 v_diffuseUV;
 #endif
 
+#ifdef emissiveTextureFlag
+uniform vec4 u_emissiveUVTransform;
+varying vec2 v_emissiveUV;
+#endif
+
 #ifdef specularTextureFlag
 uniform vec4 u_specularUVTransform;
 varying vec2 v_specularUV;
@@ -192,6 +197,10 @@ void main() {
 	v_diffuseUV = u_diffuseUVTransform.xy + a_texCoord0 * u_diffuseUVTransform.zw;
 	v_position = a_position.xyz;
 	#endif //diffuseTextureFlag
+
+	#ifdef emissiveTextureFlag
+	v_emissiveUV = u_emissiveUVTransform.xy + a_texCoord0 * u_emissiveUVTransform.zw;
+	#endif //emissiveTextureFlag
 
 	#if defined(colorFlag)
 	v_color = a_color;

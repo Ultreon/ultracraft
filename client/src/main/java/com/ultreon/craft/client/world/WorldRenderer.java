@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -72,9 +71,6 @@ public final class WorldRenderer implements Disposable {
     private final ClientWorld world;
     private final UltracraftClient client = UltracraftClient.get();
 
-    private static long poolFree;
-    private static int poolPeak;
-    private static int poolMax;
     private final FlushablePool<ChunkMesh> pool = new FlushablePool<>() {
         @Override
         protected ChunkMesh newObject() {
@@ -87,8 +83,9 @@ public final class WorldRenderer implements Disposable {
     private final Material breakingMaterial;
     private final Array<Mesh> breakingMeshes;
     private final Int2ObjectMap<ModelInstance> modelInstances = new Int2ObjectOpenHashMap<>();
-    //    private final Shader outlineShader = new OutlineShader(Color.BLACK);
-    private final Texture texture;
+//    private final Shader outlineShader = new OutlineShader(Color.BLACK);
+    private final Texture blockTex;
+    private final Texture emissiveBlockTex;
 
     public WorldRenderer(ClientWorld world) {
         this.world = world;
@@ -107,14 +104,18 @@ public final class WorldRenderer implements Disposable {
             indices[i + 5] = (short) (j + 3);
         }
 
-        this.texture = this.client.blocksTextureAtlas.getTexture();
+        this.blockTex = this.client.blocksTextureAtlas.getTexture();
+        this.emissiveBlockTex = this.client.blocksTextureAtlas.getEmissiveTexture();
         this.material = new Material();
-        this.material.set(TextureAttribute.createDiffuse(this.texture));
+        this.material.set(TextureAttribute.createDiffuse(this.blockTex));
+        this.material.set(TextureAttribute.createEmissive(this.emissiveBlockTex));
         this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
         this.transparentMaterial = new Material();
-        this.transparentMaterial.set(TextureAttribute.createDiffuse(this.texture));
+        this.transparentMaterial.set(TextureAttribute.createDiffuse(this.blockTex));
+        this.transparentMaterial.set(TextureAttribute.createEmissive(this.emissiveBlockTex));
         this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+        this.transparentMaterial.set(FloatAttribute.createAlphaTest(0.25f));
 
         // Chunk border outline
         {
@@ -150,7 +151,7 @@ public final class WorldRenderer implements Disposable {
         // Simple player model (just bounding box of the player entity colored #808080)
         {
             MeshBuilder builder = new MeshBuilder();
-            builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked()), GL20.GL_TRIANGLES);
+            builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked()), GL_TRIANGLES);
 
             EntitySize size = EntityTypes.PLAYER.getSize();
             BoxShapeBuilder.build(builder, 0, size.height() / 2, 0, -size.width() * 2, -size.height(), -size.width() * 2);
@@ -161,10 +162,9 @@ public final class WorldRenderer implements Disposable {
 
         // Breaking animation meshes.
         this.breakingTex = this.client.getTextureManager().getTexture(id("textures/break_stages.png"));
-//        this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
-//        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
-//        this.breakingMaterial.set(new BlendingAttribute(0.8f));
-        this.breakingMaterial = material;
+        this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
+        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
+        this.breakingMaterial.set(new BlendingAttribute(0.8f));
         Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
         for (int i = 0; i < 6; i++) {
             TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
@@ -215,7 +215,7 @@ public final class WorldRenderer implements Disposable {
     }
 
     public static long getChunkMeshFrees() {
-        return ValueTracker.chunkMeshFrees;
+        return ValueTracker.getChunkMeshFrees();
     }
 
     public static long getVertexCount() {
@@ -236,7 +236,7 @@ public final class WorldRenderer implements Disposable {
         if (transparentMesh != null) this.pool.free(transparentMesh);
         chunk.mesh = null;
         chunk.transparentMesh = null;
-        ValueTracker.chunkMeshFrees++;
+        ValueTracker.setChunkMeshFrees(ValueTracker.getChunkMeshFrees() + 1);
     }
 
     public void removeEntity(int id) {
@@ -344,7 +344,7 @@ public final class WorldRenderer implements Disposable {
 
             if (chunk.mesh == null) {
                 chunk.mesh = this.pool.obtain();
-                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isFluid());
+                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
                 chunk.mesh.meshPart.size = mesh.getNumIndices();
                 chunk.mesh.meshPart.offset = 0;
                 chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
@@ -354,7 +354,7 @@ public final class WorldRenderer implements Disposable {
 
             if (chunk.transparentMesh == null) {
                 chunk.transparentMesh = this.pool.obtain();
-                var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isFluid());
+                var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isTransparent());
                 chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
                 chunk.transparentMesh.meshPart.offset = 0;
                 chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
@@ -363,11 +363,9 @@ public final class WorldRenderer implements Disposable {
             }
 
             chunk.mesh.chunk = chunk;
-            chunk.mesh.renderable.material = this.material;
             chunk.mesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
 
             chunk.transparentMesh.chunk = chunk;
-            chunk.transparentMesh.renderable.material = this.transparentMaterial;
             chunk.transparentMesh.transform.setToTranslationAndScaling(chunk.renderOffset, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
 
             output.add(this.verifyOutput(chunk.mesh.renderable));
@@ -468,9 +466,9 @@ public final class WorldRenderer implements Disposable {
     }
 
     private void doPoolStatistics() {
-        WorldRenderer.poolFree = this.pool.getFree();
-        WorldRenderer.poolPeak = this.pool.peak;
-        WorldRenderer.poolMax = this.pool.max;
+        ValueTracker.setPoolFree(this.pool.getFree());
+        ValueTracker.setPoolPeak(this.pool.peak);
+        ValueTracker.setPoolMax(this.pool.max);
     }
 
     @NotNull
@@ -493,15 +491,15 @@ public final class WorldRenderer implements Disposable {
     }
 
     public static long getPoolFree() {
-        return WorldRenderer.poolFree;
+        return ValueTracker.getPoolFree();
     }
 
     public static int getPoolPeak() {
-        return WorldRenderer.poolPeak;
+        return ValueTracker.getPoolPeak();
     }
 
     public static int getPoolMax() {
-        return WorldRenderer.poolMax;
+        return ValueTracker.getPoolMax();
     }
 
     public World getWorld() {
@@ -538,6 +536,14 @@ public final class WorldRenderer implements Disposable {
 
     public void renderEntities() {
 
+    }
+
+    public Material getMaterial() {
+        return this.material;
+    }
+
+    public Material getTransparentMaterial() {
+        return this.transparentMaterial;
     }
 
     private static class ChunkRenderRef {

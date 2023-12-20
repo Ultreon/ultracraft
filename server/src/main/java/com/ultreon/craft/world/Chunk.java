@@ -50,8 +50,6 @@ public abstract class Chunk implements ServerDisposable {
     @ApiStatus.Internal
     public TreeData treeData;
     private boolean disposed;
-    @Deprecated
-    protected boolean updateNeighbours;
     private final World world;
 
     /**
@@ -103,7 +101,7 @@ public abstract class Chunk implements ServerDisposable {
         @Nullable Identifier id = Identifier.tryParse(stringId);
 
         if (id == null) {
-            LOGGER.error("Unknown block: " + stringId);
+            LOGGER.error("Unknown block: {}", stringId);
             return Blocks.BARRIER;
         }
         return Registries.BLOCK.getValue(id);
@@ -249,12 +247,6 @@ public abstract class Chunk implements ServerDisposable {
 
     public boolean isDisposed() {
         return this.disposed;
-    }
-
-    @Deprecated
-    @ApiStatus.Internal
-    public void onNeighboursUpdated() {
-
     }
 
     @ApiStatus.Internal

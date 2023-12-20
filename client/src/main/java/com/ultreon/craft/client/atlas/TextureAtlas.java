@@ -11,11 +11,13 @@ import java.util.Map;
 public class TextureAtlas implements Disposable {
     private final TextureStitcher stitcher;
     private final Texture atlas;
+    private final Texture emissiveAtlas;
     private final Map<Identifier, TextureOffset> uvMap;
 
-    public TextureAtlas(TextureStitcher stitcher, Texture atlas, Map<Identifier, TextureOffset> uvMap) {
+    public TextureAtlas(TextureStitcher stitcher, Texture atlas, Texture emissiveAtlas, Map<Identifier, TextureOffset> uvMap) {
         this.stitcher = stitcher;
         this.atlas = atlas;
+        this.emissiveAtlas = emissiveAtlas;
         this.uvMap = uvMap;
     }
 
@@ -30,6 +32,10 @@ public class TextureAtlas implements Disposable {
 
     public Texture getTexture() {
         return this.atlas;
+    }
+
+    public Texture getEmissiveTexture() {
+        return this.emissiveAtlas;
     }
 
     public void dispose() {

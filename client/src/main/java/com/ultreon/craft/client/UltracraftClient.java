@@ -69,7 +69,10 @@ import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.registry.ModelRegistry;
 import com.ultreon.craft.client.registry.RendererRegistry;
-import com.ultreon.craft.client.render.pipeline.*;
+import com.ultreon.craft.client.render.pipeline.CollectNode;
+import com.ultreon.craft.client.render.pipeline.MainRenderNode;
+import com.ultreon.craft.client.render.pipeline.RenderPipeline;
+import com.ultreon.craft.client.render.pipeline.WorldDiffuseNode;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
@@ -103,6 +106,8 @@ import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.registry.Registry;
+import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.server.GameCommands;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.sound.event.SoundEvents;
@@ -121,15 +126,12 @@ import com.ultreon.libs.crash.v0.CrashCategory;
 import com.ultreon.libs.crash.v0.CrashException;
 import com.ultreon.libs.crash.v0.CrashLog;
 import com.ultreon.libs.datetime.v0.Duration;
-import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.libs.resources.v0.ResourceManager;
 import com.ultreon.libs.translations.v1.LanguageManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
-import net.fabricmc.loader.impl.util.Arguments;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -145,7 +147,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -243,6 +244,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     // Texture Atlases
     @UnknownNullability
     public TextureAtlas blocksTextureAtlas;
+    public TextureAtlas emmisiveTextureAtlas;
     @UnknownNullability
     public TextureAtlas itemTextureAtlas;
     private BakedModelRegistry bakedBlockModels;
@@ -561,45 +563,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         config.setTitle("Ultracraft");
         config.setWindowIcon(UltracraftClient.getIcons());
         config.setWindowedMode(1280, 720);
-        config.setWindowListener(new Lwjgl3WindowAdapter() {
-            private Lwjgl3Window window;
-
-            @Override
-            public void created(Lwjgl3Window window) {
-                Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.NOTIFICATION, false);
-                Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.LOW, false);
-                Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.MEDIUM, true);
-                Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.HIGH, true);
-
-                WindowEvents.WINDOW_CREATED.factory().onWindowCreated(window);
-                this.window = window;
-            }
-
-            @Override
-            public void focusLost() {
-                UltracraftClient.get().pause();
-
-                WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, false);
-            }
-
-            @Override
-            public void focusGained() {
-                WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, true);
-            }
-
-            @Override
-            public boolean closeRequested() {
-                return UltracraftClient.get().tryShutdown();
-            }
-
-            @Override
-            public void filesDropped(String[] files) {
-                UltracraftClient.get().filesDropped(files);
-
-                WindowEvents.WINDOW_FILES_DROPPED.factory().onWindowFilesDropped(this.window, files);
-            }
-
-        });
+        config.setWindowListener(new WindowAdapter());
         return config;
     }
 
@@ -1041,7 +1005,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void stitchTextures() {
         this.blocksTextureAtlas = BlockModelRegistry.stitch(this.textureManager);
 
-        TextureStitcher itemTextures = new TextureStitcher();
+        TextureStitcher itemTextures = new TextureStitcher(UltracraftClient.id("item"));
         for (Map.Entry<Identifier, Item> e : Registries.ITEM.entries()) {
             if (e.getValue() == Items.AIR) continue;
             if (e.getValue() instanceof BlockItem) continue;
@@ -2124,5 +2088,45 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         public void debug(String tag, String message, Throwable exception) {
             this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
         }
+    }
+
+    private static class WindowAdapter extends Lwjgl3WindowAdapter {
+        private Lwjgl3Window window;
+
+        @Override
+        public void created(Lwjgl3Window window) {
+            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.NOTIFICATION, false);
+            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.LOW, false);
+            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.MEDIUM, true);
+            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.HIGH, true);
+
+            WindowEvents.WINDOW_CREATED.factory().onWindowCreated(window);
+            this.window = window;
+        }
+
+        @Override
+        public void focusLost() {
+            UltracraftClient.get().pause();
+
+            WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, false);
+        }
+
+        @Override
+        public void focusGained() {
+            WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, true);
+        }
+
+        @Override
+        public boolean closeRequested() {
+            return UltracraftClient.get().tryShutdown();
+        }
+
+        @Override
+        public void filesDropped(String[] files) {
+            UltracraftClient.get().filesDropped(files);
+
+            WindowEvents.WINDOW_FILES_DROPPED.factory().onWindowFilesDropped(this.window, files);
+        }
+
     }
 }
