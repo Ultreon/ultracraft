@@ -1,6 +1,7 @@
 package com.ultreon.craft.network.client;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -12,12 +13,10 @@ import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Gamemode;
-import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface InGameClientPacketHandler extends ClientPacketHandler {
@@ -33,7 +32,9 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, short[] palette, List<Block> data);
+    void onChunkData(ChunkPos pos, PaletteStorage<Biome> biomes);
+
+    void onSectionData(SectionPos pos, long[] data, Block[] palette);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 

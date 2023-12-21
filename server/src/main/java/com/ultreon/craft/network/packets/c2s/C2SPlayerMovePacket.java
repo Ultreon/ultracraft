@@ -31,6 +31,6 @@ public class C2SPlayerMovePacket extends Packet<InGameServerPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
-        handler.onPlayerMove(ctx.requirePlayer(), this.x, this.y, this.z);
+        handler.onPlayerMove(this.x, this.y, this.z);
     }
 }

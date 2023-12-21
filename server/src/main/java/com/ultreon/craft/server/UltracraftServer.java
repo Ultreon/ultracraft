@@ -245,6 +245,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * The server main loop.
      * Note: Internal API.
      */
+    @Override
     @ApiStatus.Internal
     public final void run() {
         // Send server starting event to mods.
@@ -342,6 +343,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * Stops the server thread in a clean state.
      * Note: this method is blocking.
      */
+    @Override
     @Blocking
     public void shutdown() {
         // Send event for server stopping.
@@ -646,7 +648,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @param chunk the chunk to send.
      * @throws IOException if an I/O error occurs.
      */
-    public void sendChunk(ChunkPos globalPos, Chunk chunk) throws IOException {
+    public void sendChunk(ChunkPos globalPos, ServerChunk chunk) throws IOException {
         for (ServerPlayer player : this.players.values()) {
             Vec3d chunkPos3D = globalPos.getChunkOrigin().add(World.CHUNK_SIZE / 2f, World.CHUNK_HEIGHT / 2f, World.CHUNK_SIZE / 2f);
             Vec2d chunkPos2D = new Vec2d(chunkPos3D.x, chunkPos3D.z);
@@ -673,7 +675,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      */
     @ApiStatus.Internal
     public void onDisconnected(ServerPlayer player, String message) {
-        UltracraftServer.LOGGER.info("Player '" + player.getName() + "' disconnected with message: " + message);
+        UltracraftServer.LOGGER.info("Player '{}' disconnected with message: {}", player.getName(), message);
         this.players.remove(player.getUuid());
         for (ServerPlayer other : this.players.values()) {
             other.connection.send(new S2CRemovePlayerPacket(other.getUuid()));

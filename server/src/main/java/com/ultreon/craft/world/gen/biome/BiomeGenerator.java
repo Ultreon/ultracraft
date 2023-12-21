@@ -1,57 +1,58 @@
 package com.ultreon.craft.world.gen.biome;
 
 import com.ultreon.craft.server.ServerDisposable;
-import com.ultreon.craft.world.Biome;
-import com.ultreon.craft.world.BuilderChunk;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.craft.world.gen.TreeGenerator;
-import com.ultreon.craft.world.gen.layer.TerrainLayer;
+import com.ultreon.craft.world.gen.carver.Carver;
+import com.ultreon.craft.world.gen.layer.Decorator;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.craft.world.gen.noise.NoiseUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class BiomeGenerator implements ServerDisposable {
+    public static final BiomeGenerator EMPTY = new EmptyBiomeGenerator();
     private final World world;
     private final NoiseInstance biomeNoise;
     private final DomainWarping domainWarping;
-    private final List<TerrainLayer> layers;
-    private final List<TerrainLayer> extraLayers;
+    private final List<Decorator> layers;
+    private final List<Decorator> postDecorator;
     public static final boolean USE_DOMAIN_WARPING = true;
     @UnknownNullability
     public TreeGenerator treeGenerator;
     private final Biome biome;
 
-    public BiomeGenerator(World world, Biome biome, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers) {
+    public BiomeGenerator(World world, Biome biome, NoiseInstance noise, DomainWarping domainWarping, List<Decorator> layers, List<Decorator> postDecorator) {
         this.world = world;
         this.biome = biome;
         this.biomeNoise = noise;
         this.domainWarping = domainWarping;
         this.layers = layers;
-        this.extraLayers = extraLayers;
+        this.postDecorator = postDecorator;
     }
 
-    public BuilderChunk processColumn(BuilderChunk chunk, int x, int z) {
-        final int chunkAmplitude = 1;
+    public BuilderChunk processColumn(BuilderChunk chunk, Carver carver, int x, int z) {
+        int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z) * chunk.getWorld().getWorldGenSettings().generationAmplitude();
 
-        int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z) * chunkAmplitude;
-
-        for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
-            for (TerrainLayer layer : this.layers) {
-                if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
-                    break;
-                }
-            }
+        for (int y = -chunk.depth; y < chunk.height; y++) {
+            carver.carve(chunk.getWorld(), chunk, chunk.getOffset().x + x, y, chunk.getOffset().z + z);
+//            for (Decorator layer : this.layers) {
+//                if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
+//                    break;
+//                }
+//            }
         }
 
-        for (TerrainLayer layer : this.extraLayers) {
-            layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
-        }
+//        for (Decorator decorator : this.postDecorator) {
+//            decorator.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
+//        }
 
         return chunk;
     }
@@ -78,8 +79,8 @@ public class BiomeGenerator implements ServerDisposable {
     public void dispose() {
         this.biomeNoise.dispose();
 
-        this.layers.forEach(TerrainLayer::dispose);
-        this.extraLayers.forEach(TerrainLayer::dispose);
+        this.layers.forEach(Decorator::dispose);
+        this.postDecorator.forEach(Decorator::dispose);
     }
 
     public World getWorld() {
@@ -102,6 +103,46 @@ public class BiomeGenerator implements ServerDisposable {
         public Index(BiomeGenerator biomeGenerator, @Nullable Integer terrainSurfaceNoise) {
             this.biomeGenerator = biomeGenerator;
             this.terrainSurfaceNoise = terrainSurfaceNoise;
+        }
+    }
+
+    private static class EmptyBiomeGenerator extends BiomeGenerator {
+        public EmptyBiomeGenerator() {
+            super(new EmptyWorld(), Biomes.PLAINS, NoiseInstance.ZERO, new DomainWarping(NoiseInstance.ZERO, NoiseInstance.ZERO), List.of(), List.of());
+        }
+
+        private static class EmptyWorld extends World {
+            private static final Collection<? extends Chunk> EMPTY_LIST = Collections.emptyList();
+
+            @Override
+            protected int getRenderDistance() {
+                return 0;
+            }
+
+            @Override
+            protected boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos) {
+                return false;
+            }
+
+            @Override
+            protected void checkThread() {
+                // Nothing
+            }
+
+            @Override
+            public @Nullable Chunk getChunk(@NotNull ChunkPos pos) {
+                return null;
+            }
+
+            @Override
+            public Collection<? extends Chunk> getLoadedChunks() {
+                return EmptyWorld.EMPTY_LIST;
+            }
+
+            @Override
+            public boolean isClientSide() {
+                return false;
+            }
         }
     }
 }

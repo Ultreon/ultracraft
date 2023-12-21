@@ -1,8 +1,15 @@
 package com.ultreon.craft.world.gen.noise;
 
+import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
+import de.articdive.jnoise.generators.noisegen.opensimplex.SuperSimplexNoiseGenerator;
+
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * @deprecated Use {@link FastSimplexNoiseGenerator} or {@link SuperSimplexNoiseGenerator} instead.
+ */
+@Deprecated(since = "0.1.0")
 public class SimplexNoise implements NoiseType {
     private Octave[] octaves;
     private double[] frequencies;

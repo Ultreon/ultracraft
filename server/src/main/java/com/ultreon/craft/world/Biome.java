@@ -5,7 +5,8 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
-import com.ultreon.craft.world.gen.layer.TerrainLayer;
+import com.ultreon.craft.world.gen.layer.Decorator;
+import com.ultreon.craft.world.gen.layer.VoidguardProcessor;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
@@ -20,12 +21,12 @@ import java.util.List;
 
 public abstract class Biome {
     private final NoiseConfig settings;
-    private final List<TerrainLayer> layers = new ArrayList<>();
-    private final List<TerrainLayer> extraLayers = new ArrayList<>();
+    private final List<Decorator> decorators = new ArrayList<>();
+    private final List<Decorator> postDecorator = new ArrayList<>();
     private final float temperatureStart;
     private final float temperatureEnd;
 
-    public Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd) {
+    protected Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd) {
         this.settings = settings;
         this.temperatureStart = temperatureStart;
         this.temperatureEnd = temperatureEnd;
@@ -35,22 +36,22 @@ public abstract class Biome {
         return new Builder();
     }
 
-    public final void buildLayers() {
-        this.onBuildLayers(this.layers, this.extraLayers);
+    public final void buildDecorators() {
+        this.onBuildDecorators(this.decorators, this.postDecorator);
     }
 
-    protected abstract void onBuildLayers(List<TerrainLayer> layers, List<TerrainLayer> extraLayers);
+    protected abstract void onBuildDecorators(List<Decorator> decorators, List<Decorator> postDecorators);
 
     public BiomeGenerator create(ServerWorld world, long seed) {
         NoiseInstance noiseInstance = this.settings.create(seed);
-        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, world.getTerrainGenerator().getLayerDomain(), this.layers, this.extraLayers);
+        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, world.getTerrainGenerator().getLayerDomain(), this.decorators, this.postDecorator);
 
-        this.layers.forEach(layer -> layer.create(world));
-        this.extraLayers.forEach(layer -> layer.create(world));
+        this.decorators.forEach(decorator -> decorator.create(world));
+        this.postDecorator.forEach(decorator -> decorator.create(world));
 
         DomainWarping domainWarping = new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed)));
 
-        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.layers, this.extraLayers);
+        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.decorators, this.postDecorator);
     }
 
     public NoiseConfig getSettings() {
@@ -71,7 +72,7 @@ public abstract class Biome {
         return mapType;
     }
 
-    private Identifier getId() {
+    public Identifier getId() {
         return Registries.BIOME.getKey(this);
     }
 
@@ -82,8 +83,8 @@ public abstract class Biome {
     public static class Builder {
         @Nullable
         private NoiseConfig biomeNoise;
-        private final List<TerrainLayer> layers = new ArrayList<>();
-        private final List<TerrainLayer> extraLayers = new ArrayList<>();
+        private final List<Decorator> decorators = new ArrayList<>();
+        private final List<Decorator> postDecorators = new ArrayList<>();
         private float temperatureStart = Float.NaN;
         private float temperatureEnd = Float.NaN;
 
@@ -91,22 +92,46 @@ public abstract class Biome {
 
         }
 
+        /**
+         * Set biome noise configuration.
+         *
+         * @param biomeNoise the biome noise configuration
+         * @return this
+         */
         public Builder noise(NoiseConfig biomeNoise) {
             this.biomeNoise = biomeNoise;
             return this;
         }
 
+        /**
+         * Set domain warping function.
+         *
+         * @param domainWarping the domain warping function
+         * @return this
+         */
         public Builder domainWarping(Long2ReferenceFunction<DomainWarping> domainWarping) {
             return this;
         }
 
-        public Builder layer(TerrainLayer layer) {
-            this.layers.add(layer);
+        /**
+         * Adds a decorator to the biome.
+         *
+         * @param layer the decorator to add.
+         * @return this
+         */
+        public Builder decorator(Decorator layer) {
+            this.decorators.add(layer);
             return this;
         }
 
-        public Builder extraLayer(TerrainLayer layer) {
-            this.extraLayers.add(layer);
+        /**
+         * Post decorators are executed after all other decorators
+         *
+         * @param decorator the decorator to add.
+         * @return this
+         */
+        public Builder postDecorator(Decorator decorator) {
+            this.postDecorators.add(decorator);
             return this;
         }
 
@@ -126,11 +151,13 @@ public abstract class Biome {
             if (Float.isNaN(this.temperatureStart)) throw new IllegalArgumentException("Temperature start not set.");
             if (Float.isNaN(this.temperatureEnd)) throw new IllegalArgumentException("Temperature end not set.");
 
+            this.decorators.add(new VoidguardProcessor());
+
             return new Biome(this.biomeNoise, this.temperatureStart, this.temperatureEnd) {
                 @Override
-                protected void onBuildLayers(List<TerrainLayer> layerList, List<TerrainLayer> extraLayerList) {
-                    layerList.addAll(Builder.this.layers);
-                    extraLayerList.addAll(Builder.this.extraLayers);
+                protected void onBuildDecorators(List<Decorator> decorators, List<Decorator> postDecorators) {
+                    decorators.addAll(Builder.this.decorators);
+                    postDecorators.addAll(Builder.this.postDecorators);
                 }
             };
         }

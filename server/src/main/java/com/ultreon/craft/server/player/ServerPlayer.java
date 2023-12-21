@@ -7,6 +7,7 @@ import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -45,6 +46,8 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.ultreon.craft.server.UltracraftServer.TPS;
 
 /**
  * Server-side player implementation.
@@ -229,6 +232,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
     }
 
+    @Override
     public @NotNull String getName() {
         return this.name;
     }
@@ -339,11 +343,16 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         this.connection.send(new S2CPlayerSetPosPacket(x, y, z));
     }
 
-    public void sendChunk(ChunkPos pos, Chunk chunk) {
+    public void sendChunk(ChunkPos pos, ServerChunk chunk) {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+        int i = 0;
+        this.connection.send(new S2CChunkDataPacket(pos, chunk));
+        for (ChunkSection section : chunk) {
+            this.connection.send(new S2CSectionDataPacket(chunk.getPos().section(i), section));
+            i++;
+        }
     }
 
     @Override
@@ -443,14 +452,21 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.world.getChunk(this.getChunkPos()) == null) return;
         if (!this.isChunkActive(this.getChunkPos())) return;
 
-//        double dst = this.getPosition().dst(x, this.y, z);
-//        if (dst > this.getSpeed() * this.runModifier * TPS) {
-//            this.setPosition(this.x, this.y, this.z);
-//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
-//            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max xz: %s)".formatted(this.getName(), dst, this.getSpeed() * this.runModifier * 1.5));
-//            return;
-//        }
-        this.setPosition(x, y, z);
+        double dst = Math.abs(this.getPosition().dst(x, this.y, z));
+        if (dst > this.getSpeed() * this.runModifier * TPS) {
+            this.setPosition(this.x, this.y, this.z);
+            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
+            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max xz: %s)".formatted(this.getName(), dst, this.getSpeed() * this.runModifier * 1.5));
+            return;
+        }
+
+        this.ox = this.x;
+        this.oy = this.y;
+        this.oz = this.z;
+
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     public boolean isSpawned() {

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class Registry<T> {
+public class Registry<T> implements IdRegistry<T> {
     public static Logger dumpLogger = (level, msg, t) -> {};
     private static final OrderedMap<Class<?>, Registry<?>> REGISTRIES = new OrderedMap<>();
     private static boolean frozen;
@@ -159,5 +159,15 @@ public class Registry<T> {
 
     public boolean isFrozen() {
         return Registry.frozen;
+    }
+
+    @Override
+    public int getId(T object) {
+        return this.keyMap.indexOfValue(object);
+    }
+
+    @Override
+    public T byId(int id) {
+        return this.keyMap.valueList().get(id);
     }
 }

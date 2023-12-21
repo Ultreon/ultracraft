@@ -9,6 +9,8 @@ import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.biome.BiomeData;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.biome.BiomeIndex;
+import com.ultreon.craft.world.gen.carver.Carver;
+import com.ultreon.craft.world.gen.carver.CarverType;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
@@ -28,19 +30,23 @@ public class TerrainGenerator {
     private final DomainWarping biomeDomain;
     private final DomainWarping layerDomain;
     private final NoiseConfig noiseConfig;
+    private Carver carver;
+    private final CarverType carverType;
     @MonotonicNonNull
     private NoiseInstance noise;
     private FloatList biomeNoise = new FloatArrayList();
     private final List<BiomeData> biomeGenData = new ArrayList<>();
 
-    public TerrainGenerator(DomainWarping biomeDomain, DomainWarping layerDomain, NoiseConfig noiseConfig) {
+    public TerrainGenerator(DomainWarping biomeDomain, DomainWarping layerDomain, NoiseConfig noiseConfig, CarverType carver) {
         this.biomeDomain = biomeDomain;
         this.layerDomain = layerDomain;
         this.noiseConfig = noiseConfig;
+        this.carverType = carver;
     }
 
     public void create(ServerWorld world, long seed) {
         this.noise = this.noiseConfig.create(seed);
+        this.carver = this.carverType.create(seed);
     }
 
     @CanIgnoreReturnValue
@@ -62,7 +68,7 @@ public class TerrainGenerator {
             for (var z = 0; z < chunk.size; z++) {
                 index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
                 chunk.setBiomeGenerator(x, z, index.biomeGenerator);
-                chunk = index.biomeGenerator.processColumn(chunk, x, z);
+                chunk = index.biomeGenerator.processColumn(chunk, this.carver, x, z);
             }
         }
         return chunk;

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
-public abstract class TerrainLayer implements Disposable {
+public abstract class Decorator implements Disposable {
     /**
      * Set blocks for the building of a chunk.
      * It handles world generation of a single terrain layer.

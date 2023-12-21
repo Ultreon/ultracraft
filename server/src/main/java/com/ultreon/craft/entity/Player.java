@@ -56,6 +56,7 @@ public abstract class Player extends LivingEntity {
     @Override
     protected void setupAttributes() {
         this.attributes.setBase(Attribute.SPEED, this.getWalkingSpeed());
+        this.attributes.setBase(Attribute.BLOCK_REACH, 6.0);
     }
 
     @Override
@@ -85,6 +86,7 @@ public abstract class Player extends LivingEntity {
         if (this.jumping && !this.abilities.flying) this.swimUp();
 
         this.x = Mth.clamp(this.x, -30000000, 30000000);
+        this.y = Mth.clamp(this.y, 0, Double.POSITIVE_INFINITY);
         this.z = Mth.clamp(this.z, -30000000, 30000000);
 
         super.tick();
@@ -108,6 +110,7 @@ public abstract class Player extends LivingEntity {
     @Override
     public void setPosition(Vec3d position) {
         position.x = Mth.clamp(position.x, -30000000, 30000000);
+        position.y = Mth.clamp(position.y, 0, Double.POSITIVE_INFINITY);
         position.z = Mth.clamp(position.z, -30000000, 30000000);
         super.setPosition(position);
     }

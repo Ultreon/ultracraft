@@ -6,6 +6,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.SectionPos;
 import com.ultreon.data.TypeRegistry;
 import com.ultreon.data.types.IType;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -18,6 +19,7 @@ import io.netty.util.ByteProcessor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -1559,6 +1561,33 @@ public class PacketBuffer extends ByteBuf {
         return this.buf;
     }
 
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public final <T> T[] readArray(Function<PacketBuffer, T> decoder, int max, T... typeGetter) {
+        int size = this.readInt();
+        if (size > max) {
+            throw new PacketException("Array too large, max = %d, actual = %d".formatted(max, size));
+        }
+
+        var array = (T[]) Array.newInstance(typeGetter.getClass().getComponentType(), size);
+
+        for (int i = 0; i < size; i++) {
+            array[i] = decoder.apply(this);
+        }
+
+        return array;
+    }
+
+    @CanIgnoreReturnValue
+    public <T> ByteBuf writeArray(T[] array, BiConsumer<PacketBuffer, T> encoder) {
+        this.writeInt(array.length);
+        for (T item : array) {
+            encoder.accept(this, item);
+        }
+
+        return this.buf;
+    }
+
     public <K, V> Map<K, V> readMap(Function<PacketBuffer, K> keyDecoder, Function<PacketBuffer, V> valueDecoder) {
         int size = this.readInt();
         var map = new HashMap<K, V>();
@@ -1626,5 +1655,13 @@ public class PacketBuffer extends ByteBuf {
 
     public <T extends Enum<T>> T readEnum(T fallback) {
         return EnumUtils.byOrdinal(this.readVarInt(), fallback);
+    }
+
+    public SectionPos readSectionPos() {
+        return new SectionPos(this.readLong());
+    }
+
+    public void writeSectionPos(SectionPos pos) {
+        this.writeLong(pos.compact());
     }
 }

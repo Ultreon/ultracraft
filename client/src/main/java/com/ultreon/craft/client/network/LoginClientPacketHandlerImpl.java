@@ -2,6 +2,7 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ClientPlayerEvents;
+import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.world.ClientWorld;
@@ -42,7 +43,9 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         UltracraftClient.invoke(() -> {
             this.client.worldRenderer = new WorldRenderer(this.client.world);
             this.client.renderWorld = true;
-            this.client.showScreen(null);
+            if (!(this.client.screen instanceof WorldLoadScreen)) {
+                this.client.showScreen(null);
+            }
         });
     }
 

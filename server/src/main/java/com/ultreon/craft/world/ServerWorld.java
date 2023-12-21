@@ -6,7 +6,6 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
@@ -25,7 +24,8 @@ import com.ultreon.craft.util.Task;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.layer.*;
+import com.ultreon.craft.world.gen.WorldGenSettings;
+import com.ultreon.craft.world.gen.carver.WorldCarvers;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.ListType;
@@ -33,6 +33,8 @@ import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.crash.v0.CrashException;
+import com.ultreon.libs.crash.v0.CrashLog;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.checkerframework.common.reflection.qual.NewInstance;
@@ -64,19 +66,6 @@ public final class ServerWorld extends World {
     private static long chunkSaves;
 
     private final TerrainGenerator terrainGen;
-    private static final Biome DEFAULT_BIOME = Biome.builder()
-            .noise(NoiseConfigs.DEFAULT)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get()
-                    .disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get()
-                    .disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
-            .temperatureStart(-2f)
-            .temperatureEnd(2f)
-            .layer(new WaterTerrainLayer(64))
-            .layer(new AirTerrainLayer())
-            .layer(new UndergroundTerrainLayer(Blocks.STONE, 4))
-            .layer(new GroundTerrainLayer(Blocks.DIRT, 1, 3))
-            .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 1))
-            .extraLayer(new PatchTerrainLayer(NoiseConfigs.STONE_PATCH, Blocks.STONE)).build();
 
     private final Queue<ChunkPos> chunksToLoad = this.createSyncQueue();
     private final Queue<ChunkPos> chunksToUnload = this.createSyncQueue();
@@ -85,6 +74,9 @@ public final class ServerWorld extends World {
     private final Lock chunkLock = new ReentrantLock();
 
     private int playTime;
+    private WorldGenSettings worldGenSettings;
+    private volatile int chunksLoaded;
+    private volatile int chunksLoadCount;
 
     public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
         super((LongType) worldData.get("seed"));
@@ -92,6 +84,8 @@ public final class ServerWorld extends World {
         this.storage = storage;
 
         this.load(worldData);
+
+        this.worldGenSettings = this.createWorldGenSettings();
 
         var biomeDomain = new DomainWarping(
                 UltracraftServer.get().disposeOnClose(NoiseConfigs.BIOME_X.create(this.seed)),
@@ -103,13 +97,19 @@ public final class ServerWorld extends World {
                 UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(this.seed))
         );
 
-        this.terrainGen = new TerrainGenerator(biomeDomain, layerDomain, NoiseConfigs.BIOME_MAP);
+        this.terrainGen = new TerrainGenerator(biomeDomain, layerDomain, NoiseConfigs.BIOME_MAP, WorldCarvers.OVERWORLD);
 
         for (Biome value : Registries.BIOME.values()) {
             this.terrainGen.registerBiome(this, this.getSeed(), value, value.getTemperatureStart(), value.getTemperatureEnd());
         }
 
         this.terrainGen.create(this, this.seed);
+    }
+
+    private WorldGenSettings createWorldGenSettings() {
+        return WorldGenSettings.builder()
+                .generationAmplitude(1)
+                .build();
     }
 
     private void load(MapType worldData) {
@@ -149,6 +149,7 @@ public final class ServerWorld extends World {
         return Queues.synchronizedQueue(Queues.newConcurrentLinkedQueue());
     }
 
+    @Override
     public int getRenderDistance() {
         return this.server.getRenderDistance();
     }
@@ -356,8 +357,10 @@ public final class ServerWorld extends World {
 
     @ApiStatus.Internal
     public void doRefreshNow(ChunkRefresher refresher) {
+        this.chunksLoadCount = refresher.toLoad.size();
         for (ChunkPos pos : refresher.toLoad) {
             this.loadChunkNow(pos);
+            this.chunksLoaded++;
         }
 
         for (ChunkPos pos : refresher.toUnload) {
@@ -853,6 +856,15 @@ public final class ServerWorld extends World {
         return this.terrainGen;
     }
 
+    public WorldGenSettings getWorldGenSettings() {
+        return this.worldGenSettings;
+    }
+
+    public float getWorldLoadPercentage() {
+        if (chunksLoadCount == 0) return -1;
+        return this.chunksLoaded / (float) this.chunksLoadCount;
+    }
+
     /**
      * The region class.
      * Note: This class is not thread safe.
@@ -915,6 +927,7 @@ public final class ServerWorld extends World {
          * Note: Internal API.
          * Should only be called if you know what you are doing.
          */
+        @Override
         @ApiStatus.Internal
         public void dispose() {
             this.validateThread();
@@ -1084,10 +1097,9 @@ public final class ServerWorld extends World {
             };
             try {
                 ref.builtChunk = this.buildChunk(globalPos);
-            } catch (Throwable t) {
+            } catch (Exception e) {
                 this.generatingChunks.remove(globalPos);
-                World.LOGGER.error("Failed to build chunk at %s:".formatted(globalPos), t);
-                throw new Error(t);
+                throw new CrashException(new CrashLog("Failed to build chunk at %s".formatted(globalPos), e));
             }
 
             var players = this.world.getServer().getPlayersInChunk(globalPos);
@@ -1150,7 +1162,7 @@ public final class ServerWorld extends World {
         @CheckReturnValue
         private ServerChunk buildChunk(ChunkPos globalPos) {
             var localPos = World.toLocalChunkPos(globalPos);
-            var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalPos);
+            var chunk = new BuilderChunk(this.world, Thread.currentThread(), globalPos);
 
             // Generate terrain using the terrain generator.
             this.world.terrainGen.generate(chunk);

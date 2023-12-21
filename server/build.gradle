@@ -96,6 +96,7 @@ dependencies {
     // Misc
     implementation api("it.unimi.dsi:fastutil:8.5.12")
     implementation api("com.raylabz:opensimplex:1.0.3")
+    implementation api("de.articdive:jnoise-pipeline:4.1.0")
 
     implementation api("space.earlygrey:shapedrawer:$shapedrawer_version")
 

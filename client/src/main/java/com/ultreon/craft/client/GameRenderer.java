@@ -26,6 +26,7 @@ import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.Nullable;
 
 import static com.badlogic.gdx.graphics.GL20.*;
@@ -232,9 +233,14 @@ public class GameRenderer {
 
         if (screen != null) {
             UltracraftClient.PROFILER.section("screen", () -> {
-                float x = (Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale();
-                float y = (Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale();
-                screen.render(renderer, (int) x, (int) y, deltaTime);
+                try {
+                    float x = (Gdx.input.getX() - this.client.getDrawOffset().x) / this.client.getGuiScale();
+                    float y = (Gdx.input.getY() + this.client.getDrawOffset().y) / this.client.getGuiScale();
+                    screen.render(renderer, (int) x, (int) y, deltaTime);
+                } catch (Exception ex) {
+                    CrashLog crashLog = new CrashLog("Failed to render screen", ex);
+                    UltracraftClient.crash(crashLog);
+                }
             });
         }
 

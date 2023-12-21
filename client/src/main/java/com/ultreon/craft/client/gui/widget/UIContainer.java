@@ -1,6 +1,5 @@
 package com.ultreon.craft.client.gui.widget;
 
-import com.badlogic.gdx.utils.Array;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
@@ -13,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -32,7 +32,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     };
 
     @ApiStatus.Internal
-    protected final Array<Widget> widgets = new Array<>();
+    protected final List<Widget> widgets = new ArrayList<>();
 
     private Layout layout = new StandardLayout();
     protected Widget focused;
@@ -72,8 +72,8 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
         }
     }
 
-    public Array<? extends Widget> children() {
-        return this.widgets;
+    public List<? extends Widget> children() {
+        return Collections.unmodifiableList(this.widgets);
     }
 
     public void renderChildren(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
@@ -94,8 +94,8 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
         widget.render(renderer, mouseX, mouseY, deltaTime);
     }
 
-    public Array<? extends Widget> getWidgets() {
-        return this.widgets;
+    public List<Widget> getWidgets() {
+        return Collections.unmodifiableList(this.widgets);
     }
 
     public Layout getLayout() {
@@ -107,7 +107,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     }
 
     public Widget getExactWidgetAt(int x, int y) {
-        for (int i = this.widgets.size - 1; i >= 0; i--) {
+        for (int i = this.widgets.size() - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
             if (!widget.visible) continue;
             if (widget.isWithinBounds(x, y)) {
@@ -120,7 +120,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
 
     public @NotNull List<Widget> getWidgetsAt(int x, int y) {
         List<Widget> output = new ArrayList<>();
-        for (int i = this.widgets.size - 1; i >= 0; i--) {
+        for (int i = this.widgets.size() - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
 
             if (!widget.visible) continue;
@@ -136,7 +136,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     }
 
     public @Nullable Widget getWidgetAt(int x, int y) {
-        for (int i = this.widgets.size - 1; i >= 0; i--) {
+        for (int i = this.widgets.size() - 1; i >= 0; i--) {
             var widget = this.widgets.get(i);
 
             if (!widget.visible) continue;

@@ -52,7 +52,7 @@ public class PlayerInput {
                 player.setFlying(!player.isFlying());
             }
         } else if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {
-            this.flyCountdown = 10;
+            this.flyCountdown = 20;
         }
 
 

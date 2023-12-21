@@ -32,6 +32,7 @@ public class InGamePacketStage extends PacketStage {
         this.addClientBound(S2CPingPacket::new);
         this.addClientBound(S2CModPacket::new);
         this.addClientBound(S2CChunkDataPacket::new);
+        this.addClientBound(S2CSectionDataPacket::new);
         this.addClientBound(S2CChunkCancelPacket::new);
         this.addClientBound(S2CRespawnPacket::new);
         this.addClientBound(S2CPlayerHealthPacket::new);

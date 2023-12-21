@@ -176,7 +176,7 @@ public class LivingEntity extends Entity {
     }
 
     public void onDeath() {
-
+        // Impl purposes.
     }
 
     @Override
@@ -211,11 +211,13 @@ public class LivingEntity extends Entity {
         return this.isDead;
     }
 
-    public boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
-    }
-
     public ChunkPos getChunkPos() {
         return Utils.toChunkPos(this.blockPosition());
+    }
+
+    public void kill() {
+        this.health = 0;
+        this.isDead = true;
+        this.onDeath();
     }
 }

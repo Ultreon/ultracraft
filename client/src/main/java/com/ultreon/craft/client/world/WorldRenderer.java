@@ -506,6 +506,7 @@ public final class WorldRenderer implements Disposable {
         return this.world;
     }
 
+    @Override
     public void dispose() {
         this.disposed = true;
         this.pool.clear();

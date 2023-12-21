@@ -12,6 +12,7 @@ public class Items {
     public static final Item AIR = Items.register("air", new Item(new Properties()));
     public static final BlockItem GRASS_BLOCK = Items.register("grass_block", new BlockItem(new Properties(), () -> Blocks.GRASS_BLOCK));
     public static final BlockItem DIRT = Items.register("dirt", new BlockItem(new Properties(), () -> Blocks.DIRT));
+    public static final BlockItem VOIDGUARD = Items.register("voidguard", new BlockItem(new Properties(), () -> Blocks.VOIDGUARD));
     public static final BlockItem SAND = Items.register("sand", new BlockItem(new Properties(), () -> Blocks.SAND));
     public static final BlockItem STONE = Items.register("stone", new BlockItem(new Properties(), () -> Blocks.STONE));
     public static final BlockItem COBBLESTONE = Items.register("cobblestone", new BlockItem(new Properties(), () -> Blocks.COBBLESTONE));

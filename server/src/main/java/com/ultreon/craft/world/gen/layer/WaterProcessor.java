@@ -4,14 +4,14 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 
-public class WaterTerrainLayer extends TerrainLayer {
+public class WaterProcessor extends Decorator {
     private final int waterLevel;
 
-    public WaterTerrainLayer() {
+    public WaterProcessor() {
         this(64);
     }
 
-    public WaterTerrainLayer(int waterLevel) {
+    public WaterProcessor(int waterLevel) {
         this.waterLevel = waterLevel;
     }
 

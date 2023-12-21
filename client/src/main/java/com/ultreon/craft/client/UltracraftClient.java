@@ -1045,6 +1045,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         BlockModelRegistry.registerDefault(Blocks.SAND);
         BlockModelRegistry.registerDefault(Blocks.WATER);
         BlockModelRegistry.registerDefault(Blocks.STONE);
+        BlockModelRegistry.registerDefault(Blocks.VOIDGUARD);
         BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
     }
 
@@ -1102,6 +1103,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      */
     @CanIgnoreReturnValue
     public boolean showScreen(@Nullable Screen next) {
+        if (!isOnMainThread()) {
+            @Nullable Screen finalNext = next;
+            return UltracraftClient.invokeAndWait(() -> this.showScreen(finalNext));
+        }
         var cur = this.screen;
         if (next == null && this.world == null)
             next = new TitleScreen();
@@ -1145,6 +1150,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private boolean closeScreen(@Nullable Screen next, Screen cur) {
+        if (!UltracraftClient.isOnMainThread()) {
+            return UltracraftClient.invokeAndWait(() -> this.closeScreen(next, cur));
+        }
         var closeResult = ScreenEvents.CLOSE.factory().onCloseScreen(cur);
         if (closeResult.isCanceled()) return true;
 
@@ -1180,7 +1188,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             }
 
             UltracraftClient.PROFILER.section("render", () -> this.doRender(deltaTime));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             UltracraftClient.crash(t);
         }
 
@@ -1663,6 +1671,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
     }
 
+    @Override
     @SuppressWarnings("ConstantValue")
     public void dispose() {
         if (!UltracraftClient.isOnMainThread()) {
