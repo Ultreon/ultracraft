@@ -2,6 +2,7 @@ package com.ultreon.craft.client.imgui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.Array;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.UIContainer;
@@ -11,7 +12,6 @@ import com.ultreon.craft.util.ImGuiEx;
 import com.ultreon.libs.commons.v0.Identifier;
 import imgui.ImGui;
 
-import java.util.List;
 import java.util.Map;
 
 public class GuiEditor {
@@ -53,7 +53,7 @@ public class GuiEditor {
             ImGui.treePush();
 
             var children = screen.children();
-            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+            for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
                 var component = children.get(i);
                 if (component == null) continue;
 
@@ -96,8 +96,8 @@ public class GuiEditor {
 
             if (widget instanceof UIContainer container && ImGui.collapsingHeader("Children")) {
                 ImGui.treePush();
-                List<Widget> children = container.children();
-                for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+                Array<Widget> children = container.children();
+                for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
                     var child = children.get(i);
                     if (child == null) continue;
 

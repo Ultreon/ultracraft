@@ -11,17 +11,14 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @ApiStatus.NonExtendable
 public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     private static final int SCROLLBAR_WIDTH = 5;
-    private final List<Entry<T>> entries = new ArrayList<>();
+    private final Array<Entry<T>> entries = new Array<>();
     private float scrollY = 0;
     private int itemHeight = 20;
     private Entry<T> selected;
@@ -87,8 +84,8 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     @Nullable
     public Entry<T> getEntryAt(int x, int y) {
         if (!this.isWithinBounds(x, y)) return null;
-        List<Entry<T>> entries = this.entries;
-        for (int i = entries.size() - 1; i >= 0; i--) {
+        Array<Entry<T>> entries = this.entries;
+        for (int i = entries.size - 1; i >= 0; i--) {
             Entry<T> entry = entries.get(i);
             if (!entry.enabled || !entry.visible) continue;
             if (entry.isWithinBounds(x, y)) return entry;
@@ -193,7 +190,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     public int getContentHeight() {
-        return this.itemHeight * this.entries.size();
+        return this.itemHeight * this.entries.size;
     }
 
     public int getItemHeight() {
@@ -211,7 +208,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
 
     @CanIgnoreReturnValue
     public Entry<T> removeEntry(Entry<T> entry) {
-        this.entries.remove(entry);
+        this.entries.removeValue(entry, true);
         return entry;
     }
 
@@ -233,12 +230,12 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         }
 
         if (found == -1) return;
-        this.entries.remove(found);
+        this.entries.removeIndex(found);
     }
 
     @Override
-    public List<? extends Entry<T>> children() {
-        return Collections.unmodifiableList(this.entries);
+    public Array<Entry<T>> children() {
+        return this.entries;
     }
 
     @CanIgnoreReturnValue
@@ -299,7 +296,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
 
         public void render(Renderer renderer, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
             this.pos.x = this.list.pos.x;
-            this.pos.y = (int) (this.list.pos.y - this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this));
+            this.pos.y = (int) (this.list.pos.y - this.list.scrollY + (this.list.itemHeight + this.list.gap) * this.list.entries.indexOf(this, true));
             this.size.width = this.list.size.width - SelectionList.SCROLLBAR_WIDTH;
             this.size.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = this.list.itemRenderer;

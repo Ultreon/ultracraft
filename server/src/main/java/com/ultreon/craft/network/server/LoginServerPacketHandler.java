@@ -41,7 +41,6 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         this.connection.closeAll();
     }
 
-    @Override
     public boolean shouldHandlePacket(Packet<?> packet) {
         if (ServerPacketHandler.super.shouldHandlePacket(packet)) return true;
         else return this.connection.isConnected();

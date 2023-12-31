@@ -14,10 +14,8 @@ import com.ultreon.craft.client.events.ClientChunkEvents;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.ChunkSection;
 
 import java.util.List;
 
@@ -35,10 +33,10 @@ public final class ClientChunk extends Chunk {
     private Model solidModel, transparentModel;
     ModelInstance solidModelInst;
     ModelInstance transparentModelInst;
-    private final UltracraftClient client = UltracraftClient.get();
+    private UltracraftClient client = UltracraftClient.get();
 
-    public ClientChunk(ClientWorld world, ChunkPos pos, ChunkSection[] sections, PaletteStorage<Biome> biomes) {
-        super(world, pos, sections, biomes);
+    public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+        super(world, size, height, pos, storage);
         this.clientWorld = world;
         this.active = false;
 

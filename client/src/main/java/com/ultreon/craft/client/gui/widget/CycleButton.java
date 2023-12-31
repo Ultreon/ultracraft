@@ -45,13 +45,11 @@ public class CycleButton<T extends Enum<T>> extends TextButton {
         return this;
     }
 
-    @Override
     public CycleButton<T> position(Supplier<Position> position) {
         this.onRevalidate(widget -> this.setPos(position.get()));
         return this;
     }
 
-    @Override
     public CycleButton<T> bounds(Supplier<Bounds> position) {
         this.onRevalidate(widget -> this.setBounds(position.get()));
         return this;

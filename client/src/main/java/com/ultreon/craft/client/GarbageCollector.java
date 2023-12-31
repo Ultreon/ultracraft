@@ -20,7 +20,6 @@ class GarbageCollector implements Shutdownable {
         this.service.scheduleAtFixedRate(System::gc, 10, 5, TimeUnit.SECONDS);
     }
 
-    @Override
     public void shutdown() {
         this.service.shutdownNow();
 

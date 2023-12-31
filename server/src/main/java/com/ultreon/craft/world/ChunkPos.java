@@ -1,7 +1,6 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.libs.commons.v0.vector.Vec2d;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +12,8 @@ import java.io.Serializable;
  *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
-public class ChunkPos implements Comparable<ChunkPos>, Serializable {
+@SuppressWarnings("ClassCanBeRecord")
+public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
     @Serial
     private static final long serialVersionUID = 782820744815861493L;
     private final int x;
@@ -26,16 +26,6 @@ public class ChunkPos implements Comparable<ChunkPos>, Serializable {
     public ChunkPos(int x, int z) {
         this.x = x;
         this.z = z;
-    }
-
-    public ChunkPos(Vec2i vec) {
-        this.x = vec.x;
-        this.z = vec.y;
-    }
-
-    public ChunkPos(long compact) {
-        this.x = (int) (compact >> 6);
-        this.z = (int) (compact & 0x3F);
     }
 
     /**
@@ -83,14 +73,12 @@ public class ChunkPos implements Comparable<ChunkPos>, Serializable {
     /**
      * Compare this chunk position to another.
      *
-     * @param chunkPos the chunk position to be compared.
+     * @param chunkPos the chunk positon to be compared.
      * @return the comparison result.
      */
-    @Override
     public int compareTo(ChunkPos chunkPos) {
         double dst = new Vec2d(this.x, this.z).dst(chunkPos.x, chunkPos.z);
-        if (dst == 0) return 0;
-        return dst < 0 ? -1 : 1;
+        return dst == 0 ? 0 : dst < 0 ? -1 : 1;
     }
 
     public int x() {
@@ -110,16 +98,8 @@ public class ChunkPos implements Comparable<ChunkPos>, Serializable {
                this.z == that.z;
     }
 
-    public long compact() {
-        return this.x + ((long) this.z << 6);
-    }
-
     @Override
     public int hashCode() {
         return 31 * (31 + this.x) + this.z;
-    }
-
-    public SectionPos section(int y) {
-        return new SectionPos(this.x, y, this.z);
     }
 }

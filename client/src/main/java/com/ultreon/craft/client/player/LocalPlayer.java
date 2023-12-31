@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
-import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
 import com.ultreon.craft.client.registry.MenuRegistry;
@@ -105,9 +104,7 @@ public class LocalPlayer extends ClientPlayer {
     public void onDeath() {
         super.onDeath();
 
-        if (this.client.renderWorld && !(this.client.screen instanceof WorldLoadScreen)) {
-            this.client.showScreen(new DeathScreen());
-        }
+        this.client.showScreen(new DeathScreen());
     }
 
     @Override

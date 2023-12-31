@@ -9,7 +9,7 @@ import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import org.jetbrains.annotations.Nullable;
 
-public class PatchProcessor extends Decorator {
+public class PatchTerrainLayer extends TerrainLayer {
     private final NoiseConfig settingsBase;
     private final Block patchBlock;
     public float stoneThreshold = 0f;
@@ -17,7 +17,7 @@ public class PatchProcessor extends Decorator {
     @Nullable
     private NoiseInstance baseNoise;
 
-    public PatchProcessor(NoiseConfig settingsBase, Block patchBlock) {
+    public PatchTerrainLayer(NoiseConfig settingsBase, Block patchBlock) {
         this.settingsBase = settingsBase;
         this.patchBlock = patchBlock;
     }

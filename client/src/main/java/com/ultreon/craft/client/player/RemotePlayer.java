@@ -13,7 +13,6 @@ public class RemotePlayer extends ClientPlayer {
         super(EntityTypes.PLAYER, world);
     }
 
-    @Override
     public @NotNull String getName() {
         return this.name;
     }

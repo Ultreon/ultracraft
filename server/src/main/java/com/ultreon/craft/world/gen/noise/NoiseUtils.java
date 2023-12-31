@@ -36,16 +36,16 @@ public class NoiseUtils {
         double amplitude = 1.0F;
         double amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
 
-        for (int i = 0; i < settings.octaves(); i++) {
+//        for (int i = 0; i < settings.octaves(); i++) {
             total += settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude;
 
-            amplitudeSum += amplitude;
+//            amplitudeSum += amplitude;
+//
+//            amplitude *= settings.persistence();
+//            frequency *= 2;
+//        }
 
-            amplitude *= settings.persistence();
-            frequency *= 2;
-        }
-
-        total *= settings.amplitude() / settings.octaves() / amplitudeSum;
+        total *= settings.amplitude();
         total += settings.base();
 
         return total;

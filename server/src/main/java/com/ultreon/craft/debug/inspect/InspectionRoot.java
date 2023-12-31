@@ -135,7 +135,6 @@ public final class InspectionRoot<T> extends InspectionNode<T> implements Dispos
         return node;
     }
 
-    @Override
     public void dispose() {
         this.scheduler.shutdownNow();
     }

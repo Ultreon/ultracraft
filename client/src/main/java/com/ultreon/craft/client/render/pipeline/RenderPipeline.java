@@ -125,7 +125,6 @@ public class RenderPipeline implements Disposable {
         this.main.resize(width, height);
     }
 
-    @Override
     public void dispose() {
         for (var node : this.nodes) {
             node.dispose();

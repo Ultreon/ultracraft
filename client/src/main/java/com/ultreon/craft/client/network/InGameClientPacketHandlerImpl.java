@@ -1,7 +1,5 @@
 package com.ultreon.craft.client.network;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
@@ -34,22 +32,22 @@ import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Gamemode;
-import com.ultreon.craft.world.*;
+import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler {
     private final Connection connection;
@@ -57,9 +55,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private long ping = 0;
-    private final Cache<ChunkPos, PartialChunkData> partialChunks = CacheBuilder.newBuilder()
-            .expireAfterAccess(30, TimeUnit.SECONDS)
-            .build();
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -114,62 +109,25 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, PaletteStorage<Biome> biomes) {
+    public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
         LocalPlayer player = this.client.player;
-        if (player == null) {
+        if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
 
-        try {
-            PartialChunkData chunkData = this.partialChunks.get(pos, () -> new PartialChunkData(pos));
-            chunkData.setBiomes(biomes);
-            if (chunkData.isBuilt()) {
-                CompletableFuture.runAsync(() -> {
-                    ClientWorld world = this.client.world;
+        CompletableFuture.runAsync(() -> {
+            ClientWorld world = this.client.world;
 
-                    if (world == null) {
-                        this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
-                        return;
-                    }
+            PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
 
-                    ClientChunk build = chunkData.build(world);
-                    world.loadChunk(pos, build);
-                }, this.client.chunkLoadingExecutor);
+            if (world == null) {
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                return;
             }
-        } catch (ExecutionException e) {
-            UltracraftServer.LOGGER.error("Failed to load chunk data!", e);
-        }
-    }
 
-    @Override
-    public void onSectionData(SectionPos pos, long[] data, Block[] palette) {
-        LocalPlayer player = this.client.player;
-        ChunkPos chunkPos = pos.toChunkPos();
-        if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
-            this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.SKIP));
-            return;
-        }
-
-        try {
-            PartialChunkData chunkData = this.partialChunks.get(chunkPos, () -> new PartialChunkData(chunkPos));
-            chunkData.setSection(pos.y(), data, palette);
-            if (chunkData.isBuilt()) {
-                CompletableFuture.runAsync(() -> {
-                    ClientWorld world = this.client.world;
-
-                    if (world == null) {
-                        this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.FAILED));
-                        return;
-                    }
-
-                    ClientChunk build = chunkData.build(world);
-                    world.loadChunk(chunkPos, build);
-                }, this.client.chunkLoadingExecutor);
-            }
-        } catch (ExecutionException e) {
-            UltracraftServer.LOGGER.error("Failed to load chunk data!", e);
-        }
+            world.loadChunk(pos, new ClientChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage));
+        }, this.client.chunkLoadingExecutor);
     }
 
     @Override

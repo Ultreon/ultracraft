@@ -4,11 +4,11 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 
-public class SurfaceProcessor extends Decorator {
+public class SurfaceTerrainLayer extends TerrainLayer {
     private final Block surfaceBlock;
     private final int height;
 
-    public SurfaceProcessor(Block surfaceBlock, int height) {
+    public SurfaceTerrainLayer(Block surfaceBlock, int height) {
         this.surfaceBlock = surfaceBlock;
         this.height = height;
     }

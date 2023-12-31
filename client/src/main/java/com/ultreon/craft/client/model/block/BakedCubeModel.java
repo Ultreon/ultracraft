@@ -375,7 +375,6 @@ public final class BakedCubeModel implements Disposable {
         return this.mesh;
     }
 
-    @Override
     public void dispose() {
         this.mesh.dispose();
     }

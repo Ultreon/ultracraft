@@ -2,7 +2,6 @@ package com.ultreon.craft.network.server;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
@@ -57,13 +56,12 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-        Connection.LOGGER.info("Player {} disconnected: {}", this.player.getName(), message);
+        Connection.LOGGER.info("Player " + this.player.getName() + " disconnected: " + message);
         PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
 
         this.connection.closeAll();
     }
 
-    @Override
     public boolean shouldHandlePacket(Packet<?> packet) {
         if (ServerPacketHandler.super.shouldHandlePacket(packet)) return true;
         else return this.connection.isConnected();
@@ -100,8 +98,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.server.onDisconnected(this.player, message);
     }
 
-    public void onPlayerMove(double x, double y, double z) {
-        this.server.submit(() -> this.player.handlePlayerMove(x, y, z));
+    public void onPlayerMove(ServerPlayer player, double x, double y, double z) {
+        this.server.submit(() -> player.handlePlayerMove(x, y, z));
     }
 
     public void onChunkStatus(ServerPlayer player, ChunkPos pos, Chunk.Status status) {
@@ -123,14 +121,9 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
                 efficiency = toolItem.getEfficiency();
             }
 
-            if (block.isUnbreakable()) {
-                world.stopBreaking(pos, this.player);
-            }
-            float hardness = block.getHardness();
-
             switch (status) {
                 case START -> world.startBreaking(pos, this.player);
-                case CONTINUE -> world.continueBreaking(pos, 1.0F / (Math.max(hardness * UltracraftServer.TPS / efficiency, 0) + 1), this.player);
+                case CONTINUE -> world.continueBreaking(pos, 1.0F / (Math.max(block.getHardness() * UltracraftServer.TPS / efficiency, 0) + 1), this.player);
                 case STOP -> world.stopBreaking(pos, this.player);
             }
         });
@@ -149,13 +142,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         var world = this.player.getWorld();
         var chunkPos = World.toChunkPos(pos);
         if (this.player.isChunkActive(chunkPos)) {
-            // Check if the position is reachable by the player.
-            double distance = Math.abs(pos.vec().d().dst(this.player.getX(), this.player.getY(), this.player.getZ()));
-            if (distance > this.player.getAttributes().get(Attribute.BLOCK_REACH)) {
-                UltracraftServer.LOGGER.warn("Player '{}' at {} attempted to break block that is too far away ({}).", new Object[]{this.player.getName(), this.player.blockPosition(), pos});
-                return;
-            }
-
+            // TODO Add reach check.
             UltracraftServer.invoke(() -> {
                 Block original = world.get(pos);
                 world.set(pos, Blocks.AIR);
@@ -170,7 +157,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
                 this.player.inventory.addItems(original.getItemDrops());
             });
         } else {
-            UltracraftServer.LOGGER.warn("Player {} attempted to break block that is not loaded.", this.player.getName());
+            UltracraftServer.LOGGER.warn("Player " + this.player.getName() + " attempted to break block that is not loaded.");
         }
     }
 

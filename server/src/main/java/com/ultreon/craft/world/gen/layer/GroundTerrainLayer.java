@@ -6,12 +6,12 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 
-public class GroundProcessor extends Decorator {
+public class GroundTerrainLayer extends TerrainLayer {
     private final Block block;
     private final int offset;
     private final int height;
 
-    public GroundProcessor(Block block, int offset, int height) {
+    public GroundTerrainLayer(Block block, int offset, int height) {
         Preconditions.checkArgument(height > 0, "Height must be greater than zero");
 
         this.block = block;

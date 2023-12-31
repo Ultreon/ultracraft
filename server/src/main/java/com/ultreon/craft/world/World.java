@@ -269,14 +269,6 @@ public abstract class World implements ServerDisposable {
         return new BlockPos(cx, cy, cz);
     }
 
-    public static int localizePos(int value) {
-        int result = value % World.CHUNK_SIZE;
-
-        if (result < 0) result += World.CHUNK_SIZE;
-
-        return result;
-    }
-
     public static Vec3i toLocalBlockPos(int x, int y, int z, Vec3i tmp) {
         tmp.x = x % World.CHUNK_SIZE;
         tmp.y = y % World.CHUNK_HEIGHT;
@@ -346,7 +338,7 @@ public abstract class World implements ServerDisposable {
      */
     public int getHighest(int x, int z) {
         Chunk chunkAt = this.getChunkAt(x, 0, z);
-        if (chunkAt == null) return World.WORLD_DEPTH;
+        if (chunkAt == null) return Integer.MIN_VALUE;
 
         // FIXME: Optimize by using a heightmap.
         for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
@@ -500,7 +492,6 @@ public abstract class World implements ServerDisposable {
     /**
      * Cleans up any used variables, executors, etc.
      */
-    @Override
     @ApiStatus.Internal
     public void dispose() {
         this.disposed = true;
@@ -684,7 +675,7 @@ public abstract class World implements ServerDisposable {
 
     public Biome getBiome(BlockPos pos) {
         BlockPos localPos = World.toLocalBlockPos(pos);
-        Chunk chunk = this.getChunkAt(pos);
+        Chunk chunk = this.getChunkAt(localPos);
         if (chunk == null) return null;
         return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
     }

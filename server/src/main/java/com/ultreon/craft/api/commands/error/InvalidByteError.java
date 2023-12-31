@@ -21,7 +21,6 @@ public class InvalidByteError extends InvalidValueError {
         super(WHAT, got, index);
     }
 
-    @Override
     public @NotNull String getName() {
         return "Invalid";
     }

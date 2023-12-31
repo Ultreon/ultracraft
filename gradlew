@@ -158,7 +158,7 @@ fi
 #   * args from the command line
 #   * the main class name
 #   * -classpath
-#   * -T...appname settings
+#   * -D...appname settings
 #   * --module-path (only if needed)
 #   * DEFAULT_JVM_OPTS, JAVA_OPTS, and GRADLE_OPTS environment variables.
 

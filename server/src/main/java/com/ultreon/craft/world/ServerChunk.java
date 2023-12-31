@@ -1,16 +1,14 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.world.gen.biome.Biomes;
-import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import java.util.List;
 
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -19,8 +17,8 @@ import static com.ultreon.craft.world.World.CHUNK_SIZE;
 public final class ServerChunk extends Chunk {
     private final ServerWorld world;
 
-    public ServerChunk(ServerWorld world, ChunkPos pos, PaletteStorage<Biome> biomes) {
-        super(world, pos, biomes);
+    public ServerChunk(ServerWorld world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+        super(world, size, height, pos, storage);
         this.world = world;
     }
 
@@ -34,23 +32,14 @@ public final class ServerChunk extends Chunk {
 
 
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData) {
-        var storage = new PaletteStorage<>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE, Blocks.AIR);
-        var biomeStorage = new PaletteStorage<>(CHUNK_SIZE * CHUNK_SIZE, Biomes.PLAINS);
+        var storage = new PaletteStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
 
         MapType blockData = chunkData.getMap("Blocks");
         storage.load(blockData, Chunk::decodeBlock);
 
-        MapType biomeData = chunkData.getMap("Biomes");
-        if (biomeData == null) ServerChunk.createPlainsBiomeData(biomeStorage);
-        else biomeStorage.load(blockData, Biome::load);
-
-        ServerChunk chunk = new ServerChunk(world, pos, biomeStorage);
+        ServerChunk chunk = new ServerChunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage);
         chunk.load(chunkData);
         return chunk;
-    }
-
-    private static void createPlainsBiomeData(PaletteStorage<Biome> biomes) {
-        biomes.fill(Biomes.PLAINS);
     }
 
     public void load(MapType chunkData) {
@@ -58,7 +47,7 @@ public final class ServerChunk extends Chunk {
         MapType biomeData = chunkData.getMap("Biomes");
 
         if (biomeData != null) {
-            this.biomes.load(biomeData, Biome::load);
+            this.biomeStorage.load(biomeData, Biome::load);
         }
 
         if (extra != null) {
@@ -67,30 +56,33 @@ public final class ServerChunk extends Chunk {
     }
 
     public MapType save() {
-        if (!UltracraftServer.isOnServerThread())
+        if (!UltracraftServer.isOnServerThread()) {
             return UltracraftServer.invokeAndWait(this::save);
+        }
 
         MapType data = new MapType();
-        ListType<MapType> sectionData = new ListType<>();
+        MapType chunkData = new MapType();
         MapType biomeData = new MapType();
 
-        for (ChunkSection section : this.sections)
-            sectionData.add(section.save());
-
-        this.biomes.save(biomeData, Biome::save);
+        this.storage.save(chunkData, Block::save);
+        this.biomeStorage.save(biomeData, Biome::save);
         data.put("Biomes", biomeData);
-        data.put("Sections", sectionData);
+        data.put("Blocks", chunkData);
 
         MapType extra = new MapType();
         WorldEvents.SAVE_CHUNK.factory().onSaveChunk(this, extra);
-        if (!extra.getValue().isEmpty())
+        if (!extra.getValue().isEmpty()) {
             data.put("Extra", extra);
-
+        }
         return data;
     }
 
     @Override
     public ServerWorld getWorld() {
         return this.world;
+    }
+
+    void setBiomes(short[] palette, List<Biome> data) {
+        this.biomeStorage.set(palette, data);
     }
 }

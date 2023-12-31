@@ -176,7 +176,7 @@ public class Entity implements CommandSender {
         return this.isInWater();
     }
 
-    public boolean isInWater() {
+    private boolean isInWater() {
         return this.world.get(this.blockPosition()) == Blocks.WATER;
     }
 
@@ -500,7 +500,6 @@ public class Entity implements CommandSender {
         this.uuid = uuid;
     }
 
-    @Override
     public UUID getUuid() {
         return this.uuid;
     }

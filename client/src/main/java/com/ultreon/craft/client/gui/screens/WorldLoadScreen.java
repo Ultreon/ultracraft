@@ -8,14 +8,12 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Label;
-import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
-import com.ultreon.libs.crash.v0.CrashException;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,9 +118,9 @@ public class WorldLoadScreen extends Screen {
 
         ServerWorld world = this.world;
         if (world != null) {
-            float worldLoadPercentage = this.world.getWorldLoadPercentage();
-            if (worldLoadPercentage >= 0) {
-                String s = (int) (100 * worldLoadPercentage) + "%";
+            int chunksToLoad = world.getChunksToLoad();
+            if (chunksToLoad != 0) {
+                String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
                 this.subTitleLabel.text().setRaw(s);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
@@ -178,15 +176,6 @@ public class WorldLoadScreen extends Screen {
             this.world.doRefreshNow(refresher);
 
             this.message("Spawn chunks loaded!");
-
-            LocalPlayer player = this.client.player;
-            if (player != null && player.isDead()) {
-                this.client.showScreen(new DeathScreen());
-            } else {
-                this.client.showScreen(null);
-            }
-        } catch (CrashException e) {
-            UltracraftClient.crash(e.getCrashLog());
         } catch (Exception t) {
             UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
         }

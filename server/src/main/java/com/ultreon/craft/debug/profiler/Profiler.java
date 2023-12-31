@@ -63,7 +63,6 @@ public final class Profiler implements Disposable {
         this.profiling = profiling;
     }
 
-    @Override
     public void dispose() {
         this.scheduler.shutdown();
     }

@@ -15,7 +15,6 @@ import com.ultreon.craft.debug.profiler.Section.FinishedSection;
 import com.ultreon.craft.debug.profiler.ThreadSection.FinishedThreadSection;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -105,8 +104,8 @@ public class DebugGui {
                 this.left(renderer, "XYZ", player.getPosition())
                         .left(renderer, "Block XYZ", blockPosition)
                         .left(renderer, "Chunk XYZ", sectionPos)
-                        .left(renderer, "Biome", Registries.BIOME.getKey(world.getBiome(blockPosition)));
-                if (chunk != null && !chunk.isOutOfBounds(localBlockPos.x(), localBlockPos.y(), localBlockPos.z())) {
+                        .left(renderer, "Biome", world.getBiome(blockPosition));
+                if (chunk != null) {
                     int sunlight = chunk.getSunlight(localBlockPos.vec());
                     int blockLight = chunk.getBlockLight(localBlockPos.vec());
 

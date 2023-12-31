@@ -107,10 +107,6 @@ public class Block implements DataWriter<MapType> {
         return this.hardness;
     }
 
-    public final boolean isUnbreakable() {
-        return Float.isInfinite(this.hardness);
-    }
-
     @Nullable
     public ToolType getEffectiveTool() {
         return this.effectiveTool;
@@ -200,11 +196,6 @@ public class Block implements DataWriter<MapType> {
 
         public @This Properties noRendering() {
             this.disableRendering = true;
-            return this;
-        }
-
-        public Properties unbreakable() {
-            this.hardness = Float.POSITIVE_INFINITY;
             return this;
         }
     }

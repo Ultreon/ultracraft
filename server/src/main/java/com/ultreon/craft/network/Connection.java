@@ -139,8 +139,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (cause instanceof ClosedChannelException) return;
-
         try {
             boolean handlingFault = !this.handlingFault;
             this.handlingFault = true;
@@ -271,8 +269,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (stateListener != null) {
                 sent.addListener(future -> this.handleListener(packet, stateListener, future));
             }
-        } catch (ClosedChannelException ignored) {
-
         } catch (Exception e) {
             Connection.LOGGER.error("Failed to send packet: {}", packet.getClass().getName(), e);
         }

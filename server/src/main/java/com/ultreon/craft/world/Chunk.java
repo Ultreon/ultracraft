@@ -1,26 +1,27 @@
 package com.ultreon.craft.world;
 
-import com.google.common.base.Preconditions;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
-import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.ultreon.craft.world.World.*;
 import static com.ultreon.libs.commons.v0.Mth.lerp;
@@ -35,7 +36,7 @@ import static com.ultreon.libs.commons.v0.Mth.lerp;
  */
 @NotThreadSafe
 @ApiStatus.NonExtendable
-public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> {
+public abstract class Chunk implements ServerDisposable {
     public static final int VERTEX_SIZE = 6;
     private final ChunkPos pos;
     final Map<BlockPos, Float> breaking = new HashMap<>();
@@ -44,7 +45,6 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
     protected boolean ready;
     public final int size;
     public final int height;
-    public final int depth;
     protected final Vec3i offset;
     @MonotonicNonNull
     @ApiStatus.Internal
@@ -52,59 +52,37 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
     private boolean disposed;
     private final World world;
 
+    /**
+     * Field for block data in palette storage format.
+     * Palette storage is used for improving memory usage.
+     */
+    public final PaletteStorage<Block> storage;
     private final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+    protected final PaletteStorage<Biome> biomeStorage = new PaletteStorage<>(256);
 
     private static final int MAX_LIGHT_LEVEL = 15;
     private static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
 
     static {
         for (int i = 0; i <= Chunk.MAX_LIGHT_LEVEL; i++) {
-            double value = lerp(0.15f, 1.5f, (double) i / Chunk.MAX_LIGHT_LEVEL);
-            Chunk.lightLevelMap[i] = (float) value;
+            double lerp = lerp(0.15f, 1.5f, (double) i / Chunk.MAX_LIGHT_LEVEL);
+            Chunk.lightLevelMap[i] = (float) lerp;
         }
     }
 
-    protected final ChunkSection[] sections;
-    public final PaletteStorage<Biome> biomes;
-
-    protected Chunk(World world, ChunkPos pos) {
-        this(world, pos, new PaletteStorage<>(256, Biomes.PLAINS));
+    protected Chunk(World world, int size, int height, ChunkPos pos) {
+        this(world, size, height, pos, new PaletteStorage<>(size * height * size));
     }
 
-    protected Chunk(World world, ChunkPos pos, PaletteStorage<Biome> biomes) {
-        this(world, pos, Chunk.createSections(), biomes);
-    }
-
-    protected Chunk(World world, ChunkPos pos, ChunkSection[] sections, PaletteStorage<Biome> biomes) {
-        Preconditions.checkNotNull(world, "World cannot be null");
-        Preconditions.checkNotNull(pos, "Chunk position cannot be null");
-        Preconditions.checkNotNull(sections, "Chunk sections cannot be null");
-        Preconditions.checkNotNull(biomes, "Biome palette cannot be null");
-
-        for (int i = 0, sectionsLength = sections.length; i < sectionsLength; i++) {
-            ChunkSection section = sections[i];
-            Preconditions.checkNotNull(section, "Chunk section cannot be null, found at index " + i);
-        }
-
+    protected Chunk(World world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
         this.world = world;
 
         this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
-        this.sections = sections;
-        this.biomes = biomes;
 
         this.pos = pos;
-        this.size = CHUNK_SIZE;
-        this.height = CHUNK_HEIGHT;
-        this.depth = WORLD_DEPTH;
-    }
-
-    private static ChunkSection[] createSections() {
-        ChunkSection[] sections = new ChunkSection[CHUNK_HEIGHT / CHUNK_SIZE];
-        for (int i = 0; i < sections.length; i++) {
-            sections[i] = new ChunkSection();
-        }
-
-        return sections;
+        this.size = size;
+        this.height = height;
+        this.storage = storage;
     }
 
     /**
@@ -127,6 +105,28 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
             return Blocks.BARRIER;
         }
         return Registries.BLOCK.getValue(id);
+    }
+
+    /**
+     * Serialize the chunk to the packet buffer.
+     *
+     * @param buffer The packet buffer.
+     */
+    public void serializeChunk(PacketBuffer buffer) {
+        synchronized (this.lock) {
+            this.storage.write(buffer, Block::save);
+            this.biomeStorage.write(buffer, Biome::save);
+        }
+    }
+
+    /**
+     * Deserialize the chunk from the packet buffer.
+     *
+     * @param buffer The packet buffer.
+     */
+    public void deserializeChunk(PacketBuffer buffer) {
+        this.storage.read(buffer, Chunk::decodeBlock);
+        this.biomeStorage.read(buffer, Biome::load);
     }
 
     public Block get(Vec3i pos) {
@@ -153,7 +153,7 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
         if (this.disposed) return Blocks.BARRIER;
         int dataIdx = this.getIndex(x, y, z);
 
-        Block block = this.sections[y / CHUNK_SIZE].get(dataIdx);
+        Block block = this.storage.get(dataIdx);
         return block == null ? Blocks.AIR : block;
     }
 
@@ -175,21 +175,18 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
         int index = this.getIndex(x, y, z);
 
         this.breaking.remove(new BlockPos(x, y, z));
-        this.sections[y / CHUNK_SIZE].set(index, block);
+        this.storage.set(index, block);
         return true;
     }
 
     private int getIndex(int x, int y, int z) {
-        x = x % CHUNK_SIZE;
-        y = y % CHUNK_SIZE;
-        z = z % CHUNK_SIZE;
-        if (x >= 0 && y >= 0 && z >= 0) {
-            return z * (this.size * this.size) + y * this.size + x;
+        if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE) {
+            return z * (this.size * this.height) + y * this.size + x;
         }
         return -1; // Out of bounds
     }
 
-    public boolean isOutOfBounds(int x, int y, int z) {
+    private boolean isOutOfBounds(int x, int y, int z) {
         return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
     }
 
@@ -199,6 +196,8 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
             if (this.disposed) throw new ValidationError("Chunk is already disposed");
             this.disposed = true;
             this.ready = false;
+
+            this.storage.dispose();
         }
     }
 
@@ -333,9 +332,7 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
 
     public Biome getBiome(int x, int y, int z) {
         int index = this.toFlatIndex(x, z);
-        Biome biome = this.biomes.get(index);
-        if (biome == null) throw new IllegalStateException("No biome at " + (this.offset.x + x) + ", " + (this.offset.y + y) + ", " + (this.offset.z + z));
-        return biome;
+        return this.biomeStorage.get(index);
     }
 
     @Override
@@ -388,12 +385,6 @@ public abstract class Chunk implements ServerDisposable, Iterable<ChunkSection> 
         if(lightLevel < 0)
             return 0;
         return Chunk.lightLevelMap[lightLevel];
-    }
-
-    @NotNull
-    @Override
-    public Iterator<ChunkSection> iterator() {
-        return Arrays.stream(this.sections).iterator();
     }
 
     /**
