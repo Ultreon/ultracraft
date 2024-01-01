@@ -94,7 +94,7 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel">
 <div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
 <div class="table-header col-first">Modifier and Type</div>
@@ -106,15 +106,24 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createString()" class="member-name-link">createString</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="TranslationText.html" title="class in com.ultreon.craft.text">TranslationText</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#deserialize(com.ultreon.data.types.MapType)" class="member-name-link">deserialize</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;data)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serialize()" class="member-name-link">serialize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="TranslationText.html" title="class in com.ultreon.craft.text">TranslationText</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#style(java.util.function.Consumer)" class="member-name-link">style</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Consumer.html" title="class or interface in java.util.function" class="external-link">Consumer</a>&lt;<a href="TextStyle.html" title="class in com.ultreon.craft.text">TextStyle</a>&gt;&nbsp;consumer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.text.MutableText">Methods inherited from class&nbsp;com.ultreon.craft.text.<a href="MutableText.html" title="class in com.ultreon.craft.text">MutableText</a></h3>
-<code><a href="MutableText.html#append(com.ultreon.craft.text.TextObject)">append</a>, <a href="MutableText.html#append(java.lang.Object)">append</a>, <a href="MutableText.html#append(java.lang.String)">append</a>, <a href="MutableText.html#getColor()">getColor</a>, <a href="MutableText.html#getSize()">getSize</a>, <a href="MutableText.html#getText()">getText</a>, <a href="MutableText.html#isBold()">isBold</a>, <a href="MutableText.html#isItalic()">isItalic</a>, <a href="MutableText.html#isStrikethrough()">isStrikethrough</a>, <a href="MutableText.html#isUnderlined()">isUnderlined</a>, <a href="MutableText.html#iterator()">iterator</a>, <a href="MutableText.html#setBold(boolean)">setBold</a>, <a href="MutableText.html#setColor(com.ultreon.craft.util.Color)">setColor</a>, <a href="MutableText.html#setItalic(boolean)">setItalic</a>, <a href="MutableText.html#setSize(int)">setSize</a>, <a href="MutableText.html#setStrikethrough(boolean)">setStrikethrough</a>, <a href="MutableText.html#setUnderlined(boolean)">setUnderlined</a></code></div>
+<code><a href="MutableText.html#append(com.ultreon.craft.text.TextObject)">append</a>, <a href="MutableText.html#append(java.lang.Object)">append</a>, <a href="MutableText.html#append(java.lang.String)">append</a>, <a href="MutableText.html#getColor()">getColor</a>, <a href="MutableText.html#getSize()">getSize</a>, <a href="MutableText.html#getText()">getText</a>, <a href="MutableText.html#isBold()">isBold</a>, <a href="MutableText.html#isItalic()">isItalic</a>, <a href="MutableText.html#isStrikethrough()">isStrikethrough</a>, <a href="MutableText.html#isUnderlined()">isUnderlined</a>, <a href="MutableText.html#setBold(boolean)">setBold</a>, <a href="MutableText.html#setColor(com.ultreon.craft.util.Color)">setColor</a>, <a href="MutableText.html#setItalic(boolean)">setItalic</a>, <a href="MutableText.html#setSize(int)">setSize</a>, <a href="MutableText.html#setStrikethrough(boolean)">setStrikethrough</a>, <a href="MutableText.html#setUnderlined(boolean)">setUnderlined</a>, <a href="MutableText.html#stream()">stream</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.text.TextObject">Methods inherited from class&nbsp;com.ultreon.craft.text.<a href="TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></h3>
-<code><a href="TextObject.html#empty()">empty</a>, <a href="TextObject.html#literal(java.lang.String)">literal</a>, <a href="TextObject.html#nullToEmpty(java.lang.String)">nullToEmpty</a>, <a href="TextObject.html#translation(java.lang.String,java.lang.Object...)">translation</a></code></div>
+<code><a href="TextObject.html#empty()">empty</a>, <a href="TextObject.html#iterator()">iterator</a>, <a href="TextObject.html#literal(java.lang.String)">literal</a>, <a href="TextObject.html#nullToEmpty(java.lang.String)">nullToEmpty</a>, <a href="TextObject.html#translation(java.lang.String,java.lang.Object...)">translation</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -133,6 +142,12 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="deserialize(com.ultreon.data.types.MapType)">
+<h3>deserialize</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="TranslationText.html" title="class in com.ultreon.craft.text">TranslationText</a></span>&nbsp;<span class="element-name">deserialize</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;data)</span></div>
+</section>
+</li>
+<li>
 <section class="detail" id="createString()">
 <h3>createString</h3>
 <div class="member-signature"><span class="annotations">@NotNull
@@ -140,6 +155,26 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="TextObject.html#createString()">createString</a></code>&nbsp;in class&nbsp;<code><a href="TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="serialize()">
+<h3>serialize</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></span>&nbsp;<span class="element-name">serialize</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="TextObject.html#serialize()">serialize</a></code>&nbsp;in class&nbsp;<code><a href="TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="style(java.util.function.Consumer)">
+<h3>style</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="TranslationText.html" title="class in com.ultreon.craft.text">TranslationText</a></span>&nbsp;<span class="element-name">style</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Consumer.html" title="class or interface in java.util.function" class="external-link">Consumer</a>&lt;<a href="TextStyle.html" title="class in com.ultreon.craft.text">TextStyle</a>&gt;&nbsp;consumer)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="MutableText.html#style(java.util.function.Consumer)">style</a></code>&nbsp;in class&nbsp;<code><a href="MutableText.html" title="class in com.ultreon.craft.text">MutableText</a></code></dd>
 </dl>
 </section>
 </li>

@@ -102,7 +102,7 @@ loadScripts(document, 'script');</script>
 <h2>Field Summary</h2>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.ultreon.craft.world.Chunk">Fields inherited from class&nbsp;com.ultreon.craft.world.<a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></h3>
-<code><a href="Chunk.html#active">active</a>, <a href="Chunk.html#biomeStorage">biomeStorage</a>, <a href="Chunk.html#height">height</a>, <a href="Chunk.html#lock">lock</a>, <a href="Chunk.html#offset">offset</a>, <a href="Chunk.html#ready">ready</a>, <a href="Chunk.html#size">size</a>, <a href="Chunk.html#storage">storage</a>, <a href="Chunk.html#treeData">treeData</a>, <a href="Chunk.html#updateNeighbours">updateNeighbours</a>, <a href="Chunk.html#VERTEX_SIZE">VERTEX_SIZE</a></code></div>
+<code><a href="Chunk.html#active">active</a>, <a href="Chunk.html#biomeStorage">biomeStorage</a>, <a href="Chunk.html#height">height</a>, <a href="Chunk.html#lock">lock</a>, <a href="Chunk.html#offset">offset</a>, <a href="Chunk.html#ready">ready</a>, <a href="Chunk.html#size">size</a>, <a href="Chunk.html#storage">storage</a>, <a href="Chunk.html#treeData">treeData</a>, <a href="Chunk.html#VERTEX_SIZE">VERTEX_SIZE</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -136,34 +136,24 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ServerChunk.html" title="class in com.ultreon.craft.world">ServerChunk</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#build()" class="member-name-link">build</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#deserializeChunk(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">deserializeChunk</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Deserialize the chunk from the packet buffer.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBiomeCenters()" class="member-name-link">getBiomeCenters</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/biome/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen.biome">BiomeGenerator</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBiomeGenerator(int,int)" class="member-name-link">getBiomeGenerator</a><wbr>(int&nbsp;x,
- int&nbsp;z)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBiomeCenters()" class="member-name-link">getBiomeCenters</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFast(int,int,int)" class="member-name-link">getFast</a><wbr>(int&nbsp;x,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="gen/biome/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen.biome">BiomeGenerator</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBiomeGenerator(int,int)" class="member-name-link">getBiomeGenerator</a><wbr>(int&nbsp;x,
+ int&nbsp;z)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFast(int,int,int)" class="member-name-link">getFast</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld()" class="member-name-link">getWorld</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOnBuilderThread()" class="member-name-link">isOnBuilderThread</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld()" class="member-name-link">getWorld</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serializeChunk(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">serializeChunk</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Serialize the chunk to the packet buffer.</div>
-</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOnBuilderThread()" class="member-name-link">isOnBuilderThread</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBiomeCenters(java.util.List)" class="member-name-link">setBiomeCenters</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&gt;&nbsp;biomeCenters)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -183,10 +173,10 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.world.Chunk">Methods inherited from class&nbsp;com.ultreon.craft.world.<a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></h3>
-<code><a href="Chunk.html#ascend(int,int,int)">ascend</a>, <a href="Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="Chunk.html#decodeBlock(com.ultreon.data.types.MapType)">decodeBlock</a>, <a href="Chunk.html#dispose()">dispose</a>, <a href="Chunk.html#get(int,int,int)">get</a>, <a href="Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="Chunk.html#getBreaking()">getBreaking</a>, <a href="Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="Chunk.html#getHighest(int,int)">getHighest</a>, <a href="Chunk.html#getOffset()">getOffset</a>, <a href="Chunk.html#getPos()">getPos</a>, <a href="Chunk.html#isActive()">isActive</a>, <a href="Chunk.html#isDisposed()">isDisposed</a>, <a href="Chunk.html#isReady()">isReady</a>, <a href="Chunk.html#onNeighboursUpdated()">onNeighboursUpdated</a>, <a href="Chunk.html#onUpdated()">onUpdated</a>, <a href="Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a>, <a href="Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">set</a>, <a href="Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">setFast</a>, <a href="Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="Chunk.html#toString()">toString</a></code></div>
+<code><a href="Chunk.html#ascend(int,int,int)">ascend</a>, <a href="Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="Chunk.html#decodeBlock(com.ultreon.craft.network.PacketBuffer)">decodeBlock</a>, <a href="Chunk.html#dispose()">dispose</a>, <a href="Chunk.html#equals(java.lang.Object)">equals</a>, <a href="Chunk.html#get(int,int,int)">get</a>, <a href="Chunk.html#get(com.ultreon.craft.world.BlockPos)">get</a>, <a href="Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="Chunk.html#getBlockLight(int,int,int)">getBlockLight</a>, <a href="Chunk.html#getBlockLight(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockLight</a>, <a href="Chunk.html#getBreaking()">getBreaking</a>, <a href="Chunk.html#getBrightness(int)">getBrightness</a>, <a href="Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="Chunk.html#getHighest(int,int)">getHighest</a>, <a href="Chunk.html#getLightLevel(int,int,int)">getLightLevel</a>, <a href="Chunk.html#getOffset()">getOffset</a>, <a href="Chunk.html#getPos()">getPos</a>, <a href="Chunk.html#getSunlight(int,int,int)">getSunlight</a>, <a href="Chunk.html#getSunlight(com.ultreon.libs.commons.v0.vector.Vec3i)">getSunlight</a>, <a href="Chunk.html#hashCode()">hashCode</a>, <a href="Chunk.html#isActive()">isActive</a>, <a href="Chunk.html#isDisposed()">isDisposed</a>, <a href="Chunk.html#isReady()">isReady</a>, <a href="Chunk.html#loadBlock(com.ultreon.data.types.MapType)">loadBlock</a>, <a href="Chunk.html#onUpdated()">onUpdated</a>, <a href="Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a>, <a href="Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">set</a>, <a href="Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">setFast</a>, <a href="Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="Chunk.html#toString()">toString</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
-<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
 </section>
 </li>
 </ul>
@@ -216,34 +206,6 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="serializeChunk(com.ultreon.craft.network.PacketBuffer)">
-<h3>serializeChunk</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">serializeChunk</span><wbr><span class="parameters">(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#serializeChunk(com.ultreon.craft.network.PacketBuffer)">Chunk</a></code></span></div>
-<div class="block">Serialize the chunk to the packet buffer.</div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="Chunk.html#serializeChunk(com.ultreon.craft.network.PacketBuffer)">serializeChunk</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
-<dt>Parameters:</dt>
-<dd><code>buffer</code> - The packet buffer.</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="deserializeChunk(com.ultreon.craft.network.PacketBuffer)">
-<h3>deserializeChunk</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">deserializeChunk</span><wbr><span class="parameters">(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#deserializeChunk(com.ultreon.craft.network.PacketBuffer)">Chunk</a></code></span></div>
-<div class="block">Deserialize the chunk from the packet buffer.</div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="Chunk.html#deserializeChunk(com.ultreon.craft.network.PacketBuffer)">deserializeChunk</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
-<dt>Parameters:</dt>
-<dd><code>buffer</code> - The packet buffer.</dd>
-</dl>
-</section>
-</li>
 <li>
 <section class="detail" id="getFast(int,int,int)">
 <h3>getFast</h3>

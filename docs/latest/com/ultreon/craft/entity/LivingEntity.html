@@ -78,6 +78,10 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
 <dd><code><a href="Player.html" title="class in com.ultreon.craft.entity">Player</a></code></dd>
 </dl>
@@ -115,6 +119,12 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color"><code><a href="#jumpVel" class="member-name-link">jumpVel</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>protected float</code></div>
+<div class="col-second even-row-color"><code><a href="#lastDamage" class="member-name-link">lastDamage</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>protected @Nullable <a href="damagesource/DamageSource.html" title="class in com.ultreon.craft.entity.damagesource">DamageSource</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#lastDamageSource" class="member-name-link">lastDamageSource</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>protected float</code></div>
 <div class="col-second even-row-color"><code><a href="#oldHealth" class="member-name-link">oldHealth</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>float</code></div>
@@ -123,7 +133,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.ultreon.craft.entity.Entity">Fields inherited from class&nbsp;com.ultreon.craft.entity.<a href="Entity.html" title="class in com.ultreon.craft.entity">Entity</a></h3>
-<code><a href="Entity.html#drag">drag</a>, <a href="Entity.html#fallDistance">fallDistance</a>, <a href="Entity.html#gravity">gravity</a>, <a href="Entity.html#isColliding">isColliding</a>, <a href="Entity.html#isCollidingX">isCollidingX</a>, <a href="Entity.html#isCollidingY">isCollidingY</a>, <a href="Entity.html#isCollidingZ">isCollidingZ</a>, <a href="Entity.html#noClip">noClip</a>, <a href="Entity.html#noGravity">noGravity</a>, <a href="Entity.html#onGround">onGround</a>, <a href="Entity.html#ox">ox</a>, <a href="Entity.html#oy">oy</a>, <a href="Entity.html#oz">oz</a>, <a href="Entity.html#velocityX">velocityX</a>, <a href="Entity.html#velocityY">velocityY</a>, <a href="Entity.html#velocityZ">velocityZ</a>, <a href="Entity.html#world">world</a>, <a href="Entity.html#x">x</a>, <a href="Entity.html#xRot">xRot</a>, <a href="Entity.html#y">y</a>, <a href="Entity.html#yRot">yRot</a>, <a href="Entity.html#z">z</a></code></div>
+<code><a href="Entity.html#attributes">attributes</a>, <a href="Entity.html#drag">drag</a>, <a href="Entity.html#fallDistance">fallDistance</a>, <a href="Entity.html#gravity">gravity</a>, <a href="Entity.html#isColliding">isColliding</a>, <a href="Entity.html#isCollidingX">isCollidingX</a>, <a href="Entity.html#isCollidingY">isCollidingY</a>, <a href="Entity.html#isCollidingZ">isCollidingZ</a>, <a href="Entity.html#noClip">noClip</a>, <a href="Entity.html#noGravity">noGravity</a>, <a href="Entity.html#onGround">onGround</a>, <a href="Entity.html#ox">ox</a>, <a href="Entity.html#oy">oy</a>, <a href="Entity.html#oz">oz</a>, <a href="Entity.html#velocityX">velocityX</a>, <a href="Entity.html#velocityY">velocityY</a>, <a href="Entity.html#velocityZ">velocityZ</a>, <a href="Entity.html#world">world</a>, <a href="Entity.html#x">x</a>, <a href="Entity.html#xRot">xRot</a>, <a href="Entity.html#y">y</a>, <a href="Entity.html#yRot">yRot</a>, <a href="Entity.html#z">z</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -169,29 +179,35 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMaxHeath()" class="member-name-link">getMaxHeath</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hitGround()" class="member-name-link">hitGround</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>double</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpeed()" class="member-name-link">getSpeed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hitGround()" class="member-name-link">hitGround</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Handles the entity ground hit.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hurt(float,com.ultreon.craft.entity.damagesource.DamageSource)" class="member-name-link">hurt</a><wbr>(float&nbsp;damage,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hurt(float,com.ultreon.craft.entity.damagesource.DamageSource)" class="member-name-link">hurt</a><wbr>(float&nbsp;damage,
  <a href="damagesource/DamageSource.html" title="class in com.ultreon.craft.entity.damagesource">DamageSource</a>&nbsp;source)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hurtFromVoid()" class="member-name-link">hurtFromVoid</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isDead()" class="member-name-link">isDead</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hurtFromVoid()" class="member-name-link">hurtFromVoid</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isInvincible()" class="member-name-link">isInvincible</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isDead()" class="member-name-link">isDead</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isInWater()" class="member-name-link">isInWater</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isInvincible()" class="member-name-link">isInvincible</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isInWater()" class="member-name-link">isInWater</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#jump()" class="member-name-link">jump</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#jump()" class="member-name-link">jump</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#kill()" class="member-name-link">kill</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#load(com.ultreon.data.types.MapType)" class="member-name-link">load</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;data)</code></div>
@@ -228,10 +244,13 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.entity.Entity">Methods inherited from class&nbsp;com.ultreon.craft.entity.<a href="Entity.html" title="class in com.ultreon.craft.entity">Entity</a></h3>
-<code><a href="Entity.html#blockPosition()">blockPosition</a>, <a href="Entity.html#getBoundingBox()">getBoundingBox</a>, <a href="Entity.html#getBoundingBox(com.ultreon.craft.entity.util.EntitySize)">getBoundingBox</a>, <a href="Entity.html#getBoundingBox(com.ultreon.libs.commons.v0.vector.Vec3d,com.ultreon.craft.entity.util.EntitySize)">getBoundingBox</a>, <a href="Entity.html#getGravity()">getGravity</a>, <a href="Entity.html#getId()">getId</a>, <a href="Entity.html#getPosition()">getPosition</a>, <a href="Entity.html#getRotation()">getRotation</a>, <a href="Entity.html#getSize()">getSize</a>, <a href="Entity.html#getType()">getType</a>, <a href="Entity.html#getVelocity()">getVelocity</a>, <a href="Entity.html#getWorld()">getWorld</a>, <a href="Entity.html#getX()">getX</a>, <a href="Entity.html#getXRot()">getXRot</a>, <a href="Entity.html#getY()">getY</a>, <a href="Entity.html#getYRot()">getYRot</a>, <a href="Entity.html#getZ()">getZ</a>, <a href="Entity.html#isAffectedByFluid()">isAffectedByFluid</a>, <a href="Entity.html#isInVoid()">isInVoid</a>, <a href="Entity.html#loadFrom(com.ultreon.craft.world.World,com.ultreon.data.types.MapType)">loadFrom</a>, <a href="Entity.html#loadWithPos(com.ultreon.data.types.MapType)">loadWithPos</a>, <a href="Entity.html#move()">move</a>, <a href="Entity.html#move(double,double,double)">move</a>, <a href="Entity.html#onMoved()">onMoved</a>, <a href="Entity.html#onPrepareSpawn(com.ultreon.data.types.MapType)">onPrepareSpawn</a>, <a href="Entity.html#rotate(float,float)">rotate</a>, <a href="Entity.html#rotate(com.ultreon.libs.commons.v0.vector.Vec2f)">rotate</a>, <a href="Entity.html#setGravity(float)">setGravity</a>, <a href="Entity.html#setId(int)">setId</a>, <a href="Entity.html#setPosition(double,double,double)">setPosition</a>, <a href="Entity.html#setPosition(com.ultreon.libs.commons.v0.vector.Vec3d)">setPosition</a>, <a href="Entity.html#setRotation(com.ultreon.libs.commons.v0.vector.Vec2f)">setRotation</a>, <a href="Entity.html#setVelocity(com.ultreon.libs.commons.v0.vector.Vec3d)">setVelocity</a>, <a href="Entity.html#setX(double)">setX</a>, <a href="Entity.html#setXRot(float)">setXRot</a>, <a href="Entity.html#setY(double)">setY</a>, <a href="Entity.html#setYRot(float)">setYRot</a>, <a href="Entity.html#setZ(double)">setZ</a>, <a href="Entity.html#swimUp()">swimUp</a></code></div>
+<code><a href="Entity.html#getAttributes()">getAttributes</a>, <a href="Entity.html#getBlockPos()">getBlockPos</a>, <a href="Entity.html#getBoundingBox()">getBoundingBox</a>, <a href="Entity.html#getBoundingBox(com.ultreon.craft.entity.util.EntitySize)">getBoundingBox</a>, <a href="Entity.html#getBoundingBox(com.ultreon.libs.commons.v0.vector.Vec3d,com.ultreon.craft.entity.util.EntitySize)">getBoundingBox</a>, <a href="Entity.html#getDisplayName()">getDisplayName</a>, <a href="Entity.html#getGravity()">getGravity</a>, <a href="Entity.html#getId()">getId</a>, <a href="Entity.html#getLocation()">getLocation</a>, <a href="Entity.html#getName()">getName</a>, <a href="Entity.html#getPosition()">getPosition</a>, <a href="Entity.html#getPublicName()">getPublicName</a>, <a href="Entity.html#getRotation()">getRotation</a>, <a href="Entity.html#getSize()">getSize</a>, <a href="Entity.html#getType()">getType</a>, <a href="Entity.html#getUuid()">getUuid</a>, <a href="Entity.html#getVelocity()">getVelocity</a>, <a href="Entity.html#getWorld()">getWorld</a>, <a href="Entity.html#getX()">getX</a>, <a href="Entity.html#getXRot()">getXRot</a>, <a href="Entity.html#getY()">getY</a>, <a href="Entity.html#getYRot()">getYRot</a>, <a href="Entity.html#getZ()">getZ</a>, <a href="Entity.html#hasExplicitPermission(com.ultreon.craft.api.commands.perms.Permission)">hasExplicitPermission</a>, <a href="Entity.html#isAdmin()">isAdmin</a>, <a href="Entity.html#isAffectedByFluid()">isAffectedByFluid</a>, <a href="Entity.html#isInVoid()">isInVoid</a>, <a href="Entity.html#loadFrom(com.ultreon.craft.world.World,com.ultreon.data.types.MapType)">loadFrom</a>, <a href="Entity.html#loadWithPos(com.ultreon.data.types.MapType)">loadWithPos</a>, <a href="Entity.html#move()">move</a>, <a href="Entity.html#move(double,double,double)">move</a>, <a href="Entity.html#onMoved()">onMoved</a>, <a href="Entity.html#onPrepareSpawn(com.ultreon.data.types.MapType)">onPrepareSpawn</a>, <a href="Entity.html#rotate(float,float)">rotate</a>, <a href="Entity.html#rotate(com.ultreon.libs.commons.v0.vector.Vec2f)">rotate</a>, <a href="Entity.html#sendMessage(com.ultreon.craft.text.TextObject)">sendMessage</a>, <a href="Entity.html#sendMessage(java.lang.String)">sendMessage</a>, <a href="Entity.html#setGravity(float)">setGravity</a>, <a href="Entity.html#setId(int)">setId</a>, <a href="Entity.html#setPosition(double,double,double)">setPosition</a>, <a href="Entity.html#setPosition(com.ultreon.libs.commons.v0.vector.Vec3d)">setPosition</a>, <a href="Entity.html#setRotation(com.ultreon.libs.commons.v0.vector.Vec2f)">setRotation</a>, <a href="Entity.html#setupAttributes()">setupAttributes</a>, <a href="Entity.html#setUuid(java.util.UUID)">setUuid</a>, <a href="Entity.html#setVelocity(com.ultreon.libs.commons.v0.vector.Vec3d)">setVelocity</a>, <a href="Entity.html#setX(double)">setX</a>, <a href="Entity.html#setXRot(float)">setXRot</a>, <a href="Entity.html#setY(double)">setY</a>, <a href="Entity.html#setYRot(float)">setYRot</a>, <a href="Entity.html#setZ(double)">setZ</a>, <a href="Entity.html#swimUp()">swimUp</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-com.ultreon.craft.api.commands.CommandSender">Methods inherited from interface&nbsp;com.ultreon.craft.api.commands.<a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></h3>
+<code><a href="../api/commands/CommandSender.html#hasExplicitPermission(java.lang.String)">hasExplicitPermission</a>, <a href="../api/commands/CommandSender.html#hasPermission(com.ultreon.craft.api.commands.perms.Permission)">hasPermission</a>, <a href="../api/commands/CommandSender.html#hasPermission(java.lang.String)">hasPermission</a></code></div>
 </section>
 </li>
 </ul>
@@ -289,6 +308,19 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="xHeadRot">
 <h3>xHeadRot</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">xHeadRot</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="lastDamage">
+<h3>lastDamage</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">lastDamage</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="lastDamageSource">
+<h3>lastDamageSource</h3>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">protected</span>&nbsp;<span class="return-type">@Nullable <a href="damagesource/DamageSource.html" title="class in com.ultreon.craft.entity.damagesource">DamageSource</a></span>&nbsp;<span class="element-name">lastDamageSource</span></div>
 </section>
 </li>
 </ul>
@@ -360,6 +392,12 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="setInvincible(boolean)">
 <h3>setInvincible</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setInvincible</span><wbr><span class="parameters">(boolean&nbsp;invincible)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getSpeed()">
+<h3>getSpeed</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">getSpeed</span>()</div>
 </section>
 </li>
 <li>
@@ -478,6 +516,12 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getChunkPos()">
 <h3>getChunkPos</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a></span>&nbsp;<span class="element-name">getChunkPos</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="kill()">
+<h3>kill</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">kill</span>()</div>
 </section>
 </li>
 </ul>

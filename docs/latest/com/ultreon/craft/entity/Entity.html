@@ -76,12 +76,17 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
 <dd><code><a href="LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">Entity</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -94,72 +99,75 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>float</code></div>
-<div class="col-second even-row-color"><code><a href="#drag" class="member-name-link">drag</a></code></div>
+<div class="col-first even-row-color"><code>protected <a href="AttributeMap.html" title="class in com.ultreon.craft.entity">AttributeMap</a></code></div>
+<div class="col-second even-row-color"><code><a href="#attributes" class="member-name-link">attributes</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected double</code></div>
-<div class="col-second odd-row-color"><code><a href="#fallDistance" class="member-name-link">fallDistance</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>float</code></div>
-<div class="col-second even-row-color"><code><a href="#gravity" class="member-name-link">gravity</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#isColliding" class="member-name-link">isColliding</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#isCollidingX" class="member-name-link">isCollidingX</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#isCollidingY" class="member-name-link">isCollidingY</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#isCollidingZ" class="member-name-link">isCollidingZ</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#noClip" class="member-name-link">noClip</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#noGravity" class="member-name-link">noGravity</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#onGround" class="member-name-link">onGround</a></code></div>
+<div class="col-first odd-row-color"><code>float</code></div>
+<div class="col-second odd-row-color"><code><a href="#drag" class="member-name-link">drag</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>protected double</code></div>
-<div class="col-second even-row-color"><code><a href="#ox" class="member-name-link">ox</a></code></div>
+<div class="col-second even-row-color"><code><a href="#fallDistance" class="member-name-link">fallDistance</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>float</code></div>
+<div class="col-second odd-row-color"><code><a href="#gravity" class="member-name-link">gravity</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#isColliding" class="member-name-link">isColliding</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#isCollidingX" class="member-name-link">isCollidingX</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#isCollidingY" class="member-name-link">isCollidingY</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#isCollidingZ" class="member-name-link">isCollidingZ</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#noClip" class="member-name-link">noClip</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#noGravity" class="member-name-link">noGravity</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#onGround" class="member-name-link">onGround</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>protected double</code></div>
-<div class="col-second odd-row-color"><code><a href="#oy" class="member-name-link">oy</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#ox" class="member-name-link">ox</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>protected double</code></div>
-<div class="col-second even-row-color"><code><a href="#oz" class="member-name-link">oz</a></code></div>
+<div class="col-second even-row-color"><code><a href="#oy" class="member-name-link">oy</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>double</code></div>
-<div class="col-second odd-row-color"><code><a href="#velocityX" class="member-name-link">velocityX</a></code></div>
+<div class="col-first odd-row-color"><code>protected double</code></div>
+<div class="col-second odd-row-color"><code><a href="#oz" class="member-name-link">oz</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>double</code></div>
-<div class="col-second even-row-color"><code><a href="#velocityY" class="member-name-link">velocityY</a></code></div>
+<div class="col-second even-row-color"><code><a href="#velocityX" class="member-name-link">velocityX</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>double</code></div>
-<div class="col-second odd-row-color"><code><a href="#velocityZ" class="member-name-link">velocityZ</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#velocityY" class="member-name-link">velocityY</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected final <a href="../world/World.html" title="class in com.ultreon.craft.world">World</a></code></div>
-<div class="col-second even-row-color"><code><a href="#world" class="member-name-link">world</a></code></div>
+<div class="col-first even-row-color"><code>double</code></div>
+<div class="col-second even-row-color"><code><a href="#velocityZ" class="member-name-link">velocityZ</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected double</code></div>
-<div class="col-second odd-row-color"><code><a href="#x" class="member-name-link">x</a></code></div>
+<div class="col-first odd-row-color"><code>protected final <a href="../world/World.html" title="class in com.ultreon.craft.world">World</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#world" class="member-name-link">world</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>float</code></div>
-<div class="col-second even-row-color"><code><a href="#xRot" class="member-name-link">xRot</a></code></div>
+<div class="col-first even-row-color"><code>protected double</code></div>
+<div class="col-second even-row-color"><code><a href="#x" class="member-name-link">x</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected double</code></div>
-<div class="col-second odd-row-color"><code><a href="#y" class="member-name-link">y</a></code></div>
+<div class="col-first odd-row-color"><code>float</code></div>
+<div class="col-second odd-row-color"><code><a href="#xRot" class="member-name-link">xRot</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>float</code></div>
-<div class="col-second even-row-color"><code><a href="#yRot" class="member-name-link">yRot</a></code></div>
+<div class="col-first even-row-color"><code>protected double</code></div>
+<div class="col-second even-row-color"><code><a href="#y" class="member-name-link">y</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected double</code></div>
-<div class="col-second odd-row-color"><code><a href="#z" class="member-name-link">z</a></code></div>
+<div class="col-first odd-row-color"><code>float</code></div>
+<div class="col-second odd-row-color"><code><a href="#yRot" class="member-name-link">yRot</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>protected double</code></div>
+<div class="col-second even-row-color"><code><a href="#z" class="member-name-link">z</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -188,39 +196,57 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#blockPosition()" class="member-name-link">blockPosition</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="AttributeMap.html" title="class in com.ultreon.craft.entity">AttributeMap</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAttributes()" class="member-name-link">getAttributes</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/BoundingBox.html" title="class in com.ultreon.craft.util">BoundingBox</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBoundingBox()" class="member-name-link">getBoundingBox</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBlockPos()" class="member-name-link">getBlockPos</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/BoundingBox.html" title="class in com.ultreon.craft.util">BoundingBox</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBoundingBox(com.ultreon.craft.entity.util.EntitySize)" class="member-name-link">getBoundingBox</a><wbr>(<a href="util/EntitySize.html" title="class in com.ultreon.craft.entity.util">EntitySize</a>&nbsp;size)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBoundingBox()" class="member-name-link">getBoundingBox</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../util/BoundingBox.html" title="class in com.ultreon.craft.util">BoundingBox</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoundingBox(com.ultreon.libs.commons.v0.vector.Vec3d,com.ultreon.craft.entity.util.EntitySize)" class="member-name-link">getBoundingBox</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a>&nbsp;pos,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/BoundingBox.html" title="class in com.ultreon.craft.util">BoundingBox</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBoundingBox(com.ultreon.craft.entity.util.EntitySize)" class="member-name-link">getBoundingBox</a><wbr>(<a href="util/EntitySize.html" title="class in com.ultreon.craft.entity.util">EntitySize</a>&nbsp;size)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../util/BoundingBox.html" title="class in com.ultreon.craft.util">BoundingBox</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoundingBox(com.ultreon.libs.commons.v0.vector.Vec3d,com.ultreon.craft.entity.util.EntitySize)" class="member-name-link">getBoundingBox</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a>&nbsp;pos,
  <a href="util/EntitySize.html" title="class in com.ultreon.craft.entity.util">EntitySize</a>&nbsp;size)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getDisplayName()" class="member-name-link">getDisplayName</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getGravity()" class="member-name-link">getGravity</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getId()" class="member-name-link">getId</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLookVector()" class="member-name-link">getLookVector</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NotNull <a href="../world/Location.html" title="class in com.ultreon.craft.world">Location</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLocation()" class="member-name-link">getLocation</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLookVector()" class="member-name-link">getLookVector</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getName()" class="member-name-link">getName</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPosition()" class="member-name-link">getPosition</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRotation()" class="member-name-link">getRotation</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPublicName()" class="member-name-link">getPublicName</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="util/EntitySize.html" title="class in com.ultreon.craft.entity.util">EntitySize</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSize()" class="member-name-link">getSize</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRotation()" class="member-name-link">getRotation</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="EntityType.html" title="class in com.ultreon.craft.entity">EntityType</a>&lt;?&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getType()" class="member-name-link">getType</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="util/EntitySize.html" title="class in com.ultreon.craft.entity.util">EntitySize</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSize()" class="member-name-link">getSize</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="EntityType.html" title="class in com.ultreon.craft.entity">EntityType</a>&lt;?&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getType()" class="member-name-link">getType</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUuid()" class="member-name-link">getUuid</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getVelocity()" class="member-name-link">getVelocity</a>()</code></div>
@@ -243,11 +269,17 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>double</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZ()" class="member-name-link">getZ</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hitGround()" class="member-name-link">hitGround</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasExplicitPermission(com.ultreon.craft.api.commands.perms.Permission)" class="member-name-link">hasExplicitPermission</a><wbr>(@NotNull <a href="../api/commands/perms/Permission.html" title="class in com.ultreon.craft.api.commands.perms">Permission</a>&nbsp;permission)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hitGround()" class="member-name-link">hitGround</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Handles the entity ground hit.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isAdmin()" class="member-name-link">isAdmin</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isAffectedByFluid()" class="member-name-link">isAffectedByFluid</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -267,7 +299,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#move()" class="member-name-link">move</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#move(double,double,double)" class="member-name-link">move</a><wbr>(double&nbsp;deltaX,
  double&nbsp;deltaY,
  double&nbsp;deltaZ)</code></div>
@@ -291,6 +323,14 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save(com.ultreon.data.types.MapType)" class="member-name-link">save</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;data)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(com.ultreon.craft.text.TextObject)" class="member-name-link">sendMessage</a><wbr>(@NotNull <a href="../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;component)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(java.lang.String)" class="member-name-link">sendMessage</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sends the command sender a message back.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setGravity(float)" class="member-name-link">setGravity</a><wbr>(float&nbsp;gravity)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
@@ -306,6 +346,12 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setRotation(com.ultreon.libs.commons.v0.vector.Vec2f)" class="member-name-link">setRotation</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec2f.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec2f</a>&nbsp;position)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setupAttributes()" class="member-name-link">setupAttributes</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setUuid(java.util.UUID)" class="member-name-link">setUuid</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setVelocity(com.ultreon.libs.commons.v0.vector.Vec3d)" class="member-name-link">setVelocity</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a>&nbsp;velocity)</code></div>
@@ -337,6 +383,9 @@ loadScripts(document, 'script');</script>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-com.ultreon.craft.api.commands.CommandSender">Methods inherited from interface&nbsp;com.ultreon.craft.api.commands.<a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></h3>
+<code><a href="../api/commands/CommandSender.html#hasExplicitPermission(java.lang.String)">hasExplicitPermission</a>, <a href="../api/commands/CommandSender.html#hasPermission(com.ultreon.craft.api.commands.perms.Permission)">hasPermission</a>, <a href="../api/commands/CommandSender.html#hasPermission(java.lang.String)">hasPermission</a></code></div>
 </section>
 </li>
 </ul>
@@ -480,6 +529,12 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">oz</span></div>
 </section>
 </li>
+<li>
+<section class="detail" id="attributes">
+<h3>attributes</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="AttributeMap.html" title="class in com.ultreon.craft.entity">AttributeMap</a></span>&nbsp;<span class="element-name">attributes</span></div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -503,6 +558,12 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="setupAttributes()">
+<h3>setupAttributes</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setupAttributes</span>()</div>
+</section>
+</li>
 <li>
 <section class="detail" id="loadFrom(com.ultreon.craft.world.World,com.ultreon.data.types.MapType)">
 <h3>loadFrom</h3>
@@ -562,7 +623,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="move(double,double,double)">
 <h3>move</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">move</span><wbr><span class="parameters">(double&nbsp;deltaX,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">move</span><wbr><span class="parameters">(double&nbsp;deltaX,
  double&nbsp;deltaY,
  double&nbsp;deltaZ)</span></div>
 </section>
@@ -692,9 +753,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="blockPosition()">
-<h3>blockPosition</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></span>&nbsp;<span class="element-name">blockPosition</span>()</div>
+<section class="detail" id="getBlockPos()">
+<h3>getBlockPos</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a></span>&nbsp;<span class="element-name">getBlockPos</span>()</div>
 </section>
 </li>
 <li>
@@ -782,6 +843,117 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getType()">
 <h3>getType</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="EntityType.html" title="class in com.ultreon.craft.entity">EntityType</a>&lt;?&gt;</span>&nbsp;<span class="element-name">getType</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getLocation()">
+<h3>getLocation</h3>
+<div class="member-signature"><span class="annotations">@NotNull
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NotNull <a href="../world/Location.html" title="class in com.ultreon.craft.world">Location</a></span>&nbsp;<span class="element-name">getLocation</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#getLocation()">getLocation</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getName()">
+<h3>getName</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getName</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#getName()">getName</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getPublicName()">
+<h3>getPublicName</h3>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getPublicName</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#getPublicName()">getPublicName</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getDisplayName()">
+<h3>getDisplayName</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></span>&nbsp;<span class="element-name">getDisplayName</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#getDisplayName()">getDisplayName</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setUuid(java.util.UUID)">
+<h3>setUuid</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setUuid</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a>&nbsp;uuid)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getUuid()">
+<h3>getUuid</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/UUID.html" title="class or interface in java.util" class="external-link">UUID</a></span>&nbsp;<span class="element-name">getUuid</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#getUuid()">getUuid</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="sendMessage(java.lang.String)">
+<h3>sendMessage</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendMessage</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</span></div>
+<div class="block"><span class="descfrm-type-label">Description copied from interface:&nbsp;<code><a href="../api/commands/CommandSender.html#sendMessage(java.lang.String)">CommandSender</a></code></span></div>
+<div class="block">Sends the command sender a message back.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#sendMessage(java.lang.String)">sendMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>message</code> - a message that can be formatted by <a href="../text/Formatter.html" title="class in com.ultreon.craft.text"><code>Formatter</code></a>.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="sendMessage(com.ultreon.craft.text.TextObject)">
+<h3>sendMessage</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendMessage</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;component)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#sendMessage(com.ultreon.craft.text.TextObject)">sendMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="hasExplicitPermission(com.ultreon.craft.api.commands.perms.Permission)">
+<h3>hasExplicitPermission</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">hasExplicitPermission</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="../api/commands/perms/Permission.html" title="class in com.ultreon.craft.api.commands.perms">Permission</a>&nbsp;permission)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#hasExplicitPermission(com.ultreon.craft.api.commands.perms.Permission)">hasExplicitPermission</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isAdmin()">
+<h3>isAdmin</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isAdmin</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../api/commands/CommandSender.html#isAdmin()">isAdmin</a></code>&nbsp;in interface&nbsp;<code><a href="../api/commands/CommandSender.html" title="interface in com.ultreon.craft.api.commands">CommandSender</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getAttributes()">
+<h3>getAttributes</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="AttributeMap.html" title="class in com.ultreon.craft.entity">AttributeMap</a></span>&nbsp;<span class="element-name">getAttributes</span>()</div>
 </section>
 </li>
 </ul>

@@ -79,7 +79,7 @@ loadScripts(document, 'script');</script>
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="CollectNode.html" title="class in com.ultreon.craft.client.render.pipeline">CollectNode</a></code>, <code><a href="DepthNode.html" title="class in com.ultreon.craft.client.render.pipeline">DepthNode</a></code>, <code><a href="PlainNode.html" title="class in com.ultreon.craft.client.render.pipeline">PlainNode</a></code>, <code><a href="SSAONode.html" title="class in com.ultreon.craft.client.render.pipeline">SSAONode</a></code></dd>
+<dd><code><a href="WorldDepthNode.html" title="class in com.ultreon.craft.client.render.pipeline">WorldDepthNode</a></code>, <code><a href="WorldDiffuseNode.html" title="class in com.ultreon.craft.client.render.pipeline">WorldDiffuseNode</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">WorldRenderNode</span>
@@ -131,9 +131,12 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWorld(com.badlogic.gdx.graphics.g3d.ModelBatch)" class="member-name-link">renderWorld</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelBatch.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelBatch</a>&nbsp;batch)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTexture(com.badlogic.gdx.graphics.Texture)" class="member-name-link">setTexture</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;texture)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#requiresModel()" class="member-name-link">requiresModel</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTexture(com.badlogic.gdx.graphics.Texture)" class="member-name-link">setTexture</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;texture)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -195,6 +198,16 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="RenderPipeline.RenderNode.html#dumpInfo(java.io.PrintStream)">dumpInfo</a></code>&nbsp;in class&nbsp;<code><a href="RenderPipeline.RenderNode.html" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline.RenderNode</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="requiresModel()">
+<h3>requiresModel</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">requiresModel</span>()</div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="RenderPipeline.RenderNode.html#requiresModel()">requiresModel</a></code>&nbsp;in class&nbsp;<code><a href="RenderPipeline.RenderNode.html" title="class in com.ultreon.craft.client.render.pipeline">RenderPipeline.RenderNode</a></code></dd>
 </dl>
 </section>
 </li>

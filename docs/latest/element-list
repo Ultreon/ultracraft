@@ -1,4 +1,10 @@
 com.ultreon.craft
+com.ultreon.craft.api.commands
+com.ultreon.craft.api.commands.error
+com.ultreon.craft.api.commands.output
+com.ultreon.craft.api.commands.perms
+com.ultreon.craft.api.commands.selector
+com.ultreon.craft.api.commands.selector.type
 com.ultreon.craft.block
 com.ultreon.craft.client
 com.ultreon.craft.client.atlas
@@ -10,6 +16,8 @@ com.ultreon.craft.client.events
 com.ultreon.craft.client.filehandle
 com.ultreon.craft.client.font
 com.ultreon.craft.client.gui
+com.ultreon.craft.client.gui.debug
+com.ultreon.craft.client.gui.hud
 com.ultreon.craft.client.gui.icon
 com.ultreon.craft.client.gui.screens
 com.ultreon.craft.client.gui.screens.container
@@ -22,6 +30,7 @@ com.ultreon.craft.client.init
 com.ultreon.craft.client.input
 com.ultreon.craft.client.input.util
 com.ultreon.craft.client.item
+com.ultreon.craft.client.jfr
 com.ultreon.craft.client.model.block
 com.ultreon.craft.client.model.entity
 com.ultreon.craft.client.model.entity.renderer
@@ -31,11 +40,13 @@ com.ultreon.craft.client.platform
 com.ultreon.craft.client.player
 com.ultreon.craft.client.registry
 com.ultreon.craft.client.render
+com.ultreon.craft.client.render.meshing
 com.ultreon.craft.client.render.pipeline
 com.ultreon.craft.client.render.shader
 com.ultreon.craft.client.resources
 com.ultreon.craft.client.rpc
 com.ultreon.craft.client.shaders
+com.ultreon.craft.client.shaders.provider
 com.ultreon.craft.client.sound
 com.ultreon.craft.client.text
 com.ultreon.craft.client.texture
@@ -44,6 +55,7 @@ com.ultreon.craft.client.util
 com.ultreon.craft.client.util.exceptions
 com.ultreon.craft.client.world
 com.ultreon.craft.collection
+com.ultreon.craft.command
 com.ultreon.craft.component
 com.ultreon.craft.config
 com.ultreon.craft.debug
@@ -51,8 +63,10 @@ com.ultreon.craft.debug.inspect
 com.ultreon.craft.debug.profiler
 com.ultreon.craft.entity
 com.ultreon.craft.entity.damagesource
+com.ultreon.craft.entity.player
 com.ultreon.craft.entity.util
 com.ultreon.craft.events
+com.ultreon.craft.gamerule
 com.ultreon.craft.item
 com.ultreon.craft.item.material
 com.ultreon.craft.item.tool
@@ -70,7 +84,10 @@ com.ultreon.craft.premain
 com.ultreon.craft.premain.posix
 com.ultreon.craft.premain.win32
 com.ultreon.craft.registry
+com.ultreon.craft.registry.event
+com.ultreon.craft.registry.exception
 com.ultreon.craft.server
+com.ultreon.craft.server.chat
 com.ultreon.craft.server.dedicated
 com.ultreon.craft.server.events
 com.ultreon.craft.server.player
@@ -79,6 +96,7 @@ com.ultreon.craft.sound.event
 com.ultreon.craft.text
 com.ultreon.craft.ubo
 com.ultreon.craft.util
+com.ultreon.craft.weather
 com.ultreon.craft.world
 com.ultreon.craft.world.gen
 com.ultreon.craft.world.gen.biome
