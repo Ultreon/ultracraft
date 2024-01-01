@@ -26,7 +26,7 @@ public final class Registries {
     public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(new Identifier("damage_source"));
 
     public static void nopInit() {
-
+        // Load class
     }
 
     public static <T> Registry<T> create(Identifier id, T... typeGetter) {

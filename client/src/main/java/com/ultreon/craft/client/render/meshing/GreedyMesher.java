@@ -6,13 +6,18 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
+import com.ultreon.craft.client.registry.BlockRenderTypeRegistry;
 import com.ultreon.craft.client.registry.BlockRendererRegistry;
 import com.ultreon.craft.client.render.BlockRenderer;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.debug.Debugger;
+import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -336,7 +341,7 @@ public class GreedyMesher implements Mesher {
     }
 
     public List<Face> getFaces(UseCondition condition) {
-        return this.getFaces(condition, (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.hasOcclusion() && blockToBlockFace.hasOcclusion()), (id1, light1, lightData1, id2, light2, lightData2) -> {
+        return this.getFaces(condition, (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.hasOcclusion() && blockToBlockFace.hasOcclusion()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)), (id1, light1, lightData1, id2, light2, lightData2) -> {
             if (!id1.shouldGreedyMerge()) return false;
             boolean sameBlock = id1 == id2;
             boolean sameLight = light1 == light2;
@@ -645,8 +650,8 @@ public class GreedyMesher implements Mesher {
         ClientWorld world = chunk.getWorld();
         this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         ClientChunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
-        if (chunkAt != null) return chunkAt.getFast(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
-        return null;
+        if (chunkAt != null) return chunkAt.get(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
+        return Blocks.AIR;
     }
 
     private int blockLight(ClientChunk chunk, int x, int y, int z) {

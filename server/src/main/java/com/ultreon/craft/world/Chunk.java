@@ -2,7 +2,8 @@ package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
@@ -56,9 +57,10 @@ public abstract class Chunk implements ServerDisposable {
      * Field for block data in palette storage format.
      * Palette storage is used for improving memory usage.
      */
-    public final PaletteStorage<Block> storage;
+    public final Storage<Block> storage;
     private final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
-    protected final PaletteStorage<Biome> biomeStorage = new PaletteStorage<>(256);
+    private final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
+    protected final FlatStorage<Biome> biomeStorage = new FlatStorage<>(256);
 
     private static final int MAX_LIGHT_LEVEL = 15;
     private static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
@@ -71,10 +73,10 @@ public abstract class Chunk implements ServerDisposable {
     }
 
     protected Chunk(World world, int size, int height, ChunkPos pos) {
-        this(world, size, height, pos, new PaletteStorage<>(size * height * size));
+        this(world, size, height, pos, new FlatStorage<>(size * height * size));
     }
 
-    protected Chunk(World world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+    protected Chunk(World world, int size, int height, ChunkPos pos, Storage<Block> storage) {
         this.world = world;
 
         this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
@@ -86,47 +88,25 @@ public abstract class Chunk implements ServerDisposable {
     }
 
     /**
-     * Decodes a block from a UBO object.
+     * Decodes a block from a Packet Buffer object.
      *
-     * @param inputData The input data.
+     * @param buffer The input data.
      * @return The decoded block data.
      */
-    public static Block decodeBlock(MapType inputData) {
-        @Nullable String stringId = inputData.getString("id");
-        if (stringId == null) {
-            LOGGER.error("Unable to decode block, missing ID.");
-            return Blocks.ERROR;
-        }
+    public static Block decodeBlock(PacketBuffer buffer) {
+        int id = buffer.readInt();
+        return Registries.BLOCK.byId(id);
+    }
 
-        @Nullable Identifier id = Identifier.tryParse(stringId);
-
-        if (id == null) {
-            LOGGER.error("Unknown block: {}", stringId);
-            return Blocks.BARRIER;
-        }
+    /**
+     * Decodes a block from a UBO object.
+     *
+     * @param data The input data.
+     * @return The decoded block data.
+     */
+    public static Block loadBlock(MapType data) {
+        @Nullable Identifier id = Identifier.parse(data.getString("id"));
         return Registries.BLOCK.getValue(id);
-    }
-
-    /**
-     * Serialize the chunk to the packet buffer.
-     *
-     * @param buffer The packet buffer.
-     */
-    public void serializeChunk(PacketBuffer buffer) {
-        synchronized (this.lock) {
-            this.storage.write(buffer, Block::save);
-            this.biomeStorage.write(buffer, Biome::save);
-        }
-    }
-
-    /**
-     * Deserialize the chunk from the packet buffer.
-     *
-     * @param buffer The packet buffer.
-     */
-    public void deserializeChunk(PacketBuffer buffer) {
-        this.storage.read(buffer, Chunk::decodeBlock);
-        this.biomeStorage.read(buffer, Biome::load);
     }
 
     public Block get(Vec3i pos) {
@@ -141,7 +121,7 @@ public abstract class Chunk implements ServerDisposable {
 
     public Block get(int x, int y, int z) {
         if (this.disposed) return Blocks.BARRIER;
-        if (this.isOutOfBounds(x, y, z)) return Blocks.BARRIER;
+        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
         return this.getFast(x, y, z);
     }
 
@@ -176,6 +156,23 @@ public abstract class Chunk implements ServerDisposable {
 
         this.breaking.remove(new BlockPos(x, y, z));
         this.storage.set(index, block);
+
+        if (this.heightMap.get(x, z) < y && block != Blocks.AIR) {
+            this.heightMap.set(x, z, (short) y);
+        } else if (this.heightMap.get(x, z) == y && block == Blocks.AIR) {
+            int curY;
+            for (curY = y; curY >= 0; curY--) {
+                if (this.getFast(x, curY, z) != Blocks.AIR) {
+                    this.heightMap.set(x, z, (short) (curY + 1));
+                    break;
+                }
+            }
+
+            if (curY < 0) {
+                this.heightMap.set(x, z, (short) 0);
+            }
+        }
+
         return true;
     }
 
@@ -197,7 +194,9 @@ public abstract class Chunk implements ServerDisposable {
             this.disposed = true;
             this.ready = false;
 
-            this.storage.dispose();
+            if (this.storage instanceof ServerDisposable disposable) {
+                disposable.dispose();
+            }
         }
     }
 
@@ -273,14 +272,8 @@ public abstract class Chunk implements ServerDisposable {
      * @param z the z coordinate
      * @return The highest block Y coordinate.
      */
-    // TODO: Make faster with heightmaps.
     public int getHighest(int x, int z) {
-        for (int y = CHUNK_HEIGHT; y > 0; y--) {
-            if (!this.get(x, y, z).isAir()) {
-                return y;
-            }
-        }
-        return 0;
+        return this.heightMap.get(x, z);
     }
 
     /**
@@ -359,7 +352,7 @@ public abstract class Chunk implements ServerDisposable {
 
     public int getSunlight(int x, int y, int z) throws PosOutOfBoundsException {
         if(this.isOutOfBounds(x, y, z))
-            throw new PosOutOfBoundsException(x + ", " + y + ", " + z);
+            return 0;
 
         return 15;
     }
@@ -370,7 +363,7 @@ public abstract class Chunk implements ServerDisposable {
 
     public int getBlockLight(int x, int y, int z) throws PosOutOfBoundsException {
         if(this.isOutOfBounds(x, y, z))
-            throw new PosOutOfBoundsException();
+            return 0;
 
         return this.lightMap.getBlockLight(x, y, z);
     }

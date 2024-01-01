@@ -1,5 +1,6 @@
 package com.ultreon.craft.registry;
 
+import com.ultreon.craft.LoadingContext;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.registry.exception.RegistryException;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class Registry<T> {
+public class Registry<T> implements IdRegistry<T> {
     public static Logger dumpLogger = (level, msg, t) -> {};
     private static final OrderedMap<Class<?>, Registry<?>> REGISTRIES = new OrderedMap<>();
     private static boolean frozen;
@@ -18,10 +19,14 @@ public class Registry<T> {
     private final OrderedMap<T, Identifier> valueMap = new OrderedMap<>();
     private final Class<T> type;
     private final Identifier id;
+    private final boolean allowOverride;
+    private final boolean doNotSync;
 
-    protected Registry(Class<T> clazz, Identifier id) throws IllegalStateException {
-        this.id = id;
-        this.type = clazz;
+    private Registry(Builder<T> builder) throws IllegalStateException {
+        this.id = builder.id;
+        this.type = builder.type;
+        this.allowOverride = builder.allowOverride;
+        this.doNotSync = builder.doNotSync;
 
         RegistryEvents.REGISTRY_DUMP.listen(this::dumpRegistry);
     }
@@ -39,17 +44,26 @@ public class Registry<T> {
     }
 
     @SafeVarargs
+    @Deprecated
     @SuppressWarnings("unchecked")
-    public static <T> Registry<T> create(Identifier registryName, @NotNull T... type) {
+    public static <T> Registry<T> create(Identifier id, @NotNull T... type) {
         Class<T> componentType = (Class<T>) type.getClass().getComponentType();
         if (Registry.REGISTRIES.containsKey(componentType)) {
             throw new IllegalStateException();
         }
 
-        Registry<T> registry = new Registry<>(componentType, registryName);
+        Registry<T> registry = new Builder<>(id, type).build();
         Registry.REGISTRIES.put(componentType, registry);
 
         return registry;
+    }
+
+    public static <T> Builder<T> builder(Identifier id, T... typeGetter) {
+        return new Builder<>(id, typeGetter);
+    }
+
+    public static <T> Builder<T> builder(String name, T... typeGetter) {
+        return new Builder<>(new Identifier(LoadingContext.get().namespace(), name), typeGetter);
     }
 
     /**
@@ -102,8 +116,20 @@ public class Registry<T> {
             throw new IllegalArgumentException("Not allowed type detected, got " + val.getClass() + " expected assignable to " + this.type);
         }
 
+        if (this.keyMap.containsKey(rl) && !this.allowOverride()) {
+            throw new IllegalArgumentException("Already registered: " + rl);
+        }
+
         this.keyMap.put(rl, val);
         this.valueMap.put(val, rl);
+    }
+
+    public boolean allowOverride() {
+        return this.allowOverride;
+    }
+
+    public boolean doNotSync() {
+        return this.doNotSync;
     }
 
     public List<T> values() {
@@ -144,8 +170,8 @@ public class Registry<T> {
                 try {
                     o = entry.getValue();
                     className = o.getClass().getName();
-                } catch (Throwable ignored) {
-
+                } catch (Exception ignored) {
+                    // Do nothing
                 }
 
                 Registry.dumpLogger.log("  (" + entry.getKey() + ") -> {");
@@ -159,5 +185,43 @@ public class Registry<T> {
 
     public boolean isFrozen() {
         return Registry.frozen;
+    }
+
+    @Override
+    public int getId(T object) {
+        return this.keyMap.indexOfValue(object);
+    }
+
+    @Override
+    public T byId(int id) {
+        return this.keyMap.valueList().get(id);
+    }
+
+    public static class Builder<T> {
+
+        private final Class<T> type;
+        private final Identifier id;
+        private boolean allowOverride = false;
+        private boolean doNotSync = false;
+
+        @SuppressWarnings("unchecked")
+        public Builder(Identifier id, T... typeGetter) {
+            this.type = (Class<T>) typeGetter.getClass().getComponentType();
+            this.id = id;
+        }
+
+        public Builder<T> allowOverride() {
+            this.allowOverride = true;
+            return this;
+        }
+
+        public Registry<T> build() {
+            return new Registry<>(this);
+        }
+
+        public Builder<T> doNotSync() {
+            this.doNotSync = true;
+            return this;
+        }
     }
 }

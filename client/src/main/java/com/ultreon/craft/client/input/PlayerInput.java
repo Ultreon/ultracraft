@@ -48,7 +48,7 @@ public class PlayerInput {
         if (this.flyCountdown > 0) {
             this.flyCountdown--;
 
-            if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {
+            if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight() && !player.isSpectator()) {
                 player.setFlying(!player.isFlying());
             }
         } else if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {

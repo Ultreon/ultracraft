@@ -62,5 +62,7 @@
   "ultracraft.screen.multiplayer": "Multiplayer",
   "ultracraft.screen.multiplayer.server_ip": "Server IP",
   "ultracraft.screen.multiplayer.join": "Join",
+  "ultracraft.screen.out_of_memory": "Out of Memory",
+  "ultracraft.screen.out_of_memory.message": "Ultracraft ran out of memory.\nTry restarting the game.\nYou can also return to the title screen to free up memory.",
   "ultracraft.dimension.overworld": "Planet Earth"
 }

@@ -343,7 +343,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
@@ -423,7 +423,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public Vec2i getChunkVec() {
-        return World.toChunkVec(this.blockPosition());
+        return World.toChunkVec(this.getBlockPos());
     }
 
     public boolean isChunkActive(ChunkPos chunkPos) {

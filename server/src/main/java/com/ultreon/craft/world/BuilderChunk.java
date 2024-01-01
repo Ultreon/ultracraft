@@ -1,36 +1,23 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.collection.PaletteStorage;
-import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class BuilderChunk extends Chunk {
     private final ServerWorld world;
     private final Thread thread;
-    private final PaletteStorage<BiomeGenerator> biomePalette = new PaletteStorage<>(256);
+    private final FlatStorage<BiomeGenerator> biomeData = new FlatStorage<>(256);
     private List<Vec3i> biomeCenters;
 
     public BuilderChunk(ServerWorld world, Thread thread, int size, int height, ChunkPos pos) {
         super(world, size, height, pos);
         this.world = world;
         this.thread = thread;
-    }
-
-    @Override
-    public void serializeChunk(PacketBuffer buffer) {
-        throw new UnsupportedOperationException("Can't serialize builder chunk.");
-    }
-
-    @Override
-    public void deserializeChunk(PacketBuffer buffer) {
-        throw new UnsupportedOperationException("Can't deserialize builder chunk.");
     }
 
     @Override
@@ -56,20 +43,18 @@ public final class BuilderChunk extends Chunk {
 
     public ServerChunk build() {
         ServerChunk builtChunk = new ServerChunk(this.world, this.size, this.height, World.toLocalChunkPos(this.getPos()), this.storage);
-        short[] palette = this.biomePalette.getPalette();
-        List<Biome> data = this.biomePalette.getData().stream().map(BiomeGenerator::getBiome).collect(Collectors.toCollection(ArrayList::new));
-        builtChunk.setBiomes(palette, data);
+        this.biomeData.map(BiomeGenerator::getBiome, Biome.class);
         return builtChunk;
     }
 
     public void setBiomeGenerator(int x, int z, BiomeGenerator generator) {
         int index = this.toFlatIndex(x, z);
-        this.biomePalette.set(index, generator);
+        this.biomeData.set(index, generator);
     }
 
     public BiomeGenerator getBiomeGenerator(int x, int z) {
         int index = this.toFlatIndex(x, z);
-        return this.biomePalette.get(index);
+        return this.biomeData.get(index);
     }
 
     public void setBiomeCenters(List<Vec3i> biomeCenters) {

@@ -7,6 +7,7 @@ import com.ultreon.craft.registry.CommandRegistry;
 public class GameCommands {
     public static void register() {
         CommandRegistry.register(new TeleportCommand());
+        CommandRegistry.register(new KillCommand());
         CommandRegistry.register(new FlyCommand());
         CommandRegistry.register(new InvincibleCommand());
         CommandRegistry.register(new WhereAmICommand());

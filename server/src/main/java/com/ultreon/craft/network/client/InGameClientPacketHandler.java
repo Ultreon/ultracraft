@@ -1,6 +1,7 @@
 package com.ultreon.craft.network.client;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -33,7 +34,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, short[] palette, List<Block> data);
+    void onChunkData(ChunkPos pos, Storage<Block> storage);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 

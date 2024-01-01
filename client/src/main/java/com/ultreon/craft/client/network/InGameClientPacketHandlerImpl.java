@@ -14,6 +14,7 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
@@ -109,7 +110,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
+    public void onChunkData(ChunkPos pos, Storage<Block> storage) {
         LocalPlayer player = this.client.player;
         if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
@@ -118,8 +119,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
         CompletableFuture.runAsync(() -> {
             ClientWorld world = this.client.world;
-
-            PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
 
             if (world == null) {
                 this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));

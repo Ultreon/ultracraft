@@ -177,7 +177,7 @@ public class Entity implements CommandSender {
     }
 
     private boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
+        return this.world.get(this.getBlockPos()) == Blocks.WATER;
     }
 
     protected void swimUp() {
@@ -295,14 +295,14 @@ public class Entity implements CommandSender {
      * Handles the entity movement.
      */
     protected void onMoved() {
-
+        // Impl reasons
     }
 
     /**
      * Handles the entity ground hit.
      */
     protected void hitGround() {
-
+        // Impl reasons
     }
 
     /**
@@ -393,7 +393,7 @@ public class Entity implements CommandSender {
         this.oz = z;
     }
 
-    public BlockPos blockPosition() {
+    public BlockPos getBlockPos() {
         return new BlockPos(this.x, this.y, this.z);
     }
 

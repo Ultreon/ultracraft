@@ -1093,7 +1093,7 @@ public final class ServerWorld extends World {
             var players = this.world.getServer().getPlayersInChunk(globalPos);
             players.forEach(player -> {
                 try {
-                    BlockPos globalTpPos = player.blockPosition();
+                    BlockPos globalTpPos = player.getBlockPos();
                     BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
                     int x = localTpPos.x();
                     int z = localTpPos.z();
@@ -1135,7 +1135,7 @@ public final class ServerWorld extends World {
                 var players = this.world.getServer().getPlayersInChunk(globalPos);
                 players.forEach(player -> {
                     try {
-                        BlockPos globalTpPos = player.blockPosition();
+                        BlockPos globalTpPos = player.getBlockPos();
                         BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
                         int x = localTpPos.x();
                         int z = localTpPos.z();

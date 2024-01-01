@@ -240,7 +240,7 @@ public class GameRenderer {
 
         UltracraftClient.PROFILER.section("debug", () -> {
             if (this.client.hideHud) return;
-            this.client.debugRenderer.render(renderer);
+            this.client.debugGui.render(renderer);
         });
     }
 

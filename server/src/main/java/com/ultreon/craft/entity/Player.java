@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 
 public abstract class Player extends LivingEntity {
     public int selected;
@@ -34,7 +35,6 @@ public abstract class Player extends LivingEntity {
     public float crouchModifier = 0.5F;
     public final PlayerAbilities abilities = new PlayerAbilities();
     private boolean crouching = false;
-    private boolean spectating = false;
     @Nullable private ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
     private final String name;
@@ -168,12 +168,18 @@ public abstract class Player extends LivingEntity {
         this.crouching = crouching;
     }
 
-    public boolean isSpectating() {
-        return this.spectating;
+    public boolean isSpectator() {
+        return this.gamemode == Gamemode.SPECTATOR;
     }
 
+    @Deprecated
+    public boolean isSpectating() {
+        return this.isSpectator();
+    }
+
+    @Deprecated
     public void setSpectating(boolean spectating) {
-        this.spectating = this.noClip = this.abilities.flying = spectating;
+        this.setGamemode(spectating ? Gamemode.SPECTATOR : Gamemode.SURVIVAL);
     }
 
     @Override
@@ -190,13 +196,13 @@ public abstract class Player extends LivingEntity {
         super.load(data);
 
         this.selected = data.getByte("selectedItem", (byte) this.selected);
-        this.spectating = data.getBoolean("spectating", this.spectating);
         this.crouching = data.getBoolean("crouching", this.crouching);
         this.running = data.getBoolean("running", this.running);
         this.walkingSpeed = data.getFloat("walkingSpeed", this.walkingSpeed);
         this.flyingSpeed = data.getFloat("flyingSpeed", this.flyingSpeed);
         this.crouchModifier = data.getFloat("crouchingModifier", this.crouchModifier);
         this.runModifier = data.getFloat("runModifier", this.runModifier);
+        this.gamemode = Objects.requireNonNullElse(Gamemode.byOrdinal(data.getByte("gamemode", (byte) 0)), Gamemode.SURVIVAL);
         this.abilities.load(data.getMap("Abilities"));
     }
 
@@ -205,13 +211,13 @@ public abstract class Player extends LivingEntity {
         data = super.save(data);
 
         data.putByte("selectedItem", this.selected);
-        data.putBoolean("spectating", this.spectating);
         data.putBoolean("crouching", this.crouching);
         data.putBoolean("running", this.running);
         data.putFloat("walkingSpeed", this.walkingSpeed);
         data.putFloat("flyingSpeed", this.flyingSpeed);
         data.putFloat("crouchingModifier", this.crouchModifier);
         data.putFloat("runModifier", this.runModifier);
+        data.putByte("gamemode", (byte) this.gamemode.ordinal());
         data.put("Abilities", this.abilities.save(new MapType()));
 
         return data;
@@ -308,6 +314,41 @@ public abstract class Player extends LivingEntity {
 
     public void setGamemode(Gamemode gamemode) {
         this.gamemode = gamemode;
+        switch (gamemode) {
+            case SURVIVAL -> {
+                this.abilities.allowFlight = false;
+                this.abilities.instaMine = false;
+                this.abilities.invincible = false;
+                this.abilities.blockBreak = true;
+                this.abilities.flying = false;
+                this.noClip = false;
+            }
+            case BUILDER, BUILDER_PLUS -> {
+                this.abilities.allowFlight = true;
+                this.abilities.instaMine = true;
+                this.abilities.invincible = true;
+                this.abilities.blockBreak = true;
+                this.noClip = false;
+            }
+            case MINI_GAME -> {
+                this.abilities.allowFlight = false;
+                this.abilities.instaMine = false;
+                this.abilities.invincible = false;
+                this.abilities.blockBreak = false;
+                this.abilities.flying = false;
+                this.noClip = false;
+            }
+            case SPECTATOR -> {
+                this.abilities.allowFlight = true;
+                this.abilities.instaMine = false;
+                this.abilities.invincible = true;
+                this.abilities.blockBreak = false;
+                this.abilities.flying = true;
+                this.noClip = true;
+            }
+        }
+
+        this.sendAbilities();
     }
 
     public Gamemode getGamemode() {

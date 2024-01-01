@@ -1,8 +1,7 @@
 package com.ultreon.craft.registry;
 
+import com.google.common.base.Preconditions;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.registry.RegistrySupplier;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +17,7 @@ public class DelayedRegister<T> {
     private final ArrayList<HashMap.Entry<Identifier, Supplier<T>>> objects = new ArrayList<>();
 
     protected DelayedRegister(@NotNull String modId, @NotNull com.ultreon.craft.registry.Registry<T> registry) {
+        Preconditions.checkNotNull(modId, "modId");
         this.modId = modId;
         this.registry = registry;
     }
@@ -27,7 +27,7 @@ public class DelayedRegister<T> {
     }
 
     public <C extends T> RegistrySupplier<C> register(@NotNull String name, @NotNull Supplier<@NotNull C> supplier) {
-        Identifier id = new Identifier(this.modId, name);
+        var id = new Identifier(this.modId, name);
 
         this.objects.add(new HashMap.SimpleEntry<>(id, supplier::get));
 
@@ -35,8 +35,8 @@ public class DelayedRegister<T> {
     }
 
     public void register() {
-        RegistryEvents.AUTO_REGISTER.listen(registry -> {
-            if (!registry.getType().equals(this.registry.getType())) {
+        RegistryEvents.AUTO_REGISTER.listen((modId, registry) -> {
+            if (!registry.getType().equals(this.registry.getType()) || !this.modId.equals(modId)) {
                 return;
             }
 

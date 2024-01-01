@@ -21,7 +21,6 @@ public class GamemodeCommand extends Command {
 
         player.setGamemode(gamemode);
 
-        if (player.isInvincible()) return this.successMessage("Gamemode set to %s".formatted(gamemode.name().toLowerCase(Locale.ROOT)));
-        else return this.successMessage("Invincibility has been disabled!");
+        return this.successMessage("Gamemode set to %s".formatted(gamemode.name().toLowerCase(Locale.ROOT)));
     }
 }

@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.gui;
+package com.ultreon.craft.client.gui.debug;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -11,22 +11,22 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Comparator;
 import java.util.List;
 
-public class InspectorOverlay {
+public class InspectorDebugPage implements DebugPage {
     private String inspectCurrentPath = "/";
     private String inspectIdxInput = "";
 
-    void renderInspector(Renderer renderer, DebugGui debugGui) {
+    public void render(DebugRenderContext context) {
         String path = this.inspectCurrentPath;
 
         Comparator<InspectionNode<?>> comparator = Comparator.comparing(InspectionNode::getName);
 
-        debugGui.entryLine(renderer, TextObject.literal(this.inspectIdxInput).setColor(Color.WHITE))
-                .entryLine(renderer, TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true))
-                .entryLine(renderer);
+        context.entryLine(TextObject.literal(this.inspectIdxInput).setColor(Color.WHITE))
+                .entryLine(TextObject.literal(path).setColor(Color.AZURE).setBold(true).setUnderlined(true))
+                .entryLine();
 
-        if (this.renderNodes(renderer, debugGui, path, comparator)) return;
+        if (this.renderNodes(context, path, comparator)) return;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_ENTER)) this.handleEnterKey(debugGui, path, comparator);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_ENTER)) this.handleEnterKey(context, path, comparator);
         else if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) this.handleBackspaceKey(path);
         else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_DOT)) this.handleReset();
         else this.handleNumberKey();
@@ -55,12 +55,12 @@ public class InspectorOverlay {
         this.inspectCurrentPath = path.substring(0, path.lastIndexOf("/")) + '/';
     }
 
-    private void handleEnterKey(DebugGui debugGui, String path, Comparator<InspectionNode<?>> comparator) {
+    private void handleEnterKey(DebugRenderContext context, String path, Comparator<InspectionNode<?>> comparator) {
         String input = this.inspectIdxInput;
         try {
             int idx = Integer.parseInt(input);
 
-            @Nullable InspectionNode<?> node = debugGui.client.inspection.getNode(path);
+            @Nullable InspectionNode<?> node = context.client().inspection.getNode(path);
             if (node == null) {
                 this.inspectCurrentPath = "/";
                 return;
@@ -79,8 +79,8 @@ public class InspectorOverlay {
         }
     }
 
-    private boolean renderNodes(Renderer renderer, DebugGui debugGui, String path, Comparator<InspectionNode<?>> comparator) {
-        @Nullable InspectionNode<?> node = debugGui.client.inspection.getNode(path);
+    private boolean renderNodes(DebugRenderContext context, String path, Comparator<InspectionNode<?>> comparator) {
+        @Nullable InspectionNode<?> node = context.client().inspection.getNode(path);
         if (node == null) {
             this.inspectCurrentPath = "/";
             return true;
@@ -89,12 +89,12 @@ public class InspectorOverlay {
         List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).toList();
         for (int i = 0, nodeSize = nodes.size(); i < nodeSize; i++) {
             InspectionNode<?> curNode = nodes.get(i);
-            debugGui.entryLine(renderer, i, curNode.getName());
+            context.entryLine(i, curNode.getName());
         }
 
         List<Pair<String, String>> elements = node.getElements().entrySet().stream().map(t -> new Pair<>(t.getKey(), t.getValue().get())).sorted(Comparator.comparing(Pair::getFirst)).toList();
         for (Pair<String, String> element : elements) {
-            debugGui.entryLine(renderer, element.getFirst(), element.getSecond());
+            context.entryLine(element.getFirst(), element.getSecond());
         }
         return false;
     }

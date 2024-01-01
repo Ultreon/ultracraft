@@ -522,8 +522,6 @@ public final class WorldRenderer implements Disposable {
                 cursor1.meshPart.mesh = null;
             }
         }
-
-//        this.outlineShader.dispose();
     }
 
     public boolean isDisposed() {

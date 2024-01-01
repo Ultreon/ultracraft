@@ -30,4 +30,16 @@ public class LightMap {
         byte datum = this.data[this.getIndex(x, y, z)];
         return datum & 0x0F;
     }
+
+    public void setSunlight(int x, int y, int z, int value) {
+        byte datum = this.data[this.getIndex(x, y, z)];
+        datum = (byte) ((datum & 0x0F) | (value << 4));
+        this.data[this.getIndex(x, y, z)] = datum;
+    }
+
+    public void setBlockLight(int x, int y, int z, int value) {
+        byte datum = this.data[this.getIndex(x, y, z)];
+        datum = (byte) ((datum & 0xF0) | value);
+        this.data[this.getIndex(x, y, z)] = datum;
+    }
 }

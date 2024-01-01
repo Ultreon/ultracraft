@@ -140,7 +140,8 @@ public class DesktopInput extends GameInput {
     }
 
     private void handleDebugKey() {
-        this.client.showDebugHud = !this.client.showDebugHud;
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) this.client.debugGui.prevPage();
+        else this.client.debugGui.nextPage();
 
         if (!this.client.showDebugHud)
             UltracraftClient.PROFILER.setProfiling(false);

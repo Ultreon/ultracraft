@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class TeleportCommand extends Command {
     public TeleportCommand() {
-        this.requirePermission("ultracraft.commands.helloworld");
+        this.requirePermission("ultracraft.commands.teleport");
         this.setCategory(CommandCategory.TELEPORT);
         this.data().aliases("teleport", "tp");
     }
@@ -32,5 +32,14 @@ public class TeleportCommand extends Command {
         world.spawn(player);
 
         return this.successMessage("Teleported to " + position + " at " + world.getDimension().getName());
+    }
+
+    @SubCommand("relative <position>")
+    public @Nullable CommandOutput executeRelative(CommandSender sender, CommandContext commandContext, String alias, Vec3d offset) {
+        if (!(sender instanceof Player player)) return this.needPlayer();
+
+        player.setPosition(player.getPosition().add(offset));
+
+        return this.successMessage("Teleported to " + player.getPosition());
     }
 }

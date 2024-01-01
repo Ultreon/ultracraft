@@ -431,6 +431,7 @@ public class CommandData {
             case "mini_game" -> Gamemode.MINI_GAME;
             case "builder" -> Gamemode.BUILDER;
             case "builder_plus" -> Gamemode.BUILDER_PLUS;
+            case "spectator" -> Gamemode.SPECTATOR;
             default -> throw new CommandParseException.NotFound("gamemode", ctx.getOffset());
         };
     }

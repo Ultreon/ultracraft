@@ -1,14 +1,14 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.data.types.MapType;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.util.List;
 
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
@@ -17,7 +17,7 @@ import static com.ultreon.craft.world.World.CHUNK_SIZE;
 public final class ServerChunk extends Chunk {
     private final ServerWorld world;
 
-    public ServerChunk(ServerWorld world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+    public ServerChunk(ServerWorld world, int size, int height, ChunkPos pos, Storage<Block> storage) {
         super(world, size, height, pos, storage);
         this.world = world;
     }
@@ -32,10 +32,10 @@ public final class ServerChunk extends Chunk {
 
 
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData) {
-        var storage = new PaletteStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+        var storage = new FlatStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
 
         MapType blockData = chunkData.getMap("Blocks");
-        storage.load(blockData, Chunk::decodeBlock);
+        storage.load(blockData, Chunk::loadBlock);
 
         ServerChunk chunk = new ServerChunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage);
         chunk.load(chunkData);
@@ -80,9 +80,5 @@ public final class ServerChunk extends Chunk {
     @Override
     public ServerWorld getWorld() {
         return this.world;
-    }
-
-    void setBiomes(short[] palette, List<Biome> data) {
-        this.biomeStorage.set(palette, data);
     }
 }

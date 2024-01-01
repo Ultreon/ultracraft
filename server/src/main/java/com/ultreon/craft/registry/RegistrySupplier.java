@@ -21,6 +21,7 @@ public class RegistrySupplier<T> implements Supplier<T> {
         this.registry.register(this.identifier, this.supplier.get());
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public T get() {
         return (T) this.registry.getValue(this.identifier);

@@ -260,7 +260,7 @@ public abstract class World implements ServerDisposable {
 
     public static BlockPos toLocalBlockPos(int x, int y, int z) {
         int cx = x % World.CHUNK_SIZE;
-        int cy = y % World.CHUNK_HEIGHT;
+        int cy = y % (World.CHUNK_HEIGHT + 1);
         int cz = z % World.CHUNK_SIZE;
 
         if (cx < 0) cx += World.CHUNK_SIZE;
@@ -271,7 +271,7 @@ public abstract class World implements ServerDisposable {
 
     public static Vec3i toLocalBlockPos(int x, int y, int z, Vec3i tmp) {
         tmp.x = x % World.CHUNK_SIZE;
-        tmp.y = y % World.CHUNK_HEIGHT;
+        tmp.y = y % (World.CHUNK_HEIGHT + 1);
         tmp.z = z % World.CHUNK_SIZE;
 
         if (tmp.x < 0) tmp.x += World.CHUNK_SIZE;
@@ -318,13 +318,13 @@ public abstract class World implements ServerDisposable {
     }
 
     public boolean isOutOfWorldBounds(BlockPos pos) {
-        return pos.y() < World.WORLD_DEPTH || pos.y() > World.WORLD_HEIGHT
+        return pos.y() < World.WORLD_DEPTH || pos.y() >= World.WORLD_HEIGHT
                 || pos.x() < -30000000 || pos.x() > 30000000
                 || pos.z() < -30000000 || pos.z() > 30000000;
     }
 
     public boolean isOutOfWorldBounds(int x, int y, int z) {
-        return y < World.WORLD_DEPTH || y > World.WORLD_HEIGHT
+        return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
                || x < -30000000 || x > 30000000
                || z < -30000000 || z > 30000000;
     }
@@ -338,7 +338,7 @@ public abstract class World implements ServerDisposable {
      */
     public int getHighest(int x, int z) {
         Chunk chunkAt = this.getChunkAt(x, 0, z);
-        if (chunkAt == null) return Integer.MIN_VALUE;
+        if (chunkAt == null) return World.WORLD_DEPTH;
 
         // FIXME: Optimize by using a heightmap.
         for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
@@ -619,7 +619,7 @@ public abstract class World implements ServerDisposable {
 
     public BlockPos getSpawnPoint() {
         int highest = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
-        if (highest != Integer.MIN_VALUE)
+        if (highest != World.WORLD_DEPTH)
             this.spawnPoint.y = highest;
 
         return new BlockPos(this.spawnPoint);

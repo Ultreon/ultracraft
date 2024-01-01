@@ -139,6 +139,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof ClosedChannelException) return;
+
         try {
             boolean handlingFault = !this.handlingFault;
             this.handlingFault = true;
@@ -258,7 +260,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 Connection.LOGGER.warn("Can't send packet because the channel isn't available.");
                 return;
             }
-            if (!this.channel.isOpen()) throw new ClosedChannelException();
+            if (!this.channel.isOpen()) return;
 
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
@@ -284,6 +286,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
             if (future.isSuccess()) {
                 stateListener.onSuccess();
+                return;
+            }
+
+            if (future.cause() instanceof ClosedChannelException) {
                 return;
             }
 

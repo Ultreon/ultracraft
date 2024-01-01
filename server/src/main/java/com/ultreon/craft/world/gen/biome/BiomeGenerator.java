@@ -1,5 +1,6 @@
 package com.ultreon.craft.world.gen.biome;
 
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BuilderChunk;
@@ -41,7 +42,7 @@ public class BiomeGenerator implements ServerDisposable {
 
         int groundPos = this.getSurfaceHeightNoise(chunk.getOffset().x + x, chunk.getOffset().z + z) * chunkAmplitude;
 
-        for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
+        for (int y = chunk.getOffset().y + 1; y < chunk.getOffset().y + chunk.height; y++) {
             for (TerrainLayer layer : this.layers) {
                 if (layer.handle(this.world, chunk, x, y, z, groundPos)) {
                     break;
@@ -49,9 +50,12 @@ public class BiomeGenerator implements ServerDisposable {
             }
         }
 
+
         for (TerrainLayer layer : this.extraLayers) {
             layer.handle(this.world, chunk, x, chunk.getOffset().y, z, groundPos);
         }
+
+        chunk.set(x, chunk.getOffset().y, z, Blocks.VOIDGUARD);
 
         return chunk;
     }
