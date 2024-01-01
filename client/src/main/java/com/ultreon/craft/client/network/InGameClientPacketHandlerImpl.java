@@ -6,6 +6,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ClientPlayerEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
+import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.RemotePlayer;
@@ -13,6 +14,7 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.PaletteStorage;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
@@ -23,13 +25,16 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.AddPermissionPacket;
 import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
+import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
@@ -50,6 +55,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     private final Map<Identifier, NetworkChannel> channels = new HashMap<>();
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
+    private long ping = 0;
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -104,7 +110,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, short[] palette, List<Block> data) {
+    public void onChunkData(ChunkPos pos, Storage<Block> storage) {
         LocalPlayer player = this.client.player;
         if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
@@ -113,8 +119,6 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
         CompletableFuture.runAsync(() -> {
             ClientWorld world = this.client.world;
-
-            PaletteStorage<Block> storage = new PaletteStorage<>(palette, data);
 
             if (world == null) {
                 this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
@@ -314,5 +318,47 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     @Override
     public void onChatReceived(TextObject message) {
         ChatScreen.addMessage(message);
+    }
+
+    @Override
+    public void onTabCompleteResult(String[] options) {
+        Screen screen = this.client.screen;
+        if (screen instanceof ChatScreen chatScreen) {
+            UltracraftClient.invoke(() -> chatScreen.onTabComplete(options));
+        }
+    }
+
+    @Override
+    public void onAbilities(AbilitiesPacket packet) {
+        LocalPlayer player = this.client.player;
+        if (player != null) {
+            player.onAbilities(packet);
+        }
+    }
+
+    @Override
+    public void onPlayerHurt(S2CPlayerHurtPacket packet) {
+        LocalPlayer player = this.client.player;
+        if (player != null) {
+            player.onHurt(packet);
+        }
+    }
+
+    public long getPing() {
+        return this.ping;
+    }
+
+    @Override
+    public void onPing(long serverTime, long time) {
+        this.ping = System.currentTimeMillis() - time;
+        this.connection.onPing(this.ping);
+    }
+
+    @Override
+    public void onGamemode(Gamemode gamemode) {
+        LocalPlayer player = this.client.player;
+        if (player != null) {
+            player.setGamemode(gamemode);
+        }
     }
 }

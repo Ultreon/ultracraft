@@ -77,24 +77,26 @@ public class TextureManager {
         return byteArrayInputStream;
     }
 
-    @NotNull
-    public Texture getTexture(Identifier id) {
-        if (this.frozen) return TextureManager.DEFAULT_TEX;
-
+    public Texture getTexture(Identifier id, Texture fallback) {
         Preconditions.checkNotNull(id, "id");
 
         if (!UltracraftClient.isOnMainThread()) {
-            return UltracraftClient.invokeAndWait(() -> this.getTexture(id));
+            return UltracraftClient.invokeAndWait(() -> this.getTexture(id, fallback));
         }
 
         if (!this.textures.containsKey(id)) {
-            return this.registerTexture(id);
+            return this.registerTextureFB(id, fallback);
         }
 
         Texture texture = this.textures.get(id);
-        if (texture == null) return TextureManager.DEFAULT_TEX;
+        if (texture == null) return fallback;
 
         return texture;
+    }
+
+    @NotNull
+    public Texture getTexture(Identifier id) {
+        return this.getTexture(id, TextureManager.DEFAULT_TEX);
     }
 
     public boolean isTextureLoaded(Identifier id) {
@@ -116,12 +118,44 @@ public class TextureManager {
         if (oldTexture != null) return oldTexture;
 
         FileHandle handle = UltracraftClient.resource(id);
-        if (!handle.exists()) return TextureManager.DEFAULT_TEX;
+        if (!handle.exists()) {
+            UltracraftClient.LOGGER.warn("Texture not found: " + id);
+            return TextureManager.DEFAULT_TEX;
+        }
 
-        Texture texture = new Texture(handle);
+        Pixmap pixmap = new Pixmap(handle);
+
+        Texture texture = new Texture(pixmap);
         if (texture.getTextureData() == null) {
             UltracraftClient.LOGGER.warn("Couldn't read texture data: " + id);
             return TextureManager.DEFAULT_TEX;
+        }
+
+        this.textures.put(id, texture);
+        return texture;
+    }
+
+    @NewInstance
+    @CanIgnoreReturnValue
+    public Texture registerTextureFB(Identifier id, Texture fallback) {
+        if (this.frozen) return fallback;
+
+        Preconditions.checkNotNull(id, "id");
+        Texture oldTexture = this.textures.get(id);
+        if (oldTexture != null) return oldTexture;
+
+        FileHandle handle = UltracraftClient.resource(id);
+        if (!handle.exists()) {
+            if (fallback != null) UltracraftClient.LOGGER.warn("Texture not found: {}", id);
+            return fallback;
+        }
+
+        Pixmap pixmap = new Pixmap(handle);
+
+        Texture texture = new Texture(pixmap);
+        if (texture.getTextureData() == null) {
+            if (fallback != null) UltracraftClient.LOGGER.warn("Couldn't read texture data: {}", id);
+            return fallback;
         }
 
         this.textures.put(id, texture);

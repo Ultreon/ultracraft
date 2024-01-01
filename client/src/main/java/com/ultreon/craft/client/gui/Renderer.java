@@ -17,6 +17,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.text.ChatColor;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -547,6 +548,12 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, ChatColor color) {
+        this.textLeft(text, x, y, Color.of(color), true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textLeft(String text, int x, int y, boolean shadow) {
         this.textLeft(text, x, y, Color.WHITE, shadow);
         return this;
@@ -555,6 +562,12 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer textLeft(String text, int x, int y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
         return this;
     }
 
@@ -571,6 +584,12 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color) {
+        this.textLeft(text, x, y, Color.of(color), true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, boolean shadow) {
         this.textLeft(text, x, y, Color.WHITE, shadow);
         return this;
@@ -579,6 +598,12 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
         return this;
     }
 
@@ -595,6 +620,12 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, float maxWidth, String truncate) {
+        this.textLeft(text, x, y, Color.of(color), true, maxWidth, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, boolean shadow, float maxWidth, String truncate) {
         this.textLeft(text, x, y, Color.WHITE, shadow, maxWidth, truncate);
         return this;
@@ -603,6 +634,12 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, String truncate) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow, float maxWidth, String truncate) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
         return this;
     }
 
@@ -619,6 +656,12 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, float maxWidth, boolean wrap, String truncate) {
+        this.textLeft(text, x, y, Color.of(color), true, maxWidth, wrap, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, boolean shadow, float maxWidth, boolean wrap, String truncate) {
         this.textLeft(text, x, y, Color.WHITE, shadow, maxWidth, wrap, truncate);
         return this;
@@ -627,6 +670,12 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer textLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
         return this;
     }
 
@@ -643,6 +692,12 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, ChatColor color) {
+        this.textLeft(String.valueOf(text), x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textLeft(TextObject text, int x, int y, boolean shadow) {
         this.textLeft(text, x, y, Color.WHITE, shadow);
         return this;
@@ -651,6 +706,12 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer textLeft(TextObject text, int x, int y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
         return this;
     }
 
@@ -1488,6 +1549,11 @@ public class Renderer {
 
     public Color getBlitColor() {
         return this.blitColor;
+    }
+
+    public void setBlitColor(Color blitColor) {
+        this.batch.setColor(this.blitColor.toGdx());
+        this.blitColor = blitColor;
     }
 
     @CanIgnoreReturnValue

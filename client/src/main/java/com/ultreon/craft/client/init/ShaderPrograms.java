@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.registries.v0.Registry;
+import com.ultreon.craft.registry.Registry;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
@@ -17,7 +17,6 @@ public class ShaderPrograms {
     public static final ShaderProgram MODEL = ShaderPrograms.register("model");
     public static final ShaderProgram DEFAULT = ShaderPrograms.register("default");
     public static final ShaderProgram DEPTH = ShaderPrograms.register("depth");
-    public static final ShaderProgram SSAO = ShaderPrograms.register("ssao");
 
     private static ShaderProgram register(String name) {
         Identifier id = UltracraftClient.id(name);

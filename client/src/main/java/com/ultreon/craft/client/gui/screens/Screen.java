@@ -208,11 +208,6 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE && this.canCloseWithEsc()) {
-            this.back();
-            return true;
-        }
-
         if (this.focused != null) {
             if (this.focused.keyPress(keyCode)) return true;
         }
@@ -222,6 +217,11 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean keyRelease(int keyCode) {
+        if (keyCode == Input.Keys.ESCAPE && this.canCloseWithEsc()) {
+            this.back();
+            return true;
+        }
+
         if (this.focused != null) {
             if (this.focused.keyRelease(keyCode)) return true;
         }

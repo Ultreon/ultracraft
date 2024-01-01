@@ -11,6 +11,7 @@ public class InGamePacketStage extends PacketStage {
         this.addClientBound(S2CDisconnectPacket::new);
 
         this.addServerBound(C2SKeepAlivePacket::new);
+        this.addServerBound(C2SPingPacket::new);
         this.addServerBound(C2SModPacket::new);
         this.addServerBound(C2SRespawnPacket::new);
         this.addServerBound(C2SPlayerMovePacket::new);
@@ -24,8 +25,11 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SOpenInventoryPacket::new);
         this.addServerBound(C2SChatPacket::new);
         this.addServerBound(C2SCommandPacket::new);
+        this.addServerBound(C2SRequestTabComplete::new);
+        this.addServerBound(C2SAbilitiesPacket::new);
 
         this.addClientBound(S2CKeepAlivePacket::new);
+        this.addClientBound(S2CPingPacket::new);
         this.addClientBound(S2CModPacket::new);
         this.addClientBound(S2CChunkDataPacket::new);
         this.addClientBound(S2CChunkCancelPacket::new);
@@ -43,5 +47,10 @@ public class InGamePacketStage extends PacketStage {
         this.addClientBound(S2COpenContainerMenuPacket::new);
         this.addClientBound(S2CCloseContainerMenuPacket::new);
         this.addClientBound(S2CChatPacket::new);
+        this.addClientBound(S2CCommandSyncPacket::new);
+        this.addClientBound(S2CTabCompletePacket::new);
+        this.addClientBound(S2CAbilitiesPacket::new);
+        this.addClientBound(S2CPlayerHurtPacket::new);
+        this.addClientBound(S2CGamemodePacket::new);
     }
 }

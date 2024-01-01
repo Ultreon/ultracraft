@@ -60,11 +60,11 @@ public class ServerConnections {
     }
 
     private static NioEventLoopGroup createServerEventGroup() {
-        return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Server IO #%d").build());
+        return new NioEventLoopGroup(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), new ThreadFactoryBuilder().setNameFormat("Netty Server IO #%d").build());
     }
 
     private static EpollEventLoopGroup createEpollEventGroup() {
-        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").build());
+        return new EpollEventLoopGroup(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").build());
     }
 
     public SocketAddress startMemoryServer() {

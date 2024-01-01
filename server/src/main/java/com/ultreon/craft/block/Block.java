@@ -3,6 +3,7 @@ package com.ultreon.craft.block;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
@@ -93,6 +94,10 @@ public class Block implements DataWriter<MapType> {
         return block == null ? Blocks.AIR : block;
     }
 
+    public void write(PacketBuffer buffer) {
+        buffer.writeId(this.getId());
+    }
+
     public TextObject getTranslation() {
         return TextObject.translation(this.getTranslationId());
     }
@@ -105,6 +110,10 @@ public class Block implements DataWriter<MapType> {
 
     public float getHardness() {
         return this.hardness;
+    }
+
+    public final boolean isUnbreakable() {
+        return Float.isInfinite(this.hardness);
     }
 
     @Nullable
@@ -125,6 +134,22 @@ public class Block implements DataWriter<MapType> {
         return "Block{" +
                 "id=" + this.getId() +
                 '}';
+    }
+
+    public boolean hasOcclusion() {
+        return true;
+    }
+
+    public boolean shouldGreedyMerge() {
+        return true;
+    }
+
+    public boolean hasCustomRender() {
+        return false;
+    }
+
+    public int getRegIdx() {
+        return Registries.BLOCK.values().indexOf(this);
     }
 
     public static class Properties {
@@ -180,6 +205,11 @@ public class Block implements DataWriter<MapType> {
 
         public @This Properties noRendering() {
             this.disableRendering = true;
+            return this;
+        }
+
+        public Properties unbreakable() {
+            this.hardness = Float.POSITIVE_INFINITY;
             return this;
         }
     }

@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.player;
 
-import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.MathHelper;

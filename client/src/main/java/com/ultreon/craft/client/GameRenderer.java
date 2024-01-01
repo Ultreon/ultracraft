@@ -55,7 +55,7 @@ public class GameRenderer {
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
-        ShaderProgram.pedantic = false;
+//        ShaderProgram.pedantic = false;
         this.worldShaderProgram = ShaderPrograms.MODEL;
         if (!this.worldShaderProgram.isCompiled()) {
             LOGGER.error("Failed to compile model shader:\n{}", this.worldShaderProgram.getLog());
@@ -110,7 +110,7 @@ public class GameRenderer {
         UltracraftClient.PROFILER.section("overlay", () -> {
             this.renderOverlays(renderer, screen, world, deltaTime);
 
-            if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) && Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isKeyPressed(Input.Keys.TAB)) {
                 this.client.crashOverlay.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
             } else {
                 this.client.crashOverlay.reset();
@@ -240,7 +240,7 @@ public class GameRenderer {
 
         UltracraftClient.PROFILER.section("debug", () -> {
             if (this.client.hideHud) return;
-            this.client.debugRenderer.render(renderer);
+            this.client.debugGui.render(renderer);
         });
     }
 

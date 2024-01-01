@@ -65,6 +65,11 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
         }
     }
 
+    @Override
+    public boolean requiresModel() {
+        return true;
+    }
+
     private void renderWorldOnce(WorldRenderer worldRenderer, ClientWorld world, Vec3d position, ModelBatch batch) {
         worldRenderer.renderEntities();
 
@@ -78,9 +83,9 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
 
         UltracraftClient.PROFILER.section("(Local Player)", () -> {
             LocalPlayer localPlayer = this.client.player;
-            if (localPlayer == null || !this.client.isInThirdPerson()) return;
-
-            batch.render((output, pool) -> worldRenderer.collectEntity(localPlayer, output, pool));
+            if (localPlayer != null && this.client.isInThirdPerson()) {
+                batch.render((output, pool) -> worldRenderer.collectEntity(localPlayer, output, pool));
+            }
         });
     }
 }

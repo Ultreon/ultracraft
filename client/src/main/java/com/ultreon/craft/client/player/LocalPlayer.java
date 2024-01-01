@@ -2,20 +2,23 @@ package com.ultreon.craft.client.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
 import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.world.ClientWorld;
-import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
 import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
+import com.ultreon.craft.network.packets.s2c.C2SAbilitiesPacket;
+import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -60,6 +63,11 @@ public class LocalPlayer extends ClientPlayer {
             this.oy = this.y;
             this.oz = this.z;
         }
+    }
+
+    @Override
+    protected void hitGround() {
+
     }
 
     @Override
@@ -120,6 +128,20 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
+    protected void sendAbilities() {
+        this.client.connection.send(new C2SAbilitiesPacket(this.abilities));
+    }
+
+    @Override
+    public void onAbilities(@NotNull AbilitiesPacket packet) {
+        this.abilities.flying = packet.isFlying();
+        this.abilities.allowFlight = packet.allowFlight();
+        this.abilities.instaMine = packet.isInstaMine();
+        this.abilities.invincible = packet.isInvincible();
+        super.onAbilities(packet);
+    }
+
+    @Override
     public void openInventory() {
         this.client.connection.send(new C2SOpenInventoryPacket());
     }
@@ -157,5 +179,9 @@ public class LocalPlayer extends ClientPlayer {
 
     public ClientPermissionMap getPermissions() {
         return this.permissions;
+    }
+
+    public void onHurt(S2CPlayerHurtPacket packet) {
+        this.hurt(packet.getDamage(), packet.getSource());
     }
 }

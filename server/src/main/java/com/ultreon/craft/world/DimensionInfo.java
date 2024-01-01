@@ -1,6 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.libs.translations.v1.Language;
 
 import java.util.Objects;
 
@@ -27,5 +28,9 @@ public class DimensionInfo {
     @Override
     public int hashCode() {
         return Objects.hash(this.id);
+    }
+
+    public String getName() {
+        return Language.translate(this.id.location() + ".dimension." + this.id.path().replace('/', '.'));
     }
 }

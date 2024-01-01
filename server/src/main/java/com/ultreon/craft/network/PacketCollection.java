@@ -70,7 +70,7 @@ public class PacketCollection<H extends PacketHandler> {
         Preconditions.checkNotNull(buffer, "buffer");
 
         Function<PacketBuffer, ? extends Packet<H>> decoder = this.decoders.get(id);
-        if (decoder == null) throw new PacketException("Unknown packet ID: " + id);
+        if (decoder == null) return null;
         return decoder.apply(buffer);
     }
 

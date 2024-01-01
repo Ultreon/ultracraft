@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.texture.TextureManager;
@@ -53,7 +54,7 @@ public class BlockModelRegistry {
     }
 
     public static TextureAtlas stitch(TextureManager textureManager) {
-        TextureStitcher textureStitcher = new TextureStitcher();
+        TextureStitcher sitcher = new TextureStitcher(UltracraftClient.id("block"));
 
         for (Supplier<CubeModel> value : BlockModelRegistry.REGISTRY.values()) {
             BlockModelRegistry.TEXTURES.addAll(value.get().all());
@@ -64,14 +65,19 @@ public class BlockModelRegistry {
         for (int i = 0; i < breakStages; i++) {
             Identifier texId = new Identifier("textures/misc/breaking" + (i + 1) + ".png");
             Texture tex = textureManager.getTexture(texId);
-            textureStitcher.add(texId, tex);
+            sitcher.add(texId, tex);
         }
 
         for (Identifier texture : BlockModelRegistry.TEXTURES) {
-            textureStitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")));
+            Texture emissive = textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".emissive.png"), null);
+            if (emissive != null) {
+                sitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")), emissive);
+            } else {
+                sitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")));
+            }
         }
 
-        return textureStitcher.stitch();
+        return sitcher.stitch();
     }
 
     public static BakedModelRegistry bake(TextureAtlas atlas) {

@@ -270,7 +270,6 @@ public class IntSizedList<T> {
      * Adds all the elements from the provided IntSizedList to this list.
      *
      * @param decorations the IntSizedList from which the elements are to be added.
-     * @param <T>         the type of elements in the IntSizedList
      */
     public void addAll(IntSizedList<? extends T> decorations) {
         IntList sizes = decorations.sizes;

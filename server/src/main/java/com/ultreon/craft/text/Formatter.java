@@ -228,8 +228,8 @@ public class Formatter {
 
         if (EmoteMap.get(arg) != null) {
             var texture = TextObject.literal(String.valueOf(EmoteMap.get(arg).getChar())).style(style ->
-                style.font(EmoteMap.get(arg).getFont())
-                        .color(Color.rgb(0xffffff)));
+                    style.font(EmoteMap.get(arg).getFont())
+                            .color(Color.rgb(0xffffff)));
             this.builder.append(texture);
         }
     }
@@ -673,9 +673,9 @@ public class Formatter {
     private String getPlayerHoverText(@Nullable Player player) {
         if (player == null) {
             return """
-                   <red>NULL
-                   <dark-gray>&<unknown-entity>
-                   """;
+                    <red>NULL
+                    <dark-gray>&<unknown-entity>
+                    """;
         }
         // Set hover text.
         return """

@@ -99,6 +99,10 @@ public class Font {
     }
 
     public float width(String text) {
+        if (text.isEmpty()) {
+            return 0;
+        }
+
         float width = 0;
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);

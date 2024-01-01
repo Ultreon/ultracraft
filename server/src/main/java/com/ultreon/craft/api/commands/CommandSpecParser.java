@@ -137,7 +137,7 @@ class CommandSpecParser {
                                     throw new SpecSyntaxException(
                                             this.line,
                                             Objects.requireNonNull(this.io).getOffset(),
-                                            "Illegal character for comment: $cur"
+                                            "Illegal character for comment: " + cur
                                     );
                                 }
                                 if (cur == '{') {
@@ -161,7 +161,7 @@ class CommandSpecParser {
                                 throw new SpecSyntaxException(
                                         this.line,
                                         Objects.requireNonNull(this.io).getOffset(),
-                                        "Illegal character for argument type: $cur"
+                                        "Illegal character for argument type: " + cur
                                 );
                             }
                         }
@@ -185,7 +185,7 @@ class CommandSpecParser {
                         throw new SpecSyntaxException(
                                 this.line,
                                 Objects.requireNonNull(this.io).getOffset(),
-                                "Illegal character for argument type: $cur"
+                                "Illegal character for argument type: " + cur
                         );
                     }
                     final var tag = new String(tagChars.toCharArray());
@@ -193,7 +193,7 @@ class CommandSpecParser {
                         throw new SpecSyntaxException(
                                 this.line,
                                 startOffset + 1,
-                                "Unknown argument type: $tag"
+                                "Unknown argument type: " + tag
                         );
                     }
                     final CommandParser<?> parser = CommandData.getParser(tag);
@@ -210,7 +210,7 @@ class CommandSpecParser {
                     throw new SpecSyntaxException(
                             this.line,
                             Objects.requireNonNull(this.io).getOffset(),
-                            "Illegal character for argument type: $second"
+                            "Illegal character for argument type: " + second
                     );
                 }
             } catch (EOFException e) {
@@ -229,7 +229,7 @@ class CommandSpecParser {
                     throw new SpecSyntaxException(
                             this.line,
                             startOffset + 1,
-                            "Unknown argument type: $tag"
+                            "Unknown argument type: " + tag
                     );
                 }
                 final CommandParser<?> parser = Objects.requireNonNull(CommandData.getParser(tag));
@@ -276,7 +276,7 @@ class CommandSpecParser {
                             throw new SpecSyntaxException(
                                     this.line,
                                     Objects.requireNonNull(this.io).getOffset(),
-                                    "Illegal character for text: $cur"
+                                    "Illegal character for text: " + cur
                             );
                         }
                         argTypeIdChars.add(cur);
@@ -290,7 +290,7 @@ class CommandSpecParser {
                         throw new SpecSyntaxException(
                                 this.line,
                                 Objects.requireNonNull(this.io).getOffset(),
-                                "Illegal character for argument type: $cur"
+                                "Illegal character for argument type: " + cur
                         );
                     }
                     if (this.optional) {
@@ -304,7 +304,7 @@ class CommandSpecParser {
                     throw new SpecSyntaxException(
                             this.line,
                             Objects.requireNonNull(this.io).getOffset(),
-                            "Illegal character for argument type: $second"
+                            "Illegal character for argument type: " + second
                     );
                 }
             } catch (EOFException e) {
@@ -339,7 +339,7 @@ class CommandSpecParser {
                         throw new SpecSyntaxException(
                                 this.line,
                                 Objects.requireNonNull(this.io).getOffset(),
-                                "Illegal character for text: $cur"
+                                "Illegal character for text: " + cur
                         );
                     }
                     argTypeIdChars.add(cur);
@@ -348,7 +348,7 @@ class CommandSpecParser {
                     throw new SpecSyntaxException(
                             this.line,
                             Objects.requireNonNull(this.io).getOffset(),
-                            "Illegal character for text: $cur"
+                            "Illegal character for text: " + cur
                     );
                 }
                 if (this.optional) {

@@ -2,16 +2,17 @@ package com.ultreon.craft.util;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.ultreon.libs.commons.v0.vector.Vec2f;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
-import com.ultreon.libs.commons.v0.vector.Vec3f;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
+import com.ultreon.libs.commons.v0.vector.*;
 
 public final class MathHelper {
     private static final String EX_INVALID_NUMBER_OF_VERTICES = "Invalid number of vertices";
 
     public static Vec2i round(Vec2f vec) {
         return new Vec2i(Math.round(vec.x), Math.round(vec.y));
+    }
+
+    public static Vec2i round(Vec2d vec) {
+        return new Vec2i((int) Math.round(vec.x), (int) Math.round(vec.y));
     }
 
     public static Vec3i round(Vec3f vec) {

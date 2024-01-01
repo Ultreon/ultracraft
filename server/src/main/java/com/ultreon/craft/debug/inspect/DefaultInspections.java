@@ -24,7 +24,7 @@ import java.util.Map;
 public class DefaultInspections {
     public static void register() {
         InspectionRoot.registerAutoFill(Entity.class, node -> {
-            node.create("position", Entity::blockPosition);
+            node.create("position", Entity::getBlockPos);
             node.create("isInVoid", Entity::isInVoid);
             node.create("health", Entity::getSize);
             node.create("isAffectedByFluid", Entity::isAffectedByFluid);
@@ -40,7 +40,7 @@ public class DefaultInspections {
             node.create("isCrouching", Player::isCrouching);
             node.create("isAllowFlight", Player::isAllowFlight);
             node.create("isFlying", Player::isFlying);
-            node.create("isSpectating", Player::isSpectating);
+            node.create("isSpectator", Player::isSpectator);
             node.create("selected", value -> value.selected);
             node.create("uuid", Player::getUuid);
         });

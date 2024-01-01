@@ -7,27 +7,31 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.client.gui.hud.ChatOverlay;
 import com.ultreon.craft.client.gui.widget.ChatTextEntry;
-import com.ultreon.craft.client.gui.widget.TextEntry;
-import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.network.packets.c2s.C2SChatPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCommandPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongLists;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatScreen extends Screen {
     private static final Marker MARKER = MarkerFactory.getMarker("ChatScreen");
     private final String input;
-    private TextEntry entry;
-    private static final List<TextObject> MESSAGES = new ArrayList<>();
+    private ChatTextEntry entry;
+    private static final List<TextObject> MESSAGES = new CopyOnWriteArrayList<>();
+    private static final LongList MESSAGE_TIMESTAMPS = LongLists.synchronize(new LongArrayList());
 
     public ChatScreen(String input) {
         super("");
@@ -40,31 +44,38 @@ public class ChatScreen extends Screen {
 
     public static void addMessage(TextObject message) {
         ChatScreen.MESSAGES.add(0, message);
+        ChatScreen.MESSAGE_TIMESTAMPS.add(0, System.currentTimeMillis());
 
         UltracraftClient.LOGGER.info(ChatScreen.MARKER, "Received message: " + message.getText());
 
-        if (ChatScreen.MESSAGES.size() > 100)
-            ChatScreen.MESSAGES.remove(ChatScreen.MESSAGES.size() - 1);
+        if (ChatScreen.MESSAGES.size() > 100) {
+            ChatScreen.MESSAGES.remove(ChatScreen.getMessages().size() - 1);
+            ChatScreen.MESSAGE_TIMESTAMPS.removeLong(ChatScreen.getMessages().size());
+        }
+    }
+
+    public static List<TextObject> getMessages() {
+        return Collections.unmodifiableList(ChatScreen.MESSAGES);
+    }
+
+    public static LongList getMessageTimestamps() {
+        return LongLists.unmodifiable(ChatScreen.MESSAGE_TIMESTAMPS);
     }
 
     @Override
     public void build(GuiBuilder builder) {
-        this.entry = (TextEntry) builder.add(new ChatTextEntry(this).bounds(() -> new Bounds(-1, this.getHeight() - 21, this.getWidth() + 2, 21)));
+        this.entry = (ChatTextEntry) builder.add(new ChatTextEntry(this).bounds(() -> new Bounds(-1, this.getHeight() - 21, this.getWidth() + 2, 21)));
     }
 
-    public Widget getEntry() {
-        return this.entry;
+    public ChatTextEntry getEntry() {
+        return (ChatTextEntry) this.entry;
     }
 
     @Override
     public void renderWidget(@NotNull Renderer renderer, int mouseX, int mouseY, @IntRange(from = 0) float deltaTime) {
-        super.renderWidget(renderer, mouseX, mouseY, deltaTime);
+        ChatOverlay.renderChatOverlay(this.font, renderer, true);
 
-        int y = this.getHeight() - 40;
-        for (TextObject text : this.MESSAGES) {
-            renderer.textLeft(text, 10, y);
-            y -= this.font.lineHeight + 2;
-        }
+        super.renderWidget(renderer, mouseX, mouseY, deltaTime);
     }
 
     public void send() {
@@ -77,6 +88,10 @@ public class ChatScreen extends Screen {
 
         this.client.connection.send(new C2SChatPacket(input));
         this.close();
+    }
+
+    public void onTabComplete(String[] options) {
+        this.entry.onTabComplete(options);
     }
 
     private static class AWTColorTypeAdapter extends TypeAdapter<java.awt.Color> {

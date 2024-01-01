@@ -6,7 +6,7 @@ import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
-import it.unimi.dsi.fastutil.floats.Float2BooleanFunction;
+import it.unimi.dsi.fastutil.doubles.Double2BooleanFunction;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ public class TreeGenerator {
         this.noise = this.treeNoiseConfig.create(seed);
     }
 
-    public static List<Vec2i> findLocalMaxima(float[][] dataMatrix, int x, int z) {
+    public static List<Vec2i> findLocalMaxima(double[][] dataMatrix, int x, int z) {
         var maxima = new ArrayList<Vec2i>();
         for (var matrixX = 0; matrixX < dataMatrix.length; matrixX++) {
             for (var matrixZ = 0; matrixZ < dataMatrix[matrixX].length; matrixZ++) {
@@ -46,7 +46,7 @@ public class TreeGenerator {
         return maxima;
     }
 
-    private static boolean checkNeighbours(float[][] matrix, int x, int y, Float2BooleanFunction successCondition) {
+    private static boolean checkNeighbours(double[][] matrix, int x, int y, Double2BooleanFunction successCondition) {
         for (var direction : Neighbour8Direction.values()) {
             var dir = direction.vec();
             var newPost = new Vec2f(x + dir.x, y + dir.y);
@@ -71,8 +71,8 @@ public class TreeGenerator {
         return treeData;
     }
 
-    private float[][] generateMatrix(Chunk chunkData, NoiseInstance noise) {
-        var noiseMax = new float[chunkData.size][chunkData.size];
+    private double[][] generateMatrix(Chunk chunkData, NoiseInstance noise) {
+        var noiseMax = new double[chunkData.size][chunkData.size];
         var xMax = chunkData.getOffset().x + chunkData.size;
         var xMin = chunkData.getOffset().x;
         var zMax = chunkData.getOffset().z + chunkData.size;

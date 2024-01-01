@@ -8,8 +8,11 @@ import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>Palette storage is used for storing data in palettes.
@@ -22,9 +25,10 @@ import java.util.function.Function;
  * @param <D> the data type.
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
-public class PaletteStorage<D> implements ServerDisposable {
+@NotThreadSafe
+public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
     private short[] palette;
-    private List<D> data = new ArrayList<>();
+    private List<D> data = new LinkedList<>();
     private int paletteCounter = 0;
 
     public PaletteStorage(int size) {
@@ -37,6 +41,7 @@ public class PaletteStorage<D> implements ServerDisposable {
         this.data = data;
     }
 
+    @Override
     public MapType save(MapType outputData, Function<D, MapType> encoder) {
         ListType<MapType> data = new ListType<>();
         for (@Nullable D entry : this.data) if (entry != null) data.add(encoder.apply(entry));
@@ -47,6 +52,7 @@ public class PaletteStorage<D> implements ServerDisposable {
         return outputData;
     }
 
+    @Override
     public void load(MapType inputData, Function<MapType, D> decoder) {
         this.data.clear();
         var data = inputData.<MapType>getList(DataKeys.PALETTE_DATA);
@@ -58,40 +64,35 @@ public class PaletteStorage<D> implements ServerDisposable {
         this.palette = inputData.getShortArray(DataKeys.PALETTE, new short[this.palette.length]);
     }
 
-    public void write(PacketBuffer buffer, Function<D, MapType> encoder) {
+    @Override
+    public void write(PacketBuffer buffer, BiConsumer<PacketBuffer, D> encoder) {
         buffer.writeInt(this.data.size());
-        for (D entry : this.data) {
-            buffer.writeUbo(encoder.apply(entry));
-        }
-
+        for (D entry : this.data) if (entry != null) encoder.accept(buffer, entry);
         buffer.writeInt(this.palette.length);
-        for (short v : this.palette) {
-            buffer.writeShort(v);
-        }
+        for (short v : this.palette) buffer.writeShort(v);
     }
 
-    public void read(PacketBuffer buffer, Function<MapType, D> decoder) {
-        this.data.clear();
-
-        int dataSize = buffer.readInt();
+    @Override
+    public void read(PacketBuffer buffer, Function<PacketBuffer, D> decoder) {
+        var data = new ArrayList<D>();
+        var dataSize = buffer.readInt();
         for (int i = 0; i < dataSize; i++) {
-            var ubo = buffer.<MapType>readUbo();
-            decoder.apply(ubo);
+            data.add(decoder.apply(buffer));
         }
+        this.data = data;
 
-        short[] palette = new short[buffer.readUnsignedShort()];
+        short[] palette = new short[buffer.readInt()];
         for (int i = 0; i < palette.length; i++) {
             palette[i] = buffer.readShort();
         }
-        this.palette = palette;
     }
 
+    @Override
     public void set(int idx, D value) {
         if (value == null) {
             this.remove(idx);
             return;
         }
-
 
         short old = this.palette[idx];
 
@@ -113,10 +114,7 @@ public class PaletteStorage<D> implements ServerDisposable {
     }
 
     public short toDataIdx(int idx) {
-        if (idx >= 0 && idx < this.palette.length) {
-            return this.palette[idx];
-        }
-        return -1;
+        return idx >= 0 && idx < this.palette.length ? this.palette[idx] : -1;
     }
 
     public D direct(int dataIdx) {
@@ -155,10 +153,16 @@ public class PaletteStorage<D> implements ServerDisposable {
     }
 
     @Nullable
+    @Override
     public D get(int idx) {
-        int paletteIdx = this.toDataIdx(idx);
-        if (paletteIdx < 0) return null;
-        return this.direct(paletteIdx);
+        short paletteIdx = this.toDataIdx(idx);
+        return paletteIdx < 0 ? null : this.direct(paletteIdx);
+    }
+
+    @Override
+    public <R> Storage<R> map(Function<D, R> o, Class<R> clazz) {
+        var data = this.data.stream().map(o).collect(Collectors.toList());
+        return new PaletteStorage<>(this.palette, data);
     }
 
     public short[] getPalette() {
@@ -170,7 +174,8 @@ public class PaletteStorage<D> implements ServerDisposable {
     }
 
     public void set(short[] palette, List<D> data) {
-        if (this.palette.length != palette.length) throw new IllegalArgumentException("Palette length must be equal.");
+        if (this.palette.length != palette.length)
+            throw new IllegalArgumentException("Palette length must be equal.");
 
         this.palette = palette;
         this.data = data;
@@ -181,7 +186,7 @@ public class PaletteStorage<D> implements ServerDisposable {
         if (this == o) return true;
         if (o == null || this.getClass() != o.getClass()) return false;
         PaletteStorage<?> that = (PaletteStorage<?>) o;
-        return Arrays.equals(this.palette, that.palette) && Objects.equals(this.data, that.data);
+        return Arrays.equals(this.palette, that.palette) && this.data.equals(that.data);
     }
 
     @Override

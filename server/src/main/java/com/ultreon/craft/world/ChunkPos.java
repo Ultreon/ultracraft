@@ -10,13 +10,23 @@ import java.io.Serializable;
 /**
  * Represents the position of a chunk in the world.
  *
- * @param x The x coordinate.
- * @param z The z coordinate.
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
-public record ChunkPos(int x, int z) implements Comparable<ChunkPos>, Serializable {
+@SuppressWarnings("ClassCanBeRecord")
+public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
     @Serial
     private static final long serialVersionUID = 782820744815861493L;
+    private final int x;
+    private final int z;
+
+    /**
+     * @param x The x coordinate.
+     * @param z The z coordinate.
+     */
+    public ChunkPos(int x, int z) {
+        this.x = x;
+        this.z = z;
+    }
 
     /**
      * Converts this chunk position to a string.
@@ -69,5 +79,27 @@ public record ChunkPos(int x, int z) implements Comparable<ChunkPos>, Serializab
     public int compareTo(ChunkPos chunkPos) {
         double dst = new Vec2d(this.x, this.z).dst(chunkPos.x, chunkPos.z);
         return dst == 0 ? 0 : dst < 0 ? -1 : 1;
+    }
+
+    public int x() {
+        return this.x;
+    }
+
+    public int z() {
+        return this.z;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (ChunkPos) obj;
+        return this.x == that.x &&
+               this.z == that.z;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (31 + this.x) + this.z;
     }
 }
