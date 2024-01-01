@@ -26,6 +26,6 @@ public final class Blocks {
     }
 
     public static void nopInit() {
-
+        // Load class
     }
 }

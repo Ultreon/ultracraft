@@ -13,7 +13,7 @@ public interface Mesher {
      * Meshes the specified voxels.
      *
      * @param builder     MeshBuilder to build the mesh onto
-     * @param storage     Blocks to mesh
+     * @param condition   Condition to check if the block should be used in the mesh
      */
     Mesh meshVoxels(MeshBuilder builder, UseCondition condition);
 

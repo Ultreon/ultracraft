@@ -332,7 +332,7 @@ public class CommandData {
 
     /**
      * @param <T> the type of argument.
-    </T> */
+     */
     @SafeVarargs
     public static <T> void registerArgument(String tag, CommandParser<T> parser, CommandTabCompleter completer, T... typeGetter) {
         var componentType = typeGetter.getClass().getComponentType();
