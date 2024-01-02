@@ -19,6 +19,9 @@ public final class Blocks {
     public static final Block COBBLESTONE = Blocks.register("cobblestone", new Block(new Properties().hardness(11.0F).effectiveTool(ToolType.PICKAXE).requiresTool().dropsItems(Items.COBBLESTONE)));
     public static final Block SANDSTONE = Blocks.register("sandstone", new Block(new Properties().hardness(8.0F).effectiveTool(ToolType.PICKAXE).requiresTool().dropsItems(Items.SANDSTONE)));
     public static final Block WATER = Blocks.register("water", new Block(new Properties().noCollision().fluid().hardness(120.0F)));
+    public static final Block LOG = Blocks.register("log", new Block(new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).dropsItems(Items.LOG)));
+    public static final Block PLANKS = Blocks.register("planks", new Block(new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).dropsItems(Items.PLANKS)));
+    public static final Block LEAVES = Blocks.register("leaves", new Block(new Properties().hardness(0.2F)));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new Identifier(name), block);

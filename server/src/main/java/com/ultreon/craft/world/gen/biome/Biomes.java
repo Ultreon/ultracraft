@@ -4,6 +4,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.Biome;
+import com.ultreon.craft.world.gen.feature.TreeFeature;
 import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
@@ -19,7 +20,8 @@ public class Biomes {
             .layer(new UndergroundTerrainLayer(Blocks.STONE, 4))
             .layer(new GroundTerrainLayer(Blocks.DIRT, 1, 3))
             .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 0))
-            .extraLayer(new PatchTerrainLayer(NoiseConfigs.STONE_PATCH, Blocks.STONE))
+            .feature(new PatchFeature(NoiseConfigs.STONE_PATCH, Blocks.STONE, -0.5f))
+            .feature(new TreeFeature(NoiseConfigs.TREE, Blocks.LOG, Blocks.LEAVES, 0.005f, 3, 5))
             .build());
 
     public static final Biome DESERT = Biomes.register("desert", Biome.builder()
@@ -31,7 +33,7 @@ public class Biomes {
             .layer(new UndergroundTerrainLayer(Blocks.STONE, 7))
             .layer(new GroundTerrainLayer(Blocks.SANDSTONE, 3, 4))
             .layer(new SurfaceTerrainLayer(Blocks.SAND, 3))
-            .extraLayer(new PatchTerrainLayer(NoiseConfigs.STONE_PATCH, Blocks.STONE))
+            .feature(new PatchFeature(NoiseConfigs.STONE_PATCH, Blocks.STONE, -0.9f))
             .build());
 
     private static Biome register(String name, Biome biome) {

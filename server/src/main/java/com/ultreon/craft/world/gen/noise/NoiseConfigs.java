@@ -16,7 +16,7 @@ public final class NoiseConfigs {
             new NoiseConfig(0.1f, 6, new Vec2f(200, 740), 128436, .35f, .001f, 1f, 40, 70));
 
     public static final NoiseConfig TREE = NoiseConfigs.register("tree",
-            new NoiseConfig(0.01f, 1, new Vec2f(300, 5000), 497395, 0.01f, 1.2f, 4f, 1, 0));
+            new NoiseConfig(0.01f, 1, new Vec2f(946664, 61722), 497395, 0.01f, 1.2f, 4f, 1, 0));
 
     public static final NoiseConfig STONE_PATCH = NoiseConfigs.register("stone_patch",
             new NoiseConfig(0.01f, 5, new Vec2f(680875, 914213), 425023, 0.5f, 0.25f, 0.635f, 1, 0.5f));

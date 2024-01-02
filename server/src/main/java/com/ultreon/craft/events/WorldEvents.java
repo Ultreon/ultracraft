@@ -1,6 +1,7 @@
 package com.ultreon.craft.events;
 
 import com.ultreon.craft.world.*;
+import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
@@ -50,7 +51,7 @@ public class WorldEvents {
 
     @FunctionalInterface
     public interface CreateBiome {
-        void onCreateBiome(World world, NoiseInstance noiseInstance, DomainWarping domainWarping, List<TerrainLayer> layers, List<TerrainLayer> extraLayers);
+        void onCreateBiome(World world, NoiseInstance noiseInstance, DomainWarping domainWarping, List<TerrainLayer> layers, List<WorldGenFeature> features);
     }
 
     @FunctionalInterface

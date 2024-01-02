@@ -52,7 +52,7 @@ public class TerrainGenerator {
     }
 
     @CanIgnoreReturnValue
-    public BuilderChunk generate(BuilderChunk chunk) {
+    public BuilderChunk generate(BuilderChunk chunk, List<ServerWorld.RecordedChange> recordedChanges) {
         this.buildBiomeCenters(chunk);
 
         var index = this.findGenerator(chunk, chunk.getOffset(), false);
@@ -62,7 +62,7 @@ public class TerrainGenerator {
             for (var z = 0; z < chunk.size; z++) {
                 index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
                 chunk.setBiomeGenerator(x, z, index.biomeGenerator);
-                chunk = index.biomeGenerator.processColumn(chunk, x, z);
+                chunk = index.biomeGenerator.processColumn(chunk, x, z, recordedChanges);
             }
         }
         return chunk;

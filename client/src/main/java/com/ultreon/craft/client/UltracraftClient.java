@@ -1055,12 +1055,15 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void registerBlockModels() {
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+        BlockModelRegistry.register(Blocks.LOG, CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.registerDefault(Blocks.VOIDGUARD);
         BlockModelRegistry.registerDefault(Blocks.ERROR);
         BlockModelRegistry.registerDefault(Blocks.DIRT);
         BlockModelRegistry.registerDefault(Blocks.SAND);
         BlockModelRegistry.registerDefault(Blocks.WATER);
         BlockModelRegistry.registerDefault(Blocks.STONE);
+        BlockModelRegistry.registerDefault(Blocks.LEAVES);
+        BlockModelRegistry.registerDefault(Blocks.PLANKS);
         BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
     }
 

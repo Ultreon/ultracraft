@@ -17,6 +17,8 @@ public class Items {
     public static final BlockItem COBBLESTONE = Items.register("cobblestone", new BlockItem(new Properties(), () -> Blocks.COBBLESTONE));
     public static final BlockItem SANDSTONE = Items.register("sandstone", new BlockItem(new Properties(), () -> Blocks.SANDSTONE));
     public static final BlockItem WATER = Items.register("water", new BlockItem(new Properties(), () -> Blocks.WATER));
+    public static final BlockItem LOG = Items.register("log", new BlockItem(new Properties(), () -> Blocks.LOG));
+    public static final BlockItem PLANKS = Items.register("planks", new BlockItem(new Properties(), () -> Blocks.PLANKS));
     public static final PickaxeItem WOODEN_PICKAXE = Items.register("wooden_pickaxe", new PickaxeItem(new Properties().stackSize(1), ItemMaterials.WOOD));
     public static final ShovelItem WOODEN_SHOVEL = Items.register("wooden_shovel", new ShovelItem(new Properties().stackSize(1), ItemMaterials.WOOD));
 

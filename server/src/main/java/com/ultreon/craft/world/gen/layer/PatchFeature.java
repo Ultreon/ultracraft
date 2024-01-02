@@ -5,21 +5,23 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import org.jetbrains.annotations.Nullable;
 
-public class PatchTerrainLayer extends TerrainLayer {
+public class PatchFeature extends WorldGenFeature {
     private final NoiseConfig settingsBase;
     private final Block patchBlock;
-    public float stoneThreshold = 0f;
+    public final float stoneThreshold;
     @LazyInit
     @Nullable
     private NoiseInstance baseNoise;
 
-    public PatchTerrainLayer(NoiseConfig settingsBase, Block patchBlock) {
+    public PatchFeature(NoiseConfig settingsBase, Block patchBlock, float stoneThreshold) {
         this.settingsBase = settingsBase;
         this.patchBlock = patchBlock;
+        this.stoneThreshold = stoneThreshold;
     }
 
     @Override
@@ -30,12 +32,12 @@ public class PatchTerrainLayer extends TerrainLayer {
     }
 
     @Override
-    public boolean handle(World world, Chunk chunk, int x, int y, int z, int height) {
+    public boolean handle(World world, Chunk chunk, int x, int z, int height) {
         if (this.baseNoise == null) return false;
 
-        float value = (float) this.baseNoise.eval(x, z);
-        if (value > this.stoneThreshold) {
-            chunk.set(x, y, z, this.patchBlock);
+        float value = (float) this.baseNoise.eval(chunk.getOffset().x + x, chunk.getOffset().z + z);
+        if (value < this.stoneThreshold) {
+            chunk.set(x, height, z, this.patchBlock);
             return true;
         }
 

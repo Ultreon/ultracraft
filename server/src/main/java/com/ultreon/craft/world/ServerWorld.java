@@ -64,19 +64,6 @@ public final class ServerWorld extends World {
     private static long chunkSaves;
 
     private final TerrainGenerator terrainGen;
-    private static final Biome DEFAULT_BIOME = Biome.builder()
-            .noise(NoiseConfigs.DEFAULT)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get()
-                    .disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get()
-                    .disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
-            .temperatureStart(-2f)
-            .temperatureEnd(2f)
-            .layer(new WaterTerrainLayer(64))
-            .layer(new AirTerrainLayer())
-            .layer(new UndergroundTerrainLayer(Blocks.STONE, 4))
-            .layer(new GroundTerrainLayer(Blocks.DIRT, 1, 3))
-            .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 1))
-            .extraLayer(new PatchTerrainLayer(NoiseConfigs.STONE_PATCH, Blocks.STONE)).build();
 
     private final Queue<ChunkPos> chunksToLoad = this.createSyncQueue();
     private final Queue<ChunkPos> chunksToUnload = this.createSyncQueue();
@@ -85,6 +72,7 @@ public final class ServerWorld extends World {
     private final Lock chunkLock = new ReentrantLock();
 
     private int playTime;
+    private final List<RecordedChange> recordedChanges = new ArrayList<>();
 
     public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
         super((LongType) worldData.get("seed"));
@@ -126,6 +114,14 @@ public final class ServerWorld extends World {
         worldData.putInt("spawnY", spawnPoint.y());
         worldData.putInt("spawnZ", spawnPoint.z());
         worldData.putLong("seed", this.seed);
+
+        ListType<MapType> recordedChanges = new ListType<>();
+        for (RecordedChange change : this.recordedChanges) {
+            recordedChanges.add(change.save());
+        }
+
+        worldData.put("RecordedChanges", recordedChanges);
+
         return worldData;
     }
 
@@ -160,7 +156,7 @@ public final class ServerWorld extends World {
         if (!chunk.getPos().equals(pos)) {
             throw new ValidationError("Chunk position (" + chunk.getPos() + ") and provided position (" + pos + ") don't match.");
         }
-        if (!this.unloadChunk(pos, true)) World.LOGGER.warn(World.MARKER, "Failed to unload chunk at " + pos);
+        if (!this.unloadChunk(pos, true)) World.LOGGER.warn(World.MARKER, "Failed to unload chunk at {}", pos);
 
         WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.getPos(), chunk);
         return true;
@@ -462,6 +458,7 @@ public final class ServerWorld extends World {
                 this.saveRegion(region);
             } catch (Exception e) {
                 World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
+                return false;
             }
         }
 
@@ -849,6 +846,20 @@ public final class ServerWorld extends World {
         this.setSpawnPoint(spawnX, spawnZ);
     }
 
+    public void recordOutOfBounds(int x, int y, int z, Block block) {
+        if (this.isOutOfWorldBounds(x, y, z)) {
+            return;
+        }
+
+        Chunk chunkAt = this.getChunkAt(x, y, z);
+        if (chunkAt == null) {
+            this.recordedChanges.add(new RecordedChange(x, y, z, block));
+            return;
+        }
+
+        chunkAt.setFast(World.toLocalBlockPos(x, y, z).vec(), block);
+    }
+
     public TerrainGenerator getTerrainGenerator() {
         return this.terrainGen;
     }
@@ -1153,7 +1164,7 @@ public final class ServerWorld extends World {
             var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalPos);
 
             // Generate terrain using the terrain generator.
-            this.world.terrainGen.generate(chunk);
+            this.world.terrainGen.generate(chunk, world.recordedChanges);
 
             WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
 
@@ -1375,6 +1386,17 @@ public final class ServerWorld extends World {
         public void dispose() {
             this.regions.values().forEach(Region::dispose);
             this.regions.clear();
+        }
+    }
+
+    public record RecordedChange(int x, int y, int z, Block block) {
+        public MapType save() {
+            MapType mapType = new MapType();
+            mapType.putInt("x", this.x);
+            mapType.putInt("y", this.y);
+            mapType.putInt("z", this.z);
+            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
+            return mapType;
         }
     }
 }

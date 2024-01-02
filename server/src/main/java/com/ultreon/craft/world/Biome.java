@@ -5,6 +5,7 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.events.WorldLifecycleEvent;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
@@ -22,7 +23,7 @@ import java.util.List;
 public abstract class Biome {
     private final NoiseConfig settings;
     private final List<TerrainLayer> layers = new ArrayList<>();
-    private final List<TerrainLayer> extraLayers = new ArrayList<>();
+    private final List<WorldGenFeature> features = new ArrayList<>();
     private final float temperatureStart;
     private final float temperatureEnd;
 
@@ -37,23 +38,23 @@ public abstract class Biome {
     }
 
     public final void buildLayers() {
-        this.onBuildLayers(this.layers, this.extraLayers);
+        this.onBuildLayers(this.layers, this.features);
 
-        WorldLifecycleEvent.BIOME_LAYERS_BUILT.factory().onBiomeLayersBuilt(this, this.extraLayers);
+        WorldLifecycleEvent.BIOME_LAYERS_BUILT.factory().onBiomeLayersBuilt(this, this.features);
     }
 
-    protected abstract void onBuildLayers(List<TerrainLayer> layers, List<TerrainLayer> extraLayers);
+    protected abstract void onBuildLayers(List<TerrainLayer> layers, List<WorldGenFeature> features);
 
     public BiomeGenerator create(ServerWorld world, long seed) {
         NoiseInstance noiseInstance = this.settings.create(seed);
-        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, world.getTerrainGenerator().getLayerDomain(), this.layers, this.extraLayers);
+        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, world.getTerrainGenerator().getLayerDomain(), this.layers, this.features);
 
         this.layers.forEach(layer -> layer.create(world));
-        this.extraLayers.forEach(layer -> layer.create(world));
+        this.features.forEach(layer -> layer.create(world));
 
         DomainWarping domainWarping = new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed)));
 
-        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.layers, this.extraLayers);
+        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.layers, this.features);
     }
 
     public NoiseConfig getSettings() {
@@ -86,7 +87,7 @@ public abstract class Biome {
         @Nullable
         private NoiseConfig biomeNoise;
         private final List<TerrainLayer> layers = new ArrayList<>();
-        private final List<TerrainLayer> extraLayers = new ArrayList<>();
+        private final List<WorldGenFeature> features = new ArrayList<>();
         private float temperatureStart = Float.NaN;
         private float temperatureEnd = Float.NaN;
 
@@ -108,8 +109,8 @@ public abstract class Biome {
             return this;
         }
 
-        public Builder extraLayer(TerrainLayer layer) {
-            this.extraLayers.add(layer);
+        public Builder feature(WorldGenFeature feature) {
+            this.features.add(feature);
             return this;
         }
 
@@ -131,9 +132,9 @@ public abstract class Biome {
 
             return new Biome(this.biomeNoise, this.temperatureStart, this.temperatureEnd) {
                 @Override
-                protected void onBuildLayers(List<TerrainLayer> layerList, List<TerrainLayer> extraLayerList) {
+                protected void onBuildLayers(List<TerrainLayer> layerList, List<WorldGenFeature> featureList) {
                     layerList.addAll(Builder.this.layers);
-                    extraLayerList.addAll(Builder.this.extraLayers);
+                    featureList.addAll(Builder.this.features);
                 }
             };
         }
