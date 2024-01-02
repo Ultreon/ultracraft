@@ -120,7 +120,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.ultreon.craft.world.Chunk">Fields inherited from class&nbsp;com.ultreon.craft.world.<a href="../../world/Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></h3>
-<code><a href="../../world/Chunk.html#active">active</a>, <a href="../../world/Chunk.html#biomeStorage">biomeStorage</a>, <a href="../../world/Chunk.html#height">height</a>, <a href="../../world/Chunk.html#lock">lock</a>, <a href="../../world/Chunk.html#offset">offset</a>, <a href="../../world/Chunk.html#ready">ready</a>, <a href="../../world/Chunk.html#size">size</a>, <a href="../../world/Chunk.html#storage">storage</a>, <a href="../../world/Chunk.html#treeData">treeData</a>, <a href="../../world/Chunk.html#VERTEX_SIZE">VERTEX_SIZE</a></code></div>
+<code><a href="../../world/Chunk.html#active">active</a>, <a href="../../world/Chunk.html#biomeStorage">biomeStorage</a>, <a href="../../world/Chunk.html#height">height</a>, <a href="../../world/Chunk.html#lightLevelMap">lightLevelMap</a>, <a href="../../world/Chunk.html#lightMap">lightMap</a>, <a href="../../world/Chunk.html#lock">lock</a>, <a href="../../world/Chunk.html#MAX_LIGHT_LEVEL">MAX_LIGHT_LEVEL</a>, <a href="../../world/Chunk.html#offset">offset</a>, <a href="../../world/Chunk.html#ready">ready</a>, <a href="../../world/Chunk.html#size">size</a>, <a href="../../world/Chunk.html#storage">storage</a>, <a href="../../world/Chunk.html#treeData">treeData</a>, <a href="../../world/Chunk.html#VERTEX_SIZE">VERTEX_SIZE</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -162,33 +162,38 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;z)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ClientWorld.html" title="class in com.ultreon.craft.client.world">ClientWorld</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld()" class="member-name-link">getWorld</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLightLevel(int,int,int)" class="member-name-link">getLightLevel</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onUpdated()" class="member-name-link">onUpdated</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ClientWorld.html" title="class in com.ultreon.craft.client.world">ClientWorld</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld()" class="member-name-link">getWorld</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rebuild()" class="member-name-link">rebuild</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onUpdated()" class="member-name-link">onUpdated</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rebuildModels()" class="member-name-link">rebuildModels</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rebuild()" class="member-name-link">rebuild</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(int&nbsp;x,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rebuildModels()" class="member-name-link">rebuildModels</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z,
  <a href="../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updated()" class="member-name-link">updated</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updated()" class="member-name-link">updated</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.world.Chunk">Methods inherited from class&nbsp;com.ultreon.craft.world.<a href="../../world/Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></h3>
-<code><a href="../../world/Chunk.html#ascend(int,int,int)">ascend</a>, <a href="../../world/Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="../../world/Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="../../world/Chunk.html#decodeBlock(com.ultreon.craft.network.PacketBuffer)">decodeBlock</a>, <a href="../../world/Chunk.html#equals(java.lang.Object)">equals</a>, <a href="../../world/Chunk.html#get(int,int,int)">get</a>, <a href="../../world/Chunk.html#get(com.ultreon.craft.world.BlockPos)">get</a>, <a href="../../world/Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="../../world/Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="../../world/Chunk.html#getBlockLight(int,int,int)">getBlockLight</a>, <a href="../../world/Chunk.html#getBlockLight(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockLight</a>, <a href="../../world/Chunk.html#getBreaking()">getBreaking</a>, <a href="../../world/Chunk.html#getBrightness(int)">getBrightness</a>, <a href="../../world/Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="../../world/Chunk.html#getHighest(int,int)">getHighest</a>, <a href="../../world/Chunk.html#getLightLevel(int,int,int)">getLightLevel</a>, <a href="../../world/Chunk.html#getOffset()">getOffset</a>, <a href="../../world/Chunk.html#getPos()">getPos</a>, <a href="../../world/Chunk.html#getSunlight(int,int,int)">getSunlight</a>, <a href="../../world/Chunk.html#getSunlight(com.ultreon.libs.commons.v0.vector.Vec3i)">getSunlight</a>, <a href="../../world/Chunk.html#hashCode()">hashCode</a>, <a href="../../world/Chunk.html#isActive()">isActive</a>, <a href="../../world/Chunk.html#isDisposed()">isDisposed</a>, <a href="../../world/Chunk.html#isReady()">isReady</a>, <a href="../../world/Chunk.html#loadBlock(com.ultreon.data.types.MapType)">loadBlock</a>, <a href="../../world/Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a>, <a href="../../world/Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">set</a>, <a href="../../world/Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">setFast</a>, <a href="../../world/Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="../../world/Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="../../world/Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="../../world/Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="../../world/Chunk.html#toString()">toString</a></code></div>
+<code><a href="../../world/Chunk.html#ascend(int,int,int)">ascend</a>, <a href="../../world/Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="../../world/Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="../../world/Chunk.html#decodeBlock(com.ultreon.craft.network.PacketBuffer)">decodeBlock</a>, <a href="../../world/Chunk.html#equals(java.lang.Object)">equals</a>, <a href="../../world/Chunk.html#get(int,int,int)">get</a>, <a href="../../world/Chunk.html#get(com.ultreon.craft.world.BlockPos)">get</a>, <a href="../../world/Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="../../world/Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="../../world/Chunk.html#getBlockLight(int,int,int)">getBlockLight</a>, <a href="../../world/Chunk.html#getBlockLight(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockLight</a>, <a href="../../world/Chunk.html#getBreaking()">getBreaking</a>, <a href="../../world/Chunk.html#getBrightness(int)">getBrightness</a>, <a href="../../world/Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="../../world/Chunk.html#getHighest(int,int)">getHighest</a>, <a href="../../world/Chunk.html#getOffset()">getOffset</a>, <a href="../../world/Chunk.html#getPos()">getPos</a>, <a href="../../world/Chunk.html#getSunlight(int,int,int)">getSunlight</a>, <a href="../../world/Chunk.html#getSunlight(com.ultreon.libs.commons.v0.vector.Vec3i)">getSunlight</a>, <a href="../../world/Chunk.html#hashCode()">hashCode</a>, <a href="../../world/Chunk.html#isActive()">isActive</a>, <a href="../../world/Chunk.html#isDisposed()">isDisposed</a>, <a href="../../world/Chunk.html#isOutOfBounds(int,int,int)">isOutOfBounds</a>, <a href="../../world/Chunk.html#isReady()">isReady</a>, <a href="../../world/Chunk.html#loadBlock(com.ultreon.data.types.MapType)">loadBlock</a>, <a href="../../world/Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a>, <a href="../../world/Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">set</a>, <a href="../../world/Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">setFast</a>, <a href="../../world/Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="../../world/Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="../../world/Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="../../world/Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="../../world/Chunk.html#toString()">toString</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -257,6 +262,19 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="rebuildModels()">
 <h3>rebuildModels</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">rebuildModels</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getLightLevel(int,int,int)">
+<h3>getLightLevel</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getLightLevel</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</span>
+                    throws <span class="exceptions"><a href="../../util/PosOutOfBoundsException.html" title="class in com.ultreon.craft.util">PosOutOfBoundsException</a></span></div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="../../util/PosOutOfBoundsException.html" title="class in com.ultreon.craft.util">PosOutOfBoundsException</a></code></dd>
+</dl>
 </section>
 </li>
 <li>
