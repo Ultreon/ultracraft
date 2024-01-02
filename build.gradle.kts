@@ -296,7 +296,9 @@ afterEvaluate {
         classpath = files(subprojects.map { subproject ->
             subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.compileClasspath
         })
-        (options as StandardJavadocDocletOptions).links(
+        val options = options as StandardJavadocDocletOptions
+        options.addFileOption("-add-stylesheet", project.file("javadoc.css"))
+        options.links(
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx/${project.property("gdx_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-ai/${project.property("ai_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-backend-lwjgl3/${project.property("gdx_version")}",
