@@ -265,4 +265,8 @@ void main() {
     #else
     gl_FragColor.a = 1.0;
     #endif
+
+    #ifdef normalFlag
+    gl_FragColor = vec4(gl_FragColor.xyz*gamma(sh_light(v_normal, groove)).r, gl_FragColor.w);
+    #endif
 }

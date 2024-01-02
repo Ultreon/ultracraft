@@ -2,6 +2,7 @@ package com.ultreon.craft.world;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.events.WorldEvents;
+import com.ultreon.craft.events.WorldLifecycleEvent;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
@@ -25,7 +26,7 @@ public abstract class Biome {
     private final float temperatureStart;
     private final float temperatureEnd;
 
-    public Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd) {
+    protected Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd) {
         this.settings = settings;
         this.temperatureStart = temperatureStart;
         this.temperatureEnd = temperatureEnd;
@@ -37,6 +38,8 @@ public abstract class Biome {
 
     public final void buildLayers() {
         this.onBuildLayers(this.layers, this.extraLayers);
+
+        WorldLifecycleEvent.BIOME_LAYERS_BUILT.factory().onBiomeLayersBuilt(this, this.extraLayers);
     }
 
     protected abstract void onBuildLayers(List<TerrainLayer> layers, List<TerrainLayer> extraLayers);

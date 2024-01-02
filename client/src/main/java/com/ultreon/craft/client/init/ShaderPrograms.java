@@ -17,6 +17,7 @@ public class ShaderPrograms {
     public static final ShaderProgram MODEL = ShaderPrograms.register("model");
     public static final ShaderProgram DEFAULT = ShaderPrograms.register("default");
     public static final ShaderProgram DEPTH = ShaderPrograms.register("depth");
+    public static final ShaderProgram WORLD = ShaderPrograms.register("world");
 
     private static ShaderProgram register(String name) {
         Identifier id = UltracraftClient.id(name);

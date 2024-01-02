@@ -53,7 +53,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public boolean isAir() {
-        return this == Blocks.AIR;
+        return this == Blocks.AIR || this == Blocks.CAVE_AIR;
     }
 
     public boolean hasCollider() {

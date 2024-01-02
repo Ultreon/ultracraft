@@ -64,4 +64,8 @@ public final class BuilderChunk extends Chunk {
     public List<Vec3i> getBiomeCenters() {
         return this.biomeCenters;
     }
+
+    public LightMap getLightMap() {
+        return this.lightMap;
+    }
 }

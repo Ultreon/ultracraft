@@ -63,10 +63,7 @@ import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.*;
 import com.ultreon.craft.client.render.RenderType;
-import com.ultreon.craft.client.render.pipeline.CollectNode;
-import com.ultreon.craft.client.render.pipeline.MainRenderNode;
-import com.ultreon.craft.client.render.pipeline.RenderPipeline;
-import com.ultreon.craft.client.render.pipeline.WorldDiffuseNode;
+import com.ultreon.craft.client.render.pipeline.*;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
@@ -329,7 +326,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.pipeline = new RenderPipeline(new MainRenderNode(), this.camera)
                 .node(new CollectNode())
                 .node(new WorldDiffuseNode())
-//                .node(new WorldDepthNode())
+                .node(new WorldDepthNode())
+                .node(new MainRenderNode())
         ;
 
         // White pixel for the shape drawer.
@@ -704,6 +702,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
 
         Registry.freeze();
+
+        for (Biome biome : Registries.BIOME.values()) {
+            biome.buildLayers();
+        }
 
         UltracraftClient.LOGGER.info("Registering models");
         this.registerMenuScreens();

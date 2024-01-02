@@ -7,7 +7,7 @@ import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 public final class NoiseConfigs {
     public static final NoiseConfig PLAINS = NoiseConfigs.register("plains",
-            new NoiseConfig(0.1f, 6, new Vec2f(330462, 631774), 196977, .35f, .001f, 1f, 20, 90));
+            new NoiseConfig(0.1f, 6, new Vec2f(330462, 631774), 196977, .35f, .001f, 1f, 5, 90));
 
     public static final NoiseConfig OCEAN = NoiseConfigs.register("ocean",
             new NoiseConfig(0.1f, 6, new Vec2f(-104449, -342629), -45258, .35f, .001f, 1f, 20, 55));

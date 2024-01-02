@@ -15,7 +15,6 @@ public class Biomes {
             .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(-2f)
             .temperatureEnd(2f)
-            .layer(new WaterTerrainLayer(64))
             .layer(new AirTerrainLayer())
             .layer(new UndergroundTerrainLayer(Blocks.STONE, 4))
             .layer(new GroundTerrainLayer(Blocks.DIRT, 1, 3))
@@ -28,7 +27,6 @@ public class Biomes {
             .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(-2f)
             .temperatureEnd(2f)
-            .layer(new WaterTerrainLayer(64))
             .layer(new AirTerrainLayer())
             .layer(new UndergroundTerrainLayer(Blocks.STONE, 7))
             .layer(new GroundTerrainLayer(Blocks.SANDSTONE, 3, 4))
@@ -42,8 +40,6 @@ public class Biomes {
     }
 
     public static void nopInit() {
-        for (Biome biome : Registries.BIOME.values()) {
-            biome.buildLayers();
-        }
+        // NOOP
     }
 }

@@ -14,8 +14,10 @@ import com.ultreon.craft.client.events.ClientChunkEvents;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.util.InvalidThreadException;
+import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.libs.commons.v0.Mth;
 
 import java.util.List;
 
@@ -33,14 +35,14 @@ public final class ClientChunk extends Chunk {
     private Model solidModel, transparentModel;
     ModelInstance solidModelInst;
     ModelInstance transparentModelInst;
-    private UltracraftClient client = UltracraftClient.get();
+    private final UltracraftClient client = UltracraftClient.get();
 
     public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, Storage<Block> storage) {
         super(world, size, height, pos, storage);
         this.clientWorld = world;
         this.active = false;
 
-        this.mesher = new GreedyMesher(this, false);
+        this.mesher = new GreedyMesher(this, true);
     }
 
     public void rebuildModels() {
@@ -50,6 +52,19 @@ public final class ClientChunk extends Chunk {
         if (this.transparentFaces != null) {
             this.rebuildTransparentModel();
         }
+    }
+
+    public float getLightLevel(int x, int y, int z) throws PosOutOfBoundsException {
+        if(this.isOutOfBounds(x, y, z))
+            throw new PosOutOfBoundsException();
+
+        int sunlight = this.lightMap.getSunlight(x, y, z);
+        int blockLight = this.lightMap.getBlockLight(x, y, z);
+        float sunlightMapped = Chunk.lightLevelMap[Mth.clamp(sunlight, 0, Chunk.MAX_LIGHT_LEVEL)] - Chunk.lightLevelMap[0];
+        sunlightMapped *= this.clientWorld.getGlobalSunlight();
+        float blockLightMapped = Chunk.lightLevelMap[Mth.clamp(blockLight, 0, Chunk.MAX_LIGHT_LEVEL)] - Chunk.lightLevelMap[0];
+
+        return Mth.clamp(sunlightMapped + blockLightMapped + Chunk.lightLevelMap[0], Chunk.lightLevelMap[0], Chunk.lightLevelMap[Chunk.MAX_LIGHT_LEVEL]);
     }
 
     private void rebuildSolidModel() {

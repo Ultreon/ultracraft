@@ -58,12 +58,12 @@ public abstract class Chunk implements ServerDisposable {
      * Palette storage is used for improving memory usage.
      */
     public final Storage<Block> storage;
-    private final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+    protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
     private final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
     protected final FlatStorage<Biome> biomeStorage = new FlatStorage<>(256);
 
-    private static final int MAX_LIGHT_LEVEL = 15;
-    private static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
+    protected static final int MAX_LIGHT_LEVEL = 15;
+    protected static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
 
     static {
         for (int i = 0; i <= Chunk.MAX_LIGHT_LEVEL; i++) {
@@ -183,7 +183,7 @@ public abstract class Chunk implements ServerDisposable {
         return -1; // Out of bounds
     }
 
-    private boolean isOutOfBounds(int x, int y, int z) {
+    protected boolean isOutOfBounds(int x, int y, int z) {
         return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
     }
 
@@ -339,15 +339,6 @@ public abstract class Chunk implements ServerDisposable {
     @Override
     public int hashCode() {
         return Objects.hash(this.pos);
-    }
-
-    public float getLightLevel(int x, int y, int z) throws PosOutOfBoundsException {
-        if(this.isOutOfBounds(x, y, z))
-            throw new PosOutOfBoundsException();
-
-        int sunlight = 15;
-        int blockLight = this.lightMap.getBlockLight(x, y, z);
-        return Chunk.lightLevelMap[Mth.clamp(sunlight + blockLight, 0, Chunk.MAX_LIGHT_LEVEL)];
     }
 
     public int getSunlight(int x, int y, int z) throws PosOutOfBoundsException {

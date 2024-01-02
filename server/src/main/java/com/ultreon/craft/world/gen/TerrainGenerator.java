@@ -122,8 +122,8 @@ public class TerrainGenerator {
         double distance = biomeCenters.get(biomeIndices.get(0).index()).dst(biomeCenters.get(biomeIndices.get(1).index()));
         double firstWeight = biomeIndices.get(0).distance() / distance;
         double secondWeight = 1 - firstWeight;
-        int firstNoise = firstGenerator.getSurfaceHeightNoise(offset.x, offset.z);
-        int secondNoise = secondGenerator.getSurfaceHeightNoise(offset.x, offset.z);
+        int firstNoise = firstGenerator.getCarver().getSurfaceHeightNoise(offset.x, offset.z);
+        int secondNoise = secondGenerator.getCarver().getSurfaceHeightNoise(offset.x, offset.z);
         return new BiomeGenerator.Index(firstGenerator, (int) Math.round(firstNoise * firstWeight + secondNoise * secondWeight));
 
     }
