@@ -13,6 +13,7 @@ import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Gamemode;
+import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -34,7 +35,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, Storage<Block> storage);
+    void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 

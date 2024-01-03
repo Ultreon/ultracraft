@@ -58,7 +58,7 @@ public class GenericDebugPage implements DebugPage {
                 context.left("XYZ", player.getPosition())
                         .left("Block XYZ", blockPosition)
                         .left("Chunk XYZ", sectionPos)
-                        .left("Biome", world.getBiome(blockPosition));
+                        .left("Biome", Registries.BIOME.getKey(world.getBiome(blockPosition)));
                 if (chunk != null) {
                     int sunlight = chunk.getSunlight(localBlockPos.vec());
                     int blockLight = chunk.getBlockLight(localBlockPos.vec());

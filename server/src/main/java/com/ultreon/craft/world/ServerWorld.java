@@ -6,7 +6,6 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
@@ -25,7 +24,6 @@ import com.ultreon.craft.util.Task;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.ListType;
@@ -94,7 +92,8 @@ public final class ServerWorld extends World {
         this.terrainGen = new TerrainGenerator(biomeDomain, layerDomain, NoiseConfigs.BIOME_MAP);
 
         for (Biome value : Registries.BIOME.values()) {
-            this.terrainGen.registerBiome(this, this.getSeed(), value, value.getTemperatureStart(), value.getTemperatureEnd());
+            if (value.doesNotGenerate()) continue;
+            this.terrainGen.registerBiome(this, this.getSeed(), value, value.getTemperatureStart(), value.getTemperatureEnd(), value.isOcean());
         }
 
         this.terrainGen.create(this, this.seed);
@@ -145,6 +144,7 @@ public final class ServerWorld extends World {
         return Queues.synchronizedQueue(Queues.newConcurrentLinkedQueue());
     }
 
+    @Override
     public int getRenderDistance() {
         return this.server.getRenderDistance();
     }
@@ -926,6 +926,7 @@ public final class ServerWorld extends World {
          * Note: Internal API.
          * Should only be called if you know what you are doing.
          */
+        @Override
         @ApiStatus.Internal
         public void dispose() {
             this.validateThread();

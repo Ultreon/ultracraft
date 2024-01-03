@@ -254,7 +254,7 @@ public abstract class Player extends LivingEntity {
     public void closeMenu() {
         if (this.openMenu == null) return;
 
-        this.openMenu.removePlayer(this);
+        this.openMenu.removeWatcher(this);
         this.openMenu = null;
     }
 
@@ -262,6 +262,8 @@ public abstract class Player extends LivingEntity {
     protected void onMoved() {
         this.x = Mth.clamp(this.x, -30000000, 30000000);
         this.z = Mth.clamp(this.z, -30000000, 30000000);
+
+        if (this.y < -64) this.y = -64;
 
         super.onMoved();
     }

@@ -245,6 +245,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * The server main loop.
      * Note: Internal API.
      */
+    @Override
     @ApiStatus.Internal
     public final void run() {
         // Send server starting event to mods.
@@ -342,6 +343,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * Stops the server thread in a clean state.
      * Note: this method is blocking.
      */
+    @Override
     @Blocking
     public void shutdown() {
         // Send event for server stopping.
@@ -480,6 +482,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.scheduler.schedule(runnable, time, unit);
     }
 
+    @Override
     public void close() {
         for (ServerDisposable disposable : this.disposables) {
             disposable.dispose();

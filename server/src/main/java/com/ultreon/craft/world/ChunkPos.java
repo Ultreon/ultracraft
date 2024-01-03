@@ -76,6 +76,7 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
      * @param chunkPos the chunk positon to be compared.
      * @return the comparison result.
      */
+    @Override
     public int compareTo(ChunkPos chunkPos) {
         double dst = new Vec2d(this.x, this.z).dst(chunkPos.x, chunkPos.z);
         return dst == 0 ? 0 : dst < 0 ? -1 : 1;

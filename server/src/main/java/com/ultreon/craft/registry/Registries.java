@@ -6,6 +6,8 @@ import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.menu.MenuType;
+import com.ultreon.craft.recipe.RecipeManager;
+import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.SoundEvent;
@@ -24,6 +26,7 @@ public final class Registries {
     public static final Registry<Weather> WEATHER = Registries.create(new Identifier("weather"));
     public static final Registry<Attribute> ATTRIBUTE = Registries.create(new Identifier("attribute"));
     public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(new Identifier("damage_source"));
+    public static final Registry<RecipeType> RECIPE_TYPE = Registries.create(new Identifier("recipe_type"));
 
     public static void nopInit() {
         // Load class

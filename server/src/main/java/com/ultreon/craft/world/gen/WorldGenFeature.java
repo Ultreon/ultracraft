@@ -27,11 +27,22 @@ public abstract class WorldGenFeature implements Disposable {
     @ApiStatus.OverrideOnly
     public abstract boolean handle(World world, Chunk chunk, int x, int z, int height);
 
+    /**
+     * Create the world generator feature in the given world.
+     * <p>NOTE: Always override {@link #dispose()} to avoid memory leaks.</p>
+     *
+     * @param world the world to create the feature in.
+     */
+    @ApiStatus.OverrideOnly
     public void create(ServerWorld world) {
 
     }
 
+    /**
+     * Dispose the feature when the world is being unloaded.
+     */
     @Override
+    @ApiStatus.OverrideOnly
     public void dispose() {
 
     }

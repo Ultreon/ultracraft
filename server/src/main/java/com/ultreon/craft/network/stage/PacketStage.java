@@ -19,7 +19,7 @@ public abstract class PacketStage {
     /**
      * Constructs a new packet stage.
      */
-    public PacketStage() {
+    protected PacketStage() {
         this.registerPackets();
         this.clientData = new PacketData<>(this.clientBoundList);
         this.serverData = new PacketData<>(this.serverBoundList);

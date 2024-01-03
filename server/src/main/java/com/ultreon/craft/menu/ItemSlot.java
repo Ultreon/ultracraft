@@ -112,4 +112,18 @@ public class ItemSlot {
     public void update() {
         this.container.onItemChanged(this);
     }
+
+    public boolean isEmpty() {
+        return this.item.isEmpty();
+    }
+
+    public void shrink(int amount) {
+        this.item.shrink(amount);
+        this.container.onItemChanged(this);
+    }
+
+    public void grow(int amount) {
+        this.item.grow(amount);
+        this.container.onItemChanged(this);
+    }
 }

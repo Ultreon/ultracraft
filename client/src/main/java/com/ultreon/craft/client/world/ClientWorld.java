@@ -42,6 +42,7 @@ public final class ClientWorld extends World implements Disposable {
         this.client = client;
     }
 
+    @Override
     public int getRenderDistance() {
         return this.client.settings.renderDistance.get();
     }

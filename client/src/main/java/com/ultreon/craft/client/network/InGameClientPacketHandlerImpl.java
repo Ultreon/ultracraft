@@ -8,12 +8,13 @@ import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.client.gui.screens.container.ContainerScreen;
+import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.RemotePlayer;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
-import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
@@ -35,17 +36,13 @@ import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Gamemode;
-import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.Chunk;
-import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -110,7 +107,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, Storage<Block> storage) {
+    public void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
         LocalPlayer player = this.client.player;
         if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
@@ -125,7 +122,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 return;
             }
 
-            world.loadChunk(pos, new ClientChunk(world, World.CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage));
+            world.loadChunk(pos, new ClientChunk(world, pos, storage, biomeStorage));
         }, this.client.chunkLoadingExecutor);
     }
 
@@ -254,6 +251,10 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
             if (openMenu != null) {
                 openMenu.setItem(index, stack);
             }
+
+            if (this.client.screen instanceof ContainerScreen screen) {
+                screen.emitUpdate();
+            }
         }
     }
 
@@ -264,6 +265,10 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         if (player != null) {
             Inventory inventory = player.inventory;
             inventory.setItem(index, stack);
+
+            if (this.client.screen instanceof InventoryScreen screen) {
+                screen.emitUpdate();
+            }
         }
     }
 

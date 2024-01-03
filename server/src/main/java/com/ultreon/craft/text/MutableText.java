@@ -106,6 +106,7 @@ public abstract class MutableText extends TextObject {
         return this.append(TextObject.nullToEmpty(String.valueOf(o)));
     }
 
+    @Override
     public abstract MutableText copy();
 
     @Override

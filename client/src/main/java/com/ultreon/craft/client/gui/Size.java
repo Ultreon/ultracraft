@@ -59,6 +59,7 @@ public class Size implements Copyable<Size> {
         return "(" + this.width + " x " + this.height + ")";
     }
 
+    @Override
     public Size cpy() {
         return new Size(this.width, this.height);
     }

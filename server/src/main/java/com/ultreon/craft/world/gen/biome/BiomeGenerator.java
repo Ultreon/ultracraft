@@ -15,6 +15,8 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 
+import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
+
 public class BiomeGenerator implements ServerDisposable {
     private final World world;
     private final NoiseInstance biomeNoise;
@@ -52,7 +54,7 @@ public class BiomeGenerator implements ServerDisposable {
 
     private static void updateLightMap(BuilderChunk chunk, int x, int z, LightMap lightMap) {
         int highest = chunk.getHighest(x, z);
-        for (int y = chunk.getOffset().y; y < chunk.getOffset().y + chunk.height; y++) {
+        for (int y = chunk.getOffset().y; y < chunk.getOffset().y + CHUNK_HEIGHT; y++) {
             lightMap.setSunlight(x, y, z, y >= highest ? 15 : 7);
         }
     }
@@ -64,7 +66,7 @@ public class BiomeGenerator implements ServerDisposable {
     }
 
     private void generateTerrainLayers(BuilderChunk chunk, int x, int z, int groundPos) {
-        for (int y = chunk.getOffset().y + 1; y < chunk.getOffset().y + chunk.height; y++) {
+        for (int y = chunk.getOffset().y + 1; y < chunk.getOffset().y + CHUNK_HEIGHT; y++) {
             if (chunk.get(x, y, z).isAir()) continue;
 
             for (var layer : this.layers) {

@@ -44,8 +44,17 @@ public abstract class Chunk implements ServerDisposable {
     protected final Object lock = new Object();
     protected boolean active;
     protected boolean ready;
-    public final int size;
-    public final int height;
+
+    /**
+     * @deprecated Use {@link World#CHUNK_SIZE} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public final int size = CHUNK_SIZE;
+    /**
+     * @deprecated Use {@link World#CHUNK_HEIGHT} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public final int height = CHUNK_HEIGHT;
     protected final Vec3i offset;
     @MonotonicNonNull
     @ApiStatus.Internal
@@ -53,14 +62,10 @@ public abstract class Chunk implements ServerDisposable {
     private boolean disposed;
     private final World world;
 
-    /**
-     * Field for block data in palette storage format.
-     * Palette storage is used for improving memory usage.
-     */
     public final Storage<Block> storage;
     protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
-    private final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
-    protected final FlatStorage<Biome> biomeStorage = new FlatStorage<>(256);
+    protected final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
+    public final Storage<Biome> biomeStorage;
 
     protected static final int MAX_LIGHT_LEVEL = 15;
     protected static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
@@ -72,19 +77,67 @@ public abstract class Chunk implements ServerDisposable {
         }
     }
 
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos)} instead@
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos) {
         this(world, size, height, pos, new FlatStorage<>(size * height * size));
     }
 
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos, Storage)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos, Storage<Block> storage) {
+        this(world, size, height, pos, storage, new FlatStorage<>(256));
+    }
+
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos, Storage, Storage)} instead@
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    protected Chunk(World world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        this(world, pos, storage, biomeStorage);
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world the world the chunk is in.
+     * @param pos   the chunk position.
+     */
+    protected Chunk(World world, ChunkPos pos) {
+        this(world, pos, new FlatStorage<>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE));
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world   the world the chunk is in.
+     * @param pos     the chunk position.
+     * @param storage the block storage.
+     */
+    protected Chunk(World world, ChunkPos pos, Storage<Block> storage) {
+        this(world, pos, storage, new FlatStorage<>(256));
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world        the world the chunk is in.
+     * @param pos          the chunk position.
+     * @param storage      the block storage.
+     * @param biomeStorage the biome storage
+     */
+    protected Chunk(World world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
         this.world = world;
 
         this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
         this.pos = pos;
-        this.size = size;
-        this.height = height;
         this.storage = storage;
+        this.biomeStorage = biomeStorage;
     }
 
     /**
@@ -178,13 +231,13 @@ public abstract class Chunk implements ServerDisposable {
 
     private int getIndex(int x, int y, int z) {
         if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE) {
-            return z * (this.size * this.height) + y * this.size + x;
+            return z * (CHUNK_SIZE * CHUNK_HEIGHT) + y * CHUNK_SIZE + x;
         }
         return -1; // Out of bounds
     }
 
     protected boolean isOutOfBounds(int x, int y, int z) {
-        return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
+        return x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE;
     }
 
     @Override

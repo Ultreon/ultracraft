@@ -102,6 +102,7 @@ public class ClientConnection implements Runnable {
             this.connection = connection;
         }
 
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 
@@ -122,6 +123,7 @@ public class ClientConnection implements Runnable {
             this.connection = connection;
         }
 
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 

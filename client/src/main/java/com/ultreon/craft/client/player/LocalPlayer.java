@@ -52,17 +52,20 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (Math.abs(this.x - this.ox) >= 0.01 && Math.abs(this.y - this.oy) >= 0.01 && Math.abs(this.z - this.oz) >= 0.01
-                && (this.x != this.ox || this.y != this.oy || this.z != this.oz)) {
-            if (this.world.getChunk(this.getChunkPos()) == null) {
-                this.x = this.ox;
-                this.z = this.oz;
-            }
-            this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
-            this.ox = this.x;
-            this.oy = this.y;
-            this.oz = this.z;
+        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
+            this.handleMove();
+    }
+
+    private void handleMove() {
+        if (this.world.getChunk(this.getChunkPos()) == null) {
+            this.x = this.ox;
+            this.y = this.oy;
+            this.z = this.oz;
         }
+        this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
+        this.ox = this.x;
+        this.oy = this.y;
+        this.oz = this.z;
     }
 
     @Override

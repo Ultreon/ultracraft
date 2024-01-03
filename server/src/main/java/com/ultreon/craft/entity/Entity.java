@@ -197,17 +197,24 @@ public class Entity implements CommandSender {
     public boolean move(double deltaX, double deltaY, double deltaZ) {
         double dx = deltaX, dy = deltaY, dz = deltaZ;
 
-        if (deltaX < 0.01 && deltaY < 0.01 && deltaZ < 0.01 &&
-                deltaX > -0.01 && deltaY > -0.01 && deltaZ > -0.01) {
+        double absX = Math.abs(deltaX);
+        double absY = Math.abs(deltaY);
+        double absZ = Math.abs(deltaZ);
+
+        if (absX < 0.001 && absY < 0.001 && absZ < 0.001) {
             return this.isColliding;
         }
 
         ValueEventResult<Vec3d> eventResult = EntityEvents.MOVE.factory().onEntityMove(this, deltaX, deltaY, deltaZ);
         Vec3d value = eventResult.getValue();
-        if (eventResult.isCanceled() && value != null) {
-            dx = value.x;
-            dy = value.y;
-            dz = value.z;
+        if (eventResult.isCanceled()) {
+            if (value != null) {
+                dx = value.x;
+                dy = value.y;
+                dz = value.z;
+            } else {
+                return this.isColliding;
+            }
         }
 
         double oDx = dx;
@@ -228,14 +235,14 @@ public class Entity implements CommandSender {
             this.z += dz;
             this.onMoved();
         } else {
-            this.move0(ext, dy, dx, dz, oDy, oDx, oDz);
+            this.move0(ext, dx, dy, dz, oDx, oDy, oDz);
             this.onMoved();
         }
 
         return this.isColliding;
     }
 
-    private void move0(BoundingBox ext, double dy, double dx, double dz, double oDy, double oDx, double oDz) {
+    private void move0(BoundingBox ext, double dx, double dy, double dz, double oDx, double oDy, double oDz) {
         List<BoundingBox> boxes = this.world.collide(ext, false);
         BoundingBox pBox = this.getBoundingBox();
         this.isColliding = false;
@@ -500,6 +507,7 @@ public class Entity implements CommandSender {
         this.uuid = uuid;
     }
 
+    @Override
     public UUID getUuid() {
         return this.uuid;
     }

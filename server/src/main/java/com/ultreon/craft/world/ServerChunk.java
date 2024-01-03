@@ -17,8 +17,16 @@ import static com.ultreon.craft.world.World.CHUNK_SIZE;
 public final class ServerChunk extends Chunk {
     private final ServerWorld world;
 
-    public ServerChunk(ServerWorld world, int size, int height, ChunkPos pos, Storage<Block> storage) {
-        super(world, size, height, pos, storage);
+    /**
+     * @deprecated Use {@link #ServerChunk(ServerWorld, ChunkPos, Storage, Storage)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public ServerChunk(ServerWorld world, int size, int height, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        this(world, pos, storage, biomeStorage);
+    }
+
+    public ServerChunk(ServerWorld world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        super(world, pos, storage);
         this.world = world;
     }
 
@@ -33,11 +41,15 @@ public final class ServerChunk extends Chunk {
 
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData) {
         var storage = new FlatStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+        var biomeStorage = new FlatStorage<Biome>(CHUNK_SIZE * CHUNK_SIZE);
 
         MapType blockData = chunkData.getMap("Blocks");
         storage.load(blockData, Chunk::loadBlock);
 
-        ServerChunk chunk = new ServerChunk(world, CHUNK_SIZE, World.CHUNK_HEIGHT, pos, storage);
+        MapType biomeData = chunkData.getMap("Biomes");
+        biomeStorage.load(biomeData, Biome::load);
+
+        ServerChunk chunk = new ServerChunk(world, pos, storage, biomeStorage);
         chunk.load(chunkData);
         return chunk;
     }

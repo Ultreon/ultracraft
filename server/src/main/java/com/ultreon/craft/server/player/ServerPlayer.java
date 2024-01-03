@@ -191,11 +191,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
 
-        if (Math.abs(this.x - this.ox) < 0.001 &&
-            Math.abs(this.y - this.oy) < 0.001 &&
-            Math.abs(this.z - this.oz) < 0.001)
-            return;
-
         // Set old position.
         this.ox = this.x;
         this.oy = this.y;
@@ -229,6 +224,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
     }
 
+    @Override
     public @NotNull String getName() {
         return this.name;
     }
@@ -343,7 +339,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage), PacketResult.onEither(() -> this.sendingChunk = false));
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
@@ -410,6 +406,12 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
                     this.abilities.instaMine = false;
                     this.abilities.invincible = false;
                     this.abilities.blockBreak = true;
+                }
+                case SPECTATOR -> {
+                    this.abilities.allowFlight = true;
+                    this.abilities.instaMine = false;
+                    this.abilities.invincible = true;
+                    this.abilities.blockBreak = false;
                 }
             }
 

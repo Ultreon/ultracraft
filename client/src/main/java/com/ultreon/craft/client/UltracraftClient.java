@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
@@ -286,6 +287,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
     private final G3dModelLoader modelLoader;
+    private final Environment defaultEnv = new Environment();
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -320,13 +322,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.modelLoader = new G3dModelLoader(new JsonReader());
 
         this.camera = new GameCamera(67, this.getWidth(), this.getHeight());
-        this.camera.near = 0.01f;
+        this.camera.near = 0.1f;
         this.camera.far = 2;
 
         this.pipeline = new RenderPipeline(new MainRenderNode(), this.camera)
                 .node(new CollectNode())
                 .node(new WorldDiffuseNode())
-                .node(new WorldDepthNode())
                 .node(new MainRenderNode())
         ;
 
@@ -357,7 +358,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.normalCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/ultracraft/textures/cursors/normal.png")), 0, 0);
         this.clickCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("assets/ultracraft/textures/cursors/click.png")), 0, 0);
 
-        LanguageManager.setCurrentLanguage(new Locale("en", "us"));
+        LanguageManager.setCurrentLanguage(Locale.of("en", "us"));
 
         Gdx.graphics.setCursor(this.normalCursor);
 
@@ -397,10 +398,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
         String[] split = config.language.split("_");
         if (split.length == 2) {
-            LanguageManager.setCurrentLanguage(new Locale(split[0], split[1]));
+            LanguageManager.setCurrentLanguage(Locale.of(split[0], split[1]));
         } else {
             UltracraftClient.LOGGER.error("Invalid language: {}", config.language);
-            LanguageManager.setCurrentLanguage(new Locale("en", "us"));
+            LanguageManager.setCurrentLanguage(Locale.of("en", "us"));
             config.language = "en_us";
             this.config.save();
         }
@@ -889,7 +890,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @return true if the current thread is the main thread, false otherwise.
      */
     public static boolean isOnMainThread() {
-        return Thread.currentThread().getId() == UltracraftClient.instance.mainThread.getId();
+        return Thread.currentThread().threadId() == UltracraftClient.instance.mainThread.threadId();
     }
 
     /**
@@ -1005,7 +1006,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void registerLanguage(Identifier id) {
         var s = id.path().split("_", 2);
-        var locale = s.length == 1 ? new Locale(s[0]) : new Locale(s[0], s[1]);
+        var locale = s.length == 1 ? Locale.of(s[0]) : Locale.of(s[0], s[1]);
         LanguageManager.INSTANCE.register(locale, id);
         LanguageManager.INSTANCE.load(locale, id, this.resourceManager);
     }
@@ -1015,8 +1016,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         TextureStitcher itemTextures = new TextureStitcher(UltracraftClient.id("item"));
         for (Map.Entry<Identifier, Item> e : Registries.ITEM.entries()) {
-            if (e.getValue() == Items.AIR) continue;
-            if (e.getValue() instanceof BlockItem) continue;
+            if (e.getValue() == Items.AIR || e.getValue() instanceof BlockItem) continue;
 
             Identifier texId = e.getKey().mapPath(path -> "textures/items/" + path + ".png");
             Texture tex = this.textureManager.getTexture(texId);
@@ -1056,10 +1056,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void registerBlockModels() {
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.register(Blocks.LOG, CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+        BlockModelRegistry.register(Blocks.CRAFTING_BENCH, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.registerDefault(Blocks.VOIDGUARD);
         BlockModelRegistry.registerDefault(Blocks.ERROR);
         BlockModelRegistry.registerDefault(Blocks.DIRT);
         BlockModelRegistry.registerDefault(Blocks.SAND);
+        BlockModelRegistry.registerDefault(Blocks.SANDSTONE);
+        BlockModelRegistry.registerDefault(Blocks.GRAVEL);
         BlockModelRegistry.registerDefault(Blocks.WATER);
         BlockModelRegistry.registerDefault(Blocks.STONE);
         BlockModelRegistry.registerDefault(Blocks.LEAVES);
@@ -1697,6 +1700,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         }
     }
 
+    @Override
     @SuppressWarnings("ConstantValue")
     public void dispose() {
         if (!UltracraftClient.isOnMainThread()) {
@@ -1950,7 +1954,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private float calculateGuiScale() {
-        return DEFAULT_SCALE;
+        return UltracraftClient.DEFAULT_SCALE;
     }
 
     public boolean isPlaying() {
@@ -2088,6 +2092,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public User getUser() {
         return this.user;
+    }
+
+    public Environment getEnvironment() {
+        if (this.worldRenderer != null) {
+            return this.worldRenderer.getEnvironment();
+        }
+        return this.defaultEnv;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

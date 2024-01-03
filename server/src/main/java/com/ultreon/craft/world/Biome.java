@@ -26,11 +26,15 @@ public abstract class Biome {
     private final List<WorldGenFeature> features = new ArrayList<>();
     private final float temperatureStart;
     private final float temperatureEnd;
+    private final boolean isOcean;
+    private final boolean doesNotGenerate;
 
-    protected Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd) {
+    protected Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd, boolean isOcean, boolean doesNotGenerate) {
         this.settings = settings;
         this.temperatureStart = temperatureStart;
         this.temperatureEnd = temperatureEnd;
+        this.isOcean = isOcean;
+        this.doesNotGenerate = doesNotGenerate;
     }
 
     public static Builder builder() {
@@ -44,6 +48,10 @@ public abstract class Biome {
     }
 
     protected abstract void onBuildLayers(List<TerrainLayer> layers, List<WorldGenFeature> features);
+
+    public boolean doesNotGenerate() {
+        return this.doesNotGenerate;
+    }
 
     public BiomeGenerator create(ServerWorld world, long seed) {
         NoiseInstance noiseInstance = this.settings.create(seed);
@@ -83,6 +91,10 @@ public abstract class Biome {
         return Registries.BIOME.getValue(Identifier.tryParse(mapType.getString("id", "plains")));
     }
 
+    public boolean isOcean() {
+        return this.isOcean;
+    }
+
     public static class Builder {
         @Nullable
         private NoiseConfig biomeNoise;
@@ -90,6 +102,8 @@ public abstract class Biome {
         private final List<WorldGenFeature> features = new ArrayList<>();
         private float temperatureStart = Float.NaN;
         private float temperatureEnd = Float.NaN;
+        private boolean isOcean;
+        private boolean doesNotGenerate;
 
         private Builder() {
 
@@ -124,19 +138,29 @@ public abstract class Biome {
             return this;
         }
 
+        public Builder ocean() {
+            this.isOcean = true;
+            return this;
+        }
+
         public Biome build() {
             Preconditions.checkNotNull(this.biomeNoise, "Biome noise not set.");
 
             if (Float.isNaN(this.temperatureStart)) throw new IllegalArgumentException("Temperature start not set.");
             if (Float.isNaN(this.temperatureEnd)) throw new IllegalArgumentException("Temperature end not set.");
 
-            return new Biome(this.biomeNoise, this.temperatureStart, this.temperatureEnd) {
+            return new Biome(this.biomeNoise, this.temperatureStart, this.temperatureEnd, this.isOcean, this.doesNotGenerate) {
                 @Override
                 protected void onBuildLayers(List<TerrainLayer> layerList, List<WorldGenFeature> featureList) {
                     layerList.addAll(Builder.this.layers);
                     featureList.addAll(Builder.this.features);
                 }
             };
+        }
+
+        public Builder doesNotGenerate() {
+            this.doesNotGenerate = true;
+            return this;
         }
     }
 }

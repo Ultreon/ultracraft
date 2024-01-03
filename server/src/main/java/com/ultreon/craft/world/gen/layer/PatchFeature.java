@@ -13,15 +13,38 @@ import org.jetbrains.annotations.Nullable;
 public class PatchFeature extends WorldGenFeature {
     private final NoiseConfig settingsBase;
     private final Block patchBlock;
-    public final float stoneThreshold;
+    private final float threshold;
     @LazyInit
     @Nullable
     private NoiseInstance baseNoise;
+    private final int depth;
 
-    public PatchFeature(NoiseConfig settingsBase, Block patchBlock, float stoneThreshold) {
+    /**
+     * Creates a new patch feature with the given settings
+     *
+     * @param settingsBase the noise config to use
+     * @param patchBlock   the block to use for the patch
+     * @param threshold    the threshold to use for the patch
+     * @deprecated Use {@link #PatchFeature(NoiseConfig, Block, float, int)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public PatchFeature(NoiseConfig settingsBase, Block patchBlock, float threshold) {
+        this(settingsBase, patchBlock, threshold, 4);
+    }
+
+    /**
+     * Creates a new patch feature with the given settings
+     *
+     * @param settingsBase the noise config to use
+     * @param patchBlock   the block to use for the patch
+     * @param threshold    the threshold to use for the patch
+     * @param depth        the depth for the patch generation.
+     */
+    public PatchFeature(NoiseConfig settingsBase, Block patchBlock, float threshold, int depth) {
         this.settingsBase = settingsBase;
         this.patchBlock = patchBlock;
-        this.stoneThreshold = stoneThreshold;
+        this.threshold = threshold;
+        this.depth = depth;
     }
 
     @Override
@@ -35,10 +58,11 @@ public class PatchFeature extends WorldGenFeature {
     public boolean handle(World world, Chunk chunk, int x, int z, int height) {
         if (this.baseNoise == null) return false;
 
-        float value = (float) this.baseNoise.eval(chunk.getOffset().x + x, chunk.getOffset().z + z);
-        if (value < this.stoneThreshold) {
-            chunk.set(x, height, z, this.patchBlock);
-            return true;
+        for (int y = height; y > height - this.depth; y--) {
+            float value = (float) this.baseNoise.eval(chunk.getOffset().x + x, y, chunk.getOffset().z + z);
+            if (value < this.threshold && chunk.set(x, y, z, this.patchBlock)) {
+                return true;
+            }
         }
 
         return false;

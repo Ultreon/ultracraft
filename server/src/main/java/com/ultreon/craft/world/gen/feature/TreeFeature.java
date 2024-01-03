@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
+import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
+
 public class TreeFeature extends WorldGenFeature {
     private final NoiseConfig noiseConfig;
     private final Block trunk;
@@ -42,8 +44,7 @@ public class TreeFeature extends WorldGenFeature {
 
         if (this.random.nextFloat() < this.threshold) {
             var trunkHeight = this.random.nextInt(this.minTrunkHeight, this.maxTrunkHeight);
-            if (trunkHeight + height + 1 > chunk.height) return false;
-//            if (chunk.get(x, height - 1, z) != Blocks.GRASS_BLOCK) return false;
+            if (trunkHeight + height + 1 > CHUNK_HEIGHT) return false;
 
             // Check if there is enough space
             for (int y = height; y < height + trunkHeight; y++) {
@@ -54,17 +55,19 @@ public class TreeFeature extends WorldGenFeature {
                 }
             }
 
+
+            for (int y = height; y < height + trunkHeight; y++) {
+                chunk.set(x, y, z, this.trunk);
+            }
+
             chunk.set(x, height - 1, z, Blocks.DIRT);
             for (int xOffset = -1; xOffset <= 1; xOffset++) {
                 for (int zOffset = -1; zOffset <= 1; zOffset++) {
                     for (int y = height + trunkHeight - 1; y <= height + trunkHeight + 1; y++) {
+                        if (!chunk.get(x + xOffset, y, z + zOffset).isAir()) continue;
                         chunk.set(x + xOffset, y, z + zOffset, this.leaves);
                     }
                 }
-            }
-
-            for (int y = height; y < height + trunkHeight; y++) {
-                chunk.set(x, y, z, this.trunk);
             }
             return true;
         }

@@ -57,6 +57,7 @@ public abstract class World implements ServerDisposable {
     public static final Marker MARKER = MarkerFactory.getMarker("World");
     public static final int REGION_SIZE = 32;
     public static final Identifier OVERWORLD = new Identifier("overworld");
+    public static final float SEA_LEVEL = 64;
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
 
@@ -492,6 +493,7 @@ public abstract class World implements ServerDisposable {
     /**
      * Cleans up any used variables, executors, etc.
      */
+    @Override
     @ApiStatus.Internal
     public void dispose() {
         this.disposed = true;
@@ -675,7 +677,7 @@ public abstract class World implements ServerDisposable {
 
     public Biome getBiome(BlockPos pos) {
         BlockPos localPos = World.toLocalBlockPos(pos);
-        Chunk chunk = this.getChunkAt(localPos);
+        Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return null;
         return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
     }

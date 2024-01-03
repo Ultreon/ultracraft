@@ -75,8 +75,8 @@ public class FlatStorage<D> implements Storage<D> {
     @Override
     public void write(PacketBuffer buffer, BiConsumer<PacketBuffer, D> encoder) {
         buffer.writeInt(this.data.length);
-        for (D entry : this.data) {
-            if (entry == null) throw new NullPointerException("Entry is null");
+        D[] ds = this.data;
+        for (D entry : ds) {
             encoder.accept(buffer, entry);
         }
     }
