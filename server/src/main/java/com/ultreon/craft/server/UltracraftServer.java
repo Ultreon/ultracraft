@@ -70,7 +70,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private static final WatchManager WATCH_MANAGER = new WatchManager(new ConfigurationScheduler("Ultracraft"));
     private static UltracraftServer instance;
     private final List<ServerDisposable> disposables = new ArrayList<>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Queue<Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>>> chunkNetworkQueue = new ArrayDeque<>();
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
@@ -490,10 +490,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.world.dispose();
 
-        this.scheduler.shutdownNow();
+        this.scheduler.shutdown();
 
         try {
-            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
                 this.onTerminationFailed();
             }
         } catch (InterruptedException | CrashException exc) {
