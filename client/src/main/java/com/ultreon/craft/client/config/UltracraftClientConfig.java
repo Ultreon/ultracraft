@@ -11,6 +11,7 @@ public class UltracraftClientConfig {
     public String language = "en_us";
     public FontConfig font = new FontConfig();
     public int fov = 70;
+    public int guiScale = 0;
 
     public static class FontConfig {
         public boolean diagonalFontShadow = true;

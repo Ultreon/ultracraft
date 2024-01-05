@@ -28,6 +28,7 @@ import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
+import com.ultreon.craft.world.rng.RandomSource;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -69,6 +70,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }).build();
     private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
     private final Set<ChunkPos> skippedChunks = new CopyOnWriteArraySet<>();
+    public boolean blockBrokenTick = false;
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
     private boolean sendingChunk;
     private boolean spawned;
@@ -153,6 +155,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public void tick() {
         if (this.world.getChunk(this.getChunkPos()) == null) return;
         if (!this.isChunkActive(this.getChunkPos())) return;
+
+        this.blockBrokenTick = false;
 
         super.tick();
 

@@ -75,7 +75,7 @@ public class ItemRenderer {
     }
 
     private void renderBlockItem(Block block, Renderer renderer, int x, int y) {
-        renderer.model(() -> {
+        renderer.external(() -> {
             float guiScale = this.client.getGuiScale();
             this.itemCam.zoom = 4.0f / guiScale;
             this.itemCam.far = 100000;

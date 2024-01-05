@@ -210,12 +210,12 @@ public abstract class Chunk implements ServerDisposable {
         this.breaking.remove(new BlockPos(x, y, z));
         this.storage.set(index, block);
 
-        if (this.heightMap.get(x, z) < y && block != Blocks.AIR) {
+        if (this.heightMap.get(x, z) < y && !block.isAir()) {
             this.heightMap.set(x, z, (short) y);
-        } else if (this.heightMap.get(x, z) == y && block == Blocks.AIR) {
+        } else if (this.heightMap.get(x, z) == y && block.isAir()) {
             int curY;
             for (curY = y; curY >= 0; curY--) {
-                if (this.getFast(x, curY, z) != Blocks.AIR) {
+                if (!this.getFast(x, curY, z).isAir()) {
                     this.heightMap.set(x, z, (short) (curY + 1));
                     break;
                 }

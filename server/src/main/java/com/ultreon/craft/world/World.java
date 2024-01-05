@@ -75,7 +75,7 @@ public abstract class World implements ServerDisposable {
     private final Set<ChunkPos> invalidatedChunks = new LinkedHashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
     private DimensionInfo info;
-    protected UUID uid = Utils.NULL_UUID;
+    protected UUID uid = Utils.ZEROED_UUID;
 
     protected World() {
         // Shh, the original seed was 512.
@@ -343,7 +343,7 @@ public abstract class World implements ServerDisposable {
 
         // FIXME: Optimize by using a heightmap.
         for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
-            if (this.get(x, y, z) != Blocks.AIR) return y + 1;
+            if (!this.get(x, y, z).isAir()) return y + 1;
         }
         return 0;
     }

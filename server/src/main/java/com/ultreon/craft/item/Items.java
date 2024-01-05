@@ -25,8 +25,13 @@ public class Items {
     public static final PickaxeItem WOODEN_PICKAXE = Items.register("wooden_pickaxe", new PickaxeItem(new Properties().stackSize(1), ItemMaterials.WOOD));
     public static final ShovelItem WOODEN_SHOVEL = Items.register("wooden_shovel", new ShovelItem(new Properties().stackSize(1), ItemMaterials.WOOD));
     public static final AxeItem WOODEN_AXE = Items.register("wooden_axe", new AxeItem(new Properties().stackSize(1), ItemMaterials.WOOD));
+    public static final PickaxeItem STONE_PICKAXE = Items.register("stone_pickaxe", new PickaxeItem(new Properties().stackSize(1), ItemMaterials.STONE));
+    public static final ShovelItem STONE_SHOVEL = Items.register("stone_shovel", new ShovelItem(new Properties().stackSize(1), ItemMaterials.STONE));
+    public static final AxeItem STONE_AXE = Items.register("stone_axe", new AxeItem(new Properties().stackSize(1), ItemMaterials.STONE));
     public static final BlockItem CRAFTING_BENCH = Items.register("crafting_bench", new BlockItem(new Properties(), () -> Blocks.CRAFTING_BENCH));
     public static final Item STICK = Items.register("stick", new Item(new Properties()));
+    public static final Item ROCK = Items.register("rock", new Item(new Properties()));
+    public static final Item GRASS_FIBRE = Items.register("grass_fibre", new Item(new Properties()));
 
     private static <T extends Item> T register(String name, T block) {
         Registries.ITEM.register(new Identifier(name), block);

@@ -63,6 +63,7 @@ import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.*;
+import com.ultreon.craft.client.render.FlatFoliageRenderer;
 import com.ultreon.craft.client.render.RenderType;
 import com.ultreon.craft.client.render.pipeline.*;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
@@ -157,6 +158,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
     private static final float DEFAULT_SCALE = 2.0f;
+    private static final int MINIMUM_WIDTH = 800;
+    private static final int MINIMUM_HEIGHT = 600;
     private static ArgParser arguments;
     private final Cursor normalCursor;
     private final Cursor clickCursor;
@@ -217,7 +220,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public final ShapeDrawer shapes;
     private final TextureManager textureManager;
     private final ResourceManager resourceManager;
-    private float guiScale = this.calculateGuiScale();
+    private float guiScale = this.calcMaxGuiScale();
 
     public Hud hud;
     public HitResult hitResult;
@@ -288,6 +291,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private boolean startDevLoading = true;
     private final G3dModelLoader modelLoader;
     private final Environment defaultEnv = new Environment();
+    private boolean autoScale;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -624,6 +628,11 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.settings = new GameSettings();
         this.settings.reload();
         this.settings.reloadLanguage();
+        Integer scale = this.settings.guiScale.get();
+        if (scale == 0) {
+            this.setAutomaticScale(true);
+        }
+        this.setGuiScale(scale);
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
 
@@ -768,6 +777,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.showScreen(new TitleScreen());
         }));
         this.loadingOverlay = null;
+    }
+
+    public void setAutomaticScale(boolean b) {
+        this.autoScale = b;
+        this.guiScale = this.calcMaxGuiScale();
+        this.resize(this.width, this.height);
     }
 
     private void registerDebugPages() {
@@ -1029,6 +1044,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.registerBlockModels();
         this.registerEntityModels();
         this.registerEntityRenderers();
+        this.registerBlockRenderers();
         this.registerBlockRenderTypes();
 
         for (var e : Registries.ENTITY_TYPE.entries()) {
@@ -1053,6 +1069,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         ClientLifecycleEvents.REGiSTER_BLOCK_RENDER_TYPES.factory().onRegisterBlockRenderTypes();
     }
 
+    private void registerBlockRenderers() {
+        BlockRendererRegistry.register(Blocks.TALL_GRASS, new FlatFoliageRenderer());
+    }
+
     private void registerBlockModels() {
         BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.register(Blocks.LOG, CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
@@ -1068,6 +1088,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         BlockModelRegistry.registerDefault(Blocks.LEAVES);
         BlockModelRegistry.registerDefault(Blocks.PLANKS);
         BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
+        BlockModelRegistry.registerDefault(Blocks.TALL_GRASS);
     }
 
     private void registerEntityModels() {
@@ -1678,9 +1699,18 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void resize(int width, int height) {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invokeAndWait(() -> this.resize(width, height));
+            return;
+        }
+
         this.spriteBatch.getProjectionMatrix().setToOrtho(0, width, height, 0, 0, 1000000);
         this.deferredWidth = width;
         this.deferredHeight = height;
+
+        if (this.autoScale) {
+            this.guiScale = this.calcMaxGuiScale();
+        }
 
         if (this.camera != null) {
             this.camera.viewportWidth = width;
@@ -1957,6 +1987,21 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return UltracraftClient.DEFAULT_SCALE;
     }
 
+    private int calcMaxGuiScale() {
+        var windowWidth = Gdx.graphics.getWidth();
+        var windowHeight = Gdx.graphics.getHeight();
+
+        if (windowWidth / UltracraftClient.MINIMUM_WIDTH < windowHeight / UltracraftClient.MINIMUM_HEIGHT) {
+            return windowWidth / UltracraftClient.MINIMUM_WIDTH;
+        }
+
+        if (windowHeight / UltracraftClient.MINIMUM_HEIGHT < windowWidth / UltracraftClient.MINIMUM_WIDTH) {
+            return windowHeight / UltracraftClient.MINIMUM_HEIGHT;
+        }
+
+        return Math.min(windowWidth / UltracraftClient.MINIMUM_WIDTH, windowHeight / UltracraftClient.MINIMUM_HEIGHT);
+    }
+
     public boolean isPlaying() {
         return this.world != null && this.screen == null;
     }
@@ -2063,6 +2108,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public void setGuiScale(float guiScale) {
         this.guiScale = guiScale;
+        this.resize(this.width, this.height);
     }
 
     public MultiplayerData getMultiplayerData() {

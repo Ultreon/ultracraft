@@ -19,7 +19,6 @@ import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface InGameClientPacketHandler extends ClientPacketHandler {
@@ -47,7 +46,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onRemovePlayer(UUID u);
 
-    void onBlockSet(BlockPos pos, Identifier block);
+    void onBlockSet(BlockPos pos, Block block);
 
     void onMenuItemChanged(int index, ItemStack stack);
 

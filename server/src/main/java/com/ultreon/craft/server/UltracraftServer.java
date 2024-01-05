@@ -75,8 +75,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
-    protected final InspectionNode<UltracraftServer> node;
-    private final InspectionNode<Object> playersNode;
+    protected InspectionNode<UltracraftServer> node;
+    private InspectionNode<Object> playersNode;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 16;

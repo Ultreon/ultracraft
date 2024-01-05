@@ -48,6 +48,8 @@ public final class NoiseConfigs {
             new NoiseConfig(0.01f, 4, new Vec2f(35900, 15900), 985449, 0.6f, 1.2f, 5f, 30, 60));
     public static final NoiseConfig BIOME_MAP = NoiseConfigs.register("biome_map",
             new NoiseConfig(0.01f, 8, new Vec2f(903852, 493382), 137339, 0.6f, 2.0f, 5f, 10, 0));
+    public static final NoiseConfig FIOLAGE = NoiseConfigs.register("fiolage",
+            new NoiseConfig(1f, 1, new Vec2f(652748, 695825), 297418, 0.5f, 2.0f, 1f, 2, 0));
 
     private static <T extends NoiseConfig> T register(String name, T settings) {
         Registries.NOISE_SETTINGS.register(new Identifier(UltracraftServer.NAMESPACE, name), settings);

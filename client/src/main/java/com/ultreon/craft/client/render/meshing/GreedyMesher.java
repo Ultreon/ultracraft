@@ -12,6 +12,7 @@ import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.registry.BlockRenderTypeRegistry;
 import com.ultreon.craft.client.registry.BlockRendererRegistry;
 import com.ultreon.craft.client.render.BlockRenderer;
+import com.ultreon.craft.client.render.NormalBlockRenderer;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
@@ -349,7 +350,9 @@ public class GreedyMesher implements Mesher {
     }
 
     public List<Face> getFaces(UseCondition condition) {
-        return this.getFaces(condition, (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.hasOcclusion() && blockToBlockFace.hasOcclusion()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)), (id1, light1, lightData1, id2, light2, lightData2) -> {
+        return this.getFaces(condition,
+                (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.doesOcclude() && blockToBlockFace.doesOcclude()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)),
+                (id1, light1, lightData1, id2, light2, lightData2) -> {
             if (!id1.shouldGreedyMerge()) return false;
             boolean sameBlock = id1 == id2;
             boolean sameLight = light1 == light2;
@@ -358,10 +361,17 @@ public class GreedyMesher implements Mesher {
                 sameLight = lightData1.equals(lightData2);
             }
             // Other block renderers may alter shape in an unpredictable way
-            if (sameLight && !sameBlock && tooDarkToTell && !id1.hasCustomRender() && !id2.hasCustomRender() && !id1.isTransparent() && !id2.isTransparent())
+            boolean considerAsSame = sameLight && !sameBlock && tooDarkToTell
+                    && GreedyMesher.isFullCubeRender(id1) && GreedyMesher.isFullCubeRender(id2)
+                    && !id1.isTransparent() && !id2.isTransparent();
+            if (considerAsSame)
                 sameBlock = true; // Consider them the same block
             return sameBlock && sameLight;
         });
+    }
+
+    private static boolean isFullCubeRender(Block id2) {
+        return BlockRendererRegistry.get(id2).getClass() == NormalBlockRenderer.class;
     }
 
     /**
