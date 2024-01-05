@@ -32,6 +32,7 @@ import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.apache.commons.collections4.set.ListOrderedSet;
@@ -168,9 +169,13 @@ public final class ServerWorld extends World {
     public boolean set(int x, int y, int z, @NotNull Block block) {
         boolean isBlockSet = super.set(x, y, z, block);
         if (isBlockSet) {
-            this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getId()));
+            this.update(x, y, z, block);
         }
         return isBlockSet;
+    }
+
+    private void update(int x, int y, int z, @NotNull Block block) {
+        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getRawId()));
     }
 
     public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
@@ -551,8 +556,8 @@ public final class ServerWorld extends World {
      * @param x     the origin X-position.
      * @param y     the origin Y-position.
      * @param z     the origin Z-position.
-     * @param range the range.
-     * @return the players within the range of the XYZ coordinates.
+     * @param range the chance.
+     * @return the players within the chance of the XYZ coordinates.
      */
     public List<ServerPlayer> getPlayersWithinRange(double x, double y, double z, float range) {
         var withinRange = new ArrayList<ServerPlayer>();
@@ -568,7 +573,7 @@ public final class ServerWorld extends World {
             // Calculate the distance between the given point (x, y, z) and the player's coordinates
             var distance = Math.sqrt(Math.pow(playerX - x, 2) + Math.pow(playerY - y, 2) + Math.pow(playerZ - z, 2));
 
-            // Check if the distance is within the specified range
+            // Check if the distance is within the specified chance
             if (distance <= range) {
                 withinRange.add(player);
             }
@@ -871,6 +876,14 @@ public final class ServerWorld extends World {
         return this.terrainGen;
     }
 
+    public void update(Vec3i pos) {
+        this.update(pos.x, pos.y, pos.z, this.get(pos.x, pos.y, pos.z));
+    }
+
+    public void update(BlockPos pos) {
+        this.update(pos.x(), pos.y(), pos.z(), this.get(pos));
+    }
+
     /**
      * The region class.
      * Note: This class is not thread safe.
@@ -995,8 +1008,8 @@ public final class ServerWorld extends World {
         }
 
         private void validateLocalPos(ChunkPos chunkPos) {
-            Preconditions.checkElementIndex(chunkPos.x(), World.REGION_SIZE, "Chunk x-position out of range");
-            Preconditions.checkElementIndex(chunkPos.z(), World.REGION_SIZE, "Chunk z-position out of range");
+            Preconditions.checkElementIndex(chunkPos.x(), World.REGION_SIZE, "Chunk x-position out of chance");
+            Preconditions.checkElementIndex(chunkPos.z(), World.REGION_SIZE, "Chunk z-position out of chance");
         }
 
         /**

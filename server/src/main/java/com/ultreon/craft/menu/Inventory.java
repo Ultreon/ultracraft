@@ -70,7 +70,7 @@ public class Inventory extends ContainerMenu {
      * @return true if all items could fit.
      */
     @CanIgnoreReturnValue
-    public boolean addItems(List<ItemStack> stacks) {
+    public boolean addItems(Iterable<ItemStack> stacks) {
         boolean fit = true;
         for (ItemStack stack : stacks) {
             fit &= this.addItem(stack.copy());

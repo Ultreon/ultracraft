@@ -56,6 +56,8 @@ public abstract class Player extends LivingEntity {
     @Override
     protected void setupAttributes() {
         this.attributes.setBase(Attribute.SPEED, this.getWalkingSpeed());
+        this.attributes.setBase(Attribute.BLOCK_REACH, 6);
+        this.attributes.setBase(Attribute.ENTITY_REACH, 6);
     }
 
     @Override

@@ -86,7 +86,7 @@ public abstract class ContainerMenu {
     public abstract void build();
 
     public ItemSlot get(int index) {
-        Preconditions.checkElementIndex(index, this.slots.length, "Slot index out of range");
+        Preconditions.checkElementIndex(index, this.slots.length, "Slot index out of chance");
         return this.slots[index];
     }
 

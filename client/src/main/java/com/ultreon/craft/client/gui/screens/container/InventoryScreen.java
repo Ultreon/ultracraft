@@ -58,6 +58,11 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     private void rebuildSlots() {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invoke(this::rebuildSlots);
+            return;
+        }
+
         this.recipeSlots.clear();
         List<ItemSlot> list = new ArrayList<>();
         int x = 0;

@@ -56,6 +56,7 @@ public class Renderer {
     private Color blitColor = Color.rgb(0xffffff);
     private final Vector2 tmp2A = new Vector2();
     private final Vector3 tmp3A = new Vector3();
+    private GlStateStack glState = new GlStateStack();
 
     /**
      * @param shapes shape drawer instance from {@link UltracraftClient}
@@ -1658,8 +1659,17 @@ public class Renderer {
         return this;
     }
 
+    /**
+     * @deprecated Use {@link #external(Runnable)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer model(Runnable block) {
+        return this.external(block);
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer external(Runnable block) {
         boolean drawing = this.batch.isDrawing();
         if (drawing) this.batch.end();
         block.run();

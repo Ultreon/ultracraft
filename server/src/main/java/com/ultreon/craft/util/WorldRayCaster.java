@@ -28,7 +28,7 @@ public class WorldRayCaster {
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
 	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
 	public static HitResult rayCast(HitResult result, World world) {
-		return rayCast(result, world, BlockPredicate.SOLID);
+		return rayCast(result, world, BlockPredicate.NON_FLUID);
 	}
 
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
@@ -84,7 +84,7 @@ public class WorldRayCaster {
 			}
 
 			Block block = chunk.get(loc.cpy());
-			if(block != null && block != Blocks.AIR && predicate.test(block)) {
+			if(block != null && !block.isAir() && predicate.test(block)) {
 				box.set(box.min.set(abs.x, abs.y, abs.z), box.max.set(abs.x+1,abs.y+1,abs.z+1));
 				box.update();
 

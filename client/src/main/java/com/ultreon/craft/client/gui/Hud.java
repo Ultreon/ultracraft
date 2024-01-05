@@ -26,6 +26,8 @@ public class Hud implements GameRenderable {
     private final @NotNull Texture iconsTex;
     public int leftY;
     public int rightY;
+    private int width;
+    private int height;
 
 
     public Hud(UltracraftClient client) {
@@ -78,14 +80,12 @@ public class Hud implements GameRenderable {
     }
 
     private void renderCrosshair(Renderer renderer) {
-        renderer.flush();
         renderer.invertOn();
 
-        float x = this.client.getScaledWidth() / 2f;
-        float y = this.client.getScaledHeight() / 2f;
+        float x = this.width / 2f;
+        float y = this.height / 2f;
         renderer.blit(UltracraftClient.id("textures/gui/crosshair.png"), x - 4.5f, y - 4.5f, 9, 9);
 
-        renderer.flush();
         renderer.invertOff();
     }
 

@@ -233,9 +233,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onBlockSet(BlockPos pos, Identifier blockId) {
-        var block = Registries.BLOCK.getValue(blockId);
-
+    public void onBlockSet(BlockPos pos, Block block) {
         ClientWorld world = this.client.world;
         if (this.client.world != null) {
             this.client.submit(() -> world.set(pos, block));

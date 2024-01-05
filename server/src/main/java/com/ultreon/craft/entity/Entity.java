@@ -6,6 +6,7 @@ import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.server.util.Utils;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.text.Translations;
 import com.ultreon.craft.util.BoundingBox;
@@ -13,6 +14,8 @@ import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.rng.JavaRandomSource;
+import com.ultreon.craft.world.rng.RandomSource;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
@@ -55,8 +58,9 @@ public class Entity implements CommandSender {
     protected double ox, oy, oz;
     private @Nullable String formatName;
     private @Nullable TextObject customName;
-    private UUID uuid;
+    private UUID uuid = Utils.ZEROED_UUID;
     protected AttributeMap attributes = new AttributeMap();
+    private final RandomSource random = new JavaRandomSource();
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -534,5 +538,9 @@ public class Entity implements CommandSender {
 
     public AttributeMap getAttributes() {
         return this.attributes;
+    }
+
+    public RandomSource getRng() {
+        return this.random;
     }
 }

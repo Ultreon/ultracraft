@@ -37,5 +37,21 @@ public class CraftingRecipes {
         rm.register(new Identifier("crafting_bench"), new CraftingRecipe(
                 List.of(new ItemStack(Items.PLANK, 8)),
                 new ItemStack(Items.CRAFTING_BENCH)));
+
+        rm.register(new Identifier("rock_to_cobblestone"), new CraftingRecipe(
+                List.of(new ItemStack(Items.ROCK, 4)),
+                new ItemStack(Items.COBBLESTONE)));
+
+        rm.register(new Identifier("stone_pickaxe"), new CraftingRecipe(
+                List.of(new ItemStack(Items.ROCK, 3), new ItemStack(Items.STICK, 1)),
+                new ItemStack(Items.STONE_PICKAXE)));
+
+        rm.register(new Identifier("stone_shovel"), new CraftingRecipe(
+                List.of(new ItemStack(Items.ROCK, 1), new ItemStack(Items.STICK, 1)),
+                new ItemStack(Items.STONE_SHOVEL)));
+
+        rm.register(new Identifier("stone_axe"), new CraftingRecipe(
+                List.of(new ItemStack(Items.ROCK, 2), new ItemStack(Items.STICK, 1)),
+                new ItemStack(Items.STONE_AXE)));
     }
 }
