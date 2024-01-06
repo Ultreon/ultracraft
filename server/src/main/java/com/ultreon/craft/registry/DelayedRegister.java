@@ -1,8 +1,8 @@
 package com.ultreon.craft.registry;
 
 import com.google.common.base.Preconditions;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.craft.registry.event.RegistryEvents;
+import com.ultreon.craft.util.ElementID;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,10 +13,10 @@ public class DelayedRegister<T> {
     @NotNull
     private final String modId;
     @NotNull
-    private final com.ultreon.craft.registry.Registry<T> registry;
-    private final ArrayList<HashMap.Entry<Identifier, Supplier<T>>> objects = new ArrayList<>();
+    private final Registry<T> registry;
+    private final ArrayList<HashMap.Entry<ElementID, Supplier<T>>> objects = new ArrayList<>();
 
-    protected DelayedRegister(@NotNull String modId, @NotNull com.ultreon.craft.registry.Registry<T> registry) {
+    protected DelayedRegister(@NotNull String modId, @NotNull Registry<T> registry) {
         Preconditions.checkNotNull(modId, "modId");
         this.modId = modId;
         this.registry = registry;
@@ -27,7 +27,7 @@ public class DelayedRegister<T> {
     }
 
     public <C extends T> RegistrySupplier<C> register(@NotNull String name, @NotNull Supplier<@NotNull C> supplier) {
-        var id = new Identifier(this.modId, name);
+        var id = new ElementID(this.modId, name);
 
         this.objects.add(new HashMap.SimpleEntry<>(id, supplier::get));
 
@@ -40,9 +40,9 @@ public class DelayedRegister<T> {
                 return;
             }
 
-            for (HashMap.Entry<Identifier, Supplier<T>> entry : this.objects) {
+            for (HashMap.Entry<ElementID, Supplier<T>> entry : this.objects) {
                 T object = entry.getValue().get();
-                Identifier id = entry.getKey();
+                ElementID id = entry.getKey();
 
                 if (!registry.getType().isAssignableFrom(object.getClass())) {
                     throw new IllegalArgumentException("Got invalid type in deferred register: " + object.getClass() + " expected assignable to " + registry.getType());

@@ -1,7 +1,7 @@
 package com.ultreon.craft.server.events;
 
+import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.libs.events.v1.Event;
 
 public class ServerLifecycleEvents {
     public static final Event<ServerStarting> SERVER_STARTING = Event.create();

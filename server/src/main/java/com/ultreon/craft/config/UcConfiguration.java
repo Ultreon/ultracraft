@@ -2,8 +2,8 @@ package com.ultreon.craft.config;
 
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.events.ConfigEvents;
+import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.libs.events.v1.Event;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import org.fusionyaml.library.FusionYAML;

@@ -2,7 +2,6 @@ package com.ultreon.craft.text;
 
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class TranslationText extends MutableText {
 
     @Override
     public @NotNull String createString() {
-        return Language.translate(this.path, this.args);
+        return LanguageBootstrap.translate(this.path, this.args);
     }
 
     @Override

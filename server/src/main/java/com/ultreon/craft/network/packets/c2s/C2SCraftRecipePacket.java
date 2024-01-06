@@ -6,11 +6,11 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 import com.ultreon.craft.recipe.Recipe;
 import com.ultreon.craft.recipe.RecipeType;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class C2SCraftRecipePacket extends Packet<InGameServerPacketHandler> {
     private final int typeId;
-    private final Identifier recipeId;
+    private final ElementID recipeId;
 
     public C2SCraftRecipePacket(RecipeType type, Recipe recipe) {
         this.typeId = type.getId();

@@ -1,7 +1,6 @@
 package com.ultreon.craft.util;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;

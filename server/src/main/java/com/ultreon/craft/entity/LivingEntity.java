@@ -3,6 +3,7 @@ package com.ultreon.craft.entity;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.EntityEvents;
+import com.ultreon.craft.events.api.ValueEventResult;
 import com.ultreon.craft.server.util.Utils;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.SoundEvent;
@@ -10,7 +11,6 @@ import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 

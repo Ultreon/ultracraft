@@ -3,17 +3,17 @@ package com.ultreon.craft.client.resources;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.resources.v0.Resource;
+import com.ultreon.craft.resources.Resource;
+import com.ultreon.craft.util.ElementID;
 
 import java.io.InputStream;
 import java.util.UUID;
 
 public class ResourceFileHandle extends FileHandle {
-    private final Identifier id;
+    private final ElementID id;
     private final Resource resource;
 
-    public ResourceFileHandle(Identifier id) {
+    public ResourceFileHandle(ElementID id) {
         super(id.toString());
         this.id = id;
         this.resource = UltracraftClient.get().getResourceManager().getResource(id);
@@ -21,11 +21,11 @@ public class ResourceFileHandle extends FileHandle {
 
     public ResourceFileHandle(Resource resource) {
         super("generated_" + UUID.randomUUID().toString().replace("-", ""));
-        this.id = new Identifier("java", "generated_" + UUID.randomUUID().toString().replace("-", ""));
+        this.id = new ElementID("java", "generated_" + UUID.randomUUID().toString().replace("-", ""));
         this.resource = resource;
     }
 
-    public Identifier getId() {
+    public ElementID getId() {
         return this.id;
     }
 

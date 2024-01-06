@@ -7,11 +7,11 @@ import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -158,7 +158,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @return The decoded block data.
      */
     public static Block loadBlock(MapType data) {
-        @Nullable Identifier id = Identifier.parse(data.getString("id"));
+        @Nullable ElementID id = ElementID.parse(data.getString("id"));
         return Registries.BLOCK.getValue(id);
     }
 

@@ -1,7 +1,7 @@
 package com.ultreon.craft.network.api.packet;
 
-import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.server.player.ServerPlayer;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.NotNull;
 

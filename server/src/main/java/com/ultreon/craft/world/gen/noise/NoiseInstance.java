@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen.noise;
 
-import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.craft.server.ServerDisposable;
+import com.ultreon.libs.commons.v0.vector.Vec2f;
 
 public class NoiseInstance implements ServerDisposable {
     private final NoiseType noise;

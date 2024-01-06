@@ -1,7 +1,7 @@
 package com.ultreon.craft.api.commands;
 
 import com.ultreon.craft.api.commands.selector.Selector;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import org.jetbrains.annotations.NotNull;
@@ -429,9 +429,9 @@ public class CommandReader {
         return this.readRemaining();
     }
 
-    public Identifier readId() throws CommandParseException {
+    public ElementID readId() throws CommandParseException {
         String text = this.readString();
-        Identifier key = Identifier.tryParse(text);
+        ElementID key = ElementID.tryParse(text);
         if (key == null) {
             throw new CommandParseException("Invalid key: " + text);
         }

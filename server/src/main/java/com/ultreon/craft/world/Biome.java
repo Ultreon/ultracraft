@@ -5,6 +5,7 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.events.WorldLifecycleEvent;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
@@ -13,7 +14,6 @@ import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceFunction;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,12 +83,12 @@ public abstract class Biome {
         return mapType;
     }
 
-    private Identifier getId() {
+    private ElementID getId() {
         return Registries.BIOME.getKey(this);
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getValue(Identifier.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.getValue(ElementID.tryParse(mapType.getString("id", "plains")));
     }
 
     public boolean isOcean() {

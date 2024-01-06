@@ -1,33 +1,32 @@
 package com.ultreon.craft.registry;
 
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.craft.registry.Registry;
+import com.ultreon.craft.util.ElementID;
 
 import java.util.function.Supplier;
 
 @SuppressWarnings({"unchecked"})
 public class RegistrySupplier<T> implements Supplier<T> {
-    private final com.ultreon.craft.registry.Registry<? super T> registry;
+    private final Registry<? super T> registry;
     private final Supplier<T> supplier;
-    private final Identifier identifier;
+    private final ElementID elementID;
 
-    public RegistrySupplier(Registry<? super T> registry, Supplier<T> supplier, Identifier identifier) {
+    public RegistrySupplier(Registry<? super T> registry, Supplier<T> supplier, ElementID elementID) {
         this.registry = registry;
         this.supplier = supplier;
-        this.identifier = identifier;
+        this.elementID = elementID;
     }
 
     public void register() {
-        this.registry.register(this.identifier, this.supplier.get());
+        this.registry.register(this.elementID, this.supplier.get());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T get() {
-        return (T) this.registry.getValue(this.identifier);
+        return (T) this.registry.getValue(this.elementID);
     }
 
-    public Identifier id() {
-        return this.identifier;
+    public ElementID id() {
+        return this.elementID;
     }
 }

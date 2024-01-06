@@ -1,7 +1,8 @@
 package com.ultreon.craft.api.commands;
 
 import org.apache.commons.lang3.StringUtils;
-import java.util.*;
+
+import java.util.List;
 
 public record CommandSpec(String commandName, List<CommandParameter> arguments) {
     @Override

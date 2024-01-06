@@ -20,7 +20,7 @@ import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.text.ChatColor;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import org.jetbrains.annotations.ApiStatus;
 import space.earlygrey.shapedrawer.JoinType;
@@ -443,7 +443,7 @@ public class Renderer {
 
     @Deprecated(forRemoval = true)
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y) {
+    public Renderer blit(ElementID id, float x, float y) {
         this.batch.setColor(this.blitColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
@@ -453,7 +453,7 @@ public class Renderer {
 
     @Deprecated(forRemoval = true)
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, Color backgroundColor) {
+    public Renderer blit(ElementID id, float x, float y, Color backgroundColor) {
         this.setColor(backgroundColor);
         Texture tex = this.textureManager.getTexture(id);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
@@ -463,45 +463,45 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F, backgroundColor);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
         this.blit(id, x, y, width, height, u, v, 256, 256, backgroundColor);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
         this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v) {
         this.blit(id, x, y, width, height, u, v, width, height);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
         this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
         this.batch.setColor(this.blitColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
@@ -510,7 +510,7 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
+    public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
         Texture tex = this.textureManager.getTexture(id);
@@ -1623,7 +1623,7 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
-    public Renderer draw9PatchTexture(Identifier id, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
+    public Renderer draw9PatchTexture(ElementID id, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
         Texture texture = this.client.getTextureManager().getTexture(id);
 
         this.blit(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);

@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.config;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.entries.*;
 import com.ultreon.craft.client.config.gui.ConfigEntry;
@@ -37,7 +38,7 @@ public class Configuration {
 
     Configuration() {
         this.handle = Configuration.FILE;
-        this.id = UltracraftClient.NAMESPACE;
+        this.id = CommonConstants.NAMESPACE;
     }
 
     protected ConfigEntry<Boolean> add(String key, boolean defaultValue, String comment) {

@@ -4,13 +4,13 @@ import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class S2CPlaySoundPacket extends Packet<InGameClientPacketHandler> {
-    private final Identifier sound;
+    private final ElementID sound;
     private final float volume;
 
-    public S2CPlaySoundPacket(Identifier sound, float volume) {
+    public S2CPlaySoundPacket(ElementID sound, float volume) {
         this.sound = sound;
         this.volume = volume;
     }

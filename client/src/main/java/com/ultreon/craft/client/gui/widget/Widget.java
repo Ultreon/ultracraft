@@ -12,7 +12,7 @@ import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.components.UIComponent;
 import com.ultreon.craft.component.GameComponent;
 import com.ultreon.craft.component.GameComponentHolder;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +42,7 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
     protected final UltracraftClient client = UltracraftClient.get();
     protected Font font = this.client.font;
     private final List<RevalidateListener> revalidateListeners = new ArrayList<>();
-    private final Map<Identifier, UIComponent> components = new HashMap<>();
+    private final Map<ElementID, UIComponent> components = new HashMap<>();
 
     protected Widget(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         this.preferredSize.set(width, height);
@@ -54,18 +54,18 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
     }
 
     @CheckReturnValue
-    protected final <C extends UIComponent> C register(Identifier id, C component) {
+    protected final <C extends UIComponent> C register(ElementID id, C component) {
         this.components.put(id, component);
         return component;
     }
 
     @Override
-    public Map<Identifier, UIComponent> componentRegistry() {
+    public Map<ElementID, UIComponent> componentRegistry() {
         return Collections.unmodifiableMap(this.components);
     }
 
     @Override
-    public <T extends GameComponent<?>> T getComponent(Identifier id, T... typeGetter) {
+    public <T extends GameComponent<?>> T getComponent(ElementID id, T... typeGetter) {
         UIComponent component = this.components.get(id);
         if (component == null) throw new IllegalArgumentException("Component not found: " + id);
         if (!component.getClass().isAssignableFrom(typeGetter.getClass().getComponentType()))
@@ -75,7 +75,7 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
     }
 
     @SafeVarargs
-    public final <T extends GameComponent<?>> void withComponent(Identifier id, Consumer<T> consumer, T... typeGetter) {
+    public final <T extends GameComponent<?>> void withComponent(ElementID id, Consumer<T> consumer, T... typeGetter) {
         UIComponent uiComponent = this.getComponent(id);
         if (uiComponent == null) throw new IllegalArgumentException("Component not found: " + id);
     }

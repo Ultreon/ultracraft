@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
@@ -13,7 +13,7 @@ import org.checkerframework.common.returnsreceiver.qual.This;
 public class EntityTextures {
     private final Long2ObjectMap<Texture> textureMap = new Long2ObjectArrayMap<>();
 
-    public @This EntityTextures set(long attribute, Identifier texture) {
+    public @This EntityTextures set(long attribute, ElementID texture) {
         this.textureMap.put(attribute, UltracraftClient.get().getTextureManager().getTexture(texture));
         return this;
     }

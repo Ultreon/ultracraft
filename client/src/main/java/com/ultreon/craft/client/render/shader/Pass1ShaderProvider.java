@@ -2,13 +2,10 @@ package com.ultreon.craft.client.render.shader;
 
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.world.ChunkMesh;
 
 import static com.badlogic.gdx.graphics.GL20.GL_BACK;
 

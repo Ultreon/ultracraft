@@ -1,8 +1,8 @@
 package com.ultreon.craft.api.commands.selector;
 
 import com.ultreon.craft.api.commands.CommandContext;
-import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.CommandSender;
+import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.error.InvalidIntegerError;
 import com.ultreon.craft.api.commands.error.NeedPlayerError;
 import com.ultreon.craft.api.commands.error.OverloadError;

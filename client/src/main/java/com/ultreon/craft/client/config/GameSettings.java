@@ -2,7 +2,7 @@ package com.ultreon.craft.client.config;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.gui.ConfigEntry;
-import com.ultreon.libs.translations.v1.LanguageManager;
+import com.ultreon.craft.client.text.LanguageManager;
 
 import java.util.Locale;
 

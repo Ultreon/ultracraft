@@ -1,8 +1,8 @@
 package com.ultreon.craft.client.events;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.libs.events.v1.Event;
-import com.ultreon.libs.events.v1.EventResult;
+import com.ultreon.craft.events.api.Event;
+import com.ultreon.craft.events.api.EventResult;
 
 public class ClientLifecycleEvents {
     public static final Event<GameLoaded> GAME_LOADED = Event.create();

@@ -1,8 +1,8 @@
 package com.ultreon.craft.network.packets.s2c;
 
-import com.ultreon.craft.network.client.InGameClientPacketHandler;
-import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 

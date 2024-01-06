@@ -1,7 +1,5 @@
 package com.ultreon.craft.text;
 
-import com.ultreon.libs.translations.v1.Language;
-
 public interface Translatable {
     String getTranslationId();
 
@@ -10,6 +8,6 @@ public interface Translatable {
     }
 
     default String getTranslationText() {
-        return Language.translate(this.getTranslationId());
+        return this.getTranslation().getText();
     }
 }

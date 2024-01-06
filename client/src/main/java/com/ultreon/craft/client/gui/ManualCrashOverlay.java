@@ -2,9 +2,9 @@ package com.ultreon.craft.client.gui;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.widget.StaticWidget;
+import com.ultreon.craft.crash.CrashCategory;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.crash.v0.CrashCategory;
-import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

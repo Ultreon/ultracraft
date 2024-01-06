@@ -1,9 +1,9 @@
 package com.ultreon.craft.events;
 
+import com.ultreon.craft.events.api.Event;
+import com.ultreon.craft.events.api.EventResult;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.libs.events.v1.Event;
-import com.ultreon.libs.events.v1.EventResult;
 
 public class PlayerEvents {
     public static final Event<InitialItems> INITIAL_ITEMS = Event.withResult();

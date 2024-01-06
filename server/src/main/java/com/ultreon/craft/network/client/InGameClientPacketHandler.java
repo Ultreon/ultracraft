@@ -12,11 +12,11 @@ import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.UUID;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onModPacket(NetworkChannel channel, ModPacket<?> packet);
 
-    NetworkChannel getChannel(Identifier channelId);
+    NetworkChannel getChannel(ElementID channelId);
 
     void onPlayerHealth(float newHealth);
 
@@ -40,7 +40,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onKeepAlive();
 
-    void onPlaySound(Identifier sound, float volume);
+    void onPlaySound(ElementID sound, float volume);
 
     void onAddPlayer(UUID uuid, String name, Vec3d position);
 
@@ -54,7 +54,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onMenuCursorChanged(ItemStack cursor);
 
-    void onOpenContainerMenu(Identifier menuType);
+    void onOpenContainerMenu(ElementID menuType);
 
     void onAddPermission(AddPermissionPacket packet);
 

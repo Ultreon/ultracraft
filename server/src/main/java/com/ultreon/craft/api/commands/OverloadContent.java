@@ -1,6 +1,7 @@
 package com.ultreon.craft.api.commands;
 
 import com.google.common.base.Objects;
+
 import java.util.function.Function;
 
 public class OverloadContent {

@@ -6,8 +6,8 @@ import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.World;
-import com.ultreon.libs.commons.v0.Identifier;
 
 import java.util.ArrayList;
 
@@ -48,11 +48,11 @@ public class WorldBaseSelector extends BaseSelector<World> {
             }
         } else if (this.getKey() == SelectorKey.NAME) {
             String name = this.getStringValue();
-            Identifier identifier = Identifier.tryParse(name);
-            if (identifier == null) {
+            ElementID elementID = ElementID.tryParse(name);
+            if (elementID == null) {
                 return new Result<>(null, new InvalidKeyError(name));
             }
-            target = UltracraftServer.get().getWorld(identifier);
+            target = UltracraftServer.get().getWorld(elementID);
             if (target == null) {
                 return new Result<>(null, new NotFoundError("world " + name));
             }
