@@ -3,9 +3,6 @@ package com.ultreon.craft.command;
 import com.ultreon.craft.api.commands.*;
 import com.ultreon.craft.api.commands.output.CommandOutput;
 import com.ultreon.craft.entity.LivingEntity;
-import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 public class KillCommand extends Command {

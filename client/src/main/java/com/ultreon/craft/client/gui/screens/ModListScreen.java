@@ -11,7 +11,7 @@ import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ModListScreen extends Screen {
-    private static final Identifier DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
+    private static final ElementID DEFAULT_MOD_ICON = UltracraftClient.id("textures/gui/icons/missing_mod.png");
     private SelectionList<ModContainer> list;
     private TextButton configButton;
     private TextButton backButton;
@@ -70,9 +70,9 @@ public class ModListScreen extends Screen {
     }
 
     private void drawIcon(Renderer renderer, ModMetadata metadata, int x, int y, int size) {
-        Identifier iconId;
+        ElementID iconId;
         @Nullable String iconPath = metadata.getIconPath(128).orElse(null);
-        Identifier overrideId = ModIconOverrides.get(metadata.getId());
+        ElementID overrideId = ModIconOverrides.get(metadata.getId());
         TextureManager textureManager = this.client.getTextureManager();
         if (overrideId != null) {
             textureManager.registerTexture(overrideId);

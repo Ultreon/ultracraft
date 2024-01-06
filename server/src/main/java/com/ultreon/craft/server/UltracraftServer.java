@@ -5,8 +5,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.config.UltracraftServerConfig;
+import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.debug.inspect.InspectionNode;
@@ -26,15 +28,14 @@ import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.CachedPlayer;
 import com.ultreon.craft.server.player.PermissionMap;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.PollingExecutorService;
 import com.ultreon.craft.util.Shutdownable;
 import com.ultreon.craft.world.*;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.crash.v0.CrashException;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import org.apache.logging.log4j.core.config.ConfigurationScheduler;
@@ -66,6 +67,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public static final long NANOSECONDS_PER_TICK = UltracraftServer.NANOSECONDS_PER_SECOND / UltracraftServer.TPS;
 
     public static final Logger LOGGER = LoggerFactory.getLogger("UltracraftServer");
+    @Deprecated(since = "0.1.0", forRemoval = true)
     public static final String NAMESPACE = "ultracraft";
     private static final WatchManager WATCH_MANAGER = new WatchManager(new ConfigurationScheduler("Ultracraft"));
     private static UltracraftServer instance;
@@ -88,10 +90,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private boolean sendingChunk;
     protected int maxPlayers = 10;
     private final Cache<String, CachedPlayer> cachedPlayers = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.HOURS).build();
-    private final Map<Identifier, ? extends ServerWorld> worlds;
+    private final Map<ElementID, ? extends ServerWorld> worlds;
     private final GameRules gameRules = new GameRules();
     private final PermissionMap permissions = new PermissionMap();
-    private CommandSender consoleSender = new ConsoleCommandSender();
+    private final CommandSender consoleSender = new ConsoleCommandSender();
 
     /**
      * Creates a new {@link UltracraftServer} instance.
@@ -99,7 +101,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @param storage    the world storage for the world data.
      * @param parentNode the parent inspection node. (E.g., the client inspection node)
      */
-    public UltracraftServer(WorldStorage storage, Profiler profiler, InspectionNode<?> parentNode) {
+    protected UltracraftServer(WorldStorage storage, Profiler profiler, InspectionNode<?> parentNode) {
         super(profiler);
 
         this.storage = storage;
@@ -124,7 +126,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         // TODO: Make dimension registry.
         this.worlds = Map.of(
-                new Identifier("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
+                new ElementID("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
         if (DebugFlags.INSPECTION_ENABLED) {
@@ -233,7 +235,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public static boolean isOnServerThread() {
         UltracraftServer instance = UltracraftServer.instance;
         if (instance == null) throw new IllegalStateException("Server closed!");
-        return instance.thread.getId() == Thread.currentThread().getId();
+        return instance.thread.threadId() == Thread.currentThread().threadId();
     }
 
     @ApiStatus.Internal
@@ -496,7 +498,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
                 this.onTerminationFailed();
             }
-        } catch (InterruptedException | CrashException exc) {
+        } catch (InterruptedException | ApplicationCrash exc) {
             this.crash(exc);
         }
     }
@@ -531,7 +533,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @return the game's version.
      */
     public String getGameVersion() {
-        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(UltracraftServer.NAMESPACE);
+        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE);
         if (container.isEmpty()) throw new InternalError("Can't find mod container for the base game.");
         return container.get().getMetadata().getVersion().getFriendlyString();
     }
@@ -676,7 +678,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      */
     @ApiStatus.Internal
     public void onDisconnected(ServerPlayer player, String message) {
-        UltracraftServer.LOGGER.info("Player '" + player.getName() + "' disconnected with message: " + message);
+        UltracraftServer.LOGGER.info("Player '{}' disconnected with message: {}", player.getName(), message);
         this.players.remove(player.getUuid());
         for (ServerPlayer other : this.players.values()) {
             other.connection.send(new S2CRemovePlayerPacket(other.getUuid()));
@@ -727,9 +729,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public ServerPlayer loadPlayer(String name, UUID uuid, Connection connection) {
         ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.world, uuid, name, connection);
         try {
-            if (this.storage.exists("players/" + name + ".ubo")) {
-                UltracraftServer.LOGGER.info("Loading player '" + name + "'...");
-                MapType read = this.storage.read("players/" + name + ".ubo");
+            if (this.storage.exists("players/%s.ubo".formatted(name))) {
+                UltracraftServer.LOGGER.info("Loading player '{}'...", name);
+                MapType read = this.storage.read("players/%s.ubo".formatted(name));
                 player.load(read);
                 player.markSpawned();
                 player.markPlayedBefore();
@@ -754,7 +756,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     }
 
-    public ArrayList<CachedPlayer> getCachedPlayers() {
+    public List<CachedPlayer> getCachedPlayers() {
         return Lists.newArrayList();
     }
 
@@ -766,7 +768,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.gameRules;
     }
 
-    public ServerWorld getWorld(Identifier name) {
+    public ServerWorld getWorld(ElementID name) {
         return this.worlds.get(name);
     }
 

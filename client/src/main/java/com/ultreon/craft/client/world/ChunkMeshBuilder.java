@@ -8,7 +8,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;

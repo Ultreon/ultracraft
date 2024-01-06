@@ -3,6 +3,8 @@ package com.ultreon.craft.client;
 import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
 import com.ultreon.craft.server.UltracraftServer;
@@ -10,8 +12,6 @@ import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.crash.v0.CrashException;
-import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -82,7 +82,7 @@ public class IntegratedServer extends UltracraftServer {
 
     @Override
     protected void onTerminationFailed() {
-        throw new CrashException(new CrashLog("onTerminationFailed", new Throwable("Failed termination of integrated server.")));
+        throw new ApplicationCrash(new CrashLog("onTerminationFailed", new Throwable("Failed termination of integrated server.")));
     }
 
     @Override

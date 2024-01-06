@@ -1,9 +1,5 @@
 package com.ultreon.craft.registry;
 
-import com.ultreon.craft.registry.DelayedRegister;
-import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.registry.RegistrySupplier;
-
 import java.util.function.Supplier;
 
 public abstract class ObjectInit<T> {

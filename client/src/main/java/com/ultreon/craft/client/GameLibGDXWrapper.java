@@ -3,8 +3,8 @@ package com.ultreon.craft.client;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.ultreon.libs.crash.v0.CrashException;
-import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashLog;
 import org.jetbrains.annotations.Nullable;
 
 public class GameLibGDXWrapper implements ApplicationListener {
@@ -18,7 +18,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     }
 
     private void uncaughtException(Thread thread, Throwable throwable) {
-        if (throwable instanceof CrashException e) {
+        if (throwable instanceof ApplicationCrash e) {
             try {
                 CrashLog crashLog = e.getCrashLog();
                 UltracraftClient.get().delayCrash(crashLog);
@@ -39,7 +39,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
             Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
 
             Thread.currentThread().setUncaughtExceptionHandler(this::uncaughtException);
-        } catch (CrashException t) {
+        } catch (ApplicationCrash t) {
             UltracraftClient.crash(t);
         }
     }
@@ -53,7 +53,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     public void render() {
         try {
             if (this.client != null) this.client.render();
-        } catch (CrashException e) {
+        } catch (ApplicationCrash e) {
             CrashLog crashLog = e.getCrashLog();
             UltracraftClient.crash(crashLog);
         }
@@ -63,7 +63,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     public void pause() {
         try {
             if (this.client != null) this.client.pause();
-        } catch (CrashException e) {
+        } catch (ApplicationCrash e) {
             CrashLog crashLog = e.getCrashLog();
             UltracraftClient.crash(crashLog);
         }
@@ -73,7 +73,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     public void resume() {
         try {
             if (this.client != null) this.client.resume();
-        } catch (CrashException e) {
+        } catch (ApplicationCrash e) {
             CrashLog crashLog = e.getCrashLog();
             UltracraftClient.crash(crashLog);
         }
@@ -83,7 +83,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     public void dispose() {
         try {
             if (this.client != null) this.client.dispose();
-        } catch (CrashException e) {
+        } catch (ApplicationCrash e) {
             CrashLog crashLog = e.getCrashLog();
             UltracraftClient.crash(crashLog);
         }

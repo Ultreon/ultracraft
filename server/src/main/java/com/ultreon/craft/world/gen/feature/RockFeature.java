@@ -1,7 +1,6 @@
 package com.ultreon.craft.world.gen.feature;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;

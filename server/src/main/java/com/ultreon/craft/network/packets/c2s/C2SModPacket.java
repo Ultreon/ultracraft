@@ -1,13 +1,15 @@
 package com.ultreon.craft.network.packets.c2s;
 
-import com.ultreon.craft.network.*;
+import com.ultreon.craft.network.NetworkChannel;
+import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class C2SModPacket extends Packet<InGameServerPacketHandler> {
-    private final Identifier channelId;
+    private final ElementID channelId;
     private final ModPacket<?> packet;
     private NetworkChannel channel;
 

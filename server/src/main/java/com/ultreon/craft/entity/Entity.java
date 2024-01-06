@@ -1,27 +1,27 @@
 package com.ultreon.craft.entity;
 
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.events.EntityEvents;
+import com.ultreon.craft.events.api.ValueEventResult;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.util.Utils;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.text.Translations;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.BoundingBoxUtils;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.rng.JavaRandomSource;
 import com.ultreon.craft.world.rng.RandomSource;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +74,7 @@ public class Entity implements CommandSender {
     }
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
-        Identifier typeId = Identifier.parse(data.getString("type"));
+        ElementID typeId = ElementID.parse(data.getString("type"));
         EntityType<?> type = Registries.ENTITY_TYPE.getValue(typeId);
         Entity entity = type.create(world);
 
@@ -499,10 +499,10 @@ public class Entity implements CommandSender {
     @Override
     public TextObject getDisplayName() {
         if (this.customName != null) return this.customName;
-        Identifier id1 = this.getType().getId();
+        ElementID id1 = this.getType().getId();
         if (id1 == null) return Translations.NULL_OBJECT;
         return TextObject.translation("%s.entity.%s.name".formatted(
-                id1.location(),
+                id1.namespace(),
                 id1.path().replace('/', '.')
         ));
     }

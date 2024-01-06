@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.util.TextureOffset;
 import com.ultreon.craft.debug.DebugFlags;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -23,20 +23,20 @@ import java.util.Map;
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 
 public class TextureStitcher {
-    private final Map<Identifier, Texture> textures = new HashMap<>();
-    private final Map<Identifier, Texture> emissiveTextures = new HashMap<>();
+    private final Map<ElementID, Texture> textures = new HashMap<>();
+    private final Map<ElementID, Texture> emissiveTextures = new HashMap<>();
     private FrameBuffer fbo;
-    private Identifier atlasId;
+    private ElementID atlasId;
 
-    public TextureStitcher(Identifier atlasId) {
+    public TextureStitcher(ElementID atlasId) {
         this.atlasId = atlasId;
     }
 
-    public void add(Identifier id, Texture diffuse) {
+    public void add(ElementID id, Texture diffuse) {
         this.textures.put(id, diffuse);
     }
 
-    public void add(Identifier id, Texture diffuse, Texture emissive) {
+    public void add(ElementID id, Texture diffuse, Texture emissive) {
         this.textures.put(id, diffuse);
         this.emissiveTextures.put(id, emissive);
     }
@@ -51,7 +51,7 @@ public class TextureStitcher {
         int height = 2048;
 
         Result diffuseResult = this.generateAtlas(width, height, Type.DIFFUSE, this.textures, Collections.emptyMap());
-        Map<Identifier, TextureOffset> map = diffuseResult.uvMap().build();
+        Map<ElementID, TextureOffset> map = diffuseResult.uvMap().build();
 
         Result emissiveResult = this.generateAtlas(width, height, Type.EMISSIVE, this.emissiveTextures, map);
 
@@ -59,7 +59,7 @@ public class TextureStitcher {
     }
 
     @NotNull
-    private Result generateAtlas(int width, int height, Type type, Map<Identifier, Texture> texMap, Map<Identifier, TextureOffset> oldUVMap) {
+    private Result generateAtlas(int width, int height, Type type, Map<ElementID, Texture> texMap, Map<ElementID, TextureOffset> oldUVMap) {
         // Create a temporary DepthFrameBuffer to hold the packed textures
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
 
@@ -74,11 +74,11 @@ public class TextureStitcher {
         int y = 0;
         int texHeight = 0;
 
-        ImmutableMap.Builder<Identifier, TextureOffset> uvMap = new ImmutableMap.Builder<>();
+        ImmutableMap.Builder<ElementID, TextureOffset> uvMap = new ImmutableMap.Builder<>();
 
         for (var e : texMap.entrySet()) {
             Texture texture = e.getValue();
-            Identifier id = e.getKey();
+            ElementID id = e.getKey();
             TextureRegion region = new TextureRegion(texture);
             TextureOffset textureOffset = oldUVMap.get(id);
             if (textureOffset == null && type == Type.DIFFUSE) {
@@ -120,7 +120,7 @@ public class TextureStitcher {
         return new Result(spriteBatch, uvMap, textureAtlas);
     }
 
-    private record Result(SpriteBatch spriteBatch, ImmutableMap.Builder<Identifier, TextureOffset> uvMap, Texture textureAtlas) {
+    private record Result(SpriteBatch spriteBatch, ImmutableMap.Builder<ElementID, TextureOffset> uvMap, Texture textureAtlas) {
     }
 
     private int calcHeight(int width) {

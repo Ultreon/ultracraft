@@ -6,9 +6,9 @@ import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.Language;
 import com.ultreon.craft.network.packets.c2s.C2SRespawnPacket;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.libs.translations.v1.Language;
 
 public class DeathScreen extends Screen {
     private TextButton respawnButton;

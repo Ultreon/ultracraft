@@ -1,6 +1,6 @@
 package com.ultreon.craft.events;
 
-import com.ultreon.libs.events.v1.Event;
+import com.ultreon.craft.events.api.Event;
 import net.fabricmc.api.EnvType;
 
 public class ConfigEvents {

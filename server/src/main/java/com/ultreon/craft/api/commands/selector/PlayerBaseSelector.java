@@ -1,10 +1,10 @@
 package com.ultreon.craft.api.commands.selector;
 
-import com.ultreon.craft.api.commands.TabCompleting;
-import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.api.commands.Selections;
+import com.ultreon.craft.api.commands.TabCompleting;
+import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;

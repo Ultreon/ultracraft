@@ -18,10 +18,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.InvalidThreadException;
-import com.ultreon.craft.util.OverwriteError;
-import com.ultreon.craft.util.Task;
-import com.ultreon.craft.util.ValidationError;
+import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
@@ -29,7 +26,6 @@ import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -49,7 +45,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public final class ServerWorld extends World {
+public class ServerWorld extends World {
     private final WorldStorage storage;
     private final UltracraftServer server;
     private final RegionStorage regionStorage = new RegionStorage();
@@ -617,7 +613,7 @@ public final class ServerWorld extends World {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="<<Starting: Auto Save Schedule>>">
-        this.saveSchedule = this.server.schedule(new Task<>(new Identifier("auto_save")) {
+        this.saveSchedule = this.server.schedule(new Task<>(new ElementID("auto_save")) {
             @Override
             public void run() {
                 try {

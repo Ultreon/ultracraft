@@ -1,10 +1,10 @@
 package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.client.text.Language;
 import com.ultreon.craft.util.Axis;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
-import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;

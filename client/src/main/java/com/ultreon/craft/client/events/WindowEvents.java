@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.events;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
-import com.ultreon.libs.events.v1.Event;
+import com.ultreon.craft.events.api.Event;
 
 public class WindowEvents {
     public static final Event<WindowCreated> WINDOW_CREATED = Event.create();

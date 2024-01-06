@@ -1,5 +1,6 @@
 package com.ultreon.craft.block;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
@@ -8,10 +9,10 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.loot.ConstantLoot;
 import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -54,9 +55,9 @@ public class Block implements DataWriter<MapType> {
         this.greedyMerge = properties.greedyMerge;
     }
 
-    public Identifier getId() {
-        Identifier key = Registries.BLOCK.getKey(this);
-        return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
+    public ElementID getId() {
+        ElementID key = Registries.BLOCK.getKey(this);
+        return key == null ? new ElementID(CommonConstants.NAMESPACE, "air") : key;
     }
 
     public boolean isAir() {
@@ -95,7 +96,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public static Block load(MapType data) {
-        Identifier id = Identifier.tryParse(data.getString("id"));
+        ElementID id = ElementID.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
         Block block = Registries.BLOCK.getValue(id);
         return block == null ? Blocks.AIR : block;
@@ -111,8 +112,8 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        Identifier key = Registries.BLOCK.getKey(this);
-        return key == null ? "ultracraft.block.air.name" : key.location() + ".block." + key.path() + ".name";
+        ElementID key = Registries.BLOCK.getKey(this);
+        return key == null ? "ultracraft.block.air.name" : key.namespace() + ".block." + key.path() + ".name";
     }
 
     public float getHardness() {

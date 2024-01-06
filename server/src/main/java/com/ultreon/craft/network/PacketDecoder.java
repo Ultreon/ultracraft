@@ -2,7 +2,6 @@ package com.ultreon.craft.network;
 
 import com.ultreon.craft.network.packets.Packet;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.AttributeKey;

@@ -1,9 +1,9 @@
 package com.ultreon.craft.client.uri;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.resources.v0.Resource;
-import com.ultreon.libs.resources.v0.ResourceManager;
+import com.ultreon.craft.resources.Resource;
+import com.ultreon.craft.resources.ResourceManager;
+import com.ultreon.craft.util.ElementID;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class ResourceUrlHandler extends URLStreamHandlerProvider {
             protected URLConnection openConnection(URL u) {
                 String location = u.getHost();
                 String path = u.getPath();
-                Identifier identifier = new Identifier(location, path);
+                ElementID elementID = new ElementID(location, path);
                 UltracraftClient ultracraftClient = UltracraftClient.get();
                 return new URLConnection(u) {
                     private ResourceManager resourceManager;
@@ -41,10 +41,10 @@ public class ResourceUrlHandler extends URLStreamHandlerProvider {
                         if (this.resourceManager == null)
                             throw new IOException("Connection opened before game initialization");
 
-                        Resource resource = this.resourceManager.getResource(identifier);
+                        Resource resource = this.resourceManager.getResource(elementID);
 
                         if (resource == null)
-                            throw new FileNotFoundException("Resource not found: " + identifier);
+                            throw new FileNotFoundException("Resource not found: " + elementID);
 
                         InputStream str = resource.loadOrOpenStream();
 

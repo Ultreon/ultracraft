@@ -3,7 +3,8 @@ package com.ultreon.craft.registry;
 import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.api.commands.CommandContext;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class CommandRegistry {

@@ -2,7 +2,6 @@ package com.ultreon.craft.util;
 
 import com.google.common.collect.Queues;
 import com.ultreon.craft.debug.profiler.Profiler;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -70,7 +69,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(task.call());
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    Identifier id = ((Task<?>) task).id();
+                    ElementID id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -97,7 +96,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(result);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    Identifier id = ((Task<?>) task).id();
+                    ElementID id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -124,7 +123,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(null);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    Identifier id = ((Task<?>) task).id();
+                    ElementID id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -137,7 +136,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(null);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    Identifier id = ((Task<?>) task).id();
+                    ElementID id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);

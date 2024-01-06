@@ -15,7 +15,7 @@ import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +54,7 @@ public abstract class ContainerScreen extends Screen {
     public abstract int backgroundWidth();
     public abstract int backgroundHeight();
 
-    public abstract Identifier getBackground();
+    public abstract ElementID getBackground();
 
     @Override
     protected void renderBackground(Renderer renderer) {

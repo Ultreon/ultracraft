@@ -1,9 +1,9 @@
 package com.ultreon.craft.client.events;
 
 import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.libs.events.v1.Event;
-import com.ultreon.libs.events.v1.EventResult;
-import com.ultreon.libs.events.v1.ValueEventResult;
+import com.ultreon.craft.events.api.Event;
+import com.ultreon.craft.events.api.EventResult;
+import com.ultreon.craft.events.api.ValueEventResult;
 
 public class ScreenEvents {
     public static final Event<Open> OPEN = Event.withValue();

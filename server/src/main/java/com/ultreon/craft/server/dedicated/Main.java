@@ -1,10 +1,10 @@
 package com.ultreon.craft.server.dedicated;
 
+import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.crash.v0.CrashException;
-import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.craft.text.LanguageBootstrap;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
@@ -44,8 +44,7 @@ public class Main {
             // Invoke FabricMC entrypoint for dedicated server.
             FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
-            // Set default namespace in CoreLibs identifier.
-            Identifier.setDefaultNamespace(UltracraftServer.NAMESPACE);
+            LanguageBootstrap.bootstrap.set((path, args1) -> server != null ? server.handleTranslation(path, args1) : path);
 
             Main.serverLoader = new ServerLoader();
             Main.serverLoader.load();
@@ -85,11 +84,11 @@ public class Main {
             }
 
             UltracraftServer.getWatchManager().stop();
-        } catch (CrashException e) {
+        } catch (ApplicationCrash e) {
             e.getCrashLog().createCrash().printCrash();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             // Server crashed! Saving a crash log, and write it to the server console.
-            CrashLog crashLog = new CrashLog("Server crashed!", t);
+            CrashLog crashLog = new CrashLog("Server crashed!", e);
             crashLog.defaultSave();
 
             String string = crashLog.toString();

@@ -5,8 +5,8 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.loot.RandomLoot;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.apache.commons.lang3.IntegerRange;
 
 public final class Blocks {
@@ -30,7 +30,7 @@ public final class Blocks {
     public static final Block TALL_GRASS = Blocks.register("tall_grass", new Block(new Properties().instaBreak().noOcclude().replaceable().transparent().noCollision().usesCustomRender().effectiveTool(ToolType.AXE).dropsItems(new RandomLoot(new RandomLoot.ChanceLootEntry(0.4f, Items.GRASS_FIBRE)))));
 
     private static <T extends Block> T register(String name, T block) {
-        Registries.BLOCK.register(new Identifier(name), block);
+        Registries.BLOCK.register(new ElementID(name), block);
         return block;
     }
 

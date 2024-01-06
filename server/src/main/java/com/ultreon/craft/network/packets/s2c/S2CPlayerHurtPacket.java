@@ -6,7 +6,7 @@ import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class S2CPlayerHurtPacket extends Packet<InGameClientPacketHandler> {
     private final float damage;
@@ -28,9 +28,9 @@ public class S2CPlayerHurtPacket extends Packet<InGameClientPacketHandler> {
 
     @Override
     public void toBytes(PacketBuffer buffer) {
-        Identifier type = this.source.getType();
+        ElementID type = this.source.getType();
         buffer.writeFloat(this.damage);
-        buffer.writeId(type == null ? new Identifier("none") : type);
+        buffer.writeId(type == null ? new ElementID("none") : type);
     }
 
     @Override

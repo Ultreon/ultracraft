@@ -1,8 +1,8 @@
 package com.ultreon.craft.client.gui.widget.components;
 
 import com.ultreon.craft.client.gui.widget.Widget;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.ImGuiEx;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 
 public class RangedValueComponent extends UIComponent {
@@ -33,7 +33,7 @@ public class RangedValueComponent extends UIComponent {
     }
 
     @Override
-    public void handleImGui(String path, Identifier key, Widget widget) {
+    public void handleImGui(String path, ElementID key, Widget widget) {
         ImGuiEx.slider("Value (" + key + ")", path, this.value, this.min(), this.max(), this::set);
     }
 }

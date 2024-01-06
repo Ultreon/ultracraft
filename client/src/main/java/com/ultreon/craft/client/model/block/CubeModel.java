@@ -3,7 +3,7 @@ package com.ultreon.craft.client.model.block;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 import java.util.Objects;
@@ -12,17 +12,17 @@ import java.util.Set;
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 
 public final class CubeModel {
-    private final Identifier top;
-    private final Identifier bottom;
-    private final Identifier left;
-    private final Identifier right;
-    private final Identifier front;
-    private final Identifier back;
+    private final ElementID top;
+    private final ElementID bottom;
+    private final ElementID left;
+    private final ElementID right;
+    private final ElementID front;
+    private final ElementID back;
     private final ModelProperties properties;
 
-    private CubeModel(Identifier top, Identifier bottom,
-                      Identifier left, Identifier right,
-                      Identifier front, Identifier back, ModelProperties properties) {
+    private CubeModel(ElementID top, ElementID bottom,
+                      ElementID left, ElementID right,
+                      ElementID front, ElementID back, ModelProperties properties) {
         this.top = top;
         this.bottom = bottom;
         this.left = left;
@@ -32,43 +32,43 @@ public final class CubeModel {
         this.properties = properties;
     }
 
-    public static CubeModel of(Identifier all) {
+    public static CubeModel of(ElementID all) {
         return CubeModel.of(all, all, all);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side) {
         return CubeModel.of(top, bottom, side, side, side, side);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front) {
         return CubeModel.of(top, bottom, side, side, front, side);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ElementID back) {
         return CubeModel.of(top, bottom, side, side, front, back);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID left, ElementID right, ElementID front, ElementID back) {
         return new CubeModel(top, bottom, left, right, front, back, ModelProperties.builder().build());
     }
 
-    public static CubeModel of(Identifier all, ModelProperties properties) {
+    public static CubeModel of(ElementID all, ModelProperties properties) {
         return CubeModel.of(all, all, all, properties);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side,  ModelProperties properties) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, side, side, properties);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, ModelProperties properties) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, front, side, properties);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back, ModelProperties properties) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ElementID back, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, front, back, properties);
     }
 
-    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back, ModelProperties properties) {
+    public static CubeModel of(ElementID top, ElementID bottom, ElementID left, ElementID right, ElementID front, ElementID back, ModelProperties properties) {
         return new CubeModel(top, bottom, left, right, front, back, properties);
     }
 
@@ -91,27 +91,27 @@ public final class CubeModel {
         return baked;
     }
 
-    public Identifier top() {
+    public ElementID top() {
         return top;
     }
 
-    public Identifier bottom() {
+    public ElementID bottom() {
         return bottom;
     }
 
-    public Identifier left() {
+    public ElementID left() {
         return left;
     }
 
-    public Identifier right() {
+    public ElementID right() {
         return right;
     }
 
-    public Identifier front() {
+    public ElementID front() {
         return front;
     }
 
-    public Identifier back() {
+    public ElementID back() {
         return back;
     }
 
@@ -144,7 +144,7 @@ public final class CubeModel {
                 "back=" + back + ']';
     }
 
-    public Set<Identifier> all() {
+    public Set<ElementID> all() {
         return new ReferenceArraySet<>(new Object[]{top, bottom, left, right, front, back});
     }
 }

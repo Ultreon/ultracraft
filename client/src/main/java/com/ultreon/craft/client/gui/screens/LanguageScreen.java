@@ -4,9 +4,9 @@ import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.gui.widget.TextButton;
+import com.ultreon.craft.client.text.LanguageManager;
 import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.libs.translations.v1.LanguageManager;
 
 import java.util.List;
 import java.util.Locale;

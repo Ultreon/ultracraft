@@ -3,7 +3,7 @@ package com.ultreon.craft.client.events;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.world.ClientWorld;
-import com.ultreon.libs.events.v1.Event;
+import com.ultreon.craft.events.api.Event;
 
 public class ClientTickEvents {
     public static final Event<GameTick> GAME_TICK = Event.create();

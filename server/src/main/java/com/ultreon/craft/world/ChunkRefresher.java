@@ -1,8 +1,8 @@
 package com.ultreon.craft.world;
 
-import org.apache.commons.collections4.set.ListOrderedSet;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ChunkRefresher {
     protected final List<ChunkPos> toLoad = new ArrayList<>();

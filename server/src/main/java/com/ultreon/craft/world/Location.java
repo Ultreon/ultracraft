@@ -1,17 +1,17 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class Location {
-    public Identifier world;
+    public ElementID world;
     public double x;
     public double y;
     public double z;
     public float xRot;
     public float yRot;
 
-    public Location(Identifier world, double x, double y, double z, float xRot, float yRot) {
+    public Location(ElementID world, double x, double y, double z, float xRot, float yRot) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -25,7 +25,7 @@ public class Location {
     }
 
     public Location(double x, double y, double z, float xRot, float yRot) {
-        this((Identifier) null, x, y, z, xRot, yRot);
+        this((ElementID) null, x, y, z, xRot, yRot);
     }
 
     public Location(double x, double y, double z) {

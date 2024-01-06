@@ -2,7 +2,7 @@ package com.ultreon.craft.client.config.gui;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.client.config.Configuration;
-import com.ultreon.libs.translations.v1.Language;
+import com.ultreon.craft.client.text.Language;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ConfigEntry<T> {

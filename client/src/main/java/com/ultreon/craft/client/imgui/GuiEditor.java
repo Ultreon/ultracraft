@@ -8,8 +8,8 @@ import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.UIContainer;
 import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.client.gui.widget.components.UIComponent;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.ImGuiEx;
-import com.ultreon.libs.commons.v0.Identifier;
 import imgui.ImGui;
 
 import java.util.Map;
@@ -77,7 +77,7 @@ public class GuiEditor {
 
             // Properties
             var components = widget.componentRegistry();
-            for (Map.Entry<Identifier, UIComponent> component : components.entrySet()) {
+            for (Map.Entry<ElementID, UIComponent> component : components.entrySet()) {
                 component.getValue().handleImGui(path + "::" + component.getKey(), component.getKey(), widget);
             }
 

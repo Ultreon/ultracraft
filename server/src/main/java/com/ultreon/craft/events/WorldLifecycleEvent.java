@@ -1,8 +1,8 @@
 package com.ultreon.craft.events;
 
+import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.gen.WorldGenFeature;
-import com.ultreon.libs.events.v1.Event;
 
 import java.util.List;
 

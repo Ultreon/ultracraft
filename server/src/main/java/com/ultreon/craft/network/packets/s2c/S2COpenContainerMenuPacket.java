@@ -4,12 +4,12 @@ import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class S2COpenContainerMenuPacket extends Packet<InGameClientPacketHandler> {
-    private final Identifier menuType;
+    private final ElementID menuType;
 
-    public S2COpenContainerMenuPacket(Identifier menuType) {
+    public S2COpenContainerMenuPacket(ElementID menuType) {
         this.menuType = menuType;
     }
 

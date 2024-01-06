@@ -75,7 +75,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     private final Matrix3 normalTransform = new Matrix3();
     private final BoundingBox bounds = new BoundingBox();
 
-    /** @param usage bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal and
+    /** @param usage bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal and
      *           TextureCoordinates is supported. */
     public static VertexAttributes createAttributes (long usage) {
         final Array<VertexAttribute> attrs = new Array<>();
@@ -95,7 +95,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     }
 
     /** Begin building a mesh. Call {@link #part(String, int)} to start a {@link MeshPart}.
-     * @param attributes bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal
+     * @param attributes bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal
      *           and TextureCoordinates is supported. */
     @Override
     public void begin (final long attributes) {
@@ -109,7 +109,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     }
 
     /** Begin building a mesh.
-     * @param attributes bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal
+     * @param attributes bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal
      *           and TextureCoordinates is supported. */
     @Override
     public void begin (final long attributes, int primitiveType) {

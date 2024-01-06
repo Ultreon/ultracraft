@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.gui.icon;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public record MessageIcon(int width, int height, int u, int v) implements Icon {
     public static final MessageIcon WARNING = new MessageIcon(16, 16, 0, 0);
@@ -11,7 +11,7 @@ public record MessageIcon(int width, int height, int u, int v) implements Icon {
     public static final MessageIcon QUESTION = new MessageIcon(16, 16, 64, 0);
 
     @Override
-    public Identifier id() {
+    public ElementID id() {
         return UltracraftClient.id("textures/gui/icons/message.png");
     }
 

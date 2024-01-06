@@ -3,7 +3,7 @@ package com.ultreon.craft.text;
 import java.io.Serializable;
 import java.net.URL;
 
-public record ClickEvent(com.ultreon.craft.text.ClickEvent.Action action, String value) implements Serializable {
+public record ClickEvent(ClickEvent.Action action, String value) implements Serializable {
     public static ClickEvent openUrl(URL url) {
         return new ClickEvent(Action.OPEN_URL, url.toString());
     }

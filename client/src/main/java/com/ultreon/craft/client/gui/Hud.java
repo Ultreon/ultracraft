@@ -13,7 +13,7 @@ import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import org.jetbrains.annotations.NotNull;
 
@@ -92,7 +92,7 @@ public class Hud implements GameRenderable {
     private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
-        Identifier key = Registries.ITEM.getKey(selectedItem.getItem());
+        ElementID key = Registries.ITEM.getKey(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
