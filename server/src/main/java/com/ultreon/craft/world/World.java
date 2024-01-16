@@ -18,14 +18,18 @@ import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.ServerWorld.Region;
 import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.commons.v0.tuple.Singleton;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import com.ultreon.xeox.loader.JSEvents;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus.Experimental;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -82,7 +86,7 @@ public abstract class World implements ServerDisposable {
         this.seed = seed;
     }
 
-    public World(@Nullable LongType seed) {
+    protected World(@Nullable LongType seed) {
         this(seed == null ? new Random().nextLong() : seed.getValue());
     }
 
@@ -128,7 +132,15 @@ public abstract class World implements ServerDisposable {
         return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
     }
 
-    public static ChunkPos toChunkPos(int x, int y, int z) {
+    /**
+	 * @deprecated Use {@link #toChunkPos(int,int)} instead
+	 */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+	public static ChunkPos toChunkPos(int x, int y, int z) {
+		return toChunkPos(x, z);
+	}
+
+	public static ChunkPos toChunkPos(int x, int z) {
         return new ChunkPos(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
     }
 
@@ -136,10 +148,24 @@ public abstract class World implements ServerDisposable {
         return new Vec2i(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
     }
 
-    public static Vec2i toChunkVec(int x, int y, int z) {
+    /**
+	 * @deprecated Use {@link #toChunkVec(int,int)} instead
+	 */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+	public static Vec2i toChunkVec(int x, int y, int z) {
+		return toChunkVec(x, z);
+	}
+
+	public static Vec2i toChunkVec(int x, int z) {
         return new Vec2i(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
     }
 
+    /**
+     * Gets all the chunks around the given position within the render distance.
+     * 
+     * @param pos the position
+     * @return    the list of chunks
+     */
     public List<ChunkPos> getChunksAround(Vec3d pos) {
         int renderDistance = this.getRenderDistance();
         int startX = (int) (pos.x - renderDistance * World.CHUNK_SIZE);
@@ -161,20 +187,39 @@ public abstract class World implements ServerDisposable {
     protected abstract int getRenderDistance();
 
     private boolean shouldStayLoaded(ChunkPos pos) {
-        return false;
-//		return this.isSpawnChunk(pos) || this.isAlwaysLoaded(pos);
+		return this.isAlwaysLoaded(pos);
     }
 
+    /**
+     * Check if a chunk is always loaded
+     * 
+     * @param pos the chunk position
+     * @return    true if the chunk is always loaded false otherwise
+     */
     public boolean isAlwaysLoaded(ChunkPos pos) {
         return this.alwaysLoaded.contains(pos);
     }
 
-    @Deprecated
+    /**
+     * Unloads a chunk from the world asynchronously.
+     * 
+     * @param chunkPos the position of the chunk
+     * @return         the future that completes when the chunk is unloaded
+     * @deprecated     use {@link #unloadChunk(Chunk)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     private CompletableFuture<Boolean> unloadChunkAsync(ChunkPos chunkPos) {
         return this.unloadChunkAsync(Objects.requireNonNull(this.getChunk(chunkPos), "Chunk not loaded: " + chunkPos));
     }
 
-    @Deprecated
+    /**
+     * Unloads a chunk from the world asynchronously.
+     * 
+     * @param chunk the chunk
+     * @return      the future that completes when the chunk is unloaded
+     * @deprecated use {@link #unloadChunk(Chunk)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     private CompletableFuture<Boolean> unloadChunkAsync(@NotNull Chunk chunk) {
         synchronized (chunk.lock) {
@@ -185,6 +230,12 @@ public abstract class World implements ServerDisposable {
         }
     }
 
+    /**
+     * Logs an error and crashes the server if the throwable is an {@link Error} or a {@link CompletionException} with an {@link Error}.
+     * 
+     * @param throwable the throwable
+     * @param msg       the message
+     */
     private static void fail(Throwable throwable, String msg) {
         if (throwable instanceof CompletionException e && e.getCause() instanceof Error error)
             UltracraftServer.get().crash(throwable);
@@ -194,6 +245,12 @@ public abstract class World implements ServerDisposable {
         World.LOGGER.error(msg, throwable);
     }
 
+    /**
+     * Unloads a chunk from the world.
+     * 
+     * @param chunkPos the position of the chunk
+     * @return         true if the chunk was successfully unloaded false otherwise
+     */
     public boolean unloadChunk(@NotNull ChunkPos chunkPos) {
         this.checkThread();
 
@@ -205,25 +262,58 @@ public abstract class World implements ServerDisposable {
     @CanIgnoreReturnValue
     protected abstract boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos);
 
+    /**
+     * Ray casts a given ray and returns the hit result.
+     * 
+     * @param ray the ray to be casted
+     * @return    the hit result of the ray cast
+     */
     public HitResult rayCast(Ray ray) {
         return WorldRayCaster.rayCast(new HitResult(ray), this);
     }
 
+    /**
+     * Ray casts a given ray for a specified distance and returns the hit result.
+     *
+     * @param  ray       the ray to be casted
+     * @param  distance  the distance to cast the ray
+     * @return           the hit result of the ray cast
+     */
     public HitResult rayCast(Ray ray, float distance) {
         HitResult hitResult = new HitResult(ray, distance);
         return WorldRayCaster.rayCast(hitResult, this);
     }
 
+    /**
+     * Sets a block at the specified coordinates.
+     * 
+     * @param blockPos the coordinates of the block
+     * @param block    the block to set
+     */
     public void set(BlockPos blockPos, Block block) {
         this.checkThread();
 
         this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
     }
 
+    /**
+     * Sets a block at the specified coordinates.
+     *
+     * @param  x     the x-coordinate of the block
+     * @param  y     the y-coordinate of the block
+     * @param  z     the z-coordinate of the block
+     * @param  block the block to set
+     * @return       true if the block was successfully set, false otherwise
+     */
     public boolean set(int x, int y, int z, Block block) {
         this.checkThread();
 
         BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
+        Singleton<Block> blockProp = new Singleton<>(block);
+        JSEvents.emitAll("setBlock", this, x, y, z, blockProp);
+        if (blockProp.get() != null) {
+            block = blockProp.get();
+        }
 
         Chunk chunk = this.getChunkAt(x, y, z);
         if (chunk == null) return false;
@@ -232,12 +322,26 @@ public abstract class World implements ServerDisposable {
         return chunk.set(cp.x(), cp.y(), cp.z(), block);
     }
 
+    /**
+     * Retrieves the block at the specified coordinates.
+     *
+     * @param  pos  the position of the block to retrieve
+     * @return      the block at the specified position
+     */
     public Block get(BlockPos pos) {
         this.checkThread();
 
         return this.get(pos.x(), pos.y(), pos.z());
     }
 
+    /**
+     * Retrieves the block at the specified coordinates.
+     * 
+     * @param  x    the x-coordinate of the block
+     * @param  y    the y-coordinate of the block
+     * @param  z    the z-coordinate of the block
+     * @return      the block at the specified position
+     */
     public Block get(int x, int y, int z) {
         this.checkThread();
 
@@ -291,13 +395,34 @@ public abstract class World implements ServerDisposable {
         return World.toLocalChunkPos(pos.x(), pos.z());
     }
 
+    /**
+     * Gets a chunk at the specified chunk coordinates in the world.
+     * 
+     * @param pos the chunk position of the chunk
+     * @return    the chunk at the specified coordinates
+     */
     @Nullable
     public abstract Chunk getChunk(ChunkPos pos);
 
+    /**
+     * Gets a chunk at the specified chunk coordinates in the world.
+     *
+     * @param  x  the chunk x-coordinate of the chunk
+     * @param  z  the chunk z-coordinate of the chunk
+     * @return    the chunk at the specified coordinates
+     */
     public Chunk getChunk(int x, int z) {
         return this.getChunk(new ChunkPos(x, z));
     }
 
+    /**
+     * Gets a chunk at the specified block coordinates in the world.
+     * 
+     * @param x the block x-coordinate
+     * @param y the block y-coordinate
+     * @param z the block z-coordinate
+     * @return  the chunk at the specified coordinates
+     */
     @Nullable
     public Chunk getChunkAt(int x, int y, int z) {
         int chunkX = Math.floorDiv(x, World.CHUNK_SIZE);
@@ -309,17 +434,41 @@ public abstract class World implements ServerDisposable {
         return this.getChunk(chunkPos);
     }
 
+    /**
+     * Get the chunk at the specified block position in the world.
+     * 
+     * @param pos the block position
+     * @return    the chunk at the specified position
+     */
     @Nullable
     public Chunk getChunkAt(BlockPos pos) {
         return this.getChunkAt(pos.x(), pos.y(), pos.z());
     }
 
+    /**
+     * Check if the block position is out of the world bounds.
+     * This is between x,z = -30000000 and 30000000.
+     * And between y = {@link World#WORLD_DEPTH} and {@link World#WORLD_HEIGHT} - 1
+     * 
+     * @param pos the block position
+     * @return    true if the block position is out of the world bounds, false otherwise
+     */
     public boolean isOutOfWorldBounds(BlockPos pos) {
         return pos.y() < World.WORLD_DEPTH || pos.y() >= World.WORLD_HEIGHT
                 || pos.x() < -30000000 || pos.x() > 30000000
                 || pos.z() < -30000000 || pos.z() > 30000000;
     }
 
+    /**
+     * Check if the coordinates are out of the world bounds.
+     * This is between x,z = -30000000 and 30000000.
+     * And between y = {@link World#WORLD_DEPTH} and {@link World#WORLD_HEIGHT} - 1
+     * 
+     * @param x the block x-coordinate
+     * @param y the block y-coordinate
+     * @param z the block z-coordinate
+     * @return  true if the coordinates are out of the world bounds, false otherwise
+     */
     public boolean isOutOfWorldBounds(int x, int y, int z) {
         return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
                || x < -30000000 || x > 30000000
@@ -341,6 +490,7 @@ public abstract class World implements ServerDisposable {
         for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
             if (!this.get(x, y, z).isAir()) return y + 1;
         }
+
         return 0;
     }
 
@@ -357,30 +507,47 @@ public abstract class World implements ServerDisposable {
         }
     }
 
+    /**
+     * Sets an area of blocks in the world.
+     * Note: this method is still experimental.
+     * 
+     * @param x      the chunk x-coordinate of the area
+     * @param y      the chunk y-coordinate of the area
+     * @param z      the chunk z-coordinate of the area
+     * @param width  the width of the area
+     * @param height the height of the area
+     * @param depth  the depth of the area
+     * @param block  the block to set
+     */
     @ApiStatus.Experimental
     public void set(int x, int y, int z, int width, int height, int depth, Block block) {
-        int ix = x;
-        int iy = y;
-        int iz = z;
-        int startX = Math.max(ix, 0);
-        int endX = Math.min(width, ix + width);
-        int startY = Math.max(iy, 0);
-        int endY = Math.min(height, iy + height);
-        int startZ = Math.max(iz, 0);
-        int endZ = Math.min(depth, iz + depth);
-
-        // FIXME optimize
-        for (iy = startY; iy < endY; iy++) {
-            for (iz = startZ; iz < endZ; iz++) {
-                for (ix = startX; ix < endX; ix++) {
-                    this.set(ix, iy, iz, block);
-                }
-            }
-        }
+        throw new UnsupportedOperationException("Unimplemented");
     }
 
+    /**
+     * Sets a block in the world, but synchronously.
+     * 
+     * @param x     the block x-coordinate
+     * @param y     the block y-coordinate
+     * @param z     the block x-coordinate
+     * @param block the block to set
+     */
+    public abstract void setSync(int x, int y, int z, Block block);
+
+    /**
+     * Get all the currently loaded chunks.
+     * 
+     * @return the loaded chunks.
+     */
     public abstract Collection<? extends Chunk> getLoadedChunks();
 
+    /**
+     * Check if a chunk is invalidated.
+     * 
+     * @param chunk the chunk
+     * @return      true if the chunk is invalidated, false otherwise
+     */
+    @Experimental
     public boolean isChunkInvalidated(Chunk chunk) {
         return this.invalidatedChunks.contains(chunk.getPos());
     }
@@ -488,6 +655,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Cleans up any used variables, executors, etc.
+     * <p>Note: Internal API.</p>
      */
     @Override
     @ApiStatus.Internal
@@ -496,9 +664,10 @@ public abstract class World implements ServerDisposable {
         this.executor.shutdownNow().clear();
         try {
             if (!this.executor.awaitTermination(15, TimeUnit.SECONDS))
-                throw new Error("World async executor failed to shutdown in time.");
+                throw new IllegalStateError("World async executor failed to shutdown in time.");
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new IllegalStateError("World async executor failed to shutdown.", e);
         }
     }
 

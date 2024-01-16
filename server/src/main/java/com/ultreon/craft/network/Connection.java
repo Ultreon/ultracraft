@@ -15,6 +15,7 @@ import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.util.Env;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -25,7 +26,6 @@ import io.netty.handler.codec.compression.JdkZlibEncoder;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
-import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -118,7 +118,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.channel = ctx.channel();
         this.remoteAddress = this.channel.remoteAddress();
 
-        if (this.direction.getSourceEnv() == EnvType.CLIENT) {
+        if (this.direction.getSourceEnv() == Env.CLIENT) {
             Connection.LOGGER.info("Connected to: {}", this.remoteAddress != null ? this.remoteAddress : "null");
         }
 
@@ -188,9 +188,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         @NotNull String msg = "Disconnected: ";
         Connection.LOGGER.info("%s%s (%s)".formatted(msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
 
-        if (this.direction.getSourceEnv() == EnvType.SERVER) {
+        if (this.direction.getSourceEnv() == Env.SERVER) {
             this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
-        } else if (this.direction.getSourceEnv() == EnvType.CLIENT) {
+        } else if (this.direction.getSourceEnv() == Env.CLIENT) {
             this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
         }
 
@@ -365,7 +365,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return this.direction;
     }
 
-    public EnvType getCurrentEnv() {
+    public Env getCurrentEnv() {
         return this.direction.getSourceEnv();
     }
 

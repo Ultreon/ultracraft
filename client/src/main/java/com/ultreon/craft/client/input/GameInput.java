@@ -303,4 +303,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     public void dispose() {
         Controllers.removeListener(this);
     }
+
+    protected void resetBreaking() {
+        this.breaking = false;
+        this.client.resetBreaking();
+    }
 }

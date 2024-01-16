@@ -46,7 +46,12 @@ public class Ray implements Serializable {
 		this.direction.set(buffer.readVec3d()).nor();
 	}
 
-	public void write(PacketBuffer buffer) {
+	public Ray(com.badlogic.gdx.math.collision.Ray pickRay) {
+		this.origin.set(pickRay.origin.x, pickRay.origin.y, pickRay.origin.z);
+		this.direction.set(pickRay.direction.x, pickRay.direction.y, pickRay.direction.z);
+	}
+
+    public void write(PacketBuffer buffer) {
 		buffer.writeVec3d(this.origin);
 		buffer.writeVec3d(this.direction);
 	}

@@ -13,4 +13,4 @@ pluginManagement {
     }
 }
 
-include 'desktop-merge', 'gameprovider', 'desktop', 'client', 'server'
+include 'desktop-merge', 'gameprovider', 'desktop', 'client', 'server', 'android'

@@ -217,7 +217,7 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean keyRelease(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE && this.canCloseWithEsc()) {
+        if ((keyCode == Input.Keys.ESCAPE || keyCode == Input.Keys.BACK) && this.canCloseWithEsc()) {
             this.back();
             return true;
         }

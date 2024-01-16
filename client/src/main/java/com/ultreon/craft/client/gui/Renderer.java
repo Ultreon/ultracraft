@@ -53,10 +53,10 @@ public class Renderer {
     private float strokeWidth = 1;
     private Font font;
     private final MatrixStack matrixStack;
-    private Color blitColor = Color.rgb(0xffffff);
+    private Color textureColor = Color.rgb(0xffffff);
     private final Vector2 tmp2A = new Vector2();
     private final Vector3 tmp3A = new Vector3();
-    private GlStateStack glState = new GlStateStack();
+    private final GlStateStack glState = new GlStateStack();
 
     /**
      * @param shapes shape drawer instance from {@link UltracraftClient}
@@ -94,40 +94,40 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(Color c) {
+    public Renderer setShapeColor(Color c) {
         if (c == null) return this;
-        if (this.font != null) this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        if (this.font != null && this.client.unifont != null) this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         this.shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(int r, int g, int b) {
-        this.setColor(Color.rgb(r, g, b));
+    public Renderer setShapeColor(int r, int g, int b) {
+        this.setShapeColor(Color.rgb(r, g, b));
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(float r, float g, float b) {
-        this.setColor(Color.rgb(r, g, b));
+    public Renderer setShapeColor(float r, float g, float b) {
+        this.setShapeColor(Color.rgb(r, g, b));
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(int r, int g, int b, int a) {
-        this.setColor(Color.rgba(r, g, b, a));
+    public Renderer setShapeColor(int r, int g, int b, int a) {
+        this.setShapeColor(Color.rgba(r, g, b, a));
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(float r, float g, float b, float a) {
-        this.setColor(Color.rgba(r, g, b, a));
+    public Renderer setShapeColor(float r, float g, float b, float a) {
+        this.setShapeColor(Color.rgba(r, g, b, a));
         return this;
     }
 
     @CanIgnoreReturnValue
-    public Renderer setColor(int argb) {
-        this.setColor(Color.argb(argb));
+    public Renderer setShapeColor(int argb) {
+        this.setShapeColor(Color.argb(argb));
         return this;
     }
 
@@ -144,8 +144,8 @@ public class Renderer {
      * @param hex a color hex.
      */
     @CanIgnoreReturnValue
-    public Renderer setColor(String hex) {
-        this.setColor(Color.hex(hex));
+    public Renderer setShapeColor(String hex) {
+        this.setShapeColor(Color.hex(hex));
         return this;
     }
 
@@ -281,60 +281,70 @@ public class Renderer {
         return this;
     }
 
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer roundRectLine(int x, int y, int width, int height, int arcWidth, int arcHeight) {
         this.shapes.rectangle(x, y, width, height, this.strokeWidth);
         return this;
     }
 
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer roundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
         this.shapes.rectangle(x, y, width, height);
         return this;
     }
 
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer rect3DLine(int x, int y, int width, int height, boolean raised) {
         this.shapes.rectangle(x, y, width, height, this.strokeWidth);
         return this;
     }
 
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer rect3D(int x, int y, int width, int height, boolean raised) {
         this.shapes.filledRectangle(x, y, width, height);
         return this;
     }
 
+    @ApiStatus.Obsolete
     @CanIgnoreReturnValue
     public Renderer ovalLine(int x, int y, int width, int height) {
         this.shapes.ellipse(x, y, width, height);
         return this;
     }
 
+    @ApiStatus.Obsolete
     @CanIgnoreReturnValue
     public Renderer oval(int x, int y, int width, int height) {
         this.shapes.filledEllipse(x, y, width, height);
         return this;
     }
 
+    @ApiStatus.Obsolete
     @CanIgnoreReturnValue
     public Renderer ovalLine(float x, float y, float width, float height) {
         this.shapes.ellipse(x, y, width, height);
         return this;
     }
 
+    @ApiStatus.Obsolete
     @CanIgnoreReturnValue
     public Renderer oval(float x, float y, float width, float height) {
         this.shapes.filledEllipse(x, y, width, height);
         return this;
     }
 
+    @Deprecated(since = "0.1.0", forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer arcLine(int x, int y, int width, int height, int startAngle, int arcAngle) {
         this.shapes.arc(x, y, width, startAngle, arcAngle);
         return this;
     }
 
+    @ApiStatus.Obsolete
     @CanIgnoreReturnValue
     public Renderer arc(int x, int y, int width, int height, int startAngle, int arcAngle) {
         this.shapes.arc(x, y, width, startAngle, arcAngle);
@@ -347,7 +357,7 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer blit(TextureRegion tex, float x, float y) {
         if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
         return this;
     }
@@ -355,7 +365,7 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer blit(TextureRegion tex, float x, float y, float width, float height) {
         if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
         return this;
     }
@@ -363,7 +373,7 @@ public class Renderer {
     @ApiStatus.Internal
     @CanIgnoreReturnValue
     public Renderer blit(Texture tex, float x, float y) {
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
         return this;
     }
@@ -372,9 +382,9 @@ public class Renderer {
     @ApiStatus.Internal
     @CanIgnoreReturnValue
     public Renderer blit(Texture tex, float x, float y, Color backgroundColor) {
-        this.setColor(backgroundColor);
+        this.setShapeColor(backgroundColor);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
         return this;
     }
@@ -403,9 +413,9 @@ public class Renderer {
     @ApiStatus.Internal
     @CanIgnoreReturnValue
     public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
-        this.setColor(backgroundColor);
+        this.setShapeColor(backgroundColor);
         this.rect(x, y, width, height);
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
         this.batch.draw(textureRegion, x, y + height, width, -height);
         return this;
@@ -435,7 +445,7 @@ public class Renderer {
     @ApiStatus.Internal
     @CanIgnoreReturnValue
     public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
         this.batch.draw(textureRegion, x, y + height, width, -height);
         return this;
@@ -444,7 +454,7 @@ public class Renderer {
     @Deprecated(forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer blit(ElementID id, float x, float y) {
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
         return this;
@@ -454,10 +464,10 @@ public class Renderer {
     @Deprecated(forRemoval = true)
     @CanIgnoreReturnValue
     public Renderer blit(ElementID id, float x, float y, Color backgroundColor) {
-        this.setColor(backgroundColor);
+        this.setShapeColor(backgroundColor);
         Texture tex = this.textureManager.getTexture(id);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
         return this;
     }
@@ -502,7 +512,7 @@ public class Renderer {
 
     @CanIgnoreReturnValue
     public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
         this.batch.draw(textureRegion, x, y + height, width, -height);
@@ -511,10 +521,10 @@ public class Renderer {
 
     @CanIgnoreReturnValue
     public Renderer blit(ElementID id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
-        this.setColor(backgroundColor);
+        this.setShapeColor(backgroundColor);
         this.rect(x, y, width, height);
         Texture tex = this.textureManager.getTexture(id);
-        this.batch.setColor(this.blitColor.toGdx());
+        this.batch.setColor(this.textureColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
         this.batch.draw(textureRegion, x, y + height, width, -height);
         return this;
@@ -1544,17 +1554,17 @@ public class Renderer {
 
     @CanIgnoreReturnValue
     public Renderer blitColor(Color color) {
-        this.blitColor = color;
+        this.textureColor = color;
         return this;
     }
 
-    public Color getBlitColor() {
-        return this.blitColor;
+    public Color getTextureColor() {
+        return this.textureColor;
     }
 
-    public void setBlitColor(Color blitColor) {
-        this.batch.setColor(this.blitColor.toGdx());
-        this.blitColor = blitColor;
+    public void setTextureColor(Color textureColor) {
+        this.batch.setColor(this.textureColor.toGdx());
+        this.textureColor = textureColor;
     }
 
     @CanIgnoreReturnValue
@@ -1587,14 +1597,14 @@ public class Renderer {
 
     @CanIgnoreReturnValue
     public Renderer fill(int x, int y, int width, int height, Color rgb) {
-        this.setColor(rgb);
+        this.setShapeColor(rgb);
         this.rect(x, y, width, height);
         return this;
     }
 
     @CanIgnoreReturnValue
     public Renderer box(int x, int y, int width, int height, Color rgb) {
-        this.setColor(rgb);
+        this.setShapeColor(rgb);
         this.rectLine(x, y, width, height);
         return this;
     }

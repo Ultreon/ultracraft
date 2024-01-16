@@ -1,6 +1,6 @@
 package com.ultreon.craft.debug;
 
-import net.fabricmc.loader.api.FabricLoader;
+import com.ultreon.craft.GamePlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,10 +11,10 @@ public class Debugger {
      * Only logs debug messages when Fabric is in development environment.
      *
      * @param message the debug message.
-     * @see FabricLoader#isDevelopmentEnvironment()
+     * @see GamePlatform#isDevEnvironment()
      */
     public static void log(String message) {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (GamePlatform.get().isDevEnvironment()) {
             Debugger.LOGGER.debug(message);
         }
     }
@@ -24,10 +24,9 @@ public class Debugger {
      *
      * @param message the debug message.
      * @param t       the exception.
-     * @see FabricLoader#isDevelopmentEnvironment()
      */
     public static void log(String message, Throwable t) {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (GamePlatform.get().isDevEnvironment()) {
             Debugger.LOGGER.debug(message, t);
         }
     }

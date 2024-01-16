@@ -29,7 +29,7 @@ public class DedicatedServer extends UltracraftServer {
     private static final WorldStorage STORAGE = new WorldStorage(Paths.get("world"));
     private static final Profiler PROFILER = new Profiler();
     @SuppressWarnings("unchecked")
-    private final ServerLanguage language = new ServerLanguage(Locale.of("en", "us"), CommonConstants.GSON.fromJson(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/assets/ultracraft/languages/en_us.json"))), Map.class), new ElementID("ultracraft"));
+    private final ServerLanguage language = new ServerLanguage(new Locale("en", "us"), CommonConstants.GSON.fromJson(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/assets/ultracraft/languages/en_us.json"))), Map.class), new ElementID("ultracraft"));
 
     /**
      * Creates a new dedicated server instance.

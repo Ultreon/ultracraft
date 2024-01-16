@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Notification;
@@ -8,8 +9,8 @@ import com.ultreon.craft.client.gui.icon.GenericIcon;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.widget.IconButton;
 import com.ultreon.craft.client.gui.widget.Label;
+import com.ultreon.craft.client.gui.widget.TextBox;
 import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.gui.widget.TextEntry;
 import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.client.text.WordGenerator;
 import com.ultreon.craft.text.TextObject;
@@ -22,7 +23,7 @@ import java.nio.file.Paths;
 public class WorldCreationScreen extends Screen {
     private static final WordGenerator WORD_GEN = new WordGenerator(new WordGenerator.Config().minSize(4).maxSize(6).named());
     @MonotonicNonNull
-    private TextEntry worldNameEntry;
+    private TextBox worldNameEntry;
     @MonotonicNonNull
     private IconButton reloadButton;
     @MonotonicNonNull
@@ -44,7 +45,7 @@ public class WorldCreationScreen extends Screen {
         titleLabel.scale().set(2);
 
         this.worldName = WorldCreationScreen.WORD_GEN.generate() + " " + WorldCreationScreen.WORD_GEN.generate();
-        this.worldNameEntry = builder.add(TextEntry.of(this.worldName).position(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 - 20))
+        this.worldNameEntry = builder.add(TextBox.of(this.worldName).position(() -> new Position(this.getWidth() / 2 - 100, this.getHeight() / 2 - 20))
                 .callback(this::updateWorldName)
                 .hint(TextObject.translation("ultracraft.screen.world_creation.name")));
 
@@ -70,7 +71,7 @@ public class WorldCreationScreen extends Screen {
     }
 
     private void createWorld(TextButton caller) {
-        WorldStorage storage = new WorldStorage(Paths.get("worlds", this.worldName));
+        WorldStorage storage = new WorldStorage(Paths.get(GamePlatform.get().getGameDir().toString(), "worlds", this.worldName));
         try {
             storage.delete();
             storage.createWorld();
@@ -80,11 +81,11 @@ public class WorldCreationScreen extends Screen {
         }
     }
 
-    private void updateWorldName(TextEntry caller) {
+    private void updateWorldName(TextBox caller) {
         this.worldName = caller.getValue();
     }
 
-    public TextEntry getWorldNameEntry() {
+    public TextBox getWorldNameEntry() {
         return this.worldNameEntry;
     }
 

@@ -43,25 +43,22 @@ apply plugin: 'java-library'
 java {
     withSourcesJar()
     
-    sourceCompatibility("21")
-    targetCompatibility("21")
+    sourceCompatibility("17")
+    targetCompatibility("17")
 }
 
+repositories {
+    mavenCentral()
+    maven { url "https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven" }
+}
 dependencies {
     implementation api(project(":server"))
-    implementation api(project(":gameprovider"))
 
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:commons-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:crash-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:datetime-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:events-v1:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:functions-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:registries-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:resources-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:text-v0:$corelibs_version")
-    implementation api("io.github.ultreon.corelibs:translations-v1:$corelibs_version")
     implementation api("io.github.ultreon:ubo:$ultreon_data_version")
 
     // LibGDX
@@ -72,28 +69,13 @@ dependencies {
     implementation api("com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdx_controllers_version")
     implementation api("com.badlogicgames.gdx:gdx-freetype:$gdx_version")
     implementation api("com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version")
-
-    implementation api("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version")
-    implementation api("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-desktop")
-    implementation api("com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-desktop")
-    implementation api("com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop")
-    implementation api("com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version")
-    implementation api("com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop")
-//    implementation api("com.badlogicgames.gdx-video:gdx-video-lwjgl3:1.3.2-SNAPSHOT")
-
-    // ImGui
-    implementation api("io.github.spair:imgui-java-binding:$imgui_version")
-    implementation api("io.github.spair:imgui-java-lwjgl3:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-linux:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-macos:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-windows:$imgui_version")
+    implementation api("com.badlogicgames.gdx-video:gdx-video:$gdx_video_version")
 
     implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
     implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")
     implementation api("org.tukaani:xz:$tukaani_xz_version")
     implementation api("com.jcraft:jzlib:1.1.3")
-    implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
     // SLF4J
     implementation api("org.slf4j:slf4j-api:$slf4j_version")
@@ -112,46 +94,8 @@ dependencies {
     implementation api("org.tukaani:xz:$tukaani_xz_version")
     implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
-    implementation api("com.formdev:flatlaf:3.2.1")
-    // fabric-loader dependencies
-    implementation api("org.ow2.asm:asm:$project.asm_version")
-    implementation api("org.ow2.asm:asm-analysis:$project.asm_version")
-    implementation api("org.ow2.asm:asm-commons:$project.asm_version")
-    implementation api("org.ow2.asm:asm-tree:$project.asm_version")
-    implementation api("org.ow2.asm:asm-util:$project.asm_version")
-
-    implementation api("net.fabricmc:sponge-mixin:$project.mixin_version") {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-    }
-
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
-    implementation api('net.fabricmc:tiny-remapper:0.8.7')
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
-    implementation api('net.fabricmc:access-widener:2.1.0')
-
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
-
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
-    implementation api('net.fabricmc:tiny-remapper:0.8.7')
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
-    implementation api('net.fabricmc:access-widener:2.1.0')
-
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
-
-    runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")
-    runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")
-    runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
-
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
-
-    // Discord API
-    implementation api('com.github.jagrosh:DiscordIPC:master-SNAPSHOT')
 }
 
 processResources {

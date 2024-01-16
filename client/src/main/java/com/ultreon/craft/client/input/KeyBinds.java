@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.input;
 
 import com.badlogic.gdx.Input;
+import com.ultreon.craft.GamePlatform;
 
 public class KeyBinds {
     private KeyBinds() {
@@ -8,7 +9,7 @@ public class KeyBinds {
     }
 
 
-    public static final KeyBind pauseKey = KeyBindRegistry.register(new KeyBind("pause", Input.Keys.ESCAPE));
+    public static final KeyBind pauseKey = KeyBindRegistry.register(new KeyBind("pause", GamePlatform.get().isMobile() ? Input.Buttons.BACK : Input.Keys.ESCAPE));
     public static final KeyBind imGuiKey = KeyBindRegistry.register(new KeyBind("imGui", Input.Keys.F9));
     public static final KeyBind imGuiFocusKey = KeyBindRegistry.register(new KeyBind("imGuiFocus", Input.Keys.F10));
     public static final KeyBind inspectKey = KeyBindRegistry.register(new KeyBind("inspect", Input.Keys.F4));

@@ -21,6 +21,7 @@ import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Mth;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public final class ClientChunk extends Chunk {
     final GreedyMesher mesher;
@@ -28,7 +29,9 @@ public final class ClientChunk extends Chunk {
     public Vector3 renderOffset = new Vector3();
     public ChunkMesh mesh;
     public ChunkMesh transparentMesh;
-    public volatile boolean dirty;
+    public volatile boolean shouldUpdate;
+    public CompletableFuture<Mesh> futureMesh;
+    public CompletableFuture<Mesh> futureTransparentMesh;
     private List<GreedyMesher.Face> solidFaces;
     private List<GreedyMesher.Face> transparentFaces;
     private MeshBuilder meshBuilder;
@@ -141,7 +144,7 @@ public final class ClientChunk extends Chunk {
     @Override
     public Block getFast(int x, int y, int z) {
         if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+            return UltracraftClient.invokeAndWait(() -> super.getFast(x, y, z));
         }
 
         return super.getFast(x, y, z);
@@ -155,13 +158,13 @@ public final class ClientChunk extends Chunk {
 
         boolean isBlockSet = super.setFast(x, y, z, block);
 
-        this.dirty = true;
+        this.shouldUpdate = true;
         this.clientWorld.updateChunkAndNeighbours(this);
         return isBlockSet;
     }
 
     public void updated() {
-        this.dirty = false;
+        this.shouldUpdate = false;
     }
 
     @Override

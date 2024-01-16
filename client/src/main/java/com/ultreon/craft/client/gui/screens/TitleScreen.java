@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.gui.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
@@ -12,6 +13,10 @@ import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
+import com.ultreon.xeox.loader.XeoxLoader;
+import org.mozilla.javascript.RhinoException;
+
+import java.util.List;
 
 public class TitleScreen extends Screen {
     private Label titleLabel;
@@ -56,9 +61,11 @@ public class TitleScreen extends Screen {
                 .position(() -> new Position(50, this.size.height / 2 + 40))
                 .callback(this::showOptions));
 
-        this.quitButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.title.quit"), 150)
-                .position(() -> new Position(50, this.size.height / 2 + 78))
-                .callback(this::quitGame));
+        if (!GamePlatform.get().isMobile()) {
+            this.quitButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.title.quit"), 150)
+                    .position(() -> new Position(50, this.size.height / 2 + 78))
+                    .callback(this::quitGame));
+        }
     }
 
     private void quitGame(TextButton caller) {

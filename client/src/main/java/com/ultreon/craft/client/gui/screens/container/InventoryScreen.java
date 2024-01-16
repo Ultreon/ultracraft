@@ -111,7 +111,7 @@ public class InventoryScreen extends ContainerScreen {
         super.renderBackground(renderer);
 
         ElementID background = this.getBackground();
-        renderer.blit(background, this.left() + this.backgroundWidth() + 1, this.getHeight() / 2f - 64, 104, 128, 0, 127);
+        renderer.blit(background, this.left() + this.backgroundWidth() + 1f, this.getHeight() / 2f - 64, 104, 128, 0, 127);
     }
 
     @SuppressWarnings("GDXJavaFlushInsideLoop")
@@ -138,20 +138,20 @@ public class InventoryScreen extends ContainerScreen {
         var result = new ArrayList<TextObject>();
         var ingredients = recipe.ingredients();
         if (!ingredients.isEmpty()) {
-            result.addLast(TextObject.empty());
-            result.addLast(TextObject.translation("ultracraft.recipe.ingredients").style(textStyle -> textStyle.color(Color.WHITE).bold(true)));
+            result.add(TextObject.empty());
+            result.add(TextObject.translation("ultracraft.recipe.ingredients").style(textStyle -> textStyle.color(Color.WHITE).bold(true)));
             for (ItemStack stack : ingredients) {
-                result.addLast(TextObject.literal(stack.getCount() + "x ").append(stack.getItem().getTranslation()));
+                result.add(TextObject.literal(stack.getCount() + "x ").setColor(Color.GRAY).append(stack.getItem().getTranslation()));
             }
 
             if (!this.showOnlyCraftable()) {
-                result.addLast(recipe.canCraft(this.inventory) ? TextObject.translation("ultracraft.recipe.craftable").style(textStyle -> textStyle.color(Color.GREEN)) : TextObject.translation("ultracraft.recipe.uncraftable").style(textStyle -> textStyle.color(Color.RED)));
+                result.add(recipe.canCraft(this.inventory) ? TextObject.translation("ultracraft.recipe.craftable").style(textStyle -> textStyle.color(Color.GREEN)) : TextObject.translation("ultracraft.recipe.uncraftable").style(textStyle -> textStyle.color(Color.RED)));
             }
 
-            result.addLast(TextObject.empty());
+            result.add(TextObject.empty());
         } else {
-            result.addLast(TextObject.translation("ultracraft.recipe.uncraftable").style(textStyle -> textStyle.color(Color.RED)));
-            result.addLast(TextObject.empty());
+            result.add(TextObject.translation("ultracraft.recipe.uncraftable").style(textStyle -> textStyle.color(Color.RED)));
+            result.add(TextObject.empty());
         }
 
         result.addAll(description);

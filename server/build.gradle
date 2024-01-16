@@ -30,6 +30,7 @@ plugins {
     id 'java'
     id 'java-library'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 apply plugin: 'java'
@@ -39,15 +40,19 @@ java {
     withSourcesJar()
     withJavadocJar()
     
-    sourceCompatibility("21")
-    targetCompatibility("21")
+    sourceCompatibility("17")
+    targetCompatibility("17")
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven" }
 }
 
 dependencies {
-    implementation api(project(":gameprovider"))
-
     implementation api("com.formdev:flatlaf:3.2.1")
     implementation api("com.github.FusionYAML:FusionYAML:$fusion_yaml_version")
+    implementation "org.jetbrains:annotations:24.0.1"
 
     annotationProcessor "com.google.errorprone:error_prone_annotations:2.18.0"
 
@@ -59,10 +64,6 @@ dependencies {
     implementation api("io.github.ultreon:ubo:$ultreon_data_version")
 
     // Apache Log4J
-    runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")
-    runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")
-    runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
-    runtimeOnly api("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
     implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")
     implementation api("org.apache.commons:commons-compress:$commons_compress_version")
@@ -94,14 +95,6 @@ dependencies {
 
     implementation api("space.earlygrey:shapedrawer:$shapedrawer_version")
 
-    // ImGui
-    implementation api("io.github.spair:imgui-java-binding:$imgui_version")
-    implementation api("io.github.spair:imgui-java-lwjgl3:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-linux:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-macos:$imgui_version")
-    implementation api("io.github.spair:imgui-java-natives-windows:$imgui_version")
-
-    implementation api("it.unimi.dsi:fastutil-core:8.5.9")
     implementation api("com.google.code.findbugs:jsr305:$jsr_version")
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
@@ -111,35 +104,8 @@ dependencies {
     implementation api("org.apache.logging.log4j:log4j-core:$log4j_version")
     implementation api("org.apache.logging.log4j:log4j-api:$log4j_version")
 
-    // fabric-loader dependencies
-    implementation api("org.ow2.asm:asm:${project.asm_version}")
-    implementation api("org.ow2.asm:asm-analysis:${project.asm_version}")
-    implementation api("org.ow2.asm:asm-commons:${project.asm_version}")
-    implementation api("org.ow2.asm:asm-tree:${project.asm_version}")
-    implementation api("org.ow2.asm:asm-util:${project.asm_version}")
-
-    implementation api("net.fabricmc:sponge-mixin:${project.mixin_version}") {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-    }
-
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
-    implementation api('net.fabricmc:tiny-remapper:0.8.7')
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
-    implementation api('net.fabricmc:access-widener:2.1.0')
-
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
-
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:tiny-mappings-parser:0.3.0+build.17')
-    implementation api('net.fabricmc:tiny-remapper:0.8.7')
-    //noinspection GradleDynamicVersion
-    implementation api('net.fabricmc:dev-launch-injector:0.2.1+build.8')
-    implementation api('net.fabricmc:access-widener:2.1.0')
-
-    implementation api("net.fabricmc:fabric-loader:$fabric_version")
+    api 'org.mozilla:rhino:1.7.15-SNAPSHOT!!'
+    api 'org.mozilla:rhino-engine:1.7.15-SNAPSHOT!!'
 }
 
 processResources {
@@ -209,4 +175,8 @@ publishing {
 
 compileJava {
     options.encoding = "UTF-8"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "17"
 }

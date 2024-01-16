@@ -2,7 +2,6 @@ package com.ultreon.craft.world.gen.biome;
 
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.gen.feature.PatchFeature;
@@ -12,13 +11,13 @@ import com.ultreon.craft.world.gen.layer.AirTerrainLayer;
 import com.ultreon.craft.world.gen.layer.GroundTerrainLayer;
 import com.ultreon.craft.world.gen.layer.SurfaceTerrainLayer;
 import com.ultreon.craft.world.gen.layer.UndergroundTerrainLayer;
-import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 
 public class Biomes {
+    private Biomes() {}
+
     public static final Biome VOID = Biomes.register("void", Biome.builder()
             .noise(NoiseConfigs.GENERIC_NOISE)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(Float.NEGATIVE_INFINITY)
             .temperatureEnd(Float.POSITIVE_INFINITY)
             .doesNotGenerate()
@@ -26,7 +25,6 @@ public class Biomes {
 
     public static final Biome PLAINS = Biomes.register("plains", Biome.builder()
             .noise(NoiseConfigs.GENERIC_NOISE)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(-2f)
             .temperatureEnd(0.5f)
             .layer(new AirTerrainLayer())
@@ -40,7 +38,6 @@ public class Biomes {
 
     public static final Biome FOREST = Biomes.register("forest", Biome.builder()
             .noise(NoiseConfigs.GENERIC_NOISE)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(0.5f)
             .temperatureEnd(1f)
             .layer(new AirTerrainLayer())
@@ -54,7 +51,6 @@ public class Biomes {
 
     public static final Biome DESERT = Biomes.register("desert", Biome.builder()
             .noise(NoiseConfigs.GENERIC_NOISE)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(1f)
             .temperatureEnd(2f)
             .layer(new AirTerrainLayer())
@@ -66,7 +62,6 @@ public class Biomes {
 
     public static final Biome OCEAN = Biomes.register("ocean", Biome.builder()
             .noise(NoiseConfigs.GENERIC_NOISE)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed))))
             .temperatureStart(-2f)
             .temperatureEnd(2f)
             .layer(new SurfaceTerrainLayer(Blocks.DIRT, 4))

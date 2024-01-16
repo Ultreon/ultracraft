@@ -5,13 +5,14 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.events.GuiEvents;
 import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -208,7 +209,7 @@ public class DesktopInput extends GameInput {
         if (!Gdx.input.isCursorCatched() && currentScreen != null) {
             int mouseX = (int) (screenX / this.client.getGuiScale());
             int mouseY = (int) (screenY / this.client.getGuiScale());
-            boolean canceled = ScreenEvents.MOUSE_PRESS.factory().onMousePressScreen(mouseX, mouseY, button).isCanceled();
+            boolean canceled = GuiEvents.MOUSE_PRESS.factory().onMousePressScreen(mouseX, mouseY, button).isCanceled();
             boolean pressed = currentScreen.mousePress(mouseX, mouseY, button);
             return !canceled && pressed;
         }
@@ -268,10 +269,10 @@ public class DesktopInput extends GameInput {
             return false;
 
         boolean flag = false;
-        if (!ScreenEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button).isCanceled())
+        if (!GuiEvents.MOUSE_RELEASE.factory().onMouseReleaseScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button).isCanceled())
             flag |= currentScreen.mouseRelease((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button);
 
-        if (!ScreenEvents.MOUSE_CLICK.factory().onMouseClickScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1).isCanceled())
+        if (!GuiEvents.MOUSE_CLICK.factory().onMouseClickScreen((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1).isCanceled())
             flag |= currentScreen.mouseClick((int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()), button, 1);
 
         return flag;
@@ -286,7 +287,7 @@ public class DesktopInput extends GameInput {
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = this.client.screen;
 
-        if (ImGuiOverlay.isShown()) return false;
+        if (GamePlatform.get().isShowingImGui()) return false;
 
         Player player = this.client.player;
         if (currentScreen == null && player != null) {
@@ -300,7 +301,7 @@ public class DesktopInput extends GameInput {
             return true;
         }
 
-        if (currentScreen != null && !ScreenEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY).isCanceled())
+        if (currentScreen != null && !GuiEvents.MOUSE_WHEEL.factory().onMouseWheelScreen((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY).isCanceled())
             return currentScreen.mouseWheel((int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), amountY);
 
         return false;

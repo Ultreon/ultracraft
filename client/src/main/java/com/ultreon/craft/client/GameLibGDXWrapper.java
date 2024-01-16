@@ -3,8 +3,10 @@ package com.ultreon.craft.client;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
+import com.ultreon.craft.util.ArgParser;
 import org.jetbrains.annotations.Nullable;
 
 public class GameLibGDXWrapper implements ApplicationListener {
@@ -14,6 +16,8 @@ public class GameLibGDXWrapper implements ApplicationListener {
     private Thread.UncaughtExceptionHandler exceptionHandler;
 
     public GameLibGDXWrapper(String[] argv) {
+        UltracraftClient.arguments = new ArgParser(argv);
+        UltracraftClient.logDebug();
         this.argv = argv;
     }
 
@@ -32,6 +36,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
     @Override
     public void create() {
         try {
+            GamePlatform.get().prepare();
             Gdx.app.setLogLevel(Application.LOG_DEBUG);
             this.client = new UltracraftClient(this.argv);
 

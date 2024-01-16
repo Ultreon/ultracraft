@@ -12,8 +12,6 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +29,6 @@ public class NetworkChannel {
     private final Int2ReferenceMap<Function<PacketBuffer, ? extends ModPacket<?>>> decoders = new Int2ReferenceArrayMap<>();
     private final Map<Class<? extends ModPacket<?>>, BiConsumer<? extends ModPacket<?>, Supplier<ModPacketContext>>> consumers = new HashMap<>();
 
-    @Environment(EnvType.CLIENT)
     private Connection c2sConnection;
 
     private NetworkChannel(ElementID key) {
@@ -49,7 +46,6 @@ public class NetworkChannel {
         return NetworkChannel.CHANNELS.get(channelId);
     }
 
-    @Environment(EnvType.CLIENT)
     public void setC2sConnection(Connection connection) {
         this.c2sConnection = connection;
     }

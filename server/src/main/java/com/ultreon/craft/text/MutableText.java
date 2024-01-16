@@ -77,6 +77,15 @@ public abstract class MutableText extends TextObject {
         return this;
     }
 
+    public boolean isSmall() {
+        return this.style.isSmall();
+    }
+
+    public MutableText setSmall(boolean small) {
+        this.style.small(small);
+        return this;
+    }
+
     public int getSize() {
         return this.style.getSize();
     }

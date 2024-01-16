@@ -29,7 +29,7 @@ import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.*;
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.server = server;
         this.player = player;
         this.connection = connection;
-        this.context = new PacketContext(player, connection, EnvType.SERVER);
+        this.context = new PacketContext(player, connection, Env.SERVER);
     }
 
     public static NetworkChannel registerChannel(ElementID id) {
@@ -84,7 +84,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onModPacket(NetworkChannel channel, ModPacket<?> packet) {
-        packet.handlePacket(() -> new ModPacketContext(channel, this.player, this.connection, EnvType.SERVER));
+        packet.handlePacket(() -> new ModPacketContext(channel, this.player, this.connection, Env.SERVER));
     }
 
     public NetworkChannel getChannel(ElementID channelId) {
@@ -132,6 +132,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
                 case CONTINUE -> world.continueBreaking(pos, 1.0F / (Math.max(block.getHardness() * UltracraftServer.TPS / efficiency, 0) + 1), this.player);
                 case STOP -> world.stopBreaking(pos, this.player);
             }
+            return;
         });
     }
 
@@ -156,7 +157,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         UltracraftServer.invoke(() -> {
             if (Math.abs(pos.vec().d().add(1).dst(this.player.getPosition())) > this.player.getAttributes().get(Attribute.BLOCK_REACH)
                     || this.player.blockBrokenTick) {
-                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getId(world.get(pos))));
+                world.sendAllTracking(pos.x(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getId(world.get(pos))));
                 return;
             }
 

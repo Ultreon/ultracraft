@@ -4,7 +4,7 @@ import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.server.player.ServerPlayer;
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +14,7 @@ public class ModPacketContext extends PacketContext {
     @NotNull
     private final NetworkChannel channel;
 
-    public ModPacketContext(@NotNull NetworkChannel channel, @Nullable ServerPlayer player, @NotNull Connection connection, @NotNull EnvType environment) {
+    public ModPacketContext(@NotNull NetworkChannel channel, @Nullable ServerPlayer player, @NotNull Connection connection, @NotNull Env environment) {
         super(player, connection, environment);
         this.channel = channel;
     }

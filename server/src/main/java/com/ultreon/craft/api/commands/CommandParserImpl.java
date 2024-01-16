@@ -1,5 +1,6 @@
 package com.ultreon.craft.api.commands;
 
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.api.commands.error.InternalError;
 import com.ultreon.craft.api.commands.error.NoPermissionError;
 import com.ultreon.craft.api.commands.error.OverloadError;
@@ -9,7 +10,6 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.chat.Chat;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.util.ExceptionUtils;
-import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,7 +103,7 @@ public class CommandParserImpl {
             for (var duplicateSpecValue : duplicateSpecValues) {
                 UltracraftServer.LOGGER.warn("  Overload: " + duplicateSpecValue.getFirst().spec().toString());
                 for (var duplicate : duplicateSpecValue.getSecond()) {
-                    UltracraftServer.LOGGER.warn("    Duplicate: %s".formatted(duplicate));
+                    UltracraftServer.LOGGER.warn("    Duplicate: {}", duplicate);
                 }
             }
         }
@@ -152,7 +152,7 @@ public class CommandParserImpl {
         // If there's multiple overloads available for this set of command arguments.
         if (foundOverloads.size() > 1) {
             if (sender instanceof Player) {
-                if (sender.hasPermission("ultracraft.developer") && FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                if (sender.hasPermission("ultracraft.developer") && GamePlatform.get().isDevEnvironment()) {
                     Chat.sendError(sender, "Multiple overloads have been found.");
                 }
                 Chat.sendError(sender, "Error occurred when parsing the command. Code: CP-0001");
@@ -197,7 +197,7 @@ public class CommandParserImpl {
             for (var obj : callArgs) UltracraftServer.LOGGER.error("  {}", obj == null ? null : obj.getClass().getName());
 
             UltracraftServer.LOGGER.error("Dumping stack trace:");
-            for (var line : ExceptionUtils.getStackTrace(e).lines().toList()) UltracraftServer.LOGGER.error("  %s".formatted(line));
+            for (var line : ExceptionUtils.getStackTrace(e).replace("\r\n", "\n").replace("\r", "\n").split("\n")) UltracraftServer.LOGGER.error("  {}", line);
             throw new CommandArgumentMismatch(method.getParameterTypes(), callArgs, e);
         }
     }

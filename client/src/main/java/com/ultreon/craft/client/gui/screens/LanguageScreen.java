@@ -45,7 +45,7 @@ public class LanguageScreen extends Screen {
     }
 
     private void renderItem(Renderer renderer, Locale locale, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
-        String text = locale.getDisplayLanguage(Locale.of("en")) + " (" + locale.getDisplayCountry(Locale.of("en")) + ")";
+        String text = locale.getDisplayLanguage(new Locale("en")) + " (" + locale.getDisplayCountry(new Locale("en")) + ")";
         text += " - " + locale.getDisplayLanguage(locale) + " (" + locale.getDisplayCountry(locale) + ")";
 
         renderer.textCenter(text, this.list.getX() + this.list.getWidth() / 2f, y + 4f);

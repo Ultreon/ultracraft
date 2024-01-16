@@ -14,7 +14,7 @@ import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 
 public final class Registries {
-    public static final Registry<Registry<?>> REGISTRY = Registry.create(new ElementID("registry"));
+    public static final Registry<Registry<?>> REGISTRY = Registry.<Registry<?>>builder(new ElementID("registry")).build();
     public static final Registry<Block> BLOCK = Registries.create(new ElementID("block"));
     public static final Registry<Item> ITEM = Registries.create(new ElementID("item"));
     public static final Registry<NoiseConfig> NOISE_SETTINGS = Registries.create(new ElementID("noise_settings"));
@@ -32,8 +32,6 @@ public final class Registries {
     }
 
     public static <T> Registry<T> create(ElementID id, T... typeGetter) {
-        Registry<T> registry = Registry.create(id, typeGetter);
-        Registries.REGISTRY.register(id, registry);
-        return registry;
+        return Registry.builder(id, typeGetter).build();
     }
 }

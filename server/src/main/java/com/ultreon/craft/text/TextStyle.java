@@ -11,6 +11,7 @@ public class TextStyle {
     private boolean italic = false;
     private boolean underline = false;
     private boolean strikethrough = false;
+    private boolean small = false;
     private @Nullable HoverEvent<?> hoverEvent = null;
     private @Nullable ClickEvent clickEvent = null;
     private Color color = Color.WHITE;
@@ -78,6 +79,15 @@ public class TextStyle {
 
     public TextStyle strikethrough(boolean strikethrough) {
         this.strikethrough = strikethrough;
+        return this;
+    }
+
+    public boolean isSmall() {
+        return this.small;
+    }
+
+    public TextStyle small(boolean small) {
+        this.small = small;
         return this;
     }
 

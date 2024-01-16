@@ -10,4 +10,8 @@ public class IllegalStateError extends Error {
     public IllegalStateError(String message) {
         super(message);
     }
+
+    public IllegalStateError(String message, InterruptedException e) {
+        super(message, e);
+    }
 }

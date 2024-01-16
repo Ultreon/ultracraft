@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -29,7 +30,7 @@ import java.util.zip.ZipInputStream;
 
 public class ResourceManager {
     private final Map<ElementID, byte[]> assets = new ConcurrentHashMap<>();
-    protected final List<com.ultreon.craft.resources.ResourcePackage> resourcePackages = new ArrayList<>();
+    protected final List<ResourcePackage> resourcePackages = new CopyOnWriteArrayList<>();
     public static Logger logger = (level, msg, t) -> {};
     private final String root;
 
@@ -48,7 +49,7 @@ public class ResourceManager {
 
     @Nullable
     public com.ultreon.craft.resources.Resource getResource(ElementID entry) {
-        for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
+        for (ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(entry)) {
                 return resourcePackage.get(entry);
             }
@@ -159,7 +160,7 @@ public class ResourceManager {
                     }
                 }
 
-                this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
+                this.resourcePackages.add(new ResourcePackage(map));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -191,7 +192,7 @@ public class ResourceManager {
             e.printStackTrace();
         }
 
-        this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
+        this.resourcePackages.add(new ResourcePackage(map));
 
         file.close();
     }
@@ -224,7 +225,7 @@ public class ResourceManager {
     @NotNull
     public List<byte[]> getAllDataByPath(@NotNull String path) {
         List<byte[]> data = new ArrayList<>();
-        for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
+        for (ResourcePackage resourcePackage : this.resourcePackages) {
             Map<ElementID, com.ultreon.craft.resources.Resource> identifierResourceMap = resourcePackage.mapEntries();
             for (Map.Entry<ElementID, com.ultreon.craft.resources.Resource> entry : identifierResourceMap.entrySet()) {
                 if (entry.getKey().path().equals(path)) {

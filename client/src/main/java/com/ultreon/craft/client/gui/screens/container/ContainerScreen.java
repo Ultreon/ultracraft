@@ -139,7 +139,7 @@ public abstract class ContainerScreen extends Screen {
         }
 
         if (subTitle != null)
-            renderer.textLeft(subTitle, x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1, Color.rgb(0x606060));
+            renderer.textLeft(TextObject.literal(subTitle).setColor(Color.rgb(0x606060)), x + 3, y + 3 + this.font.lineHeight + 3 + lineNr * (this.font.lineHeight + 1f) - 1);
     }
 
     protected @Nullable ItemSlot getSlotAt(int mouseX, int mouseY) {

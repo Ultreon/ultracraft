@@ -41,7 +41,7 @@ java {
     withJavadocJar()
 }
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "21" // Need this here so eclipse task generates correctly.
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = "17" // Need this here so eclipse task generates correctly.
 
 repositories {
     mavenCentral()
@@ -59,7 +59,6 @@ dependencies {
     implementation api("org.jetbrains:annotations:24.0.1")
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdx_version"
 
-    implementation "it.unimi.dsi:fastutil-core:8.5.9"
     implementation "com.google.code.findbugs:jsr305:$jsr_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"

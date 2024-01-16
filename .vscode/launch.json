@@ -6,6 +6,22 @@
     "configurations": [
         {
             "type": "java",
+            "mainClass": "net.fabricmc.devlaunchinjector.Main",
+            "name": "Run Client",
+            "request": "launch",
+            "projectName": "client",
+            "classPaths": ["$Runtime"],
+            "console": "integratedTerminal",
+            "osx": {
+                "args": "-XstartOnFirstThread"
+            },
+            "vmArgs": "-Xmx4g -Dfabric.skipMcProvider=true -Dfabric.dli.config=../build/gameutils/launch.cfg -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false",
+            "cwd": "${workspaceFolder}/run/client/main/",
+            "shortenCommandLine": "auto",
+            "preLaunchTask": "build"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"

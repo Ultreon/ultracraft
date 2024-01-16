@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 #if defined(diffuseTextureFlag) && defined(blendedFlag)
 #define blendedTextureFlag
 varying vec2 v_texCoords0;

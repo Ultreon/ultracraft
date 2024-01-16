@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.input.GameCamera;
 import org.checkerframework.common.reflection.qual.NewInstance;
@@ -78,7 +77,7 @@ public class SSAONode extends RenderPipeline.RenderNode {
         this.program.setUniformi("iChannel3", 3);
 
         // Shader-specific uniforms.
-        this.program.setUniformf("iGamma", ImGuiOverlay.I_GAMMA.get());
+        this.program.setUniformf("iGamma", 1.2f);
     }
 
     @Override

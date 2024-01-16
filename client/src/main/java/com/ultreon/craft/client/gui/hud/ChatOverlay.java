@@ -29,11 +29,11 @@ public class ChatOverlay extends HudOverlay {
                     renderer.textLeft(text, 10, y, Color.WHITE);
                 } else {
                     int alpha = (int) (255 * (millisAgo - 3000) / 1000) % 1000;
-                    renderer.setColor(Color.WHITE.withAlpha(alpha));
-                    renderer.setBlitColor(Color.WHITE.withAlpha(alpha));
+                    renderer.setShapeColor(Color.WHITE.withAlpha(alpha));
+                    renderer.setTextureColor(Color.WHITE.withAlpha(alpha));
                     renderer.textLeft(text, 10, y);
-                    renderer.setColor(Color.WHITE);
-                    renderer.setBlitColor(Color.WHITE);
+                    renderer.setShapeColor(Color.WHITE);
+                    renderer.setTextureColor(Color.WHITE);
                 }
             }
             y -= font.lineHeight + 2;

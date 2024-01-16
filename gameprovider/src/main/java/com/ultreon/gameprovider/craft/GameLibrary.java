@@ -20,7 +20,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.impl.game.LibClassifier.LibraryType;
 
 enum GameLibrary implements LibraryType {
-	ULTRACRAFT_CLIENT("com/ultreon/craft/client/UltracraftClient.class"),
+	ULTRACRAFT_CLIENT("com/ultreon/craft/desktop/DesktopLauncher.class"),
 	ULTRACRAFT_SERVER("com/ultreon/craft/server/dedicated/Main.class"),
 	LIBGDX("com/badlogic/gdx/Gdx.class"),
 	LOG4J_API("org/apache/logging/log4j/LogManager.class"),

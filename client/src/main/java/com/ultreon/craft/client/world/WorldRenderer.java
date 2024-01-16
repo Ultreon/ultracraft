@@ -16,8 +16,8 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
@@ -45,6 +45,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.client.UltracraftClient.id;
@@ -54,6 +57,7 @@ public final class WorldRenderer implements Disposable {
     public static final float SCALE = 1;
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
+    private final Executor chunkExecutor = Executors.newFixedThreadPool(Mth.clamp(Runtime.getRuntime().availableProcessors() / 3, 1, 8));
     private final Material material;
     private final Material transparentMaterial;
     private final Texture breakingTex;
@@ -63,7 +67,6 @@ public final class WorldRenderer implements Disposable {
     private final Material sectionBorderMaterial;
     private final Environment environment;
     private final Cubemap cubemap;
-    private final ColorAttribute ambientLight;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -200,7 +203,7 @@ public final class WorldRenderer implements Disposable {
 
         float v1 = 2f, v2 = 0.125f;
         this.environment = new Environment();
-        this.ambientLight = new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f);
+        new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f);
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
         this.environment.set(new ColorAttribute(ColorAttribute.Specular, 1, 1, 1, 1f));
@@ -211,6 +214,12 @@ public final class WorldRenderer implements Disposable {
 //        this.environment.add(new DirectionalLight().set(0.5f / v1, 0.5f / v1, 0.5f / v1, -1.0f, 0, 0.0f));
 //        this.environment.add(new DirectionalLight().set(1.0f / v1, 1.0f / v1, 1.0f / v1, 0, -1, 0));
 //        this.environment.add(new DirectionalLight().set(0.25f / v1, 0.25f / v1, 0.25f / v1, 0, 1, 0));
+    }
+
+    public static Executor getChunkExecutor() {
+        WorldRenderer worldRenderer = UltracraftClient.get().worldRenderer;
+        if (worldRenderer == null) return null;
+        return worldRenderer.chunkExecutor;
     }
 
     public Environment getEnvironment() {
@@ -255,10 +264,6 @@ public final class WorldRenderer implements Disposable {
     public void collect(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
         var player = this.client.player;
         if (player == null) return;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F7)) { // TODO: DEBUG
-            this.pool.flush();
-        }
 
         output.clear();
 
@@ -329,40 +334,49 @@ public final class WorldRenderer implements Disposable {
                 continue;
             }
 
-            Vec3i chunkOffset = chunk.getOffset();
-            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
-            chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
-            if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
-                continue;
-            }
-
-
-            if (chunk.dirty && !ref.chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || (chunk.mesh != null || chunk.transparentMesh != null) && !ref.chunkRendered && chunk.getWorld().isChunkInvalidated(chunk)) {
+            if (chunk.shouldUpdate && !ref.chunkRendered && (chunk.mesh != null || chunk.transparentMesh != null) || (chunk.mesh != null || chunk.transparentMesh != null) && !ref.chunkRendered && chunk.getWorld().isChunkInvalidated(chunk)) {
                 this.free(chunk);
                 chunk.getWorld().onChunkUpdated(chunk);
                 ref.chunkRendered = true;
             }
 
-            chunk.dirty = false;
+            chunk.shouldUpdate = false;
 
             if (chunk.mesh == null) {
-                chunk.mesh = this.pool.obtain();
-                var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
-                chunk.mesh.meshPart.size = mesh.getNumIndices();
-                chunk.mesh.meshPart.offset = 0;
-                chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
-                chunk.mesh.renderable.material = this.material;
-                chunk.mesh.renderable.userData = chunk;
+                if (chunk.futureMesh == null) {
+                    chunk.futureMesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
+                } else if (chunk.futureMesh.isDone()) {
+                    chunk.mesh = this.pool.obtain();
+                    var mesh = chunk.mesh.meshPart.mesh = chunk.futureMesh.getNow(null);
+                    chunk.mesh.meshPart.size = mesh.getNumIndices();
+                    chunk.mesh.meshPart.offset = 0;
+                    chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
+                    chunk.mesh.renderable.material = this.material;
+                    chunk.mesh.renderable.userData = chunk;
+                }
             }
 
             if (chunk.transparentMesh == null) {
-                chunk.transparentMesh = this.pool.obtain();
-                var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isTransparent());
-                chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
-                chunk.transparentMesh.meshPart.offset = 0;
-                chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
-                chunk.transparentMesh.renderable.material = this.transparentMaterial;
-                chunk.mesh.renderable.userData = chunk;
+                if (chunk.futureTransparentMesh == null) {
+                    chunk.futureTransparentMesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isTransparent());
+                } else if (chunk.futureTransparentMesh.isDone()) {
+                    chunk.transparentMesh = this.pool.obtain();
+                    var mesh = chunk.transparentMesh.meshPart.mesh = chunk.futureTransparentMesh.getNow(null);
+                    chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
+                    chunk.transparentMesh.meshPart.offset = 0;
+                    chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
+                    chunk.transparentMesh.renderable.material = this.transparentMaterial;
+                    chunk.mesh.renderable.userData = chunk;
+                }
+            }
+
+            if (chunk.mesh == null || chunk.transparentMesh == null) continue;
+
+            Vec3i chunkOffset = chunk.getOffset();
+            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
+            chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+            if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
+                continue;
             }
 
             chunk.mesh.chunk = chunk;
@@ -393,7 +407,7 @@ public final class WorldRenderer implements Disposable {
                 output.add(this.verifyOutput(renderable));
             }
 
-            if (ImGuiOverlay.isChunkSectionBordersShown()) {
+            if (GamePlatform.get().areChunkBordersVisible()) {
                 this.tmp.set(chunk.renderOffset);
                 Mesh mesh = this.sectionBorder;
 
@@ -481,7 +495,7 @@ public final class WorldRenderer implements Disposable {
             Vec3d mid1 = WorldRenderer.TMP_3D_A.set(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
             Vec3d mid2 = WorldRenderer.TMp_3D_B.set(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
             return Double.compare(mid1.dst(player.getPosition()), mid2.dst(player.getPosition()));
-        }).toList();
+        }).collect(Collectors.toList());
         return list;
     }
 
@@ -537,7 +551,7 @@ public final class WorldRenderer implements Disposable {
     }
 
     public void renderEntities() {
-
+        
     }
 
     public Material getMaterial() {

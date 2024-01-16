@@ -8,11 +8,13 @@ import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.world.ClientChunk;
 
 public class WorldShader extends DefaultShader {
     private final static Attributes tmpAttributes = new Attributes();
-    private static String version = "330 core";
+    private static String version = "320 core";
+    private static String versionEs = "320 es";
     public final int u_globalSunlight;
 
     public WorldShader(final Renderable renderable) {
@@ -63,7 +65,7 @@ public class WorldShader extends DefaultShader {
     public static String createPrefix (final Renderable renderable, final Config config) {
         final Attributes attributes = WorldShader.combineAttributes(renderable);
         StringBuilder prefix = new StringBuilder();
-        prefix.append("#version ").append(WorldShader.version).append("\n");
+//        prefix.append("#version ").append(GamePlatform.get().isMobile() ? WorldShader.versionEs : WorldShader.version).append("\n");
         final long attributesMask = attributes.getMask();
         final long vertexMask = renderable.meshPart.mesh.getVertexAttributes().getMask();
         if (WorldShader.and(vertexMask, VertexAttributes.Usage.Position)) prefix.append("#define positionFlag\n");

@@ -32,6 +32,7 @@ public class WorldLoadScreen extends Screen {
     private long nextLog;
     private ServerWorld world;
     private DeathScreen closeScreen;
+    private volatile int percent = -1;
 
     public WorldLoadScreen(WorldStorage storage) {
         super(TextObject.translation("ultracraft.screen.world_load"));
@@ -108,7 +109,6 @@ public class WorldLoadScreen extends Screen {
     }
 
     private void message(String message) {
-        WorldLoadScreen.LOGGER.debug(message);
         this.descriptionLabel.text().setRaw(message);
     }
 
@@ -117,22 +117,16 @@ public class WorldLoadScreen extends Screen {
         renderer.fill(0, 0, this.size.width, this.size.height, Color.rgb(0x202020));
 
         ServerWorld world = this.world;
-        if (world != null) {
-            int chunksToLoad = world.getChunksToLoad();
-            if (chunksToLoad != 0) {
-                String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                this.subTitleLabel.text().setRaw(s);
+        if (world != null && percent >= 0) {
+            String percentMsg = percent + "%";
+            this.subTitleLabel.text().setRaw(percentMsg);
 
-                if (this.nextLog <= System.currentTimeMillis()) {
-                    this.nextLog = System.currentTimeMillis() + 1000;
-                    UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", s);
-                }
-            } else {
-                this.subTitleLabel.text().setRaw("");
+            if (this.nextLog <= System.currentTimeMillis()) {
+                this.nextLog = System.currentTimeMillis() + 1000;
+                UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", percentMsg);
             }
-        } else {
-            this.subTitleLabel.text().setRaw("");
         }
+        this.subTitleLabel.text().setRaw("");
     }
 
     @Override
@@ -173,11 +167,20 @@ public class WorldLoadScreen extends Screen {
                 Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
                 return loadChunk.dst(spawnChunkXZ) < this.client.settings.renderDistance.get();
             }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
-            this.world.doRefreshNow(refresher);
-
-            this.message("Spawn chunks loaded!");
+            this.world.setLoader(this::onLoadUpdate);
+            this.world.setOnLoaded(this::onLoaded);
+            this.world.doRefresh(refresher);
         } catch (Exception t) {
             UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
         }
+    }
+
+    private void onLoadUpdate(String message, float v) {
+        this.message(message);
+        this.percent = (int) (100 * v);
+    }
+
+    private void onLoaded() {
+        this.client.showScreen(null);
     }
 }

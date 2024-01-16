@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WorldSelectionScreen extends Screen {
-    public static final Path WORLDS_DIR = Paths.get("worlds");
+    public static final Path WORLDS_DIR = GamePlatform.get().getGameDir().resolve("worlds");
     private SelectionList<WorldStorage> worldList;
     private WorldStorage selected;
     private TextButton createButton;

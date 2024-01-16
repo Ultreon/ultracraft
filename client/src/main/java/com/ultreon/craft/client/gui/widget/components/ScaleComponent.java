@@ -2,7 +2,6 @@ package com.ultreon.craft.client.gui.widget.components;
 
 import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.util.ElementID;
-import com.ultreon.craft.util.ImGuiEx;
 
 public class ScaleComponent extends UIComponent {
     private int scale;
@@ -22,6 +21,5 @@ public class ScaleComponent extends UIComponent {
 
     @Override
     public void handleImGui(String path, ElementID key, Widget widget) {
-        ImGuiEx.editInt("Scale (" + key + "): ", path, this::get, this::set);
     }
 }

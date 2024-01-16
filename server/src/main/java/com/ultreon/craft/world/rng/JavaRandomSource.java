@@ -18,8 +18,8 @@ public class JavaRandomSource implements RandomSource {
     }
 
     @Override
-    public int randint(int min, int max) {
-        return this.random.nextInt(min, max + 1);
+    public int nextInt(int min, int max) {
+        return this.random.nextInt(max - min) + min;
     }
 
     @Override
@@ -40,5 +40,20 @@ public class JavaRandomSource implements RandomSource {
     @Override
     public double randrange(double min, double max) {
         return this.random.nextDouble(min, max);
+    }
+
+    @Override
+    public long nextLong() {
+        return this.random.nextLong();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        this.random.setSeed(seed);
+    }
+
+    @Override
+    public int nextInt(int length) {
+        return this.random.nextInt(length);
     }
 }

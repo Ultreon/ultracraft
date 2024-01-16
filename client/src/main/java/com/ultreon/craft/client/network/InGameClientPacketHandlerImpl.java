@@ -42,7 +42,7 @@ import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -59,7 +59,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
-        this.context = new PacketContext(null, connection, EnvType.CLIENT);
+        this.context = new PacketContext(null, connection, Env.CLIENT);
     }
 
     public NetworkChannel registerChannel(ElementID id) {
@@ -70,7 +70,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onModPacket(NetworkChannel channel, ModPacket<?> packet) {
-        packet.handlePacket(() -> new ModPacketContext(channel, null, this.connection, EnvType.CLIENT));
+        packet.handlePacket(() -> new ModPacketContext(channel, null, this.connection, Env.CLIENT));
     }
 
     @Override

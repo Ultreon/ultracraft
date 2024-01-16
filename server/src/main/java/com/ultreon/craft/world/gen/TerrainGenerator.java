@@ -26,6 +26,13 @@ import java.util.stream.Collectors;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
+/**
+ * Generates terrain for a {@link ServerWorld}.
+ * 
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ * @since 0.1.0
+ * @see World
+ */
 public class TerrainGenerator {
     private final DomainWarping biomeDomain;
     private final DomainWarping layerDomain;
@@ -35,16 +42,40 @@ public class TerrainGenerator {
     private FloatList biomeNoise = new FloatArrayList();
     private final List<BiomeData> biomeGenData = new ArrayList<>();
 
+    /**
+     * Creates a new terrain generator with the specified parameters.
+     * 
+     * @param biomeDomain the domain warping for the biomes
+     * @param layerDomain the domain warping for the layers
+     * @param noiseConfig the noise configuration for the terrain
+     */
     public TerrainGenerator(DomainWarping biomeDomain, DomainWarping layerDomain, NoiseConfig noiseConfig) {
         this.biomeDomain = biomeDomain;
         this.layerDomain = layerDomain;
         this.noiseConfig = noiseConfig;
     }
 
+    /**
+     * Initializes the terrain generator to use for the specified world and seed.
+     * 
+     * @param world the world to initialize the terrain generator for
+     * @param seed  the seed to use for the terrain generator
+     */
     public void create(ServerWorld world, long seed) {
         this.noise = this.noiseConfig.create(seed);
     }
 
+    /**
+     * Register a new biome with the specified parameters.
+     * 
+     * @param world            the world to register the biome in
+     * @param seed             the seed to use for the biome
+     * @param biome            the biome to register
+     * @param temperatureStart the start temperature of the biome
+     * @param temperatureEnd   the end temperature of the biome
+     * @param isOcean          whether the biome is an ocean
+     * @return                 the biome data
+     */
     @CanIgnoreReturnValue
     public BiomeData registerBiome(ServerWorld world, long seed, Biome biome, float temperatureStart, float temperatureEnd, boolean isOcean) {
         var generator = biome.create(world, seed);
@@ -53,10 +84,15 @@ public class TerrainGenerator {
         return biomeData;
     }
 
+    /**
+     * Fills in the data for the specified builder chunk.
+     * 
+     * @param chunk           the builder chunk to fill in
+     * @param recordedChanges the recorded changes from other chunks to apply
+     * @return                the filled in builder chunk
+     */
     @CanIgnoreReturnValue
     public BuilderChunk generate(BuilderChunk chunk, List<ServerWorld.RecordedChange> recordedChanges) {
-//        this.buildBiomeCenters(chunk);
-
         for (var x = 0; x < CHUNK_SIZE; x++) {
             for (var z = 0; z < CHUNK_SIZE; z++) {
                 var index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
@@ -67,6 +103,11 @@ public class TerrainGenerator {
         return chunk;
     }
 
+    /**
+     * Fills in the biome centers for the specified builder chunk.
+     * 
+     * @param chunk the builder chunk to fill in
+     */
     public void buildBiomeCenters(BuilderChunk chunk) {
         var biomeCenters = this.evalBiomeCenters(chunk.getOffset());
 
@@ -81,7 +122,7 @@ public class TerrainGenerator {
     private List<Vec3i> evalBiomeCenters(Vec3i pos) {
         int len = CHUNK_SIZE;
 
-        Vec3i origin = new Vec3i(Math.round((float) pos.x) / len, 0, Math.round((float) pos.z));
+        Vec3i origin = new Vec3i(pos.x / len, 0, pos.z);
         var centers = new ListOrderedSet<Vec3i>();
 
         centers.add(origin);
@@ -156,10 +197,19 @@ public class TerrainGenerator {
         return indices;
     }
 
+    /**
+     * Get the domain warping for the layers of this generator
+     * 
+     * @return the domain warping
+     */
     public DomainWarping getLayerDomain() {
         return this.layerDomain;
     }
 
+    /**
+     * Cleans up everything used by this generator.
+     * <p>Required to be called when the server shuts down. (Or when a local world is disposed)</p>
+     */
     public void dispose() {
         this.biomeGenData.forEach(data -> data.biomeGen().dispose());
     }

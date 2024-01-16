@@ -20,7 +20,6 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.gen.TerrainGenerator;
-import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.ListType;
@@ -41,7 +40,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -52,7 +50,7 @@ public class ServerWorld extends World {
     @Nullable
     private CompletableFuture<Boolean> saveFuture;
     @Nullable
-    private ScheduledFuture<?> saveSchedule;
+    private ScheduledFuture<?> autoSaveSchedule;
     private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
     private static long chunkUnloads;
     private static long chunkLoads;
@@ -68,6 +66,12 @@ public class ServerWorld extends World {
 
     private int playTime;
     private final List<RecordedChange> recordedChanges = new ArrayList<>();
+    private OnLoadUpdate onLoadUpdate;
+    private OnLoaded onLoaded;
+    private int initialChunksToLoad = -1;
+    private int initialChunksLoaded = 0;
+    private boolean loading = false;
+    private boolean loaded = false;
 
     public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
         super((LongType) worldData.get("seed"));
@@ -163,20 +167,66 @@ public class ServerWorld extends World {
     public boolean set(int x, int y, int z, @NotNull Block block) {
         boolean isBlockSet = super.set(x, y, z, block);
         if (isBlockSet) {
-            this.update(x, y, z, block);
+            this.update(x, y, z, super.get(x, y, z));
         }
         return isBlockSet;
     }
+    
+    @ApiStatus.Experimental
+    public void set(int x, int y, int z, int width, int height, int depth, Block block) {
+        if (this.isClientSide()) {
+            throw new IllegalStateException("Cannot edit world in client side");
+        }
 
-    private void update(int x, int y, int z, @NotNull Block block) {
-        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getRawId()));
+        CompletableFuture.runAsync(() -> {
+            int ix = x;
+            int iy = y;
+            int iz = z;
+            int startX = Math.max(ix, 0);
+            int endX = Math.min(width, ix + width);
+            int startY = Math.max(iy, 0);
+            int endY = Math.min(height, iy + height);
+            int startZ = Math.max(iz, 0);
+            int endZ = Math.min(depth, iz + depth);
+
+            for (iy = startY; iy < endY; iy++) {
+                for (iz = startZ; iz < endZ; iz++) {
+                    for (ix = startX; ix < endX; ix++) {
+                        this.setSync(ix, iy, iz, block);
+                    }
+                }
+            }
+        }, this.getWorldEditExecutor());
     }
 
-    public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
+    private Executor getWorldEditExecutor() {
+        return this.server.getWorldEditExecutor();
+    }
+
+    private void update(int x, int y, int z, @NotNull Block block) {
+        this.sendAllTracking(x, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getRawId()));
+    }
+
+    /**
+	 * @deprecated Use {@link #sendAllTracking(int,int,Packet<? extends ClientPacketHandler>)} instead
+	 */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+	public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
+		sendAllTracking(x, z, packet);
+	}
+
+    /**
+     * Sends a packet to all players that are tracking the chunk at the given position.
+     * 
+     * @param x      the chunk x-coordinate
+     * @param z      the chunk z-coordinate
+     * @param packet the packet to send to the players
+     */
+	public void sendAllTracking(int x, int z, Packet<? extends ClientPacketHandler> packet) {
         for (var player : this.server.getPlayers()) {
             if (player.getWorld() != this) continue;
 
-            if (player.isChunkActive(World.toChunkPos(x, y, z))) {
+            if (player.isChunkActive(World.toChunkPos(x, z))) {
                 player.connection.send(packet);
             }
         }
@@ -190,6 +240,13 @@ public class ServerWorld extends World {
         return this.loadChunk(pos.x(), pos.z());
     }
 
+    /**
+     * Loads the chunk at the given position.
+     * 
+     * @param x the chunk x-coordinate
+     * @param z the chunk z-coordinate
+     * @return  the loaded chunk or null if the chunk wasn't loaded
+     */
     @Nullable
     public Chunk loadChunk(int x, int z) {
         this.checkThread();
@@ -197,6 +254,14 @@ public class ServerWorld extends World {
         return this.loadChunk(x, z, false);
     }
 
+    /**
+     * Loads the chunk at the given position.
+     * 
+     * @param x         the chunk x-coordinate
+     * @param z         the chunk z-coordinate
+     * @param overwrite if the chunk should be overwritten
+     * @return          the loaded chunk or null if the chunk wasn't loaded
+     */
     @Nullable
     public ServerChunk loadChunk(int x, int z, boolean overwrite) {
         this.checkThread();
@@ -235,6 +300,13 @@ public class ServerWorld extends World {
         return this.loadChunkNow(pos.x(), pos.z());
     }
 
+    /**
+     * Loads the chunk at the given position without delay.
+     * 
+     * @param x the chunk x-coordinate
+     * @param z the chunk z-coordinate
+     * @return  the loaded chunk or null if the chunk wasn't loaded
+     */
     @Nullable
     public Chunk loadChunkNow(int x, int z) {
         this.checkThread();
@@ -242,6 +314,14 @@ public class ServerWorld extends World {
         return this.loadChunkNow(x, z, false);
     }
 
+    /**
+     * Loads the chunk at the given position without delay.
+     * 
+     * @param x         the chunk x-coordinate
+     * @param z         the chunk z-coordinate
+     * @param overwrite if the chunk should be overwritten
+     * @return          the loaded chunk or null if the chunk wasn't loaded
+     */
     @Nullable
     public ServerChunk loadChunkNow(int x, int z, boolean overwrite) {
         this.checkThread();
@@ -271,23 +351,8 @@ public class ServerWorld extends World {
 
             return chunk;
         } catch (Exception e) {
-            World.LOGGER.error(World.MARKER, "Failed to load chunk " + globalPos + ":", e);
-            throw e;
+            throw new IllegalStateException("Failed to load chunk " + globalPos + ":", e);
         }
-    }
-
-    @Deprecated
-    private WorldGenInfo getWorldGenInfo(Vec3d pos) {
-        var needed = World.getChunksAround(this, pos);
-        var chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
-        var chunkPositionsToRemove = this.getChunksToUnload(needed);
-
-        var data = new WorldGenInfo();
-        data.toLoad = chunkPositionsToCreate;
-        data.toRemove = chunkPositionsToRemove;
-        data.toUpdate = new ArrayList<>();
-        return data;
-
     }
 
     public void tick() {
@@ -315,21 +380,41 @@ public class ServerWorld extends World {
                     }
                 }
             });
-        } catch (Throwable t) {
+        } catch (Exception t) {
             World.LOGGER.error("Failed to poll chunk task", t);
         }
 
         try {
-            this.server.profiler.section("chunkLoads", () -> {
-                var load = this.chunksToLoad.poll();
-                if (load != null) {
-                    this.server.profiler.section("chunk[" + load + "]", () -> this.loadChunk(load));
-                }
-            });
-        } catch (Throwable t) {
+            this.server.profiler.section("chunkLoads", this::handleChunkLoad);
+        } catch (Exception t) {
             World.LOGGER.error("Failed to poll chunk task", t);
         }
         this.chunkLock.unlock();
+    }
+
+    private void handleChunkLoad() {
+        var load = this.chunksToLoad.poll();
+        if (load == null) return;
+
+        this.server.profiler.section("chunk[" + load + "]", () -> this.loadChunk(load));
+
+        initialChunksLoaded++;
+
+        if (initialChunksLoaded == initialChunksToLoad && !loaded && loading) {
+            loaded = true;
+            loading = false;
+
+            this.onLoaded.call();
+        }
+
+        OnLoadUpdate func = onLoadUpdate;
+        if (func != null) {
+            if (initialChunksToLoad == 0) {
+                func.update("Loading " + initialChunksLoaded + " chunks of " + initialChunksToLoad, 0);
+            } else {
+                func.update("Loading " + initialChunksLoaded + " chunks of " + initialChunksToLoad, (float) initialChunksLoaded / initialChunksToLoad);
+            }
+        }
     }
 
     /**
@@ -342,6 +427,18 @@ public class ServerWorld extends World {
     public void doRefresh(ChunkRefresher refresher) {
         if (!refresher.isFrozen()) return;
 
+        if (loading) {
+            return;
+        }
+
+        if (!loaded) {
+            this.initialChunksToLoad = refresher.toLoad.size() + refresher.toUnload.size();
+            if (initialChunksToLoad == 0) {
+                return;
+            }
+            this.loading = true;
+        }
+
         for (ChunkPos pos : refresher.toLoad) {
             this.deferLoadChunk(pos);
         }
@@ -351,6 +448,12 @@ public class ServerWorld extends World {
         }
     }
 
+    /**
+     * Loads/unloads chunks requested by the given refresher.
+     * Note: Internal API: Do not call when you don't know what you are doing.
+     * 
+     * @param refresher the refresher that requested the chunks.
+     */
     @ApiStatus.Internal
     public void doRefreshNow(ChunkRefresher refresher) {
         for (ChunkPos pos : refresher.toLoad) {
@@ -362,35 +465,36 @@ public class ServerWorld extends World {
         }
     }
 
-    private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
-        return needed.stream().filter(chunkPos -> this.getChunk(chunkPos) == null).sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos))).collect(Collectors.toList());
-    }
-
-    private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
-        List<ChunkPos> toRemove = new ArrayList<>();
-        for (var pos : this.getLoadedChunks().stream().map(Chunk::getPos).filter(pos -> {
-            var chunk = this.getChunk(pos);
-            return chunk != null && !needed.contains(pos);
-        }).toList()) {
-            if (this.getChunk(pos) != null) {
-                toRemove.add(pos);
-            }
-        }
-
-        return toRemove;
-    }
-
-    @Deprecated
+    /**
+     * Refreshes the chunks around the given position.
+     * 
+     * @param x the origin x-coordinate
+     * @param z the origin z-coordinate
+     * @deprecated Use {@link #doRefresh(ChunkRefresher)} or {@link #doRefreshNow(ChunkRefresher)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     public void refreshChunks(float x, float z) {
         this.refreshChunks(new Vec3d(x, World.WORLD_DEPTH, z));
     }
 
-    @Deprecated
+    /**
+     * Refreshes the chunks around the given position.
+     * 
+     * @param ignoredVec the origin position
+     * @deprecated Use {@link #doRefresh(ChunkRefresher)} or {@link #doRefreshNow(ChunkRefresher)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     public void refreshChunks(Vec3d ignoredVec) {
 
     }
 
-    @Deprecated
+    /**
+     * Refreshes the chunks around the given player.
+     * 
+     * @param ignoredPlayer the player to refresh chunks for
+     * @deprecated Use {@link #doRefresh(ChunkRefresher)} or {@link #doRefreshNow(ChunkRefresher)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
     public void refreshChunks(Player ignoredPlayer) {
 
     }
@@ -476,6 +580,12 @@ public class ServerWorld extends World {
         if (!UltracraftServer.isOnServerThread()) throw new InvalidThreadException("Should be on server thread.");
     }
 
+    /**
+     * Get a chunk from the world.
+     * 
+     * @param pos the position of the chunk to get.
+     * @return the chunk at that position, or null if the chunk wasn't loaded.
+     */
     @Override
     public @Nullable ServerChunk getChunk(@NotNull ChunkPos pos) {
         var region = this.regionStorage.getRegionAt(pos);
@@ -509,19 +619,14 @@ public class ServerWorld extends World {
     @Override
     @ApiStatus.Internal
     public void dispose() {
-        var saveSchedule = this.saveSchedule;
-        if (saveSchedule != null) saveSchedule.cancel(true);
+        var autoSave = this.autoSaveSchedule;
+        if (autoSave != null) autoSave.cancel(true);
         this.saveExecutor.shutdownNow();
         super.dispose();
 
         this.regionStorage.dispose();
 
         this.terrainGen.dispose();
-    }
-
-    @Override
-    public BreakResult continueBreaking(@NotNull BlockPos breaking, float amount, @NotNull Player breaker) {
-        return super.continueBreaking(breaking, amount, breaker);
     }
 
     /**
@@ -613,7 +718,7 @@ public class ServerWorld extends World {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="<<Starting: Auto Save Schedule>>">
-        this.saveSchedule = this.server.schedule(new Task<>(new ElementID("auto_save")) {
+        this.autoSaveSchedule = this.server.schedule(new Task<>(new ElementID("auto_save")) {
             @Override
             public void run() {
                 try {
@@ -621,7 +726,7 @@ public class ServerWorld extends World {
                 } catch (Exception e) {
                     World.LOGGER.error(World.MARKER, "Failed to save world:", e);
                 }
-                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.get().autoSaveInterval, TimeUnit.SECONDS);
+                ServerWorld.this.autoSaveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.get().autoSaveInterval, TimeUnit.SECONDS);
             }
         }, UltracraftServerConfig.get().initialAutoSaveDelay, TimeUnit.SECONDS);
         //</editor-fold>
@@ -711,7 +816,7 @@ public class ServerWorld extends World {
      */
     @ApiStatus.Internal
     public CompletableFuture<Boolean> saveAsync(boolean silent) {
-        var saveSchedule = this.saveSchedule;
+        var saveSchedule = this.autoSaveSchedule;
         if (saveSchedule != null && !saveSchedule.isDone()) {
             return this.saveFuture != null ? this.saveFuture : CompletableFuture.completedFuture(true);
         }
@@ -871,6 +976,14 @@ public class ServerWorld extends World {
 
     public void update(BlockPos pos) {
         this.update(pos.x(), pos.y(), pos.z(), this.get(pos));
+    }
+
+    public void setLoader(OnLoadUpdate onLoadUpdate) {
+        this.onLoadUpdate = onLoadUpdate;
+    }
+
+    public void setOnLoaded(OnLoaded onLoaded) {
+        this.onLoaded = onLoaded;
     }
 
     /**
@@ -1408,5 +1521,23 @@ public class ServerWorld extends World {
             mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
             return mapType;
         }
+    }
+
+    public interface OnLoadUpdate {
+        void update(String message, float ratio);
+    }
+
+    public interface OnLoaded {
+        void call();
+    }
+
+    @Override
+    public void setSync(int x, int y, int z, Block block) {
+        if (!UltracraftServer.isOnServerThread()) {
+            UltracraftServer.invokeAndWait(() -> this.setSync(x, y, z, block));
+            return;
+        }
+
+        this.set(x, y, z, block);
     }
 }

@@ -1,11 +1,11 @@
 package com.ultreon.craft.server.dedicated;
 
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.text.LanguageBootstrap;
-import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         try {
             // Invoke FabricMC entrypoint for dedicated server.
-            FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
+            GamePlatform.get().invokeEntrypoint("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
             LanguageBootstrap.bootstrap.set((path, args1) -> server != null ? server.handleTranslation(path, args1) : path);
 
@@ -83,7 +83,8 @@ public class Main {
                 }
             }
 
-            UltracraftServer.getWatchManager().stop();
+            var watchManager = UltracraftServer.getWatchManager();
+            if (watchManager != null) watchManager.stop();
         } catch (ApplicationCrash e) {
             e.getCrashLog().createCrash().printCrash();
         } catch (Exception e) {

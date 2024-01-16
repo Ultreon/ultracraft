@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.GamePlatform;
+import com.ultreon.craft.Mod;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.crash.ApplicationCrash;
@@ -36,14 +38,13 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import org.apache.logging.log4j.core.config.ConfigurationScheduler;
 import org.apache.logging.log4j.core.util.WatchManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -69,7 +71,16 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public static final Logger LOGGER = LoggerFactory.getLogger("UltracraftServer");
     @Deprecated(since = "0.1.0", forRemoval = true)
     public static final String NAMESPACE = "ultracraft";
-    private static final WatchManager WATCH_MANAGER = new WatchManager(new ConfigurationScheduler("Ultracraft"));
+    @Nullable
+    private static final WatchManager WATCH_MANAGER = createWatchManager();
+
+    private static WatchManager createWatchManager() {
+        if (!GamePlatform.get().isDesktop()) {
+            return null;
+        }
+        return new WatchManager(new ConfigurationScheduler("Ultracraft"));
+    }
+
     private static UltracraftServer instance;
     private final List<ServerDisposable> disposables = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -81,7 +92,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private InspectionNode<Object> playersNode;
     protected ServerWorld world;
     protected int port;
-    protected int renderDistance = 16;
+    protected int renderDistance = GamePlatform.get().isMobile() ? 4 : 16;
     protected int entityRenderDistance = 6 * World.CHUNK_SIZE;
     private int chunkRefresh;
     private long onlineTicks;
@@ -94,6 +105,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final GameRules gameRules = new GameRules();
     private final PermissionMap permissions = new PermissionMap();
     private final CommandSender consoleSender = new ConsoleCommandSender();
+    private final ExecutorService worldEditExecutor = Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() / 4));
 
     /**
      * Creates a new {@link UltracraftServer} instance.
@@ -142,6 +154,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
     }
 
+    @Nullable
     public static WatchManager getWatchManager() {
         return UltracraftServer.WATCH_MANAGER;
     }
@@ -235,7 +248,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public static boolean isOnServerThread() {
         UltracraftServer instance = UltracraftServer.instance;
         if (instance == null) throw new IllegalStateException("Server closed!");
-        return instance.thread.threadId() == Thread.currentThread().threadId();
+        return instance.thread.getId() == Thread.currentThread().getId();
     }
 
     @ApiStatus.Internal
@@ -484,7 +497,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.scheduler.schedule(runnable, time, unit);
     }
 
-    @Override
     public void close() {
         for (ServerDisposable disposable : this.disposables) {
             disposable.dispose();
@@ -493,12 +505,17 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.world.dispose();
 
         this.scheduler.shutdown();
+        this.worldEditExecutor.shutdown();
 
         try {
             if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
                 this.onTerminationFailed();
             }
+            if (!this.worldEditExecutor.awaitTermination(60, TimeUnit.SECONDS) && !this.worldEditExecutor.isTerminated()) {
+                this.onTerminationFailed();
+            }
         } catch (InterruptedException | ApplicationCrash exc) {
+            Thread.currentThread().interrupt();
             this.crash(exc);
         }
     }
@@ -533,9 +550,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @return the game's version.
      */
     public String getGameVersion() {
-        Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE);
-        if (container.isEmpty()) throw new InternalError("Can't find mod container for the base game.");
-        return container.get().getMetadata().getVersion().getFriendlyString();
+        Optional<Mod> mod = GamePlatform.get().getMod(CommonConstants.NAMESPACE);
+        if (!mod.isPresent()) throw new InternalError("Can't find mod container for the base game.");
+        return mod.get().getVersion();
     }
 
     /**
@@ -583,6 +600,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * @param uuid the uuid of the player
      * @return the player, or null if the player is not in the cache.
      */
+    @Experimental
     public @Nullable CachedPlayer getCachedPlayer(UUID uuid) {
 //        return this.cachedPlayers.get(name, () -> new CachedPlayer(uuid, null));
         return null;
@@ -604,11 +622,11 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
 
         // Send player to all other players within the render distance.
-        var players = this.getPlayers()
+        var otherPlayers = this.getPlayers()
                 .stream()
-                .toList();
+                .collect(Collectors.toList());
 
-        for (ServerPlayer other : players) {
+        for (ServerPlayer other : otherPlayers) {
             if (other == player) continue;
             Debugger.log("Player " + player.getName() + " is within the render distance of " + this.getEntityRenderDistance() + "!");
             other.connection.send(new S2CAddPlayerPacket(player.getUuid(), player.getName(), player.getPosition()));
@@ -793,5 +811,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public CommandSender getConsoleSender() {
         return this.consoleSender;
+    }
+
+    public Executor getWorldEditExecutor() {
+        return this.worldEditExecutor;
     }
 }

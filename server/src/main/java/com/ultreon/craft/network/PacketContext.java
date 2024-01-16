@@ -1,7 +1,7 @@
 package com.ultreon.craft.network;
 
 import com.ultreon.craft.server.player.ServerPlayer;
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,9 +10,9 @@ import java.util.Objects;
 public class PacketContext {
     private final @Nullable ServerPlayer player;
     private final @NotNull Connection connection;
-    private final @NotNull EnvType destination;
+    private final @NotNull Env destination;
 
-    public PacketContext(@Nullable ServerPlayer player, @NotNull Connection connection, @NotNull EnvType environment) {
+    public PacketContext(@Nullable ServerPlayer player, @NotNull Connection connection, @NotNull Env environment) {
         this.player = player;
         this.connection = connection;
         this.destination = environment;
@@ -30,7 +30,7 @@ public class PacketContext {
         return this.connection;
     }
 
-    public @NotNull EnvType getDestination() {
+    public @NotNull Env getDestination() {
         return this.destination;
     }
 

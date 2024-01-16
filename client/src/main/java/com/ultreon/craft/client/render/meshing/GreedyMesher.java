@@ -16,6 +16,7 @@ import com.ultreon.craft.client.render.NormalBlockRenderer;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
 
@@ -76,13 +78,26 @@ public class GreedyMesher implements Mesher {
         this.perCornerLight = perCornerLight;
     }
 
+    /**
+     * Meshes the blocks in the chunk using the greedy meshing technique.
+     * 
+     * @param builder   Builder to build the mesh with
+     * @param condition The condition to use when deciding whether to render a block
+     */
     @Override
-    public Mesh meshVoxels(MeshBuilder builder, UseCondition condition) {
-        List<Face> faces = this.getFaces(condition);
-
-        return this.meshFaces(faces, builder);
+    public CompletableFuture<Mesh> meshVoxels(MeshBuilder builder, UseCondition condition) {
+        return CompletableFuture.supplyAsync(() -> this.getFaces(condition), WorldRenderer.getChunkExecutor())
+                .thenApply(faces -> UltracraftClient.invokeAndWait(() -> this.meshFaces(faces, builder)));
     }
 
+    /**
+     * Get the faces in the chunk.
+     * 
+     * @param condition   the condition to use when deciding whether to render a block
+     * @param ocCond      the condition to use when deciding whether to occlude a block
+     * @param shouldMerge the condition to use when deciding whether to merge two blocks
+     * @return            the list of faces in the chunk
+     */
     public List<Face> getFaces(UseCondition condition, OccludeCondition ocCond, MergeCondition shouldMerge) {
         List<Face> faces = new ArrayList<>();
 
@@ -302,6 +317,15 @@ public class GreedyMesher implements Mesher {
         return Math.min(1, result.sunBrightness() + result.blockBrightness());
     }
 
+    /**
+     * Calculates light levels for the given block face.
+     * 
+     * @param side the side of the block
+     * @param x    the x coordinate of the block
+     * @param y    the y coordinate of the block
+     * @param z    the z coordinate of the block
+     * @return     light level data
+     */
     @Nullable
     private LightLevelData calcLightLevels(BlockFace side, int x, int y, int z) {
         switch (side) {
@@ -345,8 +369,7 @@ public class GreedyMesher implements Mesher {
         if (sChunk == null) return null;
         float sunBrightness = sChunk.getBrightness(this.sunlight(sChunk, x, y, z));
         float blockBrightness = sChunk.getBrightness(this.blockLight(sChunk, x, y, z));
-        LightLevelData result = new LightLevelData(sunBrightness, blockBrightness);
-        return result;
+        return new LightLevelData(sunBrightness, blockBrightness);
     }
 
     public List<Face> getFaces(UseCondition condition) {
@@ -432,30 +455,7 @@ public class GreedyMesher implements Mesher {
                                 if (endY == height) break;
                                 boolean allPassed = true;
                                 // sweep right
-                                for (int lx = x; lx < endX; lx++) {
-                                    // "real" coordinates for the length block
-                                    int lRX = this.realX(side, lx, endY, z);
-                                    int lRY = this.realY(side, lx, endY, z);
-                                    int lRZ = this.realZ(side, lx, endY, z);
-
-                                    Block lblk = this.block(this.chunk, lRX, lRY, lRZ);
-                                    if (lblk == null || lblk.isAir()) {
-                                        allPassed = false;
-                                        break;
-                                    }
-                                    float llight = 15;
-                                    PerCornerLightData lPcld = null;
-                                    if (this.perCornerLight) {
-                                        lPcld = lightDatas[lx][endY];
-                                    } else {
-                                        llight = this.calcLightLevel(side, lRX, lRY, lRZ);
-                                    }
-
-                                    if (used[lx][endY] || !mergeCond.shouldMerge(block, ll, lightData, lblk, llight, lPcld)) {
-                                        allPassed = false;
-                                        break;
-                                    }
-                                }
+                                allPassed = sweepRight(side, mergeCond, x, z, ll, block, used, endX, endY, lightData, lightDatas, allPassed);
                                 if (allPassed) {
                                     for (int lx = x; lx < endX; lx++) {
                                         used[lx][endY] = true;
@@ -474,6 +474,36 @@ public class GreedyMesher implements Mesher {
         } catch (PosOutOfBoundsException ex) {
             throw new GdxRuntimeException(ex);
         }
+    }
+
+    private boolean sweepRight(BlockFace side, MergeCondition mergeCond, int x, int z,
+            float ll, Block block, boolean[][] used, int endX, int endY, PerCornerLightData lightData, PerCornerLightData[][] lightDatas,
+            boolean allPassed) {
+        for (int lx = x; lx < endX; lx++) {
+            // "real" coordinates for the length block
+            int lRX = this.realX(side, lx, endY, z);
+            int lRY = this.realY(side, lx, endY, z);
+            int lRZ = this.realZ(side, lx, endY, z);
+
+            Block lblk = this.block(this.chunk, lRX, lRY, lRZ);
+            if (lblk == null || lblk.isAir()) {
+                allPassed = false;
+                break;
+            }
+            float llight = 15;
+            PerCornerLightData lPcld = null;
+            if (this.perCornerLight) {
+                lPcld = lightDatas[lx][endY];
+            } else {
+                llight = this.calcLightLevel(side, lRX, lRY, lRZ);
+            }
+
+            if (used[lx][endY] || !mergeCond.shouldMerge(block, ll, lightData, lblk, llight, lPcld)) {
+                allPassed = false;
+                break;
+            }
+        }
+        return allPassed;
     }
 
     public Mesh meshFaces(List<Face> faces, MeshBuilder builder) {
@@ -496,7 +526,13 @@ public class GreedyMesher implements Mesher {
      */
     private float calcPerCornerLight(BlockFace side, int cx, int y, int cz) {
         // coordinate offsets for getting the blocks to average
-        int posX = 0, negX = 0, posY = 0, negY = 0, posZ = 0, negZ = 0;
+        int posX = 0;
+        int negX = 0;
+        int posY = 0;
+        int negY = 0;
+        int posZ = 0;
+        int negZ = 0;
+
         switch (side) {
             case TOP -> {
                 // Use the light values from the blocks above the face

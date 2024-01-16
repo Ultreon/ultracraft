@@ -42,18 +42,11 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'java-library'
 
+evaluationDependsOn ":desktop"
+
 //****************************//
 // Setting up main properties //
 //****************************//
-
-tasks.register('runClient', JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-
-    mainClass = 'com.ultreon.craft.premain.DevMain'
-
-    // arguments to pass to the application
-    workingDir "$rootProject.projectDir/run/client/main/"
-}
 
 archivesBaseName = archives_base_name + "-gameprovider"
 
@@ -82,7 +75,7 @@ evaluationDependsOn(":client")
 dependencies {
     addToJar implementation(project(":gameprovider"))
     pack implementation(project(":client"))
-    pack implementation(project(":desktop"))
+//    pack implementation(project(":desktop"))
 
     pack implementation("com.formdev:flatlaf:3.2.1")
 
@@ -108,7 +101,7 @@ dependencies {
     pack implementation("org.apache.logging.log4j:log4j:$log4j_version")
     pack implementation("org.apache.logging.log4j:log4j-core:$log4j_version")
     pack implementation("org.apache.logging.log4j:log4j-api:$log4j_version")
-    pack implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
+    pack implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version")
 
     // JNA
     pack implementation("net.java.dev.jna:jna:$jna_version")
@@ -134,7 +127,6 @@ dependencies {
     pack implementation("io.github.spair:imgui-java-natives-macos:$imgui_version")
     pack implementation("io.github.spair:imgui-java-natives-windows:$imgui_version")
 
-    pack implementation("it.unimi.dsi:fastutil-core:8.5.9")
     pack implementation("com.google.code.findbugs:jsr305:$jsr_version")
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
@@ -163,7 +155,7 @@ dependencies {
     pack implementation('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     pack implementation('net.fabricmc:access-widener:2.1.0')
 
-    pack compileOnly("net.fabricmc:fabric-loader:$fabric_version")
+    pack implementation("net.fabricmc:fabric-loader:$fabric_version")
 }
 
 processResources {
@@ -225,8 +217,8 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 delete "$projectDir/build/jars"

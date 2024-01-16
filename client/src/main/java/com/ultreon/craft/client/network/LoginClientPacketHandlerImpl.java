@@ -43,7 +43,6 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         UltracraftClient.invoke(() -> {
             this.client.worldRenderer = new WorldRenderer(this.client.world);
             this.client.renderWorld = true;
-            this.client.showScreen(null);
         });
     }
 

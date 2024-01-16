@@ -193,6 +193,10 @@ public abstract class Player extends LivingEntity {
         return this.world.rayCast(new Ray(this.getPosition().add(0, this.getEyeHeight(), 0), this.getLookVector()));
     }
 
+    public HitResult rayCast(Ray pickRay) {
+        return this.world.rayCast(pickRay);
+    }
+
     @Override
     public void load(MapType data) {
         super.load(data);

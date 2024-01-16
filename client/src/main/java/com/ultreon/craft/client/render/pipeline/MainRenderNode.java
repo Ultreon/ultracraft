@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline.RenderNode;
@@ -31,7 +31,9 @@ public class MainRenderNode extends RenderNode {
         Texture depthMap = textures.get("depth");
         Texture diffuseTexture = textures.get("diffuse");
 
-        diffuseTexture.bind(0);
+        if (diffuseTexture != null) {
+            diffuseTexture.bind(0);
+        }
 
         modelBatch.end();
         this.client.spriteBatch.begin();
@@ -43,11 +45,11 @@ public class MainRenderNode extends RenderNode {
 
         gl.glActiveTexture(GL_TEXTURE0);
 
-        if (ImGuiOverlay.SHOW_RENDER_PIPELINE.get()) {
+        if (GamePlatform.get().showRenderPipeline()) {
             this.client.spriteBatch.begin();
-            this.client.spriteBatch.draw(depthMap, (float) (3 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            if (depthMap != null) this.client.spriteBatch.draw(depthMap, (float) (3 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
             this.client.spriteBatch.flush();
-            this.client.spriteBatch.draw(diffuseTexture, (float) (2 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
+            if (diffuseTexture != null) this.client.spriteBatch.draw(diffuseTexture, (float) (2 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
             this.client.spriteBatch.end();
         }
 

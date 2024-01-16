@@ -16,9 +16,9 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.ShaderPrograms;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
@@ -80,7 +80,7 @@ public class GameRenderer {
 
         if (player != null) {
             UltracraftClient.PROFILER.section("camera", () -> {
-                if (this.client.screen == null && !ImGuiOverlay.isShown()) {
+                if (this.client.screen == null && !GamePlatform.get().isShowingImGui() && GamePlatform.get().isDesktop()) {
                     player.rotateHead(-Gdx.input.getDeltaX() / 2f * Gdx.graphics.getDeltaTime() * 100, -Gdx.input.getDeltaY() / 2f * Gdx.graphics.getDeltaTime() * 100);
                 }
 

@@ -1,0 +1,27 @@
+project(":android") {
+    apply plugin: "com.android.application"
+
+    configurations { natives }
+
+    dependencies {
+        implementation project(":client")
+        api "com.badlogicgames.gdx:gdx-backend-android:$gdx_version"
+        natives api("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-armeabi-v7a")
+        natives api("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-arm64-v8a")
+        natives api("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-x86")
+        natives api("com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-x86_64")
+        api "com.badlogicgames.gdx-controllers:gdx-controllers-android:$gdx_controllers_version"
+        api "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url "https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven" }
+    }
+}

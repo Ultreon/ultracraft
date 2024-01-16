@@ -3,15 +3,15 @@ package com.ultreon.craft.client.gui.screens;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.widget.TextBox;
 import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.gui.widget.TextEntry;
 import com.ultreon.craft.client.text.Language;
 import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
 import org.jetbrains.annotations.Nullable;
 
 public class MultiplayerScreen extends Screen {
-    private TextEntry entry;
+    private TextBox entry;
     private TextButton joinButton;
 
     public MultiplayerScreen() {
@@ -24,7 +24,7 @@ public class MultiplayerScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.entry = builder.add(TextEntry.of().position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 - 10)))
+        this.entry = builder.add(TextBox.of().position(() -> new Position(this.size.width / 2 - 100, this.size.height / 2 - 10)))
                 .callback(this::validateServerIp)
                 .hint(TextObject.translation("ultracraft.screen.multiplayer.server_ip"));
 
@@ -54,7 +54,7 @@ public class MultiplayerScreen extends Screen {
         }
     }
 
-    private void validateServerIp(TextEntry caller) {
+    private void validateServerIp(TextBox caller) {
         var text = caller.getValue();
         boolean matches = text.matches("[^:]+:\\d{1,5}");
         if (!matches) {

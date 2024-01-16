@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.ultreon.craft.block.Block;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Turns an array of voxels into OpenGL vertices
  */
@@ -12,10 +14,10 @@ public interface Mesher {
     /**
      * Meshes the specified voxels.
      *
-     * @param builder     MeshBuilder to build the mesh onto
-     * @param condition   Condition to check if the block should be used in the mesh
+     * @param builder   MeshBuilder to build the mesh onto
+     * @param condition Condition to check if the block should be used in the mesh
      */
-    Mesh meshVoxels(MeshBuilder builder, UseCondition condition);
+    CompletableFuture<Mesh> meshVoxels(MeshBuilder builder, UseCondition condition);
 
     interface UseCondition {
         /**

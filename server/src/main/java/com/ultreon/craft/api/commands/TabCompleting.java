@@ -2,6 +2,8 @@ package com.ultreon.craft.api.commands;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.ultreon.craft.GamePlatform;
+import com.ultreon.craft.Mod;
 import com.ultreon.craft.api.commands.selector.SelectorKey;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityTypes;
@@ -13,8 +15,6 @@ import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.util.Difficulty;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.World;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -232,9 +232,8 @@ public class TabCompleting {
     }
 
     public static List<String> mods(List<String> list, String currentArgument) {
-        FabricLoader manager = FabricLoader.getInstance();
-        for (ModContainer plugin : manager.getAllMods()) {
-            TabCompleting.addIfStartsWith(list, plugin.getMetadata().getId(), currentArgument);
+        for (Mod plugin : GamePlatform.get().getMods()) {
+            TabCompleting.addIfStartsWith(list, plugin.getId(), currentArgument);
         }
         return list;
     }
@@ -332,7 +331,7 @@ public class TabCompleting {
 
     }
 
-    public static final void addIfStartsWith(@NotNull Collection<String> list, @NotNull UUID uuid, @NotNull String startsWith) {
+    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull UUID uuid, @NotNull String startsWith) {
         Preconditions.checkNotNull(list, "list");
         Preconditions.checkNotNull(uuid, "uuid");
         Preconditions.checkNotNull(startsWith, "startsWith");
@@ -357,7 +356,7 @@ public class TabCompleting {
         }
     }
 
-    public static final void addIfStartsWith(@NotNull Collection<String> list, @NotNull Object obj, @NotNull String startsWith) {
+    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull Object obj, @NotNull String startsWith) {
         Preconditions.checkNotNull(list, "list");
         Preconditions.checkNotNull(obj, "obj");
         Preconditions.checkNotNull(startsWith, "startsWith");

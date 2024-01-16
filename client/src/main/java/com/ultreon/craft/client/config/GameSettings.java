@@ -16,7 +16,7 @@ public class GameSettings extends Configuration {
     public GameSettings() {
         super();
 
-        this.language = this.add("language", Locale.of("en", "US"), Locale::forLanguageTag, Locale::toLanguageTag, "The preferred language");
+        this.language = this.add("language", new Locale("en", "US"), Locale::forLanguageTag, Locale::toLanguageTag, "The preferred language");
         this.renderDistance = this.add("renderDistance", 16, 2, 24, "The maximum distance to show the world in chunks (16x16)");
         this.fullscreen = this.add("fullscreen", false, "Enable fullscreen mode");
         this.craftingShowOnlyCraftable = this.add("craftingShowOnlyCraftable", true, "Show only craftable recipes");

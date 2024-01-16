@@ -2,6 +2,7 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
@@ -183,7 +184,7 @@ public final class ClientWorld extends World implements Disposable {
         ClientChunk finalChunk = chunk;
         UltracraftClient.invoke(() -> {
             finalChunk.ready();
-            this.chunks.put(pos, data);
+            this.chunks.put(pos, finalChunk);
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
         });
     }
@@ -276,4 +277,14 @@ public final class ClientWorld extends World implements Disposable {
         return Color.rgba(redPart, greenPart, bluePart, alphaPart);
     }
 
+
+    @Override
+    public void setSync(int x, int y, int z, Block block) {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invokeAndWait(() -> this.setSync(x, y, z, block));
+            return;
+        }
+
+        this.set(x, y, z, block);
+    }
 }

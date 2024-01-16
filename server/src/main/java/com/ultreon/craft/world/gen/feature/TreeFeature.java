@@ -7,6 +7,8 @@ import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
+import com.ultreon.craft.world.rng.JavaRandomSource;
+import com.ultreon.craft.world.rng.RandomSource;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
@@ -18,7 +20,7 @@ public class TreeFeature extends WorldGenFeature {
     private final Block trunk;
     private final Block leaves;
     private final float threshold;
-    private Random random = new Random();
+    private RandomSource random = new JavaRandomSource();
     private int minTrunkHeight;
     private int maxTrunkHeight;
 
@@ -42,7 +44,7 @@ public class TreeFeature extends WorldGenFeature {
         this.random.setSeed(seed);
         this.random.setSeed(this.random.nextLong());
 
-        if (this.random.nextFloat() < this.threshold) {
+        if (this.random.chance(this.threshold)) {
             var trunkHeight = this.random.nextInt(this.minTrunkHeight, this.maxTrunkHeight);
             if (trunkHeight + height + 1 > CHUNK_HEIGHT) return false;
 

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
 import com.ultreon.craft.client.input.GameCamera;
+import com.ultreon.craft.client.input.TouchPoint;
 import com.ultreon.craft.client.util.GameRenderable;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.entity.Player;
@@ -14,6 +15,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.ElementID;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +30,8 @@ public class Hud implements GameRenderable {
     public int rightY;
     private int width;
     private int height;
+    private TouchPoint startPointer;
+    private TouchPoint holdPointer;
 
 
     public Hud(UltracraftClient client) {
@@ -89,13 +93,24 @@ public class Hud implements GameRenderable {
         renderer.invertOff();
     }
 
+    @SuppressWarnings("GDXJavaFlushInsideLoop")
     private void renderHotbar(Renderer renderer, Player player) {
+        int startX = (int) ((float) this.client.getScaledWidth() / 2) - 90;
+        if (startPointer != null &&
+                startPointer.mouseX() > startX && startPointer.mouseX() <= (startX + 180) &&
+                startPointer.mouseY()    > this.leftY - 2 && startPointer.mouseY() <= this.leftY - 43) {
+            int newSelected = (holdPointer.mouseX() - startX) / 20;
+            newSelected = Mth.clamp(newSelected, 0, 9);
+            player.selectBlock(newSelected);
+        }
+
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
         ElementID key = Registries.ITEM.getKey(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
+
 
         List<ItemSlot> allowed = player.inventory.getHotbarSlots();
         for (int index = 0, allowedLength = allowed.size(); index < allowedLength; index++) {
@@ -137,6 +152,26 @@ public class Hud implements GameRenderable {
             renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
 
         this.leftY -= 13;
+    }
+
+    public boolean touchDown(int mouseX, int mouseY, int pointer, int button) {
+        this.holdPointer = new TouchPoint(mouseX, mouseY, pointer, button);
+        this.startPointer = holdPointer;
+        return true;
+    }
+
+    public boolean touchUp(int mouseX, int mouseY, int pointer, int button) {
+        this.onTouchUp(this.holdPointer);
+        this.holdPointer = null;
+        return true;
+    }
+
+    protected void onTouchUp(TouchPoint holdPointer) {
+
+    }
+
+    public boolean isMouseOver(int mouseX, int mouseY) {
+        return false;
     }
 
 }

@@ -8,7 +8,7 @@ import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.hud.ChatOverlay;
-import com.ultreon.craft.client.gui.widget.ChatTextEntry;
+import com.ultreon.craft.client.gui.widget.ChatTextBox;
 import com.ultreon.craft.network.packets.c2s.C2SChatPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCommandPacket;
 import com.ultreon.craft.text.TextObject;
@@ -29,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ChatScreen extends Screen {
     private static final Marker MARKER = MarkerFactory.getMarker("ChatScreen");
     private final String input;
-    private ChatTextEntry entry;
+    private ChatTextBox entry;
     private static final List<TextObject> MESSAGES = new CopyOnWriteArrayList<>();
     private static final LongList MESSAGE_TIMESTAMPS = LongLists.synchronize(new LongArrayList());
 
@@ -64,11 +64,11 @@ public class ChatScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        this.entry = (ChatTextEntry) builder.add(new ChatTextEntry(this).bounds(() -> new Bounds(-1, this.getHeight() - 21, this.getWidth() + 2, 21)));
+        this.entry = (ChatTextBox) builder.add(new ChatTextBox(this).bounds(() -> new Bounds(-1, this.getHeight() - 21, this.getWidth() + 2, 21)));
     }
 
-    public ChatTextEntry getEntry() {
-        return (ChatTextEntry) this.entry;
+    public ChatTextBox getEntry() {
+        return (ChatTextBox) this.entry;
     }
 
     @Override

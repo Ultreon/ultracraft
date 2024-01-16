@@ -34,7 +34,7 @@ public class UltracraftGameprovider implements GameProvider {
     private static final String[] ALLOWED_EARLY_CLASS_PREFIXES = { "org.apache.logging.log4j.", "com.ultreon.gameprovider.craft.", "com.ultreon.premain." };
 
     private final GameTransformer transformer = new GameTransformer();
-    private EnvType envType;
+    private EnvType env;
     private Arguments arguments;
     private final List<Path> gameJars = new ArrayList<>();
     private final List<Path> logJars = new ArrayList<>();
@@ -108,6 +108,7 @@ public class UltracraftGameprovider implements GameProvider {
         return this.entrypoint;
     }
 
+    @SuppressWarnings("NewApi")
     @Override
     public Path getLaunchDirectory() {
         if (!Objects.equals(System.getProperty("ultracraft.environment", "normal"), "packaged"))
@@ -154,12 +155,12 @@ public class UltracraftGameprovider implements GameProvider {
 
     @Override
     public boolean locateGame(FabricLauncher launcher, String[] args) {
-        this.envType = launcher.getEnvironmentType();
+        this.env = launcher.getEnvironmentType();
         this.arguments = new Arguments();
         this.arguments.parse(args);
 
         try {
-            var classifier = new LibClassifier<>(GameLibrary.class, this.envType, this);
+            var classifier = new LibClassifier<>(GameLibrary.class, this.env, this);
             var clientLib = GameLibrary.ULTRACRAFT_CLIENT;
             var serverLib = GameLibrary.ULTRACRAFT_SERVER;
             var clientJar = GameProviderHelper.getCommonGameJar();
@@ -331,7 +332,7 @@ public class UltracraftGameprovider implements GameProvider {
 
     @Override
     public boolean canOpenErrorGui() {
-        if (this.arguments == null || this.envType == EnvType.CLIENT)
+        if (this.arguments == null || this.env == env.CLIENT)
             return !OS.isMobile();
 
         return false;

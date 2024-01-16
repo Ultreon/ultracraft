@@ -69,7 +69,7 @@ public class CrashCategory {
                 sb.append(System.lineSeparator());
             }
 
-            AbstractMap.SimpleEntry<String, String> entry = simpleEntries.getLast();
+            AbstractMap.SimpleEntry<String, String> entry = simpleEntries.get(simpleEntries.size() - 1);
             sb.append("   ");
             sb.append(entry.getKey());
             sb.append(": ");

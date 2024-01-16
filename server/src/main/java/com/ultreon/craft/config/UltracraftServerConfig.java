@@ -1,22 +1,21 @@
 package com.ultreon.craft.config;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.gson.Gson;
 import com.ultreon.craft.server.UltracraftServer;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class UltracraftServerConfig {
-    private static final Yaml YAML = new Yaml();
+    private static final Gson GSON = new Gson();
     private static UltracraftServerConfig instance = new UltracraftServerConfig();
 
     static {
         try {
-            UltracraftServerConfig.instance = UltracraftServerConfig.YAML.loadAs(new FileReader("config/ultracraft_server.yml"), UltracraftServerConfig.class);
+            UltracraftServerConfig.instance = UltracraftServerConfig.GSON.fromJson(new FileReader("config/ultracraft_server.json"), UltracraftServerConfig.class);
         } catch (FileNotFoundException ignored) {
             UltracraftServerConfig.instance.save();
         } catch (RuntimeException e) {
@@ -42,17 +41,13 @@ public class UltracraftServerConfig {
     }
 
     public void save() {
-        try {
-            Files.writeString(Path.of("config/ultracraft_client.yml"), UltracraftServerConfig.YAML.dumpAsMap(UltracraftServerConfig.class));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Gdx.files.external("config/ultracraft_client.yml").writeString(UltracraftServerConfig.GSON.toJson(this), false);
     }
 
     public static void reload() {
         try {
-            UltracraftServerConfig.instance = UltracraftServerConfig.YAML.loadAs(Files.readString(Path.of("config/ultracraft_server.yml")), UltracraftServerConfig.class);
-        } catch (IOException e) {
+            UltracraftServerConfig.instance = UltracraftServerConfig.GSON.fromJson(Gdx.files.external("config/ultracraft_server.yml").readString(), UltracraftServerConfig.class);
+        } catch (GdxRuntimeException e) {
             UltracraftServer.LOGGER.error("Failed to load config file!", e);
         }
     }

@@ -12,7 +12,7 @@ import com.ultreon.craft.network.packets.s2c.S2CLoginAcceptedPacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.BlockPos;
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
     public LoginServerPacketHandler(UltracraftServer server, Connection connection) {
         this.server = server;
         this.connection = connection;
-        this.context = new PacketContext(null, connection, EnvType.SERVER);
+        this.context = new PacketContext(null, connection, Env.SERVER);
     }
 
     public static NetworkChannel registerChannel(ElementID id) {
@@ -63,7 +63,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onModPacket(NetworkChannel channel, ModPacket<?> packet) {
-        packet.handlePacket(() -> new ModPacketContext(channel, null, this.connection, EnvType.SERVER));
+        packet.handlePacket(() -> new ModPacketContext(channel, null, this.connection, Env.SERVER));
     }
 
     public NetworkChannel getChannel(ElementID channelId) {

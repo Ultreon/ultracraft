@@ -48,6 +48,8 @@ apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 apply(plugin = "gameutils")
 
+apply("include.gradle")
+
 val gameVersion = "0.1.0"
 val ghBuildNumber: String? = getenv("GH_BUILD_NUMBER")
 
@@ -118,8 +120,6 @@ beforeEvaluate {
 
 allprojects {
     apply(plugin = "maven-publish")
-    apply(plugin = "java")
-    apply(plugin = "java-library")
 
     ext.also {
         it["app_name"] = "Ultracraft"
@@ -288,13 +288,25 @@ commonProperties
 afterEvaluate {
     tasks.getByName("javadoc", Javadoc::class) {
         source(subprojects.map { subproject ->
-            subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.allJava?.sourceDirectories
+            if (subproject.name == ":android") {
+                files()
+            } else {
+                try {
+                    subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.allJava?.sourceDirectories
+                } catch(e: Exception) {
+                    files()
+                }
+            }
         })
         this.title = "Ultracraft API"
         this.setDestinationDir(File(rootProject.projectDir, "/build/docs/javadoc"))
         // Configure the classpath
         classpath = files(subprojects.map { subproject ->
-            subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.compileClasspath
+            try {
+                subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.compileClasspath
+            } catch(e: Exception) {
+                files()
+            }
         })
         val options = options as StandardJavadocDocletOptions
         options.addFileOption("-add-stylesheet", project.file("javadoc.css"))

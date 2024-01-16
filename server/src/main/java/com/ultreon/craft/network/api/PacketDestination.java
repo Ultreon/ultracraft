@@ -1,6 +1,6 @@
 package com.ultreon.craft.network.api;
 
-import net.fabricmc.api.EnvType;
+import com.ultreon.craft.util.Env;
 
 public enum PacketDestination {
     SERVER, CLIENT;
@@ -12,17 +12,17 @@ public enum PacketDestination {
         };
     }
 
-    public EnvType getSourceEnv() {
+    public Env getSourceEnv() {
         return switch (this) {
-            case SERVER -> EnvType.CLIENT;
-            case CLIENT -> EnvType.SERVER;
+            case SERVER -> Env.CLIENT;
+            case CLIENT -> Env.SERVER;
         };
     }
 
-    public EnvType getDestinationEnv() {
+    public Env getDestinationEnv() {
         return switch (this) {
-            case SERVER -> EnvType.SERVER;
-            case CLIENT -> EnvType.CLIENT;
+            case SERVER -> Env.SERVER;
+            case CLIENT -> Env.CLIENT;
         };
     }
 }

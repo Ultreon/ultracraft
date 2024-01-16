@@ -61,7 +61,6 @@ public class Registry<T> implements IdRegistry<T> {
         }
 
         Registry<T> registry = new Builder<>(id, type).build();
-        Registry.REGISTRIES.put(componentType, registry);
 
         return registry;
     }
@@ -226,7 +225,9 @@ public class Registry<T> implements IdRegistry<T> {
         }
 
         public Registry<T> build() {
-            return new Registry<>(this);
+            Registry<T> registry = new Registry<>(this);
+            REGISTRIES.put(this.type, registry);
+            return registry;
         }
 
         public Builder<T> doNotSync() {

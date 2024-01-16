@@ -1,11 +1,16 @@
 package com.ultreon.craft.config;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.events.ConfigEvents;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
+import com.ultreon.craft.util.Env;
+import org.apache.logging.log4j.core.util.WatchManager;
 import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.configurations.FileConfiguration;
 import org.fusionyaml.library.object.YamlElement;
@@ -17,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class UcConfiguration<T> {
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final FusionYAML yaml = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).build();
     @Nullable
     private FileConfiguration config = null;
@@ -25,8 +31,8 @@ public final class UcConfiguration<T> {
     private Path configPath;
     public final Event<Reload> event = Event.create();
 
-    public UcConfiguration(String name, EnvType configEnv, T object) {
-        if (FabricLoader.getInstance().getEnvironmentType() != configEnv) {
+    public UcConfiguration(String name, Env configEnv, T object) {
+        if (GamePlatform.get().getEnv() != configEnv) {
             this.config = null;
             return;
         }
@@ -35,31 +41,32 @@ public final class UcConfiguration<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void load(String name, EnvType configEnv, T object, EnvType loadingEnv) {
+    private void load(String name, Env configEnv, T object, Env loadingEnv) {
         if (loadingEnv != configEnv) return;
 
-        this.configPath = FabricLoader.getInstance().getConfigDir().resolve(name + ".yml");
+        this.configPath = GamePlatform.get().getConfigDir().resolve(name + ".json");
         boolean existed = Files.exists(this.configPath);
         if (Files.notExists(this.configPath)) {
             try {
-                var element = this.yaml.serialize(object, object.getClass());
+                var element = GSON.toJson(object, object.getClass());
 
                 Files.createDirectories(this.configPath.getParent());
-                Files.writeString(this.configPath, this.yaml.toYAML(element));
-            } catch (IOException e) {
+                Gdx.files.absolute(this.configPath.toAbsolutePath().toString()).writeString(element, false);
+            } catch (IOException | GdxRuntimeException e) {
                 CommonConstants.LOGGER.error("Failed to create config file!", e);
                 return;
             }
         }
 
         try {
-            this.object = this.yaml.deserialize(Files.readString(this.configPath), (Class<T>) object.getClass());
-        } catch (IOException e) {
+            this.object = GSON.fromJson(Gdx.files.absolute(this.configPath.toAbsolutePath().toString()).readString(), (Class<T>) object.getClass());
+        } catch (GdxRuntimeException e) {
             CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             return;
         }
 
-        UltracraftServer.getWatchManager().watchFile(this.configPath.toFile(), file -> UcConfiguration.this.reload());
+        WatchManager watchManager = UltracraftServer.getWatchManager();
+        if (watchManager != null) watchManager.watchFile(this.configPath.toFile(), file -> UcConfiguration.this.reload());
 
         if (!existed) this.save();
         else {
