@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.model.entity.renderer;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Vector3;
@@ -12,10 +13,9 @@ import com.ultreon.craft.client.render.EntityTextures;
 import com.ultreon.craft.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerRenderer extends LivingEntityRenderer<PlayerModel<@NotNull Player>, @NotNull Player> {
-    public PlayerRenderer(PlayerModel<@NotNull Player> model) {
-        super(model);
-
+public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
+    public PlayerRenderer(PlayerModel<@NotNull Player> playerModel, Model model) {
+        super(playerModel, model);
     }
 
     @Override

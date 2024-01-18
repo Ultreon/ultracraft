@@ -591,7 +591,7 @@ public class CommandData {
     static <T> List<String> complete(CommandReader ctx, Registry<T> registry) throws CommandParseException {
         var currentArgument = ctx.readString();
         List<String> list = new ArrayList<>();
-        for (var id : registry.keys()) {
+        for (var id : registry.ids()) {
             try {
                 TabCompleting.addIfStartsWith(list, id, currentArgument);
             } catch (Exception ignored) {

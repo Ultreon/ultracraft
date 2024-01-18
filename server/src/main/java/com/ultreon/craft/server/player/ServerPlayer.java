@@ -190,8 +190,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         // Send the new position to the client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
-            this.setPosition(this.ox, this.oy, this.oz);
-            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
+//            this.setPosition(this.ox, this.oy, this.oz);
+//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
 
         // Set old position.
@@ -342,7 +342,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage), PacketResult.onEither(() -> this.sendingChunk = false));
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage, chunk.getBlockEntities()), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
@@ -442,6 +442,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         this.inventory.addItem(Items.WOODEN_PICKAXE.defaultStack());
         this.inventory.addItem(Items.WOODEN_SHOVEL.defaultStack());
+        this.inventory.addItem(new ItemStack(Items.CRATE, 32));
     }
 
     public void handlePlayerMove(double x, double y, double z) {

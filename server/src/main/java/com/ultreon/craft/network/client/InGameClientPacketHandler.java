@@ -1,6 +1,7 @@
 package com.ultreon.craft.network.client;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.NetworkChannel;
@@ -11,6 +12,7 @@ import com.ultreon.craft.network.packets.AddPermissionPacket;
 import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
+import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.Gamemode;
@@ -19,6 +21,7 @@ import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface InGameClientPacketHandler extends ClientPacketHandler {
@@ -34,7 +37,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage);
+    void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 
@@ -73,4 +76,8 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onPing(long serverTime, long time);
 
     void onGamemode(Gamemode gamemode);
+
+    void onBlockEntitySet(BlockPos pos, BlockEntityType<?> blockEntity);
+
+    void onTimeChange(PacketContext ctx, S2CTimePacket.Operation operation, int time);
 }

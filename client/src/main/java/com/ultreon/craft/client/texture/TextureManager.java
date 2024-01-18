@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.resources.Resource;
+import com.ultreon.craft.resources.StaticResource;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.ElementID;
@@ -30,7 +30,7 @@ public class TextureManager {
     private final ResourceManager resourceManager;
 
     @Deprecated
-    public static final Resource DEFAULT_TEX_RESOURCE = new Resource(TextureManager::createDefaultTex);
+    public static final StaticResource DEFAULT_TEX_RESOURCE = new StaticResource(TextureManager::createDefaultTex);
 
     public static final Texture DEFAULT_TEX = new Texture(TextureManager.createMissingNo());
     public static final TextureRegion DEFAULT_TEX_REG = new TextureRegion(TextureManager.DEFAULT_TEX, 0.0F, 0.0F, 1.0F, 1.0F);

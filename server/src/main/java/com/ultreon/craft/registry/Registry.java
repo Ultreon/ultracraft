@@ -1,32 +1,49 @@
 package com.ultreon.craft.registry;
 
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.LoadingContext;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.registry.event.RegistryEvents;
-import com.ultreon.craft.registry.exception.RegistryException;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.ultreon.craft.registry.RegistryKey.ROOT;
 
 public class Registry<T> implements IdRegistry<T> {
+    public static final Registry<Registry<?>> REGISTRY = new Registry<>(new Builder<>(new ElementID("registry")), ROOT);
+    private static final OrderedMap<RegistryKey<Registry<?>>, Registry<?>> REGISTRIES = new OrderedMap<>();
     private static Logger dumpLogger = (level, msg, t) -> {};
-    private static final OrderedMap<Class<?>, Registry<?>> REGISTRIES = new OrderedMap<>();
     private static boolean frozen;
-    private final OrderedMap<ElementID, T> keyMap = new OrderedMap<>();
-    private final OrderedMap<T, ElementID> valueMap = new OrderedMap<>();
+    private final OrderedMap<RegistryKey<T>, T> keyMap = new OrderedMap<>();
+    private final OrderedMap<T, RegistryKey<T>> valueMap = new OrderedMap<>();
     private final Class<T> type;
     private final ElementID id;
-    private final boolean allowOverride;
-    private final boolean doNotSync;
+    private final boolean overrideAllowed;
+    private final boolean syncDisabled;
+    private final RegistryKey<Registry<T>> key;
 
-    private Registry(Builder<T> builder) throws IllegalStateException {
+    private Registry(Builder<T> builder, RegistryKey<Registry<T>> key) throws IllegalStateException {
+        Preconditions.checkNotNull(key, "key");
+        this.key = key;
         this.id = builder.id;
         this.type = builder.type;
-        this.allowOverride = builder.allowOverride;
-        this.doNotSync = builder.doNotSync;
+        this.overrideAllowed = builder.allowOverride;
+        this.syncDisabled = builder.doNotSync;
+
+        RegistryEvents.REGISTRY_DUMP.listen(this::dumpRegistry);
+    }
+
+    private Registry(Builder<T> builder) {
+        this.id = builder.id;
+        this.type = builder.type;
+        this.overrideAllowed = builder.allowOverride;
+        this.syncDisabled = builder.doNotSync;
+        this.key = RegistryKey.registry(this);
 
         RegistryEvents.REGISTRY_DUMP.listen(this::dumpRegistry);
     }
@@ -51,17 +68,16 @@ public class Registry<T> implements IdRegistry<T> {
         return this.id;
     }
 
+    public RegistryKey<Registry<T>> key() {
+        return this.key;
+    }
+
     @SafeVarargs
     @Deprecated
     @SuppressWarnings("unchecked")
     public static <T> Registry<T> create(ElementID id, @NotNull T... type) {
-        Class<T> componentType = (Class<T>) type.getClass().getComponentType();
-        if (Registry.REGISTRIES.containsKey(componentType)) {
-            throw new IllegalStateException();
-        }
-
         Registry<T> registry = new Builder<>(id, type).build();
-        Registry.REGISTRIES.put(componentType, registry);
+        Registry.REGISTRIES.put(Registry.class.cast(registry).key, registry);
 
         return registry;
     }
@@ -77,13 +93,23 @@ public class Registry<T> implements IdRegistry<T> {
     }
 
     /**
-     * Returns the identifier of the given registered instance.
+     * Returns the element id of the given registered instance.
      *
      * @param obj the registered instance.
-     * @return the identifier of it.
+     * @return the element id of it.
      */
     @Nullable
-    public ElementID getKey(T obj) {
+    public ElementID getId(T obj) {
+        return this.valueMap.get(obj).element();
+    }
+
+    /**
+     * Returns the registry key of the given registered instance.
+     *
+     * @param obj the registered instance.
+     * @return the registry key of it.
+     */
+    public RegistryKey<T> getKey(T obj) {
         return this.valueMap.get(obj);
     }
 
@@ -94,15 +120,12 @@ public class Registry<T> implements IdRegistry<T> {
      * @return a registered instance of the type {@link T}.
      * @throws ClassCastException if the type is invalid.
      */
-    public T getValue(@Nullable ElementID key) {
-        if (!this.keyMap.containsKey(key)) {
-            throw new RegistryException("Cannot find object for: " + key + " | type: " + this.type.getSimpleName());
-        }
-        return this.keyMap.get(key);
+    public T getElement(@Nullable ElementID key) {
+        return this.keyMap.get(RegistryKey.of(this.key, key));
     }
 
     public boolean contains(ElementID rl) {
-        return this.keyMap.containsKey(rl);
+        return this.keyMap.containsKey(RegistryKey.of(this.key, rl));
     }
 
     public void dumpRegistry() {
@@ -122,38 +145,41 @@ public class Registry<T> implements IdRegistry<T> {
      * @param val the register item value.
      */
     public void register(ElementID rl, T val) {
-        if (!this.type.isAssignableFrom(val.getClass())) {
+        if (!this.type.isAssignableFrom(val.getClass()))
             throw new IllegalArgumentException("Not allowed type detected, got " + val.getClass() + " expected assignable to " + this.type);
-        }
 
-        if (this.keyMap.containsKey(rl) && !this.allowOverride()) {
+        RegistryKey<T> key = new RegistryKey<>(this.key, rl);
+        if (this.keyMap.containsKey(key) && !this.isOverrideAllowed())
             throw new IllegalArgumentException("Already registered: " + rl);
-        }
 
-        this.keyMap.put(rl, val);
-        this.valueMap.put(val, rl);
+        this.keyMap.put(key, val);
+        this.valueMap.put(val, key);
     }
 
-    public boolean allowOverride() {
-        return this.allowOverride;
+    public boolean isOverrideAllowed() {
+        return this.overrideAllowed;
     }
 
-    public boolean doNotSync() {
-        return this.doNotSync;
+    public boolean isSyncDisabled() {
+        return this.syncDisabled;
     }
 
     public List<T> values() {
         return Collections.unmodifiableList(this.keyMap.valueList());
     }
 
-    public List<ElementID> keys() {
+    public List<ElementID> ids() {
+        return this.keyMap.keyList().stream().map(RegistryKey::element).collect(Collectors.toList());
+    }
+
+    public List<RegistryKey<T>> keys() {
         return Collections.unmodifiableList(this.keyMap.keyList());
     }
 
     public Set<Map.Entry<ElementID, T>> entries() {
         // I do this because the IDE won't accept dynamic values and keys.
         ArrayList<T> values = new ArrayList<>(this.values());
-        ArrayList<ElementID> keys = new ArrayList<>(this.keys());
+        ArrayList<ElementID> keys = new ArrayList<>(this.ids());
 
         if (keys.size() != values.size()) throw new IllegalStateException("Keys and values have different lengths.");
 
@@ -198,13 +224,33 @@ public class Registry<T> implements IdRegistry<T> {
     }
 
     @Override
-    public int getId(T object) {
+    public int getRawId(T object) {
         return this.keyMap.indexOfValue(object);
     }
 
     @Override
     public T byId(int id) {
         return this.keyMap.valueList().get(id);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Registry<T> getRegistry(RegistryKey<Registry<T>> key) {
+        return (Registry<T>) REGISTRIES.get(key);
+    }
+
+    public void register(RegistryKey<T> id, T element) {
+        if (!this.type.isAssignableFrom(element.getClass()))
+            throw new IllegalArgumentException("Not allowed type detected, got " + element.getClass() + " expected assignable to " + this.type);
+
+        if (this.keyMap.containsKey(id) && !this.isOverrideAllowed())
+            throw new IllegalArgumentException("Already registered: " + id);
+
+        this.keyMap.put(id, element);
+        this.valueMap.put(element, id);
+    }
+
+    public T getElement(RegistryKey<T> key) {
+        return this.keyMap.get(key);
     }
 
     public static class Builder<T> {

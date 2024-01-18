@@ -62,7 +62,6 @@ public class ClientConnection implements Runnable {
 
     public void tick(Connection connection) {
         if (connection.tickKeepAlive()) {
-            connection.send(new C2SKeepAlivePacket());
             connection.send(new C2SPingPacket());
         }
     }

@@ -10,6 +10,6 @@ public class Weather {
     public static final Weather THUNDER = new Weather();
 
     public @Nullable ElementID getId() {
-        return Registries.WEATHER.getKey(this);
+        return Registries.WEATHER.getId(this);
     }
 }

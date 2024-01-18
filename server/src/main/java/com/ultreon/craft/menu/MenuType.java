@@ -19,7 +19,7 @@ public class MenuType<T extends ContainerMenu> {
     }
 
     public ElementID getId() {
-        return Registries.MENU_TYPE.getKey(this);
+        return Registries.MENU_TYPE.getId(this);
     }
 
     public interface MenuBuilder<T extends ContainerMenu> {

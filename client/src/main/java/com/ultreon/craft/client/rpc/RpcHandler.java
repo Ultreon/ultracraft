@@ -73,6 +73,6 @@ public class RpcHandler {
                     .setStartTimestamp(RpcHandler.start);
         }
 
-        RpcHandler.client.sendRichPresence(builder.build());
+//        RpcHandler.client.sendRichPresence(builder.build());
     }
 }

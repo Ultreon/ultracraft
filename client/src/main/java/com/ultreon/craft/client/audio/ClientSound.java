@@ -19,7 +19,7 @@ public final class ClientSound {
     }
 
     public ElementID getId() {
-        return Registries.SOUND_EVENT.getKey(this.event);
+        return Registries.SOUND_EVENT.getId(this.event);
     }
 
     public Sound getSound() {

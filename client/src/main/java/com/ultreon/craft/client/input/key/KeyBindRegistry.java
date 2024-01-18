@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.input;
+package com.ultreon.craft.client.input.key;
 
 import com.badlogic.gdx.utils.Array;
 

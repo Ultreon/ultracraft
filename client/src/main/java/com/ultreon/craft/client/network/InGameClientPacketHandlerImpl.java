@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.ClientPlayerEvents;
@@ -33,6 +34,7 @@ import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
+import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.ElementID;
@@ -110,7 +112,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+    public void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         LocalPlayer player = this.client.player;
         if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
@@ -125,7 +127,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 return;
             }
 
-            world.loadChunk(pos, new ClientChunk(world, pos, storage, biomeStorage));
+            world.loadChunk(pos, new ClientChunk(world, pos, storage, biomeStorage, blockEntities));
         }, this.client.chunkLoadingExecutor);
     }
 
@@ -222,7 +224,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onPlaySound(ElementID sound, float volume) {
-        this.client.playSound(Registries.SOUND_EVENT.getValue(sound), volume);
+        this.client.playSound(Registries.SOUND_EVENT.getElement(sound), volume);
     }
 
     @Override
@@ -286,7 +288,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onOpenContainerMenu(ElementID menuTypeId) {
-        var menuType = Registries.MENU_TYPE.getValue(menuTypeId);
+        var menuType = Registries.MENU_TYPE.getElement(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
         ContainerMenu o = menuType.create(this.client.world, player, null);
@@ -365,6 +367,28 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         LocalPlayer player = this.client.player;
         if (player != null) {
             player.setGamemode(gamemode);
+        }
+    }
+
+    @Override
+    public void onBlockEntitySet(BlockPos pos, BlockEntityType<?> blockEntity) {
+        UltracraftClient.invoke(() -> {
+            ClientWorld world = client.world;
+            if (world != null) {
+                world.setBlockEntity(pos, blockEntity.create(world, pos));
+            }
+        });
+    }
+
+    @Override
+    public void onTimeChange(PacketContext ctx, S2CTimePacket.Operation operation, int time) {
+        if (this.client.world != null) {
+            int daytime = this.client.world.getDaytime();
+            switch (operation) {
+                case SET -> this.client.world.setDaytime(time);
+                case ADD -> this.client.world.setDaytime(daytime + time);
+                case SUB -> this.client.world.setDaytime(daytime - time);
+            }
         }
     }
 }

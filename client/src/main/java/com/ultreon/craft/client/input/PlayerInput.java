@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.input.key.KeyBinds;
 import com.ultreon.craft.client.input.util.JoystickType;
 import com.ultreon.craft.client.util.Utils;
 import com.ultreon.craft.entity.Player;

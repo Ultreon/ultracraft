@@ -84,11 +84,11 @@ public abstract class Biome {
     }
 
     private ElementID getId() {
-        return Registries.BIOME.getKey(this);
+        return Registries.BIOME.getId(this);
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getValue(ElementID.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.getElement(ElementID.tryParse(mapType.getString("id", "plains")));
     }
 
     public boolean isOcean() {

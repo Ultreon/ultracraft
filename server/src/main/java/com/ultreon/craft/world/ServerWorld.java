@@ -6,6 +6,7 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
@@ -13,6 +14,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CBlockEntitySetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
@@ -162,10 +164,20 @@ public class ServerWorld extends World {
     @Override
     public boolean set(int x, int y, int z, @NotNull Block block) {
         boolean isBlockSet = super.set(x, y, z, block);
+        block.onPlace(this, new BlockPos(x, y, z));
         if (isBlockSet) {
             this.update(x, y, z, block);
         }
         return isBlockSet;
+    }
+
+    @Override
+    public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
+        super.setBlockEntity(pos, blockEntity);
+
+        if (this.getBlockEntity(pos) == blockEntity) {
+            this.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockEntitySetPacket(pos, blockEntity.getType().getRawId()));
+        }
     }
 
     private void update(int x, int y, int z, @NotNull Block block) {
@@ -1405,7 +1417,7 @@ public class ServerWorld extends World {
             mapType.putInt("x", this.x);
             mapType.putInt("y", this.y);
             mapType.putInt("z", this.z);
-            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
+            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getId(this.block)).toString());
             return mapType;
         }
     }

@@ -96,7 +96,7 @@ public class Inventory extends ContainerMenu {
                 int transferAmount = Math.min(stack.getCount(), maxStackSize);
                 stack.transferTo(slotItem, transferAmount);
                 this.onItemChanged(slot);
-            } else if (slotItem.isSimilar(stack)) {
+            } else if (slotItem.sameItemSameData(stack)) {
                 stack.transferTo(slotItem, stack.getCount());
                 this.onItemChanged(slot);
             }

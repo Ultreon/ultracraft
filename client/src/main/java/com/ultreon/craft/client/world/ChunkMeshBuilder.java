@@ -12,6 +12,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.util.MathHelper;
+import com.ultreon.craft.world.BlockFace;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -106,11 +107,11 @@ public class ChunkMeshBuilder {
 
         Block top = this.block(section, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(top))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.UP, model.top(), vertices, model.properties.top);
 
         Block bottom = this.block(section, x, y - 1, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(bottom))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.DOWN, model.bottom(), vertices, model.properties.bottom);
 
         Block left = this.block(section, x - 1, y, z);
         if (ChunkMeshBuilder.shouldRenderTransparentFace(left))
@@ -146,11 +147,11 @@ public class ChunkMeshBuilder {
 
         Block top = this.block(chunk, x, y + 1, z);
         if (ChunkMeshBuilder.shouldRenderFace(top))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.TOP, model.top(), vertices, model.properties.top);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.UP, model.top(), vertices, model.properties.top);
 
         Block bottom = this.block(chunk, x, y - 1, z);
         if (ChunkMeshBuilder.shouldRenderFace(bottom))
-            ChunkMeshBuilder.drawFace(offset, BlockFace.BOTTOM, model.bottom(), vertices, model.properties.bottom);
+            ChunkMeshBuilder.drawFace(offset, BlockFace.DOWN, model.bottom(), vertices, model.properties.bottom);
 
         Block left = this.block(chunk, x - 1, y, z);
         if (ChunkMeshBuilder.shouldRenderFace(left))
@@ -266,8 +267,8 @@ public class ChunkMeshBuilder {
 
     public static void drawFace(Vec3i offset, BlockFace face, TextureRegion region, FloatArray output, FaceProperties faceProperties) {
         float[] vertices = switch (face) {
-            case TOP -> ChunkMeshBuilder.topVertices;
-            case BOTTOM -> ChunkMeshBuilder.bottomVertices;
+            case UP -> ChunkMeshBuilder.topVertices;
+            case DOWN -> ChunkMeshBuilder.bottomVertices;
             case WEST -> ChunkMeshBuilder.leftVertices;
             case EAST -> ChunkMeshBuilder.rightVertices;
             case NORTH -> ChunkMeshBuilder.frontVertices;
@@ -275,8 +276,8 @@ public class ChunkMeshBuilder {
         };
 
         float[] uvs = switch (face) {
-            case TOP -> ChunkMeshBuilder.topUv;
-            case BOTTOM -> ChunkMeshBuilder.bottomUv;
+            case UP -> ChunkMeshBuilder.topUv;
+            case DOWN -> ChunkMeshBuilder.bottomUv;
             case WEST -> ChunkMeshBuilder.leftUv;
             case EAST -> ChunkMeshBuilder.rightUv;
             case NORTH -> ChunkMeshBuilder.frontUv;

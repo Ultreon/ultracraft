@@ -12,6 +12,8 @@ import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
+import com.ultreon.craft.client.input.key.KeyBind;
+import com.ultreon.craft.client.input.key.KeyBinds;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;

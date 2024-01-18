@@ -72,8 +72,8 @@ public final class CubeModel {
         return new CubeModel(top, bottom, left, right, front, back, properties);
     }
 
-    public BakedCubeModel bake(TextureAtlas texture) {
-        if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(texture));
+    public BakedCubeModel bake(ElementID resourceId, TextureAtlas texture) {
+        if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(resourceId, texture));
         TextureRegion topTex = texture.get(this.top);
         TextureRegion bottomTex = texture.get(this.bottom);
         TextureRegion leftTex = texture.get(this.left);
@@ -81,6 +81,7 @@ public final class CubeModel {
         TextureRegion frontTex = texture.get(this.front);
         TextureRegion backTex = texture.get(this.back);
         BakedCubeModel baked = new BakedCubeModel(
+                resourceId,
                 topTex, bottomTex,
                 leftTex, rightTex,
                 frontTex, backTex,

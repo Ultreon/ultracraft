@@ -58,7 +58,7 @@ public class GenericDebugPage implements DebugPage {
                 context.left("XYZ", player.getPosition())
                         .left("Block XYZ", blockPosition)
                         .left("Chunk XYZ", sectionPos)
-                        .left("Biome", Registries.BIOME.getKey(world.getBiome(blockPosition)));
+                        .left("Biome", Registries.BIOME.getId(world.getBiome(blockPosition)));
                 if (chunk != null) {
                     int sunlight = chunk.getSunlight(localBlockPos.vec());
                     int blockLight = chunk.getBlockLight(localBlockPos.vec());
@@ -95,7 +95,7 @@ public class GenericDebugPage implements DebugPage {
         if (cursor.isCollide()) {
             Block block = cursor.block;
             if (block != null && !block.isAir()) {
-                context.right("Block", Registries.BLOCK.getKey(block));
+                context.right("Block", Registries.BLOCK.getId(block));
             }
         }
     }

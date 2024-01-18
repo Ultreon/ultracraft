@@ -6,7 +6,8 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.util.GameRenderable;
-import com.ultreon.craft.client.world.BlockFace;
+import com.ultreon.craft.world.BlockFace;
+import com.ultreon.craft.client.world.ChunkMeshBuilder;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
@@ -60,7 +61,14 @@ public class Hud implements GameRenderable {
         Vector3 relative = camera.relative(this.client.hitResult.getPosition());
 
         BlockFace blockFace = BlockFace.ofNormal(normal);
-        float[] vertices = blockFace.getFaceVertices();
+        float[] vertices = switch (blockFace) {
+            case UP -> ChunkMeshBuilder.topVertices;
+            case DOWN -> ChunkMeshBuilder.bottomVertices;
+            case WEST -> ChunkMeshBuilder.leftVertices;
+            case EAST -> ChunkMeshBuilder.rightVertices;
+            case NORTH -> ChunkMeshBuilder.frontVertices;
+            case SOUTH -> ChunkMeshBuilder.backVertices;
+        };;
 
         float[] verticesOut = new float[12];
 
@@ -92,7 +100,7 @@ public class Hud implements GameRenderable {
     private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
-        ElementID key = Registries.ITEM.getKey(selectedItem.getItem());
+        ElementID key = Registries.ITEM.getId(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);

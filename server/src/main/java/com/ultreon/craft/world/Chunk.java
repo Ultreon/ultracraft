@@ -2,6 +2,7 @@ package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
@@ -19,10 +20,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.ultreon.craft.world.World.*;
 import static com.ultreon.libs.commons.v0.Mth.lerp;
@@ -76,6 +74,8 @@ public abstract class Chunk implements ServerDisposable {
             Chunk.lightLevelMap[i] = (float) lerp;
         }
     }
+
+    private Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
 
     /**
      * @deprecated Use {@link #Chunk(World, ChunkPos)} instead@
@@ -159,7 +159,7 @@ public abstract class Chunk implements ServerDisposable {
      */
     public static Block loadBlock(MapType data) {
         @Nullable ElementID id = ElementID.parse(data.getString("id"));
-        return Registries.BLOCK.getValue(id);
+        return Registries.BLOCK.getElement(id);
     }
 
     public Block get(Vec3i pos) {
@@ -422,6 +422,30 @@ public abstract class Chunk implements ServerDisposable {
         if(lightLevel < 0)
             return 0;
         return Chunk.lightLevelMap[lightLevel];
+    }
+
+    protected void setBlockEntity(BlockPos blockPos, BlockEntity blockEntity) {
+        this.blockEntities.put(blockPos, blockEntity);
+    }
+
+    public Collection<BlockEntity> getBlockEntities() {
+        return this.blockEntities.values();
+    }
+
+    public BlockEntity getBlockEntity(int x, int y, int z) {
+        return this.blockEntities.get(new BlockPos(x, y, z));
+    }
+
+    public BlockEntity getBlockEntity(Vec3i localBlockPos) {
+        return this.getBlockEntity(localBlockPos.x, localBlockPos.y, localBlockPos.z);
+    }
+
+    public BlockEntity getBlockEntity(BlockPos blockPos) {
+        return this.blockEntities.get(blockPos);
+    }
+
+    public void removeBlockEntity(BlockPos blockPos) {
+        this.blockEntities.remove(blockPos);
     }
 
     /**

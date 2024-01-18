@@ -1,12 +1,18 @@
 package com.ultreon.craft.client.model.block;
 
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -16,8 +22,9 @@ import java.util.Objects;
 
 import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
 
-public final class BakedCubeModel implements Disposable {
-    public static final BakedCubeModel DEFAULT = new BakedCubeModel(TextureManager.DEFAULT_TEX_REG);
+public final class BakedCubeModel implements BlockModel {
+    public static final BakedCubeModel DEFAULT = new BakedCubeModel(new ElementID("block/default"), TextureManager.DEFAULT_TEX_REG);
+    private final ElementID resourceId;
     private final TextureRegion top;
     private final TextureRegion bottom;
     private final TextureRegion left;
@@ -26,24 +33,26 @@ public final class BakedCubeModel implements Disposable {
     private final TextureRegion back;
     private final Mesh mesh;
     public final ModelProperties properties;
+    private final Model model;
 
-    public BakedCubeModel(TextureRegion all) {
-        this(all, all, all, all, all, all);
+    public BakedCubeModel(ElementID resourceId, TextureRegion all) {
+        this(resourceId, all, all, all, all, all, all);
     }
 
-    public BakedCubeModel(TextureRegion top, TextureRegion bottom,
+    public BakedCubeModel(ElementID resourceId, TextureRegion top, TextureRegion bottom,
                           TextureRegion left, TextureRegion right,
                           TextureRegion front, TextureRegion back) {
-        this(top, bottom, left, right, front, back, ModelProperties.builder().build());
+        this(resourceId, top, bottom, left, right, front, back, ModelProperties.builder().build());
     }
 
-    public BakedCubeModel(TextureRegion all, ModelProperties properties) {
-        this(all, all, all, all, all, all, properties);
+    public BakedCubeModel(ElementID resourceId, TextureRegion all, ModelProperties properties) {
+        this(resourceId, all, all, all, all, all, all, properties);
     }
 
-    public BakedCubeModel(TextureRegion top, TextureRegion bottom,
+    public BakedCubeModel(ElementID resourceId, TextureRegion top, TextureRegion bottom,
                           TextureRegion left, TextureRegion right,
                           TextureRegion front, TextureRegion back, ModelProperties properties) {
+        this.resourceId = resourceId;
         this.top = top;
         this.bottom = bottom;
         this.left = left;
@@ -51,9 +60,21 @@ public final class BakedCubeModel implements Disposable {
         this.front = front;
         this.back = back;
 
-        this.mesh = this.createMesh();
-        this.mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
+        mesh = this.createMesh();
+        mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
         this.properties = properties;
+
+        UltracraftClient client = UltracraftClient.get();
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        modelBuilder.begin();
+
+        Material material = new Material();
+        material.set(new TextureAttribute(TextureAttribute.Diffuse, client.blocksTextureAtlas.getTexture()));
+        material.set(new TextureAttribute(TextureAttribute.Emissive, client.blocksTextureAtlas.getEmissiveTexture()));
+
+        modelBuilder.part("cube", this.mesh, GL20.GL_TRIANGLES, material);
+        this.model = modelBuilder.end();
     }
 
     public TextureRegion top() {
@@ -79,7 +100,7 @@ public final class BakedCubeModel implements Disposable {
     public TextureRegion south() {
         return this.back;
     }
-    
+
     private Mesh createMesh() {
         int len = World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE * 6 * 6 / 3;
 
@@ -87,7 +108,7 @@ public final class BakedCubeModel implements Disposable {
         short j = 0;
         for (int i = 0; i < len; i += 6, j += 4) {
             indices[i] = j;
-            indices[i + 1] = (short) (j + 1);
+            indices[i + 1] = (short) (j + 1f);
             indices[i + 2] = (short) (j + 2);
             indices[i + 3] = (short) (j + 2);
             indices[i + 4] = (short) (j + 3);
@@ -115,36 +136,36 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(1);
         vertices.add(0);
@@ -153,36 +174,36 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createBottom(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(0);
@@ -191,36 +212,36 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createLeft(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(-1);
         vertices.add(0);
         vertices.add(0);
@@ -229,36 +250,36 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createRight(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(1);
         vertices.add(0);
         vertices.add(0);
@@ -267,36 +288,36 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createFront(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
         vertices.add(region.getU());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + (float) z);
         vertices.add(0);
         vertices.add(0);
         vertices.add(1);
@@ -305,41 +326,55 @@ public final class BakedCubeModel implements Disposable {
     }
 
     private static void createBack(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(region.getU2());
         vertices.add(region.getV2());
 
-        vertices.add(offset.x + x);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + (float) x);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(region.getU2());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y + 1);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + y + 1f);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(region.getU());
         vertices.add(region.getV());
 
-        vertices.add(offset.x + x + 1);
-        vertices.add(offset.y + y);
-        vertices.add(offset.z + z + 1);
+        vertices.add(offset.x + x + 1f);
+        vertices.add(offset.y + (float) y);
+        vertices.add(offset.z + z + 1f);
         vertices.add(0);
         vertices.add(0);
         vertices.add(-1);
         vertices.add(region.getU());
         vertices.add(region.getV2());
+    }
+
+    @Override
+    public void load(UltracraftClient client) {
+        // Do nothing
+    }
+
+    @Override
+    public ElementID resourceId() {
+        return resourceId;
+    }
+
+    public boolean isCustom() {
+        return false;
     }
 
     @Override
@@ -376,7 +411,12 @@ public final class BakedCubeModel implements Disposable {
     }
 
     @Override
+    public Model getModel() {
+        return this.model;
+    }
+
+    @Override
     public void dispose() {
-        this.mesh.dispose();
+        this.model.dispose();
     }
 }
