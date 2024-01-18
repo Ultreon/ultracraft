@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.IntAttribute;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
@@ -1071,20 +1073,34 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             EntityRenderer<?> renderer = RendererRegistry.get(type);
             EntityModel<?> entityModel = ModelRegistry.get(type);
 
-            if (entityModel == null) continue;
-
             FileHandle handle = UltracraftClient.resource(e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
             if (handle.exists()) {
                 Model model = UltracraftClient.invokeAndWait(() -> this.modelLoader.loadModel(handle, fileName -> {
                     String filePath = fileName.substring(("assets/" + e.getKey().namespace() + "/models/entity/").length());
                     return new Texture(UltracraftClient.resource(e.getKey().mapPath(    path -> "textures/entity/" + filePath)));
                 }));
-                model.materials.forEach(modelModel -> modelModel.set(new BlendingAttribute(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)));
+                if (model == null) throw new RuntimeException("Failed to load entity model: " + e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
+                model.materials.forEach(modelModel -> {
+                    modelModel.set(new BlendingAttribute(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+                    modelModel.set(FloatAttribute.createAlphaTest(0.5f));
+                });
                 ModelRegistry.registerFinished(type, model);
             } else {
+                if (entityModel == null) {
+                    LOGGER.warn("Model not found for entity {}", type.getId());
+                    continue;
+                }
+
+                if (renderer == null) {
+                    LOGGER.warn("Renderer not found for entity {}", type.getId());
+                    continue;
+                }
+
                 ModelRegistry.registerFinished(type, entityModel.finish(renderer.getTextures()));
             }
         }
+
+        RendererRegistry.load();
     }
 
     private void registerBlockEntityModels() {
@@ -1102,8 +1118,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void registerBlockRenderers() {
-        BlockRendererRegistry.register(Blocks.TALL_GRASS, new FlatFoliageRenderer());
-
         ClientLifecycleEvents.REGISTER_BLOCK_RENDERERS.factory().onRegister();
     }
 
@@ -1122,7 +1136,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         BlockModelRegistry.registerDefault(Blocks.LEAVES);
         BlockModelRegistry.registerDefault(Blocks.PLANKS);
         BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
-        BlockModelRegistry.registerDefault(Blocks.TALL_GRASS);
 
         ClientLifecycleEvents.REGISTER_BLOCK_MODELS.factory().onRegister();
     }

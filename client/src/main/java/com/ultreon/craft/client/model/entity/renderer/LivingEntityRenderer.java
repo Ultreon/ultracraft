@@ -2,6 +2,7 @@ package com.ultreon.craft.client.model.entity.renderer;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +13,8 @@ public abstract class LivingEntityRenderer<E extends LivingEntity> extends Entit
 
     protected LivingEntityRenderer(EntityModel<E> entityModel, Model model) {
         super();
+
+        Preconditions.checkNotNull(model, "Model cannot be null");
 
         this.entityModel = entityModel;
         this.model = model;

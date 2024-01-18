@@ -12,6 +12,7 @@ public class GameSettings extends Configuration {
     public final ConfigEntry<Boolean> fullscreen;
     public final ConfigEntry<Boolean> craftingShowOnlyCraftable;
     public final ConfigEntry<Integer> guiScale;
+    public final ConfigEntry<Boolean> hidePlayerWhenThirdPerson;
 
     public GameSettings() {
         super();
@@ -21,6 +22,7 @@ public class GameSettings extends Configuration {
         this.fullscreen = this.add("fullscreen", false, "Enable fullscreen mode");
         this.craftingShowOnlyCraftable = this.add("craftingShowOnlyCraftable", true, "Show only craftable recipes");
         this.guiScale = this.add("guiScale", 2, 0, 4, "The GUI scale: 0 = automatic scale, 1 = 1x pixel size, 2 = 2x pixel size, etc.");
+        this.hidePlayerWhenThirdPerson = this.add("hidePlayerWhenThirdPerson", false, "Hide the player when third-person view is enabled");
     }
 
     @Override

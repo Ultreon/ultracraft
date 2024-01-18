@@ -29,7 +29,7 @@ public final class Blocks {
     public static final Block LEAVES = Blocks.register("leaves", new Block(new Properties().hardness(0.2F)));
     public static final Block CRATE = Blocks.register("crate", EntityBlock.simple(BlockEntityTypes.CRATE, new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).usesCustomRender().dropsItems(Items.CRATE)));
     public static final Block CRAFTING_BENCH = Blocks.register("crafting_bench", new Block(new Properties().hardness(3.0F).effectiveTool(ToolType.AXE).dropsItems(Items.CRAFTING_BENCH)));
-    public static final Block TALL_GRASS = Blocks.register("tall_grass", new Block(new Properties().noOcclude().replaceable().transparent().noCollision().usesCustomRender().effectiveTool(ToolType.AXE).dropsItems(new RandomLoot(new RandomLoot.ChanceLootEntry(0.4f, Items.GRASS_FIBRE)))));
+    public static final Block TALL_GRASS = Blocks.register("tall_grass", new Block(new Properties().noOcclude().replaceable().transparent().noCollision().usesCustomRender().dropsItems(new RandomLoot(new RandomLoot.ChanceLootEntry(0.4f, Items.GRASS_FIBRE)))));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new ElementID(name), block);

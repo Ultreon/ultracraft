@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.registry;
 
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.collection.OrderedMap;
@@ -23,7 +24,8 @@ public class RendererRegistry {
 
     public static void load() {
         for (var e : RendererRegistry.REGISTRY.entrySet()) {
-            RendererRegistry.FINISHED_REGISTRY.put(e.getKey(), e.getValue().apply(null, null));
+            UltracraftClient.LOGGER.debug("Registering renderer for entity {}", e.getKey().getId());
+            RendererRegistry.FINISHED_REGISTRY.put(e.getKey(), e.getValue().apply(ModelRegistry.get(e.getKey()), ModelRegistry.getFinished(e.getKey())));
         }
     }
 

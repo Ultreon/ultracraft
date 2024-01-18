@@ -6,8 +6,7 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -23,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.RegistryKey;
@@ -51,6 +51,7 @@ public class JsonModelLoader {
         Resource resource = this.resourceManager.getResource(elementID);
         if (resource == null)
             return null;
+        UltracraftClient.LOGGER.debug("Loading block model: {}", elementID);
         return this.load(Registries.BLOCK.getKey(block), GSON.fromJson(resource.openReader(), JsonObject.class));
     }
 
@@ -59,6 +60,7 @@ public class JsonModelLoader {
         Resource resource = this.resourceManager.getResource(elementID);
         if (resource == null)
             return null;
+        UltracraftClient.LOGGER.debug("Loading item model: {}", elementID);
         return this.load(Registries.ITEM.getKey(item), GSON.fromJson(resource.openReader(), JsonObject.class));
     }
 
@@ -234,10 +236,6 @@ public class JsonModelLoader {
             Preconditions.checkNotNull(rotation);
             Preconditions.checkNotNull(from);
             Preconditions.checkNotNull(to);
-
-            for (BlockFace face : BlockFace.values()) {
-                Preconditions.checkNotNull(blockFaceFaceElementMap.get(face));
-            }
         }
 
         public void bake(int idx, ModelBuilder modelBuilder, Map<String, ElementID> textureElements) {
@@ -257,11 +255,11 @@ public class JsonModelLoader {
                 FaceElement faceElement = entry.getValue();
                 String texRef = faceElement.texture;
                 ElementID texture;
-                if (texRef.startsWith("#")) {
-                    texture = textureElements.get(texRef.substring(1));
-                } else {
-                    texture = ElementID.parse(texRef).mapPath(path -> "textures/" + path + ".png");
-                }
+
+                if (texRef.equals("#missing")) texture = new ElementID("textures/block/error.png");
+                else if (texRef.startsWith("#")) texture = textureElements.get(texRef.substring(1));
+                else texture = ElementID.parse(texRef).mapPath(path -> "textures/" + path + ".png");
+
                 meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
 
                 v00.setNor(blockFace.getNormal());
@@ -269,10 +267,10 @@ public class JsonModelLoader {
                 v10.setNor(blockFace.getNormal());
                 v11.setNor(blockFace.getNormal());
 
-                v00.setUV(faceElement.uvs.x1, faceElement.uvs.y1);
-                v01.setUV(faceElement.uvs.x1, faceElement.uvs.y2);
-                v10.setUV(faceElement.uvs.x2, faceElement.uvs.y1);
-                v11.setUV(faceElement.uvs.x2, faceElement.uvs.y2);
+                v00.setUV(faceElement.uvs.x1, faceElement.uvs.y2);
+                v01.setUV(faceElement.uvs.x1, faceElement.uvs.y1);
+                v10.setUV(faceElement.uvs.x2, faceElement.uvs.y2);
+                v11.setUV(faceElement.uvs.x2, faceElement.uvs.y1);
 
                 switch (blockFace) {
                     case UP -> {
@@ -317,6 +315,9 @@ public class JsonModelLoader {
 
                 Material material = new Material();
                 material.set(TextureAttribute.createDiffuse(UltracraftClient.get().getTextureManager().getTexture(texture)));
+                material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+                material.set(new FloatAttribute(FloatAttribute.AlphaTest));
+                material.set(new DepthTestAttribute(GL20.GL_LEQUAL));
                 nodeBuilder.part(idx + "." + blockFace.name(), meshBuilder.end(), GL20.GL_TRIANGLES, material);
             }
 

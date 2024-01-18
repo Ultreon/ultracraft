@@ -27,7 +27,7 @@ public class PauseScreen extends Screen {
         if (world != null)
             this.client.addFuture(world.saveAsync(false));
 
-        this.backToGameButton = builder.add(TextButton.of("ultracraft.ui.backToGame")
+        this.backToGameButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.backToGame"))
                         .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3 - 25)))
                 .callback(this::resumeGame);
 
@@ -35,7 +35,7 @@ public class PauseScreen extends Screen {
                         .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3)))
                 .callback(caller -> UltracraftClient.get().showScreen(new OptionsScreen()));
 
-        this.exitWorldButton = builder.add(TextButton.of("ultracraft.screen.pause.exit_world", 95)
+        this.exitWorldButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 95)
                         .position(() -> new Position(this.size.width / 2 + 5, this.size.height / 3)))
                 .callback(this::exitWorld);
 

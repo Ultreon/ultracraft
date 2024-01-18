@@ -124,6 +124,7 @@ public class Configuration {
                     entry.readAndSet(entryArr[1]);
                 }
             }
+            this.save();
         } catch (FileNotFoundException ignored) {
             // ignored
         } catch (Exception e) {

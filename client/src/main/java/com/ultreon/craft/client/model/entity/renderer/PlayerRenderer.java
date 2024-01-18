@@ -75,7 +75,7 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
         instance.getNode("Head").rotation.setFromMatrix(this.tmp.idt().rotate(Vector3.Y, player.xHeadRot - xRot).rotate(Vector3.X, yRot));
         EntityRenderer.tmp0.set(localPlayer.getPosition());
         EntityRenderer.tmp0.sub(player.getPosition());
-        float generalScale = 1 / 4096f;
+        float generalScale = 1 / 128f;
         instance.transform.idt()
                 .setToTranslationAndScaling(0, -1.6f, 0, generalScale, generalScale, generalScale)
 //                .scale(1, 1, -1)

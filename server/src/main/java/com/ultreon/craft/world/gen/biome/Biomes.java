@@ -5,6 +5,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.Biome;
+import com.ultreon.craft.world.gen.feature.FiolageFeature;
 import com.ultreon.craft.world.gen.feature.PatchFeature;
 import com.ultreon.craft.world.gen.feature.RockFeature;
 import com.ultreon.craft.world.gen.feature.TreeFeature;
@@ -35,6 +36,7 @@ public class Biomes {
             .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 0))
             .feature(new PatchFeature(NoiseConfigs.PATCH, Blocks.DIRT, -0.5f, 4))
             .feature(new RockFeature(NoiseConfigs.ROCK, Blocks.STONE, 0.0005f))
+//            .feature(new FiolageFeature(Blocks.TALL_GRASS, -0.15f))
             .feature(new TreeFeature(NoiseConfigs.TREE, Blocks.LOG, Blocks.LEAVES, 0.007f, 3, 5))
             .build());
 

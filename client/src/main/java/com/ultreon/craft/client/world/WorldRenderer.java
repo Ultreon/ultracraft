@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
+import static com.ultreon.craft.client.UltracraftClient.crash;
 import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
@@ -265,7 +266,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         UltracraftClient.PROFILER.section("(Local Player)", () -> {
             LocalPlayer localPlayer = this.client.player;
-            if (localPlayer == null || !this.client.isInThirdPerson()) return;
+            if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.settings.hidePlayerWhenThirdPerson.get())) return;
 
             this.collectEntity(localPlayer, export, renderablePool);
         });
@@ -424,12 +425,14 @@ public final class WorldRenderer implements DisposableContainer {
             renderer.animate(instance, entity);
             renderer.render(instance, output, renderablePool);
         } catch (Exception e) {
+            e.printStackTrace();
             CrashLog crashLog = new CrashLog("Error rendering entity " + entity.getId(), new Exception());
             CrashCategory category = new CrashCategory("Entity", e);
             category.add("Entity ID", entity.getId());
             category.add("Entity Type", entity.getType().getId());
             crashLog.add("Entity", entity);
             crashLog.addCategory(category);
+            crash(crashLog);
         }
     }
 

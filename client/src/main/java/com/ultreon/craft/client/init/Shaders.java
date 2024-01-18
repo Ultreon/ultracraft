@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
+import com.ultreon.craft.client.shaders.provider.ModelViewShaderProvider;
 import com.ultreon.craft.client.shaders.provider.WorldShaderProvider;
 import com.ultreon.craft.registry.Registry;
 
@@ -21,6 +22,10 @@ public class Shaders {
     public static final DefaultShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
             new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
+    ));
+    public static final DefaultShaderProvider MODEL_VIEW = Shaders.register("model_view", new ModelViewShaderProvider(
+            new ResourceFileHandle(UltracraftClient.id("shaders/model_view.vert")),
+            new ResourceFileHandle(UltracraftClient.id("shaders/model_view.frag"))
     ));
 
     private static <T extends ShaderProvider> T register(String name, T provider) {

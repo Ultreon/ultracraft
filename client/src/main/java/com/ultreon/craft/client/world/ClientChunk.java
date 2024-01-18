@@ -13,6 +13,7 @@ import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.ShaderContext;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.registry.BlockEntityModelRegistry;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
@@ -187,6 +188,7 @@ public final class ClientChunk extends Chunk {
                     attributes.set(new ColorAttribute(ColorAttribute.Ambient, sunlight, sunlight, sunlight, 1));
                 }
             });
+            value.userData = Shaders.MODEL_VIEW;
             value.transform.setToTranslationAndScaling(this.tmp.set(this.renderOffset).add(x, (float) key.y() % 65536, z), this.tmp1.set(1 / 16f, 1 / 16f, 1 / 16f));
             value.getRenderables(output, renderablePool);
         }
