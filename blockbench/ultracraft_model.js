@@ -502,18 +502,13 @@
     
     var format = new ModelFormat({
         id: 'ultracraft_model',
+        name: 'Ultracraft Model',
         extension: 'json',
         icon: 'icon-format_block',
         category: 'ultracraft',
         target: 'Ultracraft',
         format_page: {
-            content: [
-                {type: 'h3', text: tl('mode.start.format.informations')},
-                {text: `* ${tl('format.java_block.info.rotation')}
-                        * ${tl('format.java_block.info.size')}
-                        * ${tl('format.java_block.info.animation')}`.replace(/\t+/g, '')
-                }
-            ]
+
         },
         render_sides: 'front',
         model_identifier: false,
@@ -521,7 +516,7 @@
         vertex_color_ambient_occlusion: true,
         rotate_cubes: true,
         rotation_limit: false,
-        rotation_snap: true,
+        rotation_snap: false,
         optional_box_uv: true,
         uv_rotation: true,
         java_face_properties: true,
