@@ -46,6 +46,8 @@ public class Registry<T> implements IdRegistry<T> {
         this.key = RegistryKey.registry(this);
 
         RegistryEvents.REGISTRY_DUMP.listen(this::dumpRegistry);
+
+        Registry.REGISTRIES.put(RegistryKey.class.cast(this.key), this);
     }
 
     public static Collection<Registry<?>> getRegistries() {
@@ -76,10 +78,7 @@ public class Registry<T> implements IdRegistry<T> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public static <T> Registry<T> create(ElementID id, @NotNull T... type) {
-        Registry<T> registry = new Builder<>(id, type).build();
-        Registry.REGISTRIES.put(Registry.class.cast(registry).key, registry);
-
-        return registry;
+        return new Builder<>(id, type).build();
     }
 
     @SafeVarargs
