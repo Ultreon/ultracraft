@@ -34,7 +34,7 @@ public class LoadingOverlay implements StaticWidget {
         int width = this.client.getScaledWidth();
         int height = this.client.getScaledHeight();
 
-        renderer.blit(this.background, 0, 0, width, height, 0, 0, this.background.getWidth(), this.background.getHeight(), this.background.getWidth(), this.background.getHeight());
+        renderer.fill(0, 0, width, height, Color.rgb(0x101010));
         Vec2f thumbnail = this.resizer.thumbnail(width * TO_ZOOM, height * TO_ZOOM);
 
         float drawWidth = thumbnail.x;

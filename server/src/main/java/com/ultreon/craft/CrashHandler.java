@@ -22,7 +22,7 @@ public class CrashHandler {
     }
 
     public static void handleCrash(CrashLog crashLog) {
-        File file = new File("crash-reports", crashLog.getDefaultFileName());
+        File file = new File("crash-reports", crashLog.getFileName());
         crashLog.writeToFile(file);
 
         try {

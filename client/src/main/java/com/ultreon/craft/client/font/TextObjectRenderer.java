@@ -16,12 +16,16 @@ public class TextObjectRenderer {
     private BitmapFont currentFont;
     private StringBuilder partBuilder = new StringBuilder();
     private float currentX;
+    private float startX;
+    private float lineHeight;
+    private float currentY;
 
     public TextObjectRenderer(TextObject text) {
         this.text = text;
         this.font = UltracraftClient.get().font;
         this.originalFont = this.font.bitmapFont;
         this.currentFont = this.font.bitmapFont;
+        this.lineHeight = this.font.lineHeight;
     }
 
     public String getText() {
@@ -30,6 +34,8 @@ public class TextObjectRenderer {
 
     public void render(Renderer renderer, Color altColor, float x, float y, boolean shadow) {
         this.currentX = x;
+        this.currentY = y;
+        this.startX = x;
 
         for (TextObject cur : this.text) {
             String rawText = cur.createString();
@@ -51,11 +57,11 @@ public class TextObjectRenderer {
                 color = altColor;
             }
 
-            this.renderSingle(renderer, y, shadow, rawText, color, bold, italic, underlined, strikethrough);
+            this.renderSingle(renderer, shadow, rawText, color, bold, italic, underlined, strikethrough);
         }
     }
 
-    private void renderSingle(Renderer renderer, float y, boolean shadow, String rawText, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough) {
+    private void renderSingle(Renderer renderer, boolean shadow, String rawText, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough) {
         float scale = 1;
         for (char c : rawText.toCharArray()) {
             if (!this.currentFont.getData().hasGlyph(c) || this.font.isForcingUnicode()) {
@@ -65,19 +71,29 @@ public class TextObjectRenderer {
                 this.currentFont = this.font.bitmapFont;
             }
 
+            this.lineHeight = Math.max(this.lineHeight, this.currentFont.getLineHeight());
+
+            if (c == '\n') {
+                this.currentX = this.startX;
+                this.currentY += this.lineHeight * scale + 1;
+                this.lineHeight = this.font.lineHeight;
+                this.nextPart(renderer, shadow, color, bold, italic, underlined, strikethrough, scale);
+                continue;
+            }
+
             this.partBuilder.append(c);
 
             if (this.currentFont != this.originalFont) {
-                this.nextPart(renderer, y, shadow, color, bold, italic, underlined, strikethrough, scale);
+                this.nextPart(renderer, shadow, color, bold, italic, underlined, strikethrough, scale);
             }
         }
 
-        this.nextPart(renderer, y, shadow, color, bold, italic, underlined, strikethrough, scale);
+        this.nextPart(renderer, shadow, color, bold, italic, underlined, strikethrough, scale);
     }
 
-    private void nextPart(Renderer renderer, float y, boolean shadow, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough, float scale) {
+    private void nextPart(Renderer renderer, boolean shadow, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough, float scale) {
         var part = this.partBuilder.toString();
-        this.renderPart(renderer, y, shadow, color, bold, italic, underlined, strikethrough, part, scale);
+        this.renderPart(renderer, shadow, color, bold, italic, underlined, strikethrough, part, scale);
 
         this.originalFont = this.currentFont;
 
@@ -88,10 +104,10 @@ public class TextObjectRenderer {
         this.partBuilder = new StringBuilder();
     }
 
-    private void renderPart(Renderer renderer, float y, boolean shadow, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough, String part, float scale) {
+    private void renderPart(Renderer renderer, boolean shadow, Color color, boolean bold, boolean italic, boolean underlined, boolean strikethrough, String part, float scale) {
         if (this.currentFont == Font.UNIFONT)
-            this.font.drawTextScaled(renderer, this.currentFont, renderer.getBatch(), part, this.currentX, y + (this.font.bitmapFont.getLineHeight() - Font.UNIFONT.getLineHeight() * 0.5F) / 2, bold, italic, underlined, strikethrough, scale, color, shadow);
+            this.font.drawTextScaled(renderer, this.currentFont, renderer.getBatch(), part, this.currentX, currentY + (this.font.bitmapFont.getLineHeight() - Font.UNIFONT.getLineHeight() * 0.5F) / 2, bold, italic, underlined, strikethrough, scale, color, shadow);
         else
-            this.font.drawTextScaled(renderer, this.currentFont, renderer.getBatch(), part, this.currentX, y, bold, italic, underlined, strikethrough, scale, color, shadow);
+            this.font.drawTextScaled(renderer, this.currentFont, renderer.getBatch(), part, this.currentX, currentY, bold, italic, underlined, strikethrough, scale, color, shadow);
     }
 }

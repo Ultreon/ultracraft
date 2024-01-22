@@ -72,6 +72,11 @@
   "ultracraft.screen.multiplayer.join": "Join",
   "ultracraft.screen.out_of_memory": "Out of Memory",
   "ultracraft.screen.out_of_memory.message": "Ultracraft ran out of memory.\nTry restarting the game.\nYou can also return to the title screen to free up memory.",
+  "ultracraft.screen.dev": "Development Build",
+  "ultracraft.screen.dev.message": "This is a development build of Ultracraft.\nDon't expect it to work completely.\nIf you experience any issues, please report them on the GitHub page.\n\nThank you! <3",
+  "ultracraft.screen.dev.close": "Close",
+  "ultracraft.screen.crash": "Ultracraft Crashed",
+  "ultracraft.screen.crash.message": "Check if you are using any mods before reporting a bug.\nIf you are using mods, report the crash to the mod/modpack author instead.",
   "ultracraft.dimension.overworld": "Planet Earth",
 
   "ultracraft.recipe.craftable": "Craftable",

@@ -8,19 +8,15 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.util.ElementID;
-import com.ultreon.craft.world.World;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
 
 import java.util.Objects;
-
-import static com.ultreon.craft.world.Chunk.VERTEX_SIZE;
 
 public final class BakedCubeModel implements BlockModel {
     public static final BakedCubeModel DEFAULT = new BakedCubeModel(new ElementID("block/default"), TextureManager.DEFAULT_TEX_REG);
@@ -34,6 +30,11 @@ public final class BakedCubeModel implements BlockModel {
     private final Mesh mesh;
     public final ModelProperties properties;
     private final Model model;
+
+    private final VertexInfo v00 = new VertexInfo();
+    private final VertexInfo v01 = new VertexInfo();
+    private final VertexInfo v10 = new VertexInfo();
+    private final VertexInfo v11 = new VertexInfo();
 
     public BakedCubeModel(ElementID resourceId, TextureRegion all) {
         this(resourceId, all, all, all, all, all, all);
@@ -61,7 +62,6 @@ public final class BakedCubeModel implements BlockModel {
         this.back = back;
 
         mesh = this.createMesh();
-        mesh.transform(new Matrix4().setToTranslation(-1F, 0, 0F));
         this.properties = properties;
 
         UltracraftClient client = UltracraftClient.get();
@@ -102,265 +102,109 @@ public final class BakedCubeModel implements BlockModel {
     }
 
     private Mesh createMesh() {
-        int len = World.CHUNK_SIZE * World.CHUNK_SIZE * World.CHUNK_SIZE * 6 * 6 / 3;
-
-        short[] indices = new short[len];
-        short j = 0;
-        for (int i = 0; i < len; i += 6, j += 4) {
-            indices[i] = j;
-            indices[i + 1] = (short) (j + 1f);
-            indices[i + 2] = (short) (j + 2);
-            indices[i + 3] = (short) (j + 2);
-            indices[i + 4] = (short) (j + 3);
-            indices[i + 5] = j;
-        }
-
-        FloatList vertices = new FloatArrayList();
-        Vec3i offset = new Vec3i();
-
         BakedCubeModel model = this;
 
-        BakedCubeModel.createTop(offset, 0, 0, 0, model.top(), vertices);
-        BakedCubeModel.createBottom(offset, 0, 0, 0, model.bottom(), vertices);
-        BakedCubeModel.createLeft(offset, 0, 0, 0, model.west(), vertices);
-        BakedCubeModel.createRight(offset, 0, 0, 0, model.east(), vertices);
-        BakedCubeModel.createFront(offset, 0, 0, 0, model.north(), vertices);
-        BakedCubeModel.createBack(offset, 0, 0, 0, model.south(), vertices);
+        MeshBuilder builder = new MeshBuilder();
+        builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+        
+        this.createTop(0, 0, 0, model.top(), builder);
+        this.createBottom(0, 0, 0, model.bottom(), builder);
+        this.createLeft(0, 0, 0, model.west(), builder);
+        this.createRight(0, 0, 0, model.east(), builder);
+        this.createFront(0, 0, 0, model.north(), builder);
+        this.createBack(0, 0, 0, model.south(), builder);
 
-        int numVertices = vertices.size() / VERTEX_SIZE + 1;
-        Mesh mesh = new Mesh(false, false, numVertices, indices.length * 6, new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)));
-        mesh.setIndices(indices);
-        mesh.setVertices(vertices.toFloatArray());
-        vertices.clear();
-        return mesh;
+        return builder.end();
     }
 
-    private static void createTop(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
+    private void createTop(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        this.v00.setPos(x, y + 1f, z);
+        this.v01.setPos(x + 1f, y + 1f, z);
+        this.v10.setPos(x + 1f, y + 1f, z + 1f);
+        this.v11.setPos(x, y + 1f, z + 1f);
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        this.setNor(0, 1, 0);
+        this.finishRect(region, vertices);
     }
 
-    private static void createBottom(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
+    private void createBottom(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
 
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        this.v00.setPos(x, y, z);
+        this.v01.setPos(x, y, z + 1f);
+        this.v10.setPos(x + 1f, y, z + 1f);
+        this.v11.setPos(x + 1f, y, z);
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        this.setNor(0, -1, 0);
+        this.finishRect(region, vertices);
     }
 
-    private static void createLeft(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
+    private void createLeft(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
 
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        this.v00.setPos(x, y, z);
+        this.v01.setPos(x, y + 1f, z);
+        this.v10.setPos(x, y + 1f, z + 1f);
+        this.v11.setPos(x, y, z + 1f);
 
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(-1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        this.setNor(-1, 0, 0);
+        this.finishRect(region, vertices);
     }
 
-    private static void createRight(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
+    private void createRight(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        this.v00.setPos(x + 1f, y, z);
+        this.v01.setPos(x + 1f, y, z + 1f);
+        this.v10.setPos(x + 1f, y + 1f, z + 1f);
+        this.v11.setPos(x + 1f, y + 1f, z);
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(1);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        this.setNor(1, 0, 0);
+        this.finishRect(region, vertices);
     }
 
-    private static void createFront(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
-
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
-
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + (float) z);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+    private void setNor(int x, int y, int z) {
+        this.v00.setNor(x, y, z);
+        this.v01.setNor(x, y, z);
+        this.v10.setNor(x, y, z);
+        this.v11.setNor(x, y, z);
     }
 
-    private static void createBack(Vec3i offset, int x, int y, int z, TextureRegion region, FloatList vertices) {
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV2());
+    private void createFront(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
 
-        vertices.add(offset.x + (float) x);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU2());
-        vertices.add(region.getV());
+        this.v00.setPos(x, y, z);
+        this.v01.setPos(x + 1f, y, z);
+        this.v10.setPos(x + 1f, y + 1f, z);
+        this.v11.setPos(x, y + 1f, z);
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + y + 1f);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU());
-        vertices.add(region.getV());
+        this.setNor(0, 0, 1);
 
-        vertices.add(offset.x + x + 1f);
-        vertices.add(offset.y + (float) y);
-        vertices.add(offset.z + z + 1f);
-        vertices.add(0);
-        vertices.add(0);
-        vertices.add(-1);
-        vertices.add(region.getU());
-        vertices.add(region.getV2());
+        this.finishRect(region, vertices);
+    }
+
+    private void createBack(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+        if (region == null) return;
+
+        this.v00.setPos(x, y, z + 1);
+        this.v01.setPos(x, y + 1, z + 1);
+        this.v10.setPos(x + 1, y + 1, z + 1);
+        this.v11.setPos(x + 1, y, z + 1);
+
+        this.setNor(0, 0, -1);
+
+        this.finishRect(region, vertices);
+    }
+
+    private void finishRect(TextureRegion region, MeshBuilder vertices) {
+        this.v00.setUV(region.getU2(), region.getV2());
+        this.v01.setUV(region.getU2(), region.getV());
+        this.v10.setUV(region.getU(), region.getV());
+        this.v11.setUV(region.getU(), region.getV2());
+
+        vertices.rect(this.v00, this.v01, this.v10, this.v11);
     }
 
     @Override

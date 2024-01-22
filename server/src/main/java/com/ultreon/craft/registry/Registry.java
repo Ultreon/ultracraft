@@ -99,7 +99,9 @@ public class Registry<T> implements IdRegistry<T> {
      */
     @Nullable
     public ElementID getId(T obj) {
-        return this.valueMap.get(obj).element();
+        RegistryKey<T> registryKey = this.valueMap.get(obj);
+        if (registryKey == null) return null;
+        return registryKey.element();
     }
 
     /**

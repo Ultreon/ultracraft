@@ -54,9 +54,6 @@ public class DesktopInput extends GameInput {
         if (Gdx.input.isCursorCatched() == caught) return;
 
         Gdx.input.setCursorCatched(caught);
-        if (!caught) {
-            Gdx.input.setCursorPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
-        }
     }
 
     @Override

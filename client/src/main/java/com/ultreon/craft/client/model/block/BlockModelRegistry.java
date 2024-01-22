@@ -113,7 +113,7 @@ public class BlockModelRegistry {
                     if (load != null) {
                         CUSTOM_REGISTRY.put(value, () -> load);
                     } else if (value.doesRender()) {
-                        UltracraftClient.LOGGER.warn("No block model found for {}", value.getId());
+                        BlockModelRegistry.registerDefault(value);
                     }
                 } catch (IOException e) {
                     UltracraftClient.LOGGER.error("Failed to load block model for " + value.getId(), e);
