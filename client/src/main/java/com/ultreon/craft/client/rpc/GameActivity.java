@@ -8,8 +8,13 @@ import java.util.concurrent.Callable;
 public enum GameActivity {
     MAIN_MENU("Main menu"),
     SINGLEPLAYER("Playing singleplayer"),
-    MULTIPLAYER("Playing multiplayer", () -> "On " + UltracraftClient.get().serverData.name()),
-    ;
+    MULTIPLAYER("Playing multiplayer", () -> {
+        UltracraftClient client = UltracraftClient.get();
+        if (client.serverData == null || client.config.get().privacy.hideActiveServer) {
+            return null;
+        }
+        return "On " + client.serverData.name();
+    });
 
     private final String displayName;
     private final Callable<@Nullable String> description;

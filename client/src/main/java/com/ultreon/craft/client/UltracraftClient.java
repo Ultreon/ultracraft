@@ -163,7 +163,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public static final float FROM_ZOOM = 2.0f;
     public static final float TO_ZOOM = 1.3f;
     private static final float DURATION = 6000f;
-    private static final float DEFAULT_SCALE = 2.0f;
     private static final int MINIMUM_WIDTH = 800;
     private static final int MINIMUM_HEIGHT = 600;
     private static ArgParser arguments;
@@ -223,7 +222,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private boolean isDevMode;
     @Nullable
     public Screen screen;
-    public GameSettings settings;
+    @Deprecated
+    public GameSettings settings = new GameSettings();
     public final ShapeDrawer shapes;
     private final TextureManager textureManager;
     private final ResourceManager resourceManager;
@@ -300,8 +300,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Environment defaultEnv = new Environment();
     private boolean autoScale;
     private boolean disposed;
-    private JsonModelLoader jsonModelLoader;
-    private GameWindow window;
+    private final GameWindow window;
 
     @ApiStatus.Experimental
     private static Callback<CrashLog> crashHook;
@@ -426,18 +425,76 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void onReloadConfig() {
         UltracraftClientConfig config = this.config.get();
-        if (config.fullscreen) {
-            Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        boolean changed = false;
+        if (config.video == null) {
+            config.video = new UltracraftClientConfig.VideoConfig();
+            changed = true;
         }
-        String[] split = config.language.split("_");
+        if (config.privacy == null) {
+            config.privacy = new UltracraftClientConfig.PrivacyConfig();
+            changed = true;
+        }
+        if (config.accessibility == null) {
+            config.accessibility = new UltracraftClientConfig.AccessibilityConfig();
+            changed = true;
+        }
+        if (config.language == null) {
+            config.language = UltracraftClient.id("en_us");
+            changed = true;
+        }
+        if (config.personalisation == null) {
+            config.personalisation = new UltracraftClientConfig.PersonalisationConfig();
+            changed = true;
+        }
+        if (config.crafting == null) {
+            config.crafting = new UltracraftClientConfig.CraftingConfig();
+            changed = true;
+        }
+        if (changed) {
+            this.config.set(new UltracraftClientConfig());
+            this.config.save();
+        }
+
+        if (config.video.fullscreen) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+
+        String[] split = config.language.path().split("_");
         if (split.length == 2) {
             LanguageManager.setCurrentLanguage(Locale.of(split[0], split[1]));
         } else {
             UltracraftClient.LOGGER.error("Invalid language: {}", config.language);
             LanguageManager.setCurrentLanguage(Locale.of("en", "us"));
-            config.language = "en_us";
+            config.language = UltracraftClient.id("en_us");
             this.config.save();
         }
+
+        if (config.video.guiScale != 0) {
+            this.setAutomaticScale(false);
+            this.setGuiScale(config.video.guiScale);
+        } else {
+            this.setAutomaticScale(true);
+        }
+
+        if (config.privacy.hideRpc) {
+            RpcHandler.disable();
+        } else {
+            RpcHandler.enable();
+            if (this.activity != null) {
+                this.setActivity(this.activity);
+                RpcHandler.setActivity(this.activity);
+            }
+        }
+
+        if (!config.accessibility.vibration) {
+            GameInput.cancelVibration();
+        }
+
+        UltracraftClient.invoke(() -> {
+            boolean enableVsync = config.video.enableVsync;
+            Gdx.graphics.setVSync(enableVsync);
+
+            int fpsLimit = config.video.fpsLimit;
+            Gdx.graphics.setForegroundFPS(fpsLimit == 0 ? 60 : fpsLimit);
+        });
     }
 
     private void registerAutoFillers() {
@@ -654,10 +711,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.setupMods();
 
-        this.settings = new GameSettings();
-        this.settings.reload();
-        this.settings.reloadLanguage();
-        int scale = this.settings.guiScale.get();
+        int scale = this.config.get().video.guiScale;
         if (scale == 0) {
             this.setAutomaticScale(true);
         }
@@ -675,7 +729,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         UltracraftClient.LOGGER.info("Generating bitmap fonts");
         var resource = this.resourceManager.getResource(UltracraftClient.id("texts/unicode.txt"));
         if (resource == null) {
-            throw new ApplicationCrash(new CrashLog("Where are my sumbols", new ResourceNotFoundException(UltracraftClient.id("texts/unicode.txt"))));
+            throw new ApplicationCrash(new CrashLog("Where are my symbols", new ResourceNotFoundException(UltracraftClient.id("texts/unicode.txt"))));
         }
 
         this.unifont = deferDispose(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/ultracraft/font/unifont/unifont.fnt"), true)));
@@ -761,9 +815,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.loadingOverlay.setProgress(0.98F);
 
-        this.jsonModelLoader = new JsonModelLoader(this.resourceManager);
+        JsonModelLoader jsonModelLoader = new JsonModelLoader(this.resourceManager);
 
-        BlockModelRegistry.load(this.jsonModelLoader);
+        BlockModelRegistry.load(jsonModelLoader);
         UltracraftClient.LOGGER.info("Initializing sounds");
         this.soundRegistry.registerSounds();
 
@@ -772,7 +826,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.bakedBlockModels = BlockModelRegistry.bake(this.blocksTextureAtlas);
 
         this.itemRenderer = UltracraftClient.invokeAndWait(() -> new ItemRenderer(this));
-        this.itemRenderer.registerModels(this.jsonModelLoader);
+        this.itemRenderer.registerModels(jsonModelLoader);
         this.itemRenderer.loadModels(this);
 
         if (this.deferredWidth != null && this.deferredHeight != null) {
@@ -978,7 +1032,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     /**
-     * Delayes shutting down of a shutdownable.
+     * Delays shutting down of a shutdownable.
      * This method shuts down the given shutdownable when the game is shutdown
      *
      * @param shutdownable the shutdownable to delay shutdown.
@@ -1149,6 +1203,19 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         BlockModelRegistry.register(Blocks.CRAFTING_BENCH, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
 
         ClientLifecycleEvents.REGISTER_BLOCK_MODELS.factory().onRegister();
+
+        BlockModelRegistry.registerDefault(Blocks.VOIDGUARD);
+        BlockModelRegistry.registerDefault(Blocks.ERROR);
+        BlockModelRegistry.registerDefault(Blocks.DIRT);
+        BlockModelRegistry.registerDefault(Blocks.SAND);
+        BlockModelRegistry.registerDefault(Blocks.SANDSTONE);
+        BlockModelRegistry.registerDefault(Blocks.GRAVEL);
+        BlockModelRegistry.registerDefault(Blocks.WATER);
+        BlockModelRegistry.registerDefault(Blocks.STONE);
+        BlockModelRegistry.registerDefault(Blocks.LEAVES);
+        BlockModelRegistry.registerDefault(Blocks.PLANKS);
+        BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
+        BlockModelRegistry.registerDefault(Blocks.TALL_GRASS);
     }
 
     private void registerEntityModels() {
@@ -1447,9 +1514,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void startLoading() {
         this.startDevLoading = false;
 
-        UltracraftClient.setCrashHook(crash -> {
-            this.crashes.add(crash);
-        });
+        UltracraftClient.setCrashHook(this.crashes::add);
 
         this.loadingOverlay = new LoadingOverlay(this.ultreonBgTex);
 
@@ -2073,10 +2138,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return world.getBreakProgress(new BlockPos(breaking));
     }
 
-    private float calculateGuiScale() {
-        return UltracraftClient.DEFAULT_SCALE;
-    }
-
     private int calcMaxGuiScale() {
         var windowWidth = Gdx.graphics.getWidth();
         var windowHeight = Gdx.graphics.getHeight();
@@ -2197,6 +2258,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void setGuiScale(float guiScale) {
+        if (autoScale) {
+            this.guiScale = this.calcMaxGuiScale();
+            return;
+        }
         this.guiScale = guiScale;
         this.resize(this.width, this.height);
     }

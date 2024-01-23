@@ -266,7 +266,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         UltracraftClient.PROFILER.section("(Local Player)", () -> {
             LocalPlayer localPlayer = this.client.player;
-            if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.settings.hidePlayerWhenThirdPerson.get())) return;
+            if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.config.get().accessibility.hideFirstPersonPlayer)) return;
 
             this.collectEntity(localPlayer, export, renderablePool);
         });

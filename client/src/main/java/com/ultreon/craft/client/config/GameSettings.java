@@ -13,6 +13,8 @@ public class GameSettings extends Configuration {
     public final ConfigEntry<Boolean> craftingShowOnlyCraftable;
     public final ConfigEntry<Integer> guiScale;
     public final ConfigEntry<Boolean> hidePlayerWhenThirdPerson;
+    public final ConfigEntry<Integer> width;
+    public final ConfigEntry<Integer> height;
 
     public GameSettings() {
         super();
@@ -23,19 +25,19 @@ public class GameSettings extends Configuration {
         this.craftingShowOnlyCraftable = this.add("craftingShowOnlyCraftable", true, "Show only craftable recipes");
         this.guiScale = this.add("guiScale", 2, 0, 4, "The GUI scale: 0 = automatic scale, 1 = 1x pixel size, 2 = 2x pixel size, etc.");
         this.hidePlayerWhenThirdPerson = this.add("hidePlayerWhenThirdPerson", false, "Hide the player when third-person view is enabled");
+        this.width = this.add("width", 1280, 128, 122880, "The width of the window");
+        this.height = this.add("height", 720, 64, 69120, "The height of the window");
     }
 
     @Override
     public void save() {
         super.save();
 
-        this.reloadLanguage();
+        this.onChanged();
     }
 
-    public void reloadLanguage() {
+    public void onChanged() {
         LanguageManager.setCurrentLanguage(this.language.get());
-        if (this.fullscreen.get()) {
-            UltracraftClient.get().setFullScreen(true);
-        }
+        UltracraftClient.get().setFullScreen(this.fullscreen.get());
     }
 }

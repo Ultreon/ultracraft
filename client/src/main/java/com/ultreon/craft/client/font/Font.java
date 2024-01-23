@@ -77,7 +77,7 @@ public class Font implements Disposable {
         renderer.scale(scale, scale);
         if (shadow) {
             float shadowX = x;
-            if (Constants.SHADOW_OFFSET) shadowX += 1;
+            if (this.client.config.get().personalisation.diagonalFontShadow) shadowX += 1;
             this.draw(renderer, font, color.darker().darker(), batch, text, shadowX, y / scale + 1, bold, italic, underlined, strikethrough, scale);
         }
 

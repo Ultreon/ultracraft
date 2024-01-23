@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.Matrix4;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.util.ElementID;
@@ -107,62 +106,86 @@ public final class BakedCubeModel implements BlockModel {
         MeshBuilder builder = new MeshBuilder();
         builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
         
-        this.createTop(0, 0, 0, model.top(), builder);
-        this.createBottom(0, 0, 0, model.bottom(), builder);
-        this.createLeft(0, 0, 0, model.west(), builder);
-        this.createRight(0, 0, 0, model.east(), builder);
-        this.createFront(0, 0, 0, model.north(), builder);
-        this.createBack(0, 0, 0, model.south(), builder);
+        this.createTop(-1, 0, 0, model.top(), builder);
+        this.createBottom(-1, 0, 0, model.bottom(), builder);
+        this.createLeft(-1, 0, 0, model.west(), builder);
+        this.createRight(-1, 0, 0, model.east(), builder);
+        this.createFront(-1, 0, 0, model.north(), builder);
+        this.createBack(-1, 0, 0, model.south(), builder);
 
         return builder.end();
     }
 
-    private void createTop(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+    private void createTop(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
         if (region == null) return;
 
-        this.v00.setPos(x, y + 1f, z);
-        this.v01.setPos(x + 1f, y + 1f, z);
-        this.v10.setPos(x + 1f, y + 1f, z + 1f);
-        this.v11.setPos(x, y + 1f, z + 1f);
+        this.v00.setPos(x, y + 1, z);
+        this.v01.setPos(x + 1, y + 1, z);
+        this.v10.setPos(x + 1, y + 1, z + 1);
+        this.v11.setPos(x, y + 1, z + 1);
 
         this.setNor(0, 1, 0);
-        this.finishRect(region, vertices);
+        this.finishRect(region, builder);
     }
 
-    private void createBottom(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+    private void createBottom(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
         if (region == null) return;
 
         this.v00.setPos(x, y, z);
-        this.v01.setPos(x, y, z + 1f);
-        this.v10.setPos(x + 1f, y, z + 1f);
-        this.v11.setPos(x + 1f, y, z);
+        this.v01.setPos(x, y, z + 1);
+        this.v10.setPos(x + 1, y, z + 1);
+        this.v11.setPos(x + 1, y, z);
 
         this.setNor(0, -1, 0);
-        this.finishRect(region, vertices);
+        this.finishRect(region, builder);
     }
 
-    private void createLeft(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+    private void createLeft(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
         if (region == null) return;
 
         this.v00.setPos(x, y, z);
-        this.v01.setPos(x, y + 1f, z);
-        this.v10.setPos(x, y + 1f, z + 1f);
-        this.v11.setPos(x, y, z + 1f);
+        this.v01.setPos(x, y + 1, z);
+        this.v10.setPos(x, y + 1, z + 1);
+        this.v11.setPos(x, y, z + 1);
 
         this.setNor(-1, 0, 0);
-        this.finishRect(region, vertices);
+        this.finishRect(region, builder);
     }
 
-    private void createRight(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
+    private void createRight(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
         if (region == null) return;
 
-        this.v00.setPos(x + 1f, y, z);
-        this.v01.setPos(x + 1f, y, z + 1f);
-        this.v10.setPos(x + 1f, y + 1f, z + 1f);
-        this.v11.setPos(x + 1f, y + 1f, z);
+        this.v00.setPos(x + 1, y, z);
+        this.v01.setPos(x + 1, y, z + 1);
+        this.v10.setPos(x + 1, y + 1, z + 1);
+        this.v11.setPos(x + 1, y + 1, z);
 
         this.setNor(1, 0, 0);
-        this.finishRect(region, vertices);
+        this.finishRect(region, builder);
+    }
+
+    private void createFront(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
+        if (region == null) return;
+
+        this.v00.setPos(x, y, z);
+        this.v01.setPos(x + 1, y, z);
+        this.v10.setPos(x + 1, y + 1, z);
+        this.v11.setPos(x, y + 1, z);
+
+        this.setNor(0, 0, 1);
+        this.finishRect(region, builder);
+    }
+
+    private void createBack(int x, int y, int z, TextureRegion region, MeshBuilder builder) {
+        if (region == null) return;
+
+        this.v00.setPos(x, y, z + 1);
+        this.v01.setPos(x, y + 1, z + 1);
+        this.v10.setPos(x + 1, y + 1, z + 1);
+        this.v11.setPos(x + 1, y, z + 1);
+
+        this.setNor(0, 0, -1);
+        this.finishRect(region, builder);
     }
 
     private void setNor(int x, int y, int z) {
@@ -172,39 +195,13 @@ public final class BakedCubeModel implements BlockModel {
         this.v11.setNor(x, y, z);
     }
 
-    private void createFront(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
-        if (region == null) return;
-
-        this.v00.setPos(x, y, z);
-        this.v01.setPos(x + 1f, y, z);
-        this.v10.setPos(x + 1f, y + 1f, z);
-        this.v11.setPos(x, y + 1f, z);
-
-        this.setNor(0, 0, 1);
-
-        this.finishRect(region, vertices);
-    }
-
-    private void createBack(int x, int y, int z, TextureRegion region, MeshBuilder vertices) {
-        if (region == null) return;
-
-        this.v00.setPos(x, y, z + 1);
-        this.v01.setPos(x, y + 1, z + 1);
-        this.v10.setPos(x + 1, y + 1, z + 1);
-        this.v11.setPos(x + 1, y, z + 1);
-
-        this.setNor(0, 0, -1);
-
-        this.finishRect(region, vertices);
-    }
-
-    private void finishRect(TextureRegion region, MeshBuilder vertices) {
+    private void finishRect(TextureRegion region, MeshBuilder builder) {
         this.v00.setUV(region.getU2(), region.getV2());
         this.v01.setUV(region.getU2(), region.getV());
         this.v10.setUV(region.getU(), region.getV());
         this.v11.setUV(region.getU(), region.getV2());
 
-        vertices.rect(this.v00, this.v01, this.v10, this.v11);
+        builder.rect(this.v00, this.v01, this.v10, this.v11);
     }
 
     @Override

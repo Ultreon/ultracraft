@@ -274,7 +274,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     @Override
-    public UIContainer<SelectionList<T>> position(Supplier<Position> position) {
+    public SelectionList<T> position(Supplier<Position> position) {
         this.onRevalidate(widget -> widget.setPos(position.get()));
         return this;
     }
@@ -327,6 +327,18 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         @Override
         public String getName() {
             return "SelectionListEntry";
+        }
+
+        public void select() {
+            select(false);
+        }
+
+        public void select(boolean emitEvent) {
+            this.list.selected = this;
+
+            if (this.list.onSelected != null && emitEvent) {
+                this.list.onSelected.call(this.value);
+            }
         }
     }
 

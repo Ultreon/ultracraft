@@ -88,7 +88,7 @@ public class GameRenderer {
                 }
 
                 this.client.camera.update(player);
-                this.client.camera.far = (this.client.settings.renderDistance.get() - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
+                this.client.camera.far = (this.client.config.get().renderDistance - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
 
                 var rotation = this.tmp.set(player.xHeadRot, player.yRot);
                 var quaternion = new Quaternion();

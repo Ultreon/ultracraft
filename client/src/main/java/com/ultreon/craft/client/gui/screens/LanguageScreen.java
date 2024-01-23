@@ -18,7 +18,7 @@ public class LanguageScreen extends Screen {
     private SelectionList<Locale> list;
 
     public LanguageScreen() {
-        super(TextObject.translation("ultracraft.screen.language"));
+        super(TextObject.translation("ultracraft.screen.language.title"));
     }
 
     @Override
@@ -34,13 +34,12 @@ public class LanguageScreen extends Screen {
                 .selectable(true)
                 .entries(locales)
                 .itemRenderer(this::renderItem)
-                .callback(locale -> {
-                    this.client.settings.language.set(locale);
-                    this.client.settings.save();
-                });
+                .callback(this::setLanguage);
+
+        this.list.entry(LanguageManager.getCurrentLanguage()).select();
 
         this.backButton = builder.add(TextButton.of(UITranslations.BACK)
-                .position(() -> new Position(this.size.width / 2 - 100, this.size.height - 30))
+                .bounds(() -> new Bounds(this.size.width / 2 - 75, this.size.height - 30, 150, 21))
                 .callback(caller -> this.back()));
     }
 
@@ -61,5 +60,10 @@ public class LanguageScreen extends Screen {
 
     public TextButton getBackButton() {
         return this.backButton;
+    }
+
+    private void setLanguage(Locale locale) {
+        this.client.config.get().language = LanguageManager.INSTANCE.getLanguageID(locale);
+        this.client.config.save();
     }
 }

@@ -120,6 +120,7 @@ public class TextureManager {
         FileHandle handle = UltracraftClient.resource(id);
         if (!handle.exists()) {
             UltracraftClient.LOGGER.warn("Texture not found: " + id);
+            this.textures.put(id, TextureManager.DEFAULT_TEX);
             return TextureManager.DEFAULT_TEX;
         }
 
@@ -128,6 +129,7 @@ public class TextureManager {
         Texture texture = new Texture(pixmap);
         if (texture.getTextureData() == null) {
             UltracraftClient.LOGGER.warn("Couldn't read texture data: " + id);
+            this.textures.put(id, TextureManager.DEFAULT_TEX);
             return TextureManager.DEFAULT_TEX;
         }
 
@@ -147,6 +149,7 @@ public class TextureManager {
         FileHandle handle = UltracraftClient.resource(id);
         if (!handle.exists()) {
             if (fallback != null) UltracraftClient.LOGGER.warn("Texture not found: {}", id);
+            this.textures.put(id, fallback);
             return fallback;
         }
 
@@ -155,6 +158,7 @@ public class TextureManager {
         Texture texture = new Texture(pixmap);
         if (texture.getTextureData() == null) {
             if (fallback != null) UltracraftClient.LOGGER.warn("Couldn't read texture data: {}", id);
+            this.textures.put(id, fallback);
             return fallback;
         }
 

@@ -359,8 +359,17 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Set running flag to make server stop.
         this.running = false;
 
+        long startTime = System.currentTimeMillis();
         try {
-            this.thread.join(60000);
+            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
+                this.onTerminationFailed();
+            }
+        } catch (InterruptedException | ApplicationCrash exc) {
+            this.crash(exc);
+        }
+
+        try {
+            this.thread.join(6000 - (System.currentTimeMillis() - startTime));
         } catch (InterruptedException e) {
             this.crash(new RuntimeException("Safe shutdown got interrupted."));
             Runtime.getRuntime().halt(1);
@@ -493,14 +502,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.world.dispose();
 
         this.scheduler.shutdown();
-
-        try {
-            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
-                this.onTerminationFailed();
-            }
-        } catch (InterruptedException | ApplicationCrash exc) {
-            this.crash(exc);
-        }
     }
 
     /**

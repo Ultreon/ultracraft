@@ -64,7 +64,9 @@ public final class CrashLog extends CrashCategory {
     private void addCrash(ApplicationCrash exception) {
         CrashLog crashLog = exception.getCrashLog();
         CrashLog crashLog1 = new CrashLog(crashLog.details, crashLog.throwable);
-        crashLog1.categories.addAll(crashLog.categories.subList(0, crashLog.categories.size() - 1));
+        if (!crashLog.categories.isEmpty()) {
+            crashLog1.categories.addAll(crashLog.categories.subList(0, crashLog.categories.size() - 1));
+        }
         crashLog1.entries.addAll(crashLog.entries);
         this.addCrashLog(crashLog1);
     }

@@ -310,6 +310,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
 
     @CanIgnoreReturnValue
     public static boolean startVibration(int duration, float strength) {
+        if (!UltracraftClient.get().config.get().accessibility.vibration) return false;
+
         Controller current = Controllers.getCurrent();
         if (current == null) return false;
         current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));

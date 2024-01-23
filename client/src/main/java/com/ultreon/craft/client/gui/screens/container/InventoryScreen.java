@@ -163,7 +163,7 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     private boolean showOnlyCraftable() {
-        return this.client.settings.craftingShowOnlyCraftable.get();
+        return this.client.config.get().crafting.showOnlyCraftable;
     }
 
     @Nullable

@@ -45,7 +45,10 @@ public class Hud implements GameRenderable {
         Player player = this.client.player;
         if (player == null) return;
 
-        this.renderHotbar(renderer, player);
+        if (!this.client.isInThirdPerson() || !this.client.config.get().accessibility.hideHotbarWhenThirdPerson) {
+            this.renderHotbar(renderer, player);
+        }
+
         if (!player.isInvincible()) {
             this.renderHealth(renderer, player);
         }

@@ -89,14 +89,14 @@ public abstract class Button<T extends Button<T>> extends Widget {
     }
 
     @Override
-    public abstract Button position(Supplier<Position> position);
+    public abstract Button<T> position(Supplier<Position> position);
 
     @Override
-    public abstract Button bounds(Supplier<Bounds> position);
+    public abstract Button<T> bounds(Supplier<Bounds> position);
 
-    public Button callback(Callback<T> callback) {
+    public T callback(Callback<T> callback) {
         this.callback.set(callback);
-        return this;
+        return (T) this;
     }
 
     public CallbackComponent<T> callback() {

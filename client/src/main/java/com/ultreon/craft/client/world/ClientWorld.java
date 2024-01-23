@@ -44,7 +44,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public int getRenderDistance() {
-        return this.client.settings.renderDistance.get();
+        return this.client.config.get().renderDistance;
     }
 
     @Override
@@ -168,7 +168,7 @@ public final class ClientWorld extends World implements Disposable {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
             return;
         }
-        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.config.get().renderDistance) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
@@ -197,7 +197,7 @@ public final class ClientWorld extends World implements Disposable {
                     Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
                     ChunkPos chunkPos = entry.getKey();
                     ClientChunk clientChunk = entry.getValue();
-                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
+                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.config.get().renderDistance) {
                         iterator.remove();
                         clientChunk.dispose();
                         this.updateNeighbours(clientChunk);

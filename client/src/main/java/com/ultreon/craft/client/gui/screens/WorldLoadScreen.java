@@ -171,7 +171,7 @@ public class WorldLoadScreen extends Screen {
             ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk, ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5)).stream().filter(chunkPos -> {
                 Vec2i loadChunk = new Vec2i(chunkPos.x(), chunkPos.z());
                 Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
-                return loadChunk.dst(spawnChunkXZ) < this.client.settings.renderDistance.get();
+                return loadChunk.dst(spawnChunkXZ) < this.client.config.get().renderDistance;
             }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
             this.world.doRefreshNow(refresher);
 

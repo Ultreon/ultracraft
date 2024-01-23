@@ -6,6 +6,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
+import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.text.TextObject;
@@ -33,7 +34,7 @@ public class PauseScreen extends Screen {
 
         this.optionsButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.options"), 95)
                         .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3)))
-                .callback(caller -> UltracraftClient.get().showScreen(new OptionsScreen()));
+                .callback(caller -> UltracraftClient.get().showScreen(new SettingsScreen()));
 
         this.exitWorldButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 95)
                         .position(() -> new Position(this.size.width / 2 + 5, this.size.height / 3)))

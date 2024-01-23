@@ -37,7 +37,7 @@ public class TextButton extends Button<TextButton> {
     protected TextButton(@IntRange(from = 21) int width, @IntRange(from = 21) int height) {
         super(width, height);
 
-        this.text = this.register(id("text"), new TextComponent(TextObject.empty()));
+        this.text = this.register(id("text"), new TextComponent(null));
         this.textColor = this.register(id("text_color"), new ColorComponent(Color.WHITE));
     }
 
@@ -96,7 +96,10 @@ public class TextButton extends Button<TextButton> {
 
         this.renderButton(renderer, mouseX, mouseY, texture, x, y);
 
-        renderer.textCenter(this.text.get(), x + this.size.width / 2, y + (this.size.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor.get() : this.textColor.get().withAlpha(0x80));
+        TextObject textObject = this.text.get();
+        if (textObject != null) {
+            renderer.textCenter(textObject, x + this.size.width / 2, y + (this.size.height / 2 - this.font.lineHeight + (this.isPressed() ? 2 : 0)), this.enabled ? this.textColor.get() : this.textColor.get().withAlpha(0x80));
+        }
     }
 
     @Override

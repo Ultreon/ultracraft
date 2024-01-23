@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 public class UIContainer<T extends UIContainer<T>> extends Widget {
@@ -31,7 +32,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     };
 
     @ApiStatus.Internal
-    protected final List<Widget> widgets = new ArrayList<>();
+    protected final List<Widget> widgets = new CopyOnWriteArrayList<>();
 
     private Layout layout = new StandardLayout();
     protected Widget focused;
@@ -261,5 +262,12 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
         if (widget != null && widget.charType(character)) return true;
 
         return super.charType(character);
+    }
+
+    protected <C extends Widget> C defineRoot(C widget) {
+        if (widget.root == null) {
+            widget.root = root;
+        }
+        return widget;
     }
 }
