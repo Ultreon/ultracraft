@@ -39,10 +39,6 @@ public class PauseScreen extends Screen {
         this.exitWorldButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 95)
                         .position(() -> new Position(this.size.width / 2 + 5, this.size.height / 3)))
                 .callback(this::exitWorld);
-
-        if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
-            this.client.showScreen(null);
-        }
     }
 
     @Override
