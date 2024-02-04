@@ -42,9 +42,7 @@ public class BiomeGenerator implements ServerDisposable {
 
         this.generateTerrainLayers(chunk, x, z, groundPos);
 
-        WorldGenDebugContext.withinContext(() -> {
-            BiomeGenerator.setRecordedChanges(chunk, x, z, recordedChanges);
-        });
+        BiomeGenerator.setRecordedChanges(chunk, x, z, recordedChanges);
 
         BiomeGenerator.updateLightMap(chunk, x, z, lightMap);
         chunk.set(x, chunk.getOffset().y, z, Blocks.VOIDGUARD);
