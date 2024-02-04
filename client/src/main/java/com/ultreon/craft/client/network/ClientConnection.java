@@ -2,9 +2,12 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
+import com.ultreon.craft.network.packets.c2s.C2SKeepAlivePacket;
+import com.ultreon.craft.network.packets.c2s.C2SPingPacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -18,13 +21,10 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ClientConnection implements Runnable {
+    private final SocketAddress address;
 
-    private final String host;
-    private final int port;
-
-    public ClientConnection(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public ClientConnection(SocketAddress address) {
+        this.address = address;
     }
 
     public static Connection connectToLocalServer(SocketAddress address) {
@@ -41,15 +41,13 @@ public class ClientConnection implements Runnable {
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
         Class<? extends SocketChannel> channelClass;
         Supplier<? extends EventLoopGroup> group;
-//        if (Epoll.isAvailable()) {
-//            channelClass = EpollSocketChannel.class;
-//            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
-//        } else {
+        if (Epoll.isAvailable()) {
+            channelClass = EpollSocketChannel.class;
+            group = Connection.NETWORK_EPOLL_WORKER_GROUP;
+        } else {
             channelClass = NioSocketChannel.class;
             group = Connection.NETWORK_WORKER_GROUP;
-//        }
-
-        connection.setGroup(group.get());
+        }
 
         return new Bootstrap()
                 .group(group.get())
@@ -58,13 +56,14 @@ public class ClientConnection implements Runnable {
                 .connect(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
     }
 
-    public static Future<?> closeGroup(ChannelFuture future) {
+    public static Future<?> closeGroup() {
         return Connection.NETWORK_WORKER_GROUP.get().shutdownGracefully();
     }
 
     public void tick(Connection connection) {
         if (connection.tickKeepAlive()) {
-            connection.send(new S2CKeepAlivePacket());
+            connection.send(new C2SKeepAlivePacket());
+            connection.send(new C2SPingPacket());
         }
     }
 
@@ -86,11 +85,11 @@ public class ClientConnection implements Runnable {
                 }
             });
 
-            ChannelFuture f = b.connect(this.host, this.port).sync();
+            ChannelFuture f = b.connect(this.address).sync();
 
             f.channel().closeFuture().sync();
         } catch (InterruptedException ignored) {
-
+            Thread.currentThread().interrupt();
         } finally {
             workerGroup.shutdownGracefully();
         }
@@ -103,6 +102,7 @@ public class ClientConnection implements Runnable {
             this.connection = connection;
         }
 
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 
@@ -123,6 +123,7 @@ public class ClientConnection implements Runnable {
             this.connection = connection;
         }
 
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 

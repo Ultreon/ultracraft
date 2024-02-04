@@ -30,9 +30,6 @@ public class MatrixStack {
         this.stack = Utils.make(Queues.newArrayDeque(), matrixDeque -> matrixDeque.add(origin));
     }
 
-    public void clean() {
-    }
-
     public void push() {
         this.stack.addLast(this.stack.getLast().cpy());
         this.onEdit.accept(this.stack.getLast());

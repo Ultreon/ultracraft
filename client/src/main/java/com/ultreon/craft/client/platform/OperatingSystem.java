@@ -15,7 +15,6 @@ public enum OperatingSystem {
     private final PlatformType type;
 
     OperatingSystem(GdxPlatform gdxPlatform, PlatformType type) {
-
         this.gdxPlatform = gdxPlatform;
         this.type = type;
     }

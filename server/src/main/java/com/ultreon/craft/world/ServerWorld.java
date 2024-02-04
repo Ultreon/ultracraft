@@ -6,14 +6,16 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.debug.DebugFlags;
+import com.ultreon.craft.config.UltracraftServerConfig;
+import com.ultreon.craft.debug.ValueTracker;
+import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
-import com.ultreon.craft.server.CommonConstants;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
@@ -21,16 +23,18 @@ import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.OverwriteError;
 import com.ultreon.craft.util.Task;
 import com.ultreon.craft.util.ValidationError;
-import com.ultreon.craft.world.gen.BiomeGenerator;
 import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
-import com.ultreon.craft.world.gen.layer.*;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.NoiseSettingsInit;
+import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.ListType;
+import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -47,8 +51,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public final class ServerWorld extends World {
-    @Nullable
-    private TerrainGenerator terrainGen;
     private final WorldStorage storage;
     private final UltracraftServer server;
     private final RegionStorage regionStorage = new RegionStorage();
@@ -61,38 +63,67 @@ public final class ServerWorld extends World {
     private static long chunkLoads;
     private static long chunkSaves;
 
-    private static final Biome DEFAULT_BIOME = Biome.builder()
-            .noise(NoiseSettingsInit.DEFAULT)
-            .domainWarping(seed -> new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseSettingsInit.DOMAIN_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseSettingsInit.DOMAIN_Y.create(seed))))
-            .layer(new WaterTerrainLayer(64))
-            .layer(new AirTerrainLayer())
-            .layer(new SurfaceTerrainLayer())
-            .layer(new StoneTerrainLayer())
-            .layer(new UndergroundTerrainLayer())
-            .extraLayer(new StonePatchTerrainLayer(NoiseSettingsInit.STONE_PATCH_X, NoiseSettingsInit.STONE_PATCH_Y, NoiseSettingsInit.STONE_PATCH_BASE))
-            .build();
-
-    static {
-        // TODO Use biome registry
-        ServerWorld.DEFAULT_BIOME.buildLayers();
-
-    }
+    private final TerrainGenerator terrainGen;
 
     private final Queue<ChunkPos> chunksToLoad = this.createSyncQueue();
     private final Queue<ChunkPos> chunksToUnload = this.createSyncQueue();
     private final Queue<Runnable> tasks = this.createSyncQueue();
 
-    private final BiomeGenerator generator;
     private final Lock chunkLock = new ReentrantLock();
 
     private int playTime;
+    private final Set<RecordedChange> recordedChanges = new CopyOnWriteArraySet<>();
 
-    public ServerWorld(UltracraftServer server, WorldStorage storage) {
-        super();
+    public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
+        super((LongType) worldData.get("seed"));
         this.server = server;
         this.storage = storage;
 
-        this.generator = ServerWorld.DEFAULT_BIOME.create(this, this.seed);
+        this.load(worldData);
+
+        var biomeDomain = new DomainWarping(
+                UltracraftServer.get().disposeOnClose(NoiseConfigs.BIOME_X.create(this.seed)),
+                UltracraftServer.get().disposeOnClose(NoiseConfigs.BIOME_Y.create(this.seed))
+        );
+
+        var layerDomain = new DomainWarping(
+                UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(this.seed)),
+                UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(this.seed))
+        );
+
+        this.terrainGen = new TerrainGenerator(biomeDomain, layerDomain, NoiseConfigs.BIOME_MAP);
+
+        for (Biome value : Registries.BIOME.values()) {
+            if (value.doesNotGenerate()) continue;
+            this.terrainGen.registerBiome(this, this.getSeed(), value, value.getTemperatureStart(), value.getTemperatureEnd(), value.isOcean());
+        }
+
+        this.terrainGen.create(this, this.seed);
+    }
+
+    private void load(MapType worldData) {
+        this.playTime = worldData.getInt("playTime", 0);
+        this.uid = worldData.getUUID("uid", this.uid);
+        this.spawnPoint.set(worldData.getInt("spawnX", 0), worldData.getInt("spawnY", 0), worldData.getInt("spawnZ", 0));
+    }
+
+    private MapType save(MapType worldData) {
+        BlockPos spawnPoint = UltracraftServer.invokeAndWait(this::getSpawnPoint);
+        worldData.putInt("playTime", this.playTime);
+        worldData.putUUID("uid", this.uid);
+        worldData.putInt("spawnX", spawnPoint.x());
+        worldData.putInt("spawnY", spawnPoint.y());
+        worldData.putInt("spawnZ", spawnPoint.z());
+        worldData.putLong("seed", this.seed);
+
+        ListType<MapType> recordedChanges = new ListType<>();
+        for (RecordedChange change : this.recordedChanges) {
+            recordedChanges.add(change.save());
+        }
+
+        worldData.put("RecordedChanges", recordedChanges);
+
+        return worldData;
     }
 
     public static long getChunkUnloads() {
@@ -115,6 +146,7 @@ public final class ServerWorld extends World {
         return Queues.synchronizedQueue(Queues.newConcurrentLinkedQueue());
     }
 
+    @Override
     public int getRenderDistance() {
         return this.server.getRenderDistance();
     }
@@ -126,8 +158,7 @@ public final class ServerWorld extends World {
         if (!chunk.getPos().equals(pos)) {
             throw new ValidationError("Chunk position (" + chunk.getPos() + ") and provided position (" + pos + ") don't match.");
         }
-        if (!this.unloadChunk(pos, true))
-            World.LOGGER.warn(World.MARKER, "Failed to unload chunk at " + pos);
+        if (!this.unloadChunk(pos, true)) World.LOGGER.warn(World.MARKER, "Failed to unload chunk at {}", pos);
 
         WorldEvents.CHUNK_UNLOADED.factory().onChunkUnloaded(this, chunk.getPos(), chunk);
         return true;
@@ -171,8 +202,6 @@ public final class ServerWorld extends World {
     public ServerChunk loadChunk(int x, int z, boolean overwrite) {
         this.checkThread();
 
-//        if (x != 17 || z != 18) return null;
-
         var globalPos = new ChunkPos(x, z);
         var localPos = World.toLocalChunkPos(x, z);
 
@@ -190,7 +219,7 @@ public final class ServerWorld extends World {
             }
 
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
-            World.chunkLoads++;
+            ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
@@ -230,7 +259,8 @@ public final class ServerWorld extends World {
             var region = this.getOrOpenRegionAt(globalPos);
             var chunk = region.openChunkNow(localPos, globalPos);
             if (chunk == null) {
-                World.LOGGER.warn("Failed to load chunk " + globalPos + "!");
+                this.server.handleChunkLoadFailure(globalPos, "Chunk not loaded on server.");
+                World.LOGGER.warn("Failed to load chunk {}!", globalPos);
                 return null;
             }
             if (chunk.active) {
@@ -238,7 +268,7 @@ public final class ServerWorld extends World {
             }
 
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
-            World.chunkLoads++;
+            ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
@@ -294,7 +324,7 @@ public final class ServerWorld extends World {
             this.server.profiler.section("chunkLoads", () -> {
                 var load = this.chunksToLoad.poll();
                 if (load != null) {
-                    this.server.profiler.section("chunk[" + load.toString() + "]", () -> this.loadChunk(load));
+                    this.server.profiler.section("chunk[" + load + "]", () -> this.loadChunk(load));
                 }
             });
         } catch (Throwable t) {
@@ -334,10 +364,7 @@ public final class ServerWorld extends World {
     }
 
     private List<ChunkPos> getChunksToLoad(List<ChunkPos> needed, Vec3d pos) {
-        return needed.stream()
-                .filter(chunkPos -> this.getChunk(chunkPos) == null)
-                .sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos)))
-                .collect(Collectors.toList());
+        return needed.stream().filter(chunkPos -> this.getChunk(chunkPos) == null).sorted(Comparator.comparingDouble(o -> o.getChunkOrigin().dst(pos))).collect(Collectors.toList());
     }
 
     private List<ChunkPos> getChunksToUnload(List<ChunkPos> needed) {
@@ -416,8 +443,7 @@ public final class ServerWorld extends World {
         this.checkThread();
 
         var region = this.regionStorage.getRegionAt(chunkPos);
-        if (region == null)
-            throw new IllegalStateException("Region is unloaded while unloading chunk " + chunkPos);
+        if (region == null) throw new IllegalStateException("Region is unloaded while unloading chunk " + chunkPos);
 
         var localChunkPos = World.toLocalChunkPos(chunkPos);
 
@@ -434,6 +460,7 @@ public final class ServerWorld extends World {
                 this.saveRegion(region);
             } catch (Exception e) {
                 World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
+                return false;
             }
         }
 
@@ -447,8 +474,7 @@ public final class ServerWorld extends World {
 
     @Override
     protected void checkThread() {
-        if (!UltracraftServer.isOnServerThread())
-            throw new InvalidThreadException("Should be on server thread.");
+        if (!UltracraftServer.isOnServerThread()) throw new InvalidThreadException("Should be on server thread.");
     }
 
     @Override
@@ -491,7 +517,7 @@ public final class ServerWorld extends World {
 
         this.regionStorage.dispose();
 
-        this.generator.dispose();
+        this.terrainGen.dispose();
     }
 
     @Override
@@ -565,9 +591,12 @@ public final class ServerWorld extends World {
      */
     @ApiStatus.Internal
     public void load() throws IOException {
-        this.storage.createDir("data/");
+        this.storage.createDir("players/");
         this.storage.createDir("regions/");
 
+        World.LOGGER.info(World.MARKER, "Loading world: " + this.storage.getDirectory().getFileName());
+
+        //<editor-fold defaultstate="collapsed" desc="<<Loading: entities.ubo>>">
         if (this.storage.exists("entities.ubo")) {
             ListType<MapType> entityListData = this.storage.read("entities.ubo");
             for (var entityData : entityListData) {
@@ -575,9 +604,16 @@ public final class ServerWorld extends World {
                 this.entities.put(entity.getId(), entity);
             }
         }
+        //</editor-fold>
 
-        WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
+        //<editor-fold defaultstate="collapsed" desc="<<Loading: world.ubo>>">
+        if (this.storage.exists("world.ubo")) {
+            MapType worldData = this.storage.read("world.ubo");
+            this.load(worldData);
+        }
+        //</editor-fold>
 
+        //<editor-fold defaultstate="collapsed" desc="<<Starting: Auto Save Schedule>>">
         this.saveSchedule = this.server.schedule(new Task<>(new Identifier("auto_save")) {
             @Override
             public void run() {
@@ -586,9 +622,14 @@ public final class ServerWorld extends World {
                 } catch (Exception e) {
                     World.LOGGER.error(World.MARKER, "Failed to save world:", e);
                 }
-                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, CommonConstants.AUTO_SAVE_DELAY, CommonConstants.AUTO_SAVE_DELAY_UNIT);
+                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.get().autoSaveInterval, TimeUnit.SECONDS);
             }
-        }, CommonConstants.INITIAL_AUTO_SAVE_DELAY, CommonConstants.AUTO_SAVE_DELAY_UNIT);
+        }, UltracraftServerConfig.get().initialAutoSaveDelay, TimeUnit.SECONDS);
+        //</editor-fold>
+
+        WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
+
+        World.LOGGER.info(World.MARKER, "Loaded world: " + this.storage.getDirectory().getFileName());
     }
 
     /**
@@ -601,7 +642,7 @@ public final class ServerWorld extends World {
     public void save(boolean silent) throws IOException {
         if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getFileName());
 
-        //<editor-fold defaultstate="collapsed" desc="<<Entity-Saving>>">
+        //<editor-fold defaultstate="collapsed" desc="<<Saving: entities.ubo>>">
         var entitiesData = new ListType<MapType>();
         for (var entity : this.entities.values()) {
             if (entity instanceof Player) continue;
@@ -612,13 +653,12 @@ public final class ServerWorld extends World {
         this.storage.write(entitiesData, "entities.ubo");
         //</editor-fold>
 
-        for (var region : this.regionStorage.regions.values()) {
-            this.saveRegion(region, false);
-        }
+        //<editor-fold defaultstate="collapsed" desc="<<Saving: world.ubo>>">
+        MapType save = this.save(new MapType());
+        this.storage.write(save, "world.ubo");
+        //</editor-fold>
 
-        WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
-
-        //<editor-fold defaultstate="collapsed" desc="<<Region-Saving>>">
+        //<editor-fold defaultstate="collapsed" desc="<<Saving: regions/>>">
         for (var region : this.regionStorage.regions.values()) {
             try {
                 this.saveRegion(region, false);
@@ -631,6 +671,8 @@ public final class ServerWorld extends World {
             }
         }
         //</editor-fold>
+
+        WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
 
         if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getFileName());
     }
@@ -651,10 +693,6 @@ public final class ServerWorld extends World {
      * @param dispose true to also dispose the region.
      */
     public void saveRegion(Region region, boolean dispose) {
-        if (!UltracraftServer.isOnServerThread()) {
-            UltracraftServer.invokeAndWait(() -> this.saveRegion(region, dispose));
-        }
-
         var file = this.storage.regionFile(region.getPos());
         try (var stream = new GZIPOutputStream(new FileOutputStream(file, false), true)) {
             var dataStream = new DataOutputStream(stream);
@@ -687,6 +725,7 @@ public final class ServerWorld extends World {
                     this.save(silent);
                     return true;
                 } catch (Exception e) {
+                    this.server.handleWorldSaveError(e);
                     World.LOGGER.error(World.MARKER, "Failed to save world", e);
                     return false;
                 }
@@ -809,11 +848,34 @@ public final class ServerWorld extends World {
         this.setSpawnPoint(spawnX, spawnZ);
     }
 
+    public void recordOutOfBounds(int x, int y, int z, Block block) {
+        if (this.isOutOfWorldBounds(x, y, z)) {
+            return;
+        }
+
+        Chunk chunkAt = this.getChunkAt(x, y, z);
+        if (chunkAt == null) {
+            if (WorldGenDebugContext.isActive())
+                System.out.println("[DEBUG] Recorded out of bounds block at " + x + " " + y + " " + z + " " + block);
+            this.recordedChanges.add(new RecordedChange(x, y, z, block));
+            return;
+        }
+
+        if (WorldGenDebugContext.isActive())
+            System.out.println("[DEBUG] Chunk is available, setting block at " + x + " " + y + " " + z + " " + block);
+
+        chunkAt.setFast(World.toLocalBlockPos(x, y, z).vec(), block);
+    }
+
+    public TerrainGenerator getTerrainGenerator() {
+        return this.terrainGen;
+    }
+
     /**
      * The region class.
      * Note: This class is not thread safe.
      *
-     * @author XyperCode
+     * @author <a href="https://github.com/XyperCode">XyperCode</a>
      * @since 0.1.0
      */
     @NotThreadSafe
@@ -822,7 +884,7 @@ public final class ServerWorld extends World {
         private final RegionPos pos;
         public int dataVersion;
         public String lastPlayedIn = UltracraftServer.get().getGameVersion();
-        private Map<ChunkPos, ServerChunk> chunks = new ConcurrentHashMap<>();
+        private Map<ChunkPos, ServerChunk> chunks = Object2ObjectMaps.synchronize(new Object2ObjectArrayMap<>());
         private boolean disposed = false;
         private final ServerWorld world;
         private final List<ChunkPos> generatingChunks = new CopyOnWriteArrayList<>();
@@ -856,7 +918,7 @@ public final class ServerWorld extends World {
          * @return all loaded chunks within the region.
          */
         public Collection<ServerChunk> getChunks() {
-            return Collections.unmodifiableCollection(this.chunks.values());
+            return List.copyOf(this.chunks.values());
         }
 
         /**
@@ -871,6 +933,7 @@ public final class ServerWorld extends World {
          * Note: Internal API.
          * Should only be called if you know what you are doing.
          */
+        @Override
         @ApiStatus.Internal
         public void dispose() {
             this.validateThread();
@@ -897,8 +960,7 @@ public final class ServerWorld extends World {
             this.validateThread();
             Chunk chunk = this.chunks.get(chunkPos);
 
-            if (chunk == null)
-                return null;
+            if (chunk == null) return null;
 
             if (!this.activeChunks.remove(chunkPos))
                 throw new IllegalStateError("Can't deactivate an already inactive chunk.");
@@ -922,11 +984,9 @@ public final class ServerWorld extends World {
 
             @Nullable Chunk chunk = this.chunks.get(chunkPos);
 
-            if (chunk == null)
-                return null;
+            if (chunk == null) return null;
 
-            if (this.activeChunks.contains(chunkPos))
-                return chunk;
+            if (this.activeChunks.contains(chunkPos)) return chunk;
 
             this.activeChunks.add(chunkPos);
             chunk.active = true;
@@ -996,8 +1056,7 @@ public final class ServerWorld extends World {
             this.validateLocalPos(pos);
             this.validateThread();
 
-            if (this.chunks.containsKey(pos))
-                throw new IllegalStateError("Chunk is already loaded");
+            if (this.chunks.containsKey(pos)) throw new IllegalStateError("Chunk is already loaded");
 
             return this.chunks.put(pos, chunk);
         }
@@ -1026,7 +1085,7 @@ public final class ServerWorld extends World {
          *
          * @param pos       the position of the chunk to generate.
          * @param globalPos the global position of the chunk to generate.
-         * @return
+         * @return the generated chunk.
          */
         @NewInstance
         public ServerChunk generateChunkNow(ChunkPos pos, ChunkPos globalPos) {
@@ -1053,7 +1112,7 @@ public final class ServerWorld extends World {
             var players = this.world.getServer().getPlayersInChunk(globalPos);
             players.forEach(player -> {
                 try {
-                    BlockPos globalTpPos = player.blockPosition();
+                    BlockPos globalTpPos = player.getBlockPos();
                     BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
                     int x = localTpPos.x();
                     int z = localTpPos.z();
@@ -1073,7 +1132,7 @@ public final class ServerWorld extends World {
          * @param globalPos the global position of the chunk to generate.
          */
         private void buildChunkAsync(ChunkPos globalPos) {
-            if (DebugFlags.WARN_CHUNK_BUILD_OVERLOAD && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
+            if (UltracraftServerConfig.get().debugWarnChunkBuildOverload && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
                 World.LOGGER.warn("Chunk building is being overloaded!");
             }
 
@@ -1091,34 +1150,29 @@ public final class ServerWorld extends World {
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
                 }
-            }, this.world.executor).thenAccept(builtChunk -> {
-                UltracraftServer.invoke(() -> {
-                    var players = this.world.getServer().getPlayersInChunk(globalPos);
-                    players.forEach(player -> {
-                        try {
-                            BlockPos globalTpPos = player.blockPosition();
-                            BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
-                            int x = localTpPos.x();
-                            int z = localTpPos.z();
-                            player.teleportTo(globalTpPos.x(), builtChunk.ascend(x, (int) player.getY(), z), globalTpPos.z());
-                        } catch (Exception e) {
-                            World.LOGGER.error("Failed to teleport player outside unloaded chunk:", e);
-                        }
-                    });
+            }, this.world.executor).thenAccept(builtChunk -> UltracraftServer.invoke(() -> {
+                var players = this.world.getServer().getPlayersInChunk(globalPos);
+                players.forEach(player -> {
+                    try {
+                        BlockPos globalTpPos = player.getBlockPos();
+                        BlockPos localTpPos = World.toLocalBlockPos(globalTpPos);
+                        int x = localTpPos.x();
+                        int z = localTpPos.z();
+                        player.teleportTo(globalTpPos.x(), builtChunk.ascend(x, (int) player.getY(), z), globalTpPos.z());
+                    } catch (Exception e) {
+                        World.LOGGER.error("Failed to teleport player outside unloaded chunk:", e);
+                    }
                 });
-            });
+            }));
         }
 
         @CheckReturnValue
-        private ServerChunk buildChunk(ChunkPos globalPos) throws Throwable {
+        private ServerChunk buildChunk(ChunkPos globalPos) {
             var localPos = World.toLocalChunkPos(globalPos);
-            var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, localPos);
-            // Generate terrain of the chunk in columns.
-            for (var bx = 0; bx < World.CHUNK_SIZE; bx++) {
-                for (var by = 0; by < World.CHUNK_SIZE; by++) {
-                    this.world.generator.processColumn(chunk, bx, by);
-                }
-            }
+            var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalPos);
+
+            // Generate terrain using the terrain generator.
+            this.world.terrainGen.generate(chunk, List.copyOf(world.recordedChanges));
 
             WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
 
@@ -1198,7 +1252,7 @@ public final class ServerWorld extends World {
     /**
      * Represents a collection of regions.
      *
-     * @author XyperCode
+     * @author <a href="https://github.com/XyperCode">XyperCode</a>
      * @since 0.1.0
      */
     public static class RegionStorage {
@@ -1233,6 +1287,7 @@ public final class ServerWorld extends World {
                 var localChunkPos = World.toLocalChunkPos(chunk.getPos());
                 stream.writeByte(localChunkPos.x());
                 stream.writeByte(localChunkPos.z());
+
                 chunk.save().write(stream);
                 stream.flush();
                 idx++;
@@ -1339,6 +1394,40 @@ public final class ServerWorld extends World {
         public void dispose() {
             this.regions.values().forEach(Region::dispose);
             this.regions.clear();
+        }
+    }
+
+    public record RecordedChange(int x, int y, int z, Block block) {
+        public MapType save() {
+            MapType mapType = new MapType();
+            mapType.putInt("x", this.x);
+            mapType.putInt("y", this.y);
+            mapType.putInt("z", this.z);
+            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
+            return mapType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RecordedChange that = (RecordedChange) o;
+            return x == that.x && y == that.y && z == that.z;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y, z);
+        }
+
+        @Override
+        public String toString() {
+            return "RecordedChange{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    ", z=" + z +
+                    ", block=" + block.getId() +
+                    '}';
         }
     }
 }

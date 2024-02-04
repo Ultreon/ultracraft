@@ -7,6 +7,7 @@
   "ultracraft.block.cobblestone.name": "Bruk",
   "ultracraft.block.water.name": "Woda",
   "ultracraft.block.air.name": "Powietrze",
+  "ultracraft.ui.back": "Powrót",
   "ultracraft.item.wooden_pickaxe.name": "Drewniany kilof",
   "ultracraft.item.wooden_shovel.name": "Drewniana łopata",
   "ultracraft.item.air.name": "Powietrze",
@@ -58,4 +59,5 @@
   "ultracraft.screen.multiplayer": "Multiplayer",
   "ultracraft.screen.multiplayer.server_ip": "Server IP",
   "ultracraft.screen.multiplayer.join": "Join"
+  "ultracraft.screen.title.quit": "Wyjdź"
 }

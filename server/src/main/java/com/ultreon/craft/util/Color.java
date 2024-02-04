@@ -1,5 +1,6 @@
 package com.ultreon.craft.util;
 
+import com.ultreon.craft.text.ChatColor;
 import com.ultreon.libs.commons.v0.exceptions.InvalidValueException;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -136,6 +137,10 @@ public class Color {
 
     public static Color gdx(com.badlogic.gdx.graphics.Color color) {
         return new Color((int) (color.r * 255), (int) (color.g * 255), (int) (color.b * 255), (int) (color.a * 255));
+    }
+
+    public static Color of(ChatColor chatColor) {
+        return Color.rgb(chatColor.getColor());
     }
 
     public java.awt.Color toAwt() {

@@ -10,6 +10,7 @@ import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -18,21 +19,22 @@ import java.util.List;
 public abstract class Screen extends UIContainer<Screen> {
     protected TextObject title;
     public Screen parentScreen;
-    public Widget<?> directHovered;
+    public Widget directHovered;
+    public @Nullable Widget focused;
 
-    public Screen(String title) {
+    protected Screen(String title) {
         this(TextObject.literal(title));
     }
 
-    public Screen(TextObject title) {
+    protected Screen(TextObject title) {
         this(title, UltracraftClient.get().screen);
     }
 
-    public Screen(String title, Screen parent) {
+    protected Screen(String title, Screen parent) {
         this(TextObject.literal(title), parent);
     }
 
-    public Screen(TextObject title, Screen parent) {
+    protected Screen(TextObject title, Screen parent) {
         super(0, 0, Screen.width(), Screen.height());
         this.parentScreen = parent;
         this.root = this;
@@ -65,7 +67,7 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     public final void init(int width, int height) {
-        this.size(width, height);
+        this.setSize(width, height);
         this.build(new GuiBuilder(this));
         this.revalidate();
     }
@@ -106,7 +108,7 @@ public abstract class Screen extends UIContainer<Screen> {
      * @param renderer renderer to draw/render with.
      */
     protected void renderTransparentBackground(Renderer renderer) {
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0xa0202020));
+        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0x80101010));
     }
 
     /**
@@ -181,12 +183,12 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     @Override
-    public <C extends Widget<?>> C add(C widget) {
+    public <C extends Widget> C add(C widget) {
         return super.add(widget);
     }
 
     public boolean isHoveringClickable() {
-        Widget<?> hovered = this.directHovered;
+        Widget hovered = this.directHovered;
         return hovered != null && hovered.isClickable();
     }
 
@@ -195,12 +197,48 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     @Override
+    public boolean mouseClick(int mouseX, int mouseY, int button, int clicks) {
+        Widget widgetsAt = this.getWidgetAt(mouseX, mouseY);
+        if (this.focused != null) this.focused.onFocusLost();
+        this.focused = widgetsAt;
+        if (this.focused != null) this.focused.onFocusGained();
+
+        return super.mouseClick(mouseX, mouseY, button, clicks);
+    }
+
+    @Override
     public boolean keyPress(int keyCode) {
-        if (keyCode == Input.Keys.ESCAPE) {
+        if (this.focused != null) {
+            if (this.focused.keyPress(keyCode)) return true;
+        }
+
+        return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean keyRelease(int keyCode) {
+        if (keyCode == Input.Keys.ESCAPE && this.canCloseWithEsc()) {
             this.back();
             return true;
         }
 
+        if (this.focused != null) {
+            if (this.focused.keyRelease(keyCode)) return true;
+        }
+
         return super.keyRelease(keyCode);
+    }
+
+    @Override
+    public boolean charType(char character) {
+        if (this.focused != null) {
+            if (this.focused.charType(character)) return true;
+        }
+
+        return super.charType(character);
+    }
+
+    protected final void close() {
+        this.client.showScreen(null);
     }
 }

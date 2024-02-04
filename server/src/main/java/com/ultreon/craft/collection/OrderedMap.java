@@ -1,5 +1,6 @@
 package com.ultreon.craft.collection;
 
+import com.ultreon.libs.commons.v0.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -47,6 +48,23 @@ public class OrderedMap<K, V> extends AbstractMap<K, V> {
         } else {
             this.keys.add(key);
             this.values.add(value);
+            this.validateSizes();
+            return null;
+        }
+    }
+
+    public Pair<Integer, V> put(int index, K key, V value) {
+        this.validateSizes();
+        if (this.containsKey(key)) {
+            int oldIndex = this.keys.indexOf(key);
+            V oldValue = this.remove(key);
+            this.keys.add(index, key);
+            this.values.add(index, value);
+            this.validateSizes();
+            return new Pair<>(oldIndex, oldValue);
+        } else {
+            this.keys.add(index, key);
+            this.values.add(index, value);
             this.validateSizes();
             return null;
         }

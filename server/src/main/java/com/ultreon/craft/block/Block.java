@@ -3,6 +3,7 @@ package com.ultreon.craft.block;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
+import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
@@ -47,12 +48,12 @@ public class Block implements DataWriter<MapType> {
     }
 
     public Identifier getId() {
-        Identifier key = Registries.BLOCKS.getKey(this);
+        Identifier key = Registries.BLOCK.getKey(this);
         return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
     }
 
     public boolean isAir() {
-        return this == Blocks.AIR;
+        return this == Blocks.AIR || this == Blocks.CAVE_AIR;
     }
 
     public boolean hasCollider() {
@@ -89,8 +90,12 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCKS.getValue(id);
+        Block block = Registries.BLOCK.getValue(id);
         return block == null ? Blocks.AIR : block;
+    }
+
+    public void write(PacketBuffer buffer) {
+        buffer.writeId(this.getId());
     }
 
     public TextObject getTranslation() {
@@ -99,12 +104,16 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        Identifier key = Registries.BLOCKS.getKey(this);
+        Identifier key = Registries.BLOCK.getKey(this);
         return key == null ? "ultracraft.block.air.name" : key.location() + ".block." + key.path() + ".name";
     }
 
     public float getHardness() {
         return this.hardness;
+    }
+
+    public final boolean isUnbreakable() {
+        return Float.isInfinite(this.hardness);
     }
 
     @Nullable
@@ -125,6 +134,22 @@ public class Block implements DataWriter<MapType> {
         return "Block{" +
                 "id=" + this.getId() +
                 '}';
+    }
+
+    public boolean hasOcclusion() {
+        return true;
+    }
+
+    public boolean shouldGreedyMerge() {
+        return true;
+    }
+
+    public boolean hasCustomRender() {
+        return false;
+    }
+
+    public int getRegIdx() {
+        return Registries.BLOCK.values().indexOf(this);
     }
 
     public static class Properties {
@@ -180,6 +205,11 @@ public class Block implements DataWriter<MapType> {
 
         public @This Properties noRendering() {
             this.disableRendering = true;
+            return this;
+        }
+
+        public Properties unbreakable() {
+            this.hardness = Float.POSITIVE_INFINITY;
             return this;
         }
     }

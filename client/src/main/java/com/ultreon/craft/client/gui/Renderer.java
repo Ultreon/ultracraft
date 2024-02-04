@@ -17,39 +17,43 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.text.ChatColor;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
 import org.jetbrains.annotations.ApiStatus;
+import space.earlygrey.shapedrawer.JoinType;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * Renderer class.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @SuppressWarnings("unused")
 public class Renderer {
+    private static final int TAB_WIDTH = 32;
     ////////////////////
     //     Fields     //
     ////////////////////
     private final UltracraftClient client = UltracraftClient.get();
-    private final Stack<Vector3> globalTranslation = new Stack<>();
+    private final Deque<Vector3> globalTranslation = new ArrayDeque<>();
     private final Batch batch;
     private final ShapeDrawer shapes;
     private final TextureManager textureManager;
     private float strokeWidth = 1;
-    private Texture curTexture;
     private Font font;
     private final MatrixStack matrixStack;
-    private Color textureColor = Color.rgb(0xffffff);
+    private Color blitColor = Color.rgb(0xffffff);
     private final Vector2 tmp2A = new Vector2();
     private final Vector3 tmp3A = new Vector3();
 
@@ -82,34 +86,48 @@ public class Renderer {
         return this.matrixStack;
     }
 
-    public void setStrokeWidth(float strokeWidth) {
+    @CanIgnoreReturnValue
+    public Renderer setStrokeWidth(float strokeWidth) {
         this.strokeWidth = strokeWidth;
+        return this;
     }
 
-    public void setColor(Color c) {
-        if (c == null) return;
+    @CanIgnoreReturnValue
+    public Renderer setColor(Color c) {
+        if (c == null) return this;
         if (this.font != null) this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         this.shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        return this;
     }
 
-    public void setColor(int r, int g, int b) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(int r, int g, int b) {
         this.setColor(Color.rgb(r, g, b));
+        return this;
     }
 
-    public void setColor(float r, float g, float b) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(float r, float g, float b) {
         this.setColor(Color.rgb(r, g, b));
+        return this;
     }
 
-    public void setColor(int r, int g, int b, int a) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(int r, int g, int b, int a) {
         this.setColor(Color.rgba(r, g, b, a));
+        return this;
     }
 
-    public void setColor(float r, float g, float b, float a) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(float r, float g, float b, float a) {
         this.setColor(Color.rgba(r, g, b, a));
+        return this;
     }
 
-    public void setColor(int argb) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(int argb) {
         this.setColor(Color.argb(argb));
+        return this;
     }
 
     /**
@@ -124,859 +142,1279 @@ public class Renderer {
      *
      * @param hex a color hex.
      */
-    public void setColor(String hex) {
+    @CanIgnoreReturnValue
+    public Renderer setColor(String hex) {
         this.setColor(Color.hex(hex));
+        return this;
     }
 
-    public void clearColor(Color color) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(Color color) {
         Gdx.gl.glClearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+        return this;
     }
 
-    public void clearColor(int red, int green, int blue) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(int red, int green, int blue) {
         this.clearColor(Color.rgb(red, green, blue));
+        return this;
     }
 
-    public void clearColor(float red, float green, float blue) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(float red, float green, float blue) {
         this.clearColor(Color.rgb(red, green, blue));
+        return this;
     }
 
-    public void clearColor(int red, int green, int blue, int alpha) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(int red, int green, int blue, int alpha) {
         this.clearColor(Color.rgba(red, green, blue, alpha));
+        return this;
     }
 
-    public void clearColor(float red, float green, float blue, float alpha) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(float red, float green, float blue, float alpha) {
         this.clearColor(Color.rgba(red, green, blue, alpha));
+        return this;
     }
 
-    public void clearColor(int argb) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(int argb) {
         this.clearColor(Color.argb(argb));
+        return this;
     }
 
-    public void clearColor(String hex) {
+    @CanIgnoreReturnValue
+    public Renderer clearColor(String hex) {
         this.clearColor(Color.hex(hex));
+        return this;
     }
 
-    public void outline(Rectangle2D rect) {
+    @CanIgnoreReturnValue
+    public Renderer outline(Rectangle2D rect) {
         this.rectLine((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
+        return this;
     }
 
-    public void outline(Ellipse2D ellipse) {
+    @CanIgnoreReturnValue
+    public Renderer outline(Ellipse2D ellipse) {
         this.ovalLine((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
+        return this;
     }
 
-    public void outline(Line2D s) {
+    @CanIgnoreReturnValue
+    public Renderer outline(Line2D s) {
         this.line((float) s.getX1(), (float) s.getY1(), (float) s.getX2(), (float) s.getY2());
+        return this;
     }
 
-    public void circle(float x, float y, float radius) {
+    @CanIgnoreReturnValue
+    public Renderer circle(float x, float y, float radius) {
         this.shapes.filledCircle(x, y, radius);
+        return this;
     }
 
-    public void circleLine(float x, float y, float radius) {
+    @CanIgnoreReturnValue
+    public Renderer circleLine(float x, float y, float radius) {
         this.shapes.circle(x, y, radius);
+        return this;
     }
 
-    public void fill(Rectangle2D rect) {
+    @CanIgnoreReturnValue
+    public Renderer fill(Rectangle2D rect) {
         this.rect((float) rect.getX(), (float) rect.getY(), (float) rect.getWidth(), (float) rect.getHeight());
+        return this;
     }
 
-    public void fill(Ellipse2D ellipse) {
+    @CanIgnoreReturnValue
+    public Renderer fill(Ellipse2D ellipse) {
         this.oval((float) ellipse.getX(), (float) ellipse.getY(), (float) ellipse.getWidth(), (float) ellipse.getHeight());
+        return this;
     }
 
-    public void fill(Line2D line) {
+    @CanIgnoreReturnValue
+    public Renderer fill(Line2D line) {
         this.line((float) line.getX1(), (float) line.getY1(), (float) line.getX2(), (float) line.getY2());
+        return this;
     }
 
-    public void fill(Vec4i r) {
+    @CanIgnoreReturnValue
+    public Renderer fill(Vec4i r) {
         this.rect(r.x, r.y, r.z, r.w);
+        return this;
     }
 
-    public void line(int x1, int y1, int x2, int y2) {
+    @CanIgnoreReturnValue
+    public Renderer line(int x1, int y1, int x2, int y2) {
         this.shapes.line(x1, y1, x2, y2);
+        return this;
     }
 
-    public void line(float x1, float y1, float x2, float y2) {
+    @CanIgnoreReturnValue
+    public Renderer line(float x1, float y1, float x2, float y2) {
         this.shapes.line(x1, y1, x2, y2);
+        return this;
     }
 
-    public void rectLine(int x, int y, int width, int height) {
+    @CanIgnoreReturnValue
+    public Renderer rectLine(int x, int y, int width, int height) {
         this.shapes.rectangle(x + this.strokeWidth / 2f, y + this.strokeWidth / 2f, width - this.strokeWidth, height - this.strokeWidth, this.strokeWidth);
+        return this;
     }
 
-    public void rectLine(float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer rectLine(float x, float y, float width, float height) {
         this.shapes.rectangle(x + this.strokeWidth / 2f, y + this.strokeWidth / 2f, width - this.strokeWidth, height - this.strokeWidth, this.strokeWidth);
+        return this;
     }
 
-    public void rect(int x, int y, int width, int height) {
+    @CanIgnoreReturnValue
+    public Renderer rect(int x, int y, int width, int height) {
         this.shapes.filledRectangle(x, y, width, height);
+        return this;
     }
 
-    public void rect(float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer rect(float x, float y, float width, float height) {
         this.shapes.filledRectangle(x, y, width, height);
+        return this;
     }
 
-    public void roundRectLine(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+    @CanIgnoreReturnValue
+    public Renderer roundRectLine(int x, int y, int width, int height, int arcWidth, int arcHeight) {
         this.shapes.rectangle(x, y, width, height, this.strokeWidth);
+        return this;
     }
 
-    public void roundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+    @CanIgnoreReturnValue
+    public Renderer roundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
         this.shapes.rectangle(x, y, width, height);
+        return this;
     }
 
-    public void rect3DLine(int x, int y, int width, int height, boolean raised) {
+    @CanIgnoreReturnValue
+    public Renderer rect3DLine(int x, int y, int width, int height, boolean raised) {
         this.shapes.rectangle(x, y, width, height, this.strokeWidth);
+        return this;
     }
 
-    public void rect3D(int x, int y, int width, int height, boolean raised) {
+    @CanIgnoreReturnValue
+    public Renderer rect3D(int x, int y, int width, int height, boolean raised) {
         this.shapes.filledRectangle(x, y, width, height);
+        return this;
     }
 
-    public void ovalLine(int x, int y, int width, int height) {
+    @CanIgnoreReturnValue
+    public Renderer ovalLine(int x, int y, int width, int height) {
         this.shapes.ellipse(x, y, width, height);
+        return this;
     }
 
-    public void oval(int x, int y, int width, int height) {
+    @CanIgnoreReturnValue
+    public Renderer oval(int x, int y, int width, int height) {
         this.shapes.filledEllipse(x, y, width, height);
+        return this;
     }
 
-    public void ovalLine(float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer ovalLine(float x, float y, float width, float height) {
         this.shapes.ellipse(x, y, width, height);
+        return this;
     }
 
-    public void oval(float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer oval(float x, float y, float width, float height) {
         this.shapes.filledEllipse(x, y, width, height);
+        return this;
     }
 
-    public void arcLine(int x, int y, int width, int height, int startAngle, int arcAngle) {
+    @CanIgnoreReturnValue
+    public Renderer arcLine(int x, int y, int width, int height, int startAngle, int arcAngle) {
         this.shapes.arc(x, y, width, startAngle, arcAngle);
+        return this;
     }
 
-    public void arc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+    @CanIgnoreReturnValue
+    public Renderer arc(int x, int y, int width, int height, int startAngle, int arcAngle) {
         this.shapes.arc(x, y, width, startAngle, arcAngle);
+        return this;
     }
 
     ///////////////////
     //     Image     //
     ///////////////////
-    public void blit(TextureRegion tex, float x, float y) {
+    @CanIgnoreReturnValue
+    public Renderer blit(TextureRegion tex, float x, float y) {
         if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
+        return this;
     }
 
-    public void blit(TextureRegion tex, float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer blit(TextureRegion tex, float x, float y, float width, float height) {
         if (tex == null) tex = TextureManager.DEFAULT_TEX_REG;
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         this.batch.draw(tex, x, y + tex.getRegionHeight(), tex.getRegionWidth(), -tex.getRegionHeight());
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y) {
-        this.batch.setColor(this.textureColor.toGdx());
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y) {
+        this.batch.setColor(this.blitColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+        return this;
     }
 
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(tex, x, y, width, height, 0.0F, 0.0F, backgroundColor);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
         this.blit(tex, x, y, width, height, u, v, width, height, backgroundColor);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
         this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
         this.batch.draw(textureRegion, x, y + height, width, -height);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height) {
         this.blit(tex, x, y, width, height, 0.0F, 0.0F);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v) {
         this.blit(tex, x, y, width, height, u, v, width, height);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
         this.blit(tex, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+        return this;
     }
 
     @ApiStatus.Internal
-    public void blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        this.batch.setColor(this.textureColor.toGdx());
+    @CanIgnoreReturnValue
+    public Renderer blit(Texture tex, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
+        this.batch.setColor(this.blitColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
         this.batch.draw(textureRegion, x, y + height, width, -height);
+        return this;
     }
 
     @Deprecated(forRemoval = true)
-    public void blit(Identifier id, float x, float y) {
-        this.batch.setColor(this.textureColor.toGdx());
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y) {
+        this.batch.setColor(this.blitColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+        return this;
     }
 
 
     @Deprecated(forRemoval = true)
-    public void blit(Identifier id, float x, float y, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, Color backgroundColor) {
         this.setColor(backgroundColor);
         Texture tex = this.textureManager.getTexture(id);
         this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F, backgroundColor);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
         this.blit(id, x, y, width, height, u, v, 256, 256, backgroundColor);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, Color backgroundColor) {
         Texture texture = this.textureManager.getTexture(id);
         this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256, backgroundColor);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v) {
         this.blit(id, x, y, width, height, u, v, width, height);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight) {
         this.blit(id, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
-        this.batch.setColor(this.textureColor.toGdx());
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight) {
+        this.batch.setColor(this.blitColor.toGdx());
         Texture tex = this.textureManager.getTexture(id);
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
         this.batch.draw(textureRegion, x, y + height, width, -height);
+        return this;
     }
 
-    public void blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
+    @CanIgnoreReturnValue
+    public Renderer blit(Identifier id, float x, float y, float width, float height, float u, float v, float uWidth, float vHeight, int texWidth, int texHeight, Color backgroundColor) {
         this.setColor(backgroundColor);
         this.rect(x, y, width, height);
         Texture tex = this.textureManager.getTexture(id);
-        this.batch.setColor(this.textureColor.toGdx());
+        this.batch.setColor(this.blitColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, texWidth / u, texHeight / v, texWidth / (u + uWidth), texHeight / (v + vHeight));
         this.batch.draw(textureRegion, x, y + height, width, -height);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer drawSprite(Sprite sprite, int x, int y) {
+        drawSprite(sprite, x, y, sprite.getWidth(), sprite.getHeight());
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer drawSprite(Sprite sprite, int x, int y, int width, int height) {
+        sprite.render(this, x, y, width, height);
+        return this;
     }
 
     //////////////////
     //     Text     //
 
     //////////////////
-    public void drawTextLeft(String text, int x, int y) {
-        this.drawTextLeft(text, x, y, Color.WHITE);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
     }
 
-    public void drawTextLeft(String text, int x, int y, Color color) {
-        this.drawTextLeft(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextLeft(String text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, ChatColor color) {
+        this.textLeft(text, x, y, Color.of(color), true);
+        return this;
     }
 
-    public void drawTextLeft(String text, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y) {
-        this.drawTextLeft(text, x, y, Color.WHITE);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color) {
-        this.drawTextLeft(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color) {
+        this.textLeft(text, x, y, Color.of(color), true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, float maxWidth, String truncate) {
-        this.drawTextLeft(text, x, y, Color.WHITE, maxWidth, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color, float maxWidth, String truncate) {
-        this.drawTextLeft(text, x, y, color, true, maxWidth, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, float maxWidth, String truncate) {
+        this.textLeft(text, x, y, Color.WHITE, maxWidth, truncate);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, boolean shadow, float maxWidth, String truncate) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow, maxWidth, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color, float maxWidth, String truncate) {
+        this.textLeft(text, x, y, color, true, maxWidth, truncate);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, String truncate) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, float maxWidth, String truncate) {
+        this.textLeft(text, x, y, Color.of(color), true, maxWidth, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, boolean shadow, float maxWidth, String truncate) {
+        this.textLeft(text, x, y, Color.WHITE, shadow, maxWidth, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, String truncate) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, float maxWidth, boolean wrap, String truncate) {
-        this.drawTextLeft(text, x, y, Color.WHITE, maxWidth, wrap, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow, float maxWidth, String truncate) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color, float maxWidth, boolean wrap, String truncate) {
-        this.drawTextLeft(text, x, y, color, true, maxWidth, wrap, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, float maxWidth, boolean wrap, String truncate) {
+        this.textLeft(text, x, y, Color.WHITE, maxWidth, wrap, truncate);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, boolean shadow, float maxWidth, boolean wrap, String truncate) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow, maxWidth, wrap, truncate);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color, float maxWidth, boolean wrap, String truncate) {
+        this.textLeft(text, x, y, color, true, maxWidth, wrap, truncate);
+        return this;
     }
 
-    public void drawTextLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, float maxWidth, boolean wrap, String truncate) {
+        this.textLeft(text, x, y, Color.of(color), true, maxWidth, wrap, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+        this.textLeft(text, x, y, Color.WHITE, shadow, maxWidth, wrap, truncate);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, Color color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, int x, int y) {
-        this.drawTextLeft(text, x, y, Color.WHITE);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float x, float y, ChatColor color, boolean shadow, float maxWidth, boolean wrap, String truncate) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, int x, int y, Color color) {
-        this.drawTextLeft(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, ChatColor color) {
+        this.textLeft(String.valueOf(text), x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, float x, float y) {
-        this.drawTextLeft(text, x, y, Color.WHITE);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, float x, float y, Color color) {
-        this.drawTextLeft(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float x, float y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x, y, Color.WHITE, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float x, float y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextLeft(TextObject text, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float x, float y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float x, float y, Color color, boolean shadow) {
         this.font.drawText(this, text, x, y, color, shadow);
+        return this;
     }
 
-    public void drawTextCenter(String text, int x, int y) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, int x, int y) {
+        this.textLeft(text, x - this.font.width(text) / 2, y);
+        return this;
     }
 
-    public void drawTextCenter(String text, int x, int y, Color color) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, int x, int y, Color color) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color);
+        return this;
     }
 
-    public void drawTextCenter(String text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, shadow);
+        return this;
     }
 
-    public void drawTextCenter(String text, int x, int y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        return this;
     }
 
-    public void drawTextCenter(String text, float x, float y) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float x, float y) {
+        this.textLeft(text, x - this.font.width(text) / 2, y);
+        return this;
     }
 
-    public void drawTextCenter(String text, float x, float y, Color color) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float x, float y, Color color) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color);
+        return this;
     }
 
-    public void drawTextCenter(String text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, shadow);
+        return this;
     }
 
-    public void drawTextCenter(String text, float x, float y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, int x, int y) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, int x, int y) {
+        this.textLeft(text, x - this.font.width(text) / 2, y);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, int x, int y, Color color) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, int x, int y, Color color) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, shadow);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, int x, int y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, float x, float y) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float x, float y) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, float x, float y, Color color) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float x, float y, Color color) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, shadow);
+        return this;
     }
 
-    public void drawTextCenter(TextObject text, float x, float y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color, shadow);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, float x, float y) {
-        this.drawTextRight(text, x, y, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float x, float y) {
+        this.textRight(text, x, y, true);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, float x, float y, Color color) {
-        this.drawTextRight(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float x, float y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, float x, float y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, int x, int y) {
-        this.drawTextRight(text, x, y, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, int x, int y) {
+        this.textRight(text, x, y, true);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, int x, int y, Color color) {
-        this.drawTextRight(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, int x, int y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextRight(TextObject text, int x, int y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
     }
 
-    public void drawTextRight(String text, float x, float y) {
-        this.drawTextRight(text, x, y, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float x, float y) {
+        this.textRight(text, x, y, true);
+        return this;
     }
 
-    public void drawTextRight(String text, float x, float y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
     }
 
-    public void drawTextRight(String text, float x, float y, Color color) {
-        this.drawTextRight(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float x, float y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextRight(String text, float x, float y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
     }
 
-    public void drawTextRight(String text, int x, int y) {
-        this.drawTextRight(text, x, y, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, int x, int y) {
+        this.textRight(text, x, y, true);
+        return this;
     }
 
-    public void drawTextRight(String text, int x, int y, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
     }
 
-    public void drawTextRight(String text, int x, int y, Color color) {
-        this.drawTextRight(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, int x, int y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
     }
 
-    public void drawTextRight(String text, int x, int y, Color color, boolean shadow) {
-        this.drawTextLeft(text, x - this.font.width(text), y, color, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, int x, int y) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale);
+        this.textLeft(text, x / scale, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, int x, int y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color);
+        this.textLeft(text, x / scale, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, int x, int y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, shadow);
+        this.textLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color, shadow);
+        this.textLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, float x, float y) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale);
+        this.textLeft(text, x / scale, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, float x, float y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color);
+        this.textLeft(text, x / scale, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, float x, float y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, shadow);
+        this.textLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(String text, float scale, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(String text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color, shadow);
+        this.textLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, int x, int y) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale);
+        this.textLeft(text, x / scale, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color);
+        this.textLeft(text, x / scale, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, shadow);
+        this.textLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color, shadow);
+        this.textLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, float x, float y) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale);
+        this.textLeft(text, x / scale, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color);
+        this.textLeft(text, x / scale, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, shadow);
+        this.textLeft(text, x / scale, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledLeft(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textLeft(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale, y / scale, color, shadow);
+        this.textLeft(text, x / scale, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, int x, int y) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, int x, int y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, int x, int y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, float x, float y) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, float x, float y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, float x, float y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(String text, float scale, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(String text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.textLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, int x, int y) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, int x, int y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, int x, int y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, int x, int y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, int x, int y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, float x, float y) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, float x, float y) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, float x, float y, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, float x, float y, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, shadow);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledCenter(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textCenter(TextObject text, float scale, float x, float y, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextLeft(text, x / scale - this.font.width(text) / 2, y / scale, color, shadow);
+        this.textLeft(text, x / scale - (float) this.font.width(text) / 2, y / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(TextObject text, float scale, float x, float value) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float scale, float x, float value) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale);
+        this.textRight(text, x / scale - this.font.width(text), value / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(TextObject text, float scale, float x, float value, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float scale, float x, float value, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(TextObject text, float scale, float x, float value, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float scale, float x, float value, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, shadow);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(TextObject text, float scale, float x, float value, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(TextObject text, float scale, float x, float value, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(String text, float scale, float x, float value) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float scale, float x, float value) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale);
+        this.textRight(text, x / scale - this.font.width(text), value / scale);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(String text, float scale, float x, float value, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float scale, float x, float value, Color color) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, color);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(String text, float scale, float x, float value, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float scale, float x, float value, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, shadow);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void drawTextScaledRight(String text, float scale, float x, float value, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textRight(String text, float scale, float x, float value, Color color, boolean shadow) {
         this.pushMatrix();
         this.scale(scale, scale);
-        this.drawTextRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
+        this.textRight(text, x / scale - this.font.width(text), value / scale, color, shadow);
         this.popMatrix();
+        return this;
     }
 
-    public void multiLineText(String text, int x, int y) {
-        this.multiLineText(text, x, y, Color.WHITE);
+    @CanIgnoreReturnValue
+    public Renderer textMultiline(String text, int x, int y) {
+        this.textMultiline(text, x, y, Color.WHITE);
+        return this;
     }
 
-    public void multiLineText(String text, int x, int y, Color color) {
-        this.multiLineText(text, x, y, color, true);
+    @CanIgnoreReturnValue
+    public Renderer textMultiline(String text, int x, int y, Color color) {
+        this.textMultiline(text, x, y, color, true);
+        return this;
     }
 
-    public void multiLineText(String text, int x, int y, boolean shadow) {
-        this.multiLineText(text, x, y, Color.WHITE, shadow);
+    @CanIgnoreReturnValue
+    public Renderer textMultiline(String text, int x, int y, boolean shadow) {
+        this.textMultiline(text, x, y, Color.WHITE, shadow);
+        return this;
     }
 
-    public void multiLineText(String text, int x, int y, Color color, boolean shadow) {
+    @CanIgnoreReturnValue
+    public Renderer textMultiline(String text, int x, int y, Color color, boolean shadow) {
         y -= this.font.lineHeight;
 
-        for (String line : text.split("\n"))
-            this.drawTextLeft(line, x, y += this.font.lineHeight, color, shadow);
-    }
-
-    public void tabString(String text, int x, int y) {
-        this.tabString(text, x, y, Color.WHITE);
-    }
-
-    public void tabString(String text, int x, int y, Color color) {
-        this.tabString(text, x, y, color, true);
-    }
-
-    public void tabString(String text, int x, int y, boolean shadow) {
-        this.tabString(text, x, y, Color.WHITE, shadow);
-    }
-
-    public void tabString(String text, int x, int y, Color color, boolean shadow) {
-        for (String line : text.split("\t")) {
-            //noinspection SuspiciousNameCombination
-            this.drawTextLeft(line, x += this.font.lineHeight, y, color, shadow);
+        for (String line : text.split("\n")) {
+            y += this.font.lineHeight;
+            this.textLeft(line, x, y, color, shadow);
         }
+
+        return this;
     }
 
-    public void clear() {
+    @CanIgnoreReturnValue
+    public Renderer textTabbed(String text, int x, int y) {
+        this.textTabbed(text, x, y, Color.WHITE);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textTabbed(String text, int x, int y, Color color) {
+        this.textTabbed(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textTabbed(String text, int x, int y, boolean shadow) {
+        this.textTabbed(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textTabbed(String text, int x, int y, Color color, boolean shadow) {
+        for (String line : text.split("\t")) {
+            this.textLeft(line, x, y, color, shadow);
+            x += Renderer.TAB_WIDTH;
+        }
+
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer clear() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        return this;
     }
 
     ////////////////////////////
     //     Transformation     //
     ////////////////////////////
-    public void translate(float x, float y) {
-        this.globalTranslation.peek().add(x, y, 0);
+    @CanIgnoreReturnValue
+    public Renderer translate(float x, float y) {
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, 0);
+        }
         this.matrixStack.translate(x, y);
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void translate(int x, int y) {
-        this.globalTranslation.peek().add(x, y, 0);
-        this.matrixStack.translate((float) x, (float) y);
+    @CanIgnoreReturnValue
+    public Renderer translate(int x, int y) {
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, 0);
+        }
+        this.matrixStack.translate(x, y);
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void translate(float x, float y, float z) {
-        this.globalTranslation.peek().add(x, y, z);
+    @CanIgnoreReturnValue
+    public Renderer translate(float x, float y, float z) {
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, z);
+        }
         this.matrixStack.translate(x, y, z);
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void translate(int x, int y, int z) {
-        this.globalTranslation.peek().add(x, y, z);
-        this.matrixStack.translate((float) x, (float) y, (float) z);
+    @CanIgnoreReturnValue
+    public Renderer translate(int x, int y, int z) {
+        var translation = this.globalTranslation.peek();
+        if (translation != null) {
+            translation.add(x, y, z);
+        }
+        this.matrixStack.translate(x, y, z);
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void rotate(double x, double y) {
+    @CanIgnoreReturnValue
+    public Renderer rotate(double x, double y) {
         this.matrixStack.rotate(new Quaternion(1, 0, 0, (float) x));
         this.matrixStack.rotate(new Quaternion(0, 1, 0, (float) y));
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void scale(double sx, double sy) {
+    @CanIgnoreReturnValue
+    public Renderer scale(double sx, double sy) {
         this.matrixStack.scale((float) sx, (float) sy);
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
     public Matrix4 getTransform() {
@@ -1001,7 +1439,8 @@ public class Renderer {
     //     Miscellaneous     //
     ///////////////////////////
     @ApiStatus.Experimental
-    public void drawRegion(int x, int y, int width, int height, Consumer<Renderer> consumer) {
+    @CanIgnoreReturnValue
+    public Renderer drawRegion(int x, int y, int width, int height, Consumer<Renderer> consumer) {
         this.pushMatrix();
         this.translate(x, y);
         if (this.pushScissors(x, y, width, height)) {
@@ -1009,6 +1448,7 @@ public class Renderer {
             this.popScissors();
         }
         this.popMatrix();
+        return this;
     }
 
     @ApiStatus.Internal
@@ -1074,16 +1514,20 @@ public class Renderer {
         return ScissorStack.popScissors();
     }
 
-    public void flush() {
+    @CanIgnoreReturnValue
+    public Renderer flush() {
         this.batch.flush();
         Gdx.gl.glFlush();
+        return this;
     }
 
     @ApiStatus.Experimental
-    public void clearScissors() {
+    @CanIgnoreReturnValue
+    public Renderer clearScissors() {
         while (ScissorStack.peekScissors() != null) {
             ScissorStack.popScissors();
         }
+        return this;
     }
 
     @Override
@@ -1091,43 +1535,45 @@ public class Renderer {
         return "Renderer{}";
     }
 
-    @Deprecated(forRemoval = true)
-    public void blit(int x, int y) {
-        this.batch.draw(this.curTexture, x, y);
-    }
-
-    @Deprecated(forRemoval = true)
-    public void blit(int x, int y, int width, int height) {
-        this.batch.draw(this.curTexture, x, y, width, height);
-    }
-
-    @Deprecated
-    public void setTexture(Identifier texture) {
-        this.curTexture = this.client.getTextureManager().getTexture(texture);
-    }
-
-    public void setFont(Font font) {
+    @CanIgnoreReturnValue
+    public Renderer font(Font font) {
         this.font = font;
+        return this;
     }
 
-    public void setTextureColor(Color color) {
-        this.textureColor = color;
+    @CanIgnoreReturnValue
+    public Renderer blitColor(Color color) {
+        this.blitColor = color;
+        return this;
     }
 
-    public Color getTextureColor() {
-        return this.textureColor;
+    public Color getBlitColor() {
+        return this.blitColor;
     }
 
-    public void pushMatrix() {
-        this.globalTranslation.push(this.globalTranslation.peek().cpy());
+    public void setBlitColor(Color blitColor) {
+        this.batch.setColor(this.blitColor.toGdx());
+        this.blitColor = blitColor;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer pushMatrix() {
+        Vector3 peek = this.globalTranslation.peek();
+        if (this.globalTranslation.peek() == null)
+            throw new IllegalStateException("Global translation is null");
+
+        this.globalTranslation.push(peek.cpy());
         this.matrixStack.push();
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
-    public void popMatrix() {
+    @CanIgnoreReturnValue
+    public Renderer popMatrix() {
         this.globalTranslation.pop();
         this.matrixStack.pop();
         this.batch.setTransformMatrix(this.matrixStack.last());
+        return this;
     }
 
     public Batch getBatch() {
@@ -1135,20 +1581,25 @@ public class Renderer {
     }
 
     public Vector3 getGlobalTranslation() {
-        return this.globalTranslation.peek().cpy();
+        return Objects.requireNonNull(this.globalTranslation.peek()).cpy();
     }
 
-    public void fill(int x, int y, int width, int height, Color rgb) {
+    @CanIgnoreReturnValue
+    public Renderer fill(int x, int y, int width, int height, Color rgb) {
         this.setColor(rgb);
         this.rect(x, y, width, height);
+        return this;
     }
 
-    public void box(int x, int y, int width, int height, Color rgb) {
+    @CanIgnoreReturnValue
+    public Renderer box(int x, int y, int width, int height, Color rgb) {
         this.setColor(rgb);
         this.rectLine(x, y, width, height);
+        return this;
     }
 
-    public void draw9PatchTexture(Texture texture, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
+    @CanIgnoreReturnValue
+    public Renderer draw9PatchTexture(Texture texture, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
         this.blit(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
         this.blit(texture, x + width - uWidth, y + height - vHeight, uWidth, vHeight, u + uWidth * 2, v, uWidth, vHeight, texWidth, texHeight);
         this.blit(texture, x, y, uWidth, vHeight, u, v + vHeight * 2, uWidth, vHeight, texWidth, texHeight);
@@ -1166,9 +1617,12 @@ public class Renderer {
             this.blit(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
             this.blit(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
         }
+
+        return this;
     }
 
-    public void draw9PatchTexture(Identifier id, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
+    @CanIgnoreReturnValue
+    public Renderer draw9PatchTexture(Identifier id, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight, int texWidth, int texHeight) {
         Texture texture = this.client.getTextureManager().getTexture(id);
 
         this.blit(texture, x, y + height - vHeight, uWidth, vHeight, u, v, uWidth, vHeight, texWidth, texHeight);
@@ -1188,38 +1642,57 @@ public class Renderer {
             this.blit(texture, x, dy, uWidth, vH, u, v + uWidth, uWidth, vH, texWidth, texHeight);
             this.blit(texture, x + width - uWidth, dy, uWidth, vH, u + uWidth * 2, u + uWidth, uWidth, vH, texWidth, texHeight);
         }
+
+        return this;
     }
 
-    public void setShader(ShaderProgram program) {
+    @CanIgnoreReturnValue
+    public Renderer setShader(ShaderProgram program) {
         this.batch.setShader(program);
+        return this;
     }
 
-    public void unsetShader() {
+    @CanIgnoreReturnValue
+    public Renderer unsetShader() {
         this.batch.setShader(null);
+        return this;
     }
 
-    public void model(Runnable block) {
+    @CanIgnoreReturnValue
+    public Renderer model(Runnable block) {
         boolean drawing = this.batch.isDrawing();
         if (drawing) this.batch.end();
         block.run();
         if (drawing) this.batch.begin();
+        return this;
     }
 
-    public void enableInvert() {
-//        this.flush();
+    @CanIgnoreReturnValue
+    public Renderer invertOn() {
+        this.flush();
         this.batch.setBlendFunctionSeparate(GL20.GL_ONE_MINUS_DST_COLOR, GL20.GL_ONE_MINUS_SRC_COLOR, GL20.GL_ONE, GL20.GL_ZERO);
+        return this;
     }
 
-    public void disableInvert() {
-//        this.flush();
+    @CanIgnoreReturnValue
+    public Renderer invertOff() {
+        this.flush();
         this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        return this;
     }
 
-    public void drawLine(float x1, float y1, float x2, float y2, Color color) {
+    @CanIgnoreReturnValue
+    public Renderer line(float x1, float y1, float x2, float y2, Color color) {
         this.shapes.line(x1, y1, x2, y2, color.toGdx(), this.strokeWidth);
+        return this;
     }
 
     public boolean pushScissors(Bounds bounds) {
         return this.pushScissors(bounds.pos().x, bounds.pos().y, bounds.size().width, bounds.size().height);
+    }
+
+    public void polygon(float[] vertices, Color color, int thickness) {
+        this.shapes.setColor(color.toGdx());
+        this.shapes.polygon(vertices, thickness, JoinType.POINTY);
     }
 }

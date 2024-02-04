@@ -1,12 +1,17 @@
 package com.ultreon.craft.entity;
 
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.api.commands.CommandSender;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.text.Translations;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.BoundingBoxUtils;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
@@ -16,11 +21,13 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
-public class Entity {
+public class Entity implements CommandSender {
     private final EntityType<? extends Entity> type;
     protected final World world;
     protected double x;
@@ -46,15 +53,25 @@ public class Entity {
     private boolean wasInFluid = false;
     private boolean swimUp;
     protected double ox, oy, oz;
+    private @Nullable String formatName;
+    private @Nullable TextObject customName;
+    private UUID uuid;
+    protected AttributeMap attributes = new AttributeMap();
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
         this.world = world;
+
+        this.setupAttributes();
+    }
+
+    protected void setupAttributes() {
+
     }
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
         Identifier typeId = Identifier.parse(data.getString("type"));
-        EntityType<?> type = Registries.ENTITIES.getValue(typeId);
+        EntityType<?> type = Registries.ENTITY_TYPE.getValue(typeId);
         Entity entity = type.create(world);
 
         entity.id = data.getInt("id");
@@ -109,7 +126,7 @@ public class Entity {
         data.put("Velocity", velocity);
 
         data.putInt("id", this.id);
-        data.putString("type", Objects.requireNonNull(Registries.ENTITIES.getKey(this.type)).toString());
+        data.putString("type", Objects.requireNonNull(Registries.ENTITY_TYPE.getKey(this.type)).toString());
 
         data.putDouble("fallDistance", this.fallDistance);
         data.putFloat("gravity", this.gravity);
@@ -160,7 +177,7 @@ public class Entity {
     }
 
     private boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
+        return this.world.get(this.getBlockPos()) == Blocks.WATER;
     }
 
     protected void swimUp() {
@@ -177,20 +194,27 @@ public class Entity {
         this.velocityY = 0.3;
     }
 
-    public void move(double deltaX, double deltaY, double deltaZ) {
+    public boolean move(double deltaX, double deltaY, double deltaZ) {
         double dx = deltaX, dy = deltaY, dz = deltaZ;
 
-        if (deltaX < 0.01 && deltaY < 0.01 && deltaZ < 0.01 &&
-                deltaX > -0.01 && deltaY > -0.01 && deltaZ > -0.01) {
-            return;
+        double absX = Math.abs(deltaX);
+        double absY = Math.abs(deltaY);
+        double absZ = Math.abs(deltaZ);
+
+        if (absX < 0.001 && absY < 0.001 && absZ < 0.001) {
+            return this.isColliding;
         }
 
         ValueEventResult<Vec3d> eventResult = EntityEvents.MOVE.factory().onEntityMove(this, deltaX, deltaY, deltaZ);
         Vec3d value = eventResult.getValue();
-        if (eventResult.isCanceled() && value != null) {
-            dx = value.x;
-            dy = value.y;
-            dz = value.z;
+        if (eventResult.isCanceled()) {
+            if (value != null) {
+                dx = value.x;
+                dy = value.y;
+                dz = value.z;
+            } else {
+                return this.isColliding;
+            }
         }
 
         double oDx = dx;
@@ -211,75 +235,81 @@ public class Entity {
             this.z += dz;
             this.onMoved();
         } else {
-            List<BoundingBox> boxes = this.world.collide(ext, false);
-            BoundingBox pBox = this.getBoundingBox();
-            this.isColliding = false;
-            this.isCollidingY = false;
-            for (BoundingBox box : boxes) {
-                double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
-                this.isColliding |= dy != dy2;
-                this.isCollidingY |= dy != dy2;
-                dy = dy2;
-            }
-            pBox.min.add(0.0f, dy, 0.0f);
-            pBox.max.add(0.0f, dy, 0.0f);
-            pBox.update();
-            this.isCollidingX = false;
-            for (BoundingBox box : boxes) {
-                double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
-                this.isColliding |= dx != dx2;
-                this.isCollidingX |= dx != dx2;
-                dx = dx2;
-            }
-            pBox.min.add(dx, 0.0f, 0.0f);
-            pBox.max.add(dx, 0.0f, 0.0f);
-            pBox.update();
-            this.isCollidingZ = false;
-            for (BoundingBox box : boxes) {
-                double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
-                this.isColliding |= dz != dz2;
-                this.isCollidingZ |= dz != dz2;
-                dz = dz2;
-            }
-            pBox.min.add(0.0f, 0.0f, dz);
-            pBox.max.add(0.0f, 0.0f, dz);
-            pBox.update();
-            this.onGround = oDy != dy && oDy < 0.0f;
-            if (oDx != dx) {
-                this.velocityX = 0.0f;
-            }
-
-            if (dy >= 0) this.fallDistance = 0.0F;
-
-            if (oDy != dy) {
-                this.hitGround();
-                this.fallDistance = 0.0F;
-                this.velocityY = 0.0f;
-            } else if (dy < 0) {
-                this.fallDistance -= dy;
-            }
-            if (oDz != dz) {
-                this.velocityZ = 0.0f;
-            }
-            this.x = (pBox.min.x + pBox.max.x) / 2.0f;
-            this.y = pBox.min.y;
-            this.z = (pBox.min.z + pBox.max.z) / 2.0f;
+            this.move0(ext, dx, dy, dz, oDx, oDy, oDz);
             this.onMoved();
         }
+
+        return this.isColliding;
+    }
+
+    private void move0(BoundingBox ext, double dx, double dy, double dz, double oDx, double oDy, double oDz) {
+        List<BoundingBox> boxes = this.world.collide(ext, false);
+        BoundingBox pBox = this.getBoundingBox();
+        this.isColliding = false;
+        this.isCollidingY = false;
+        for (BoundingBox box : boxes) {
+            double dy2 = BoundingBoxUtils.clipYCollide(box, pBox, dy);
+            this.isColliding |= dy != dy2;
+            this.isCollidingY |= dy != dy2;
+            dy = dy2;
+        }
+        pBox.min.add(0.0f, dy, 0.0f);
+        pBox.max.add(0.0f, dy, 0.0f);
+        pBox.update();
+        this.isCollidingX = false;
+        for (BoundingBox box : boxes) {
+            double dx2 = BoundingBoxUtils.clipXCollide(box, pBox, dx);
+            this.isColliding |= dx != dx2;
+            this.isCollidingX |= dx != dx2;
+            dx = dx2;
+        }
+        pBox.min.add(dx, 0.0f, 0.0f);
+        pBox.max.add(dx, 0.0f, 0.0f);
+        pBox.update();
+        this.isCollidingZ = false;
+        for (BoundingBox box : boxes) {
+            double dz2 = BoundingBoxUtils.clipZCollide(box, pBox, dz);
+            this.isColliding |= dz != dz2;
+            this.isCollidingZ |= dz != dz2;
+            dz = dz2;
+        }
+        pBox.min.add(0.0f, 0.0f, dz);
+        pBox.max.add(0.0f, 0.0f, dz);
+        pBox.update();
+        this.onGround = oDy != dy && oDy < 0.0f;
+        if (oDx != dx) {
+            this.velocityX = 0.0f;
+        }
+
+        if (dy >= 0) this.fallDistance = 0.0F;
+
+        if (oDy != dy) {
+            this.hitGround();
+            this.fallDistance = 0.0F;
+            this.velocityY = 0.0f;
+        } else if (dy < 0) {
+            this.fallDistance -= dy;
+        }
+        if (oDz != dz) {
+            this.velocityZ = 0.0f;
+        }
+        this.x = (pBox.min.x + pBox.max.x) / 2.0f;
+        this.y = pBox.min.y;
+        this.z = (pBox.min.z + pBox.max.z) / 2.0f;
     }
 
     /**
      * Handles the entity movement.
      */
     protected void onMoved() {
-
+        // Impl reasons
     }
 
     /**
      * Handles the entity ground hit.
      */
     protected void hitGround() {
-
+        // Impl reasons
     }
 
     /**
@@ -370,7 +400,7 @@ public class Entity {
         this.oz = z;
     }
 
-    public BlockPos blockPosition() {
+    public BlockPos getBlockPos() {
         return new BlockPos(this.x, this.y, this.z);
     }
 
@@ -386,20 +416,6 @@ public class Entity {
         direction.x = (float)(Math.cos(Math.toRadians(this.yRot)) * Math.sin(Math.toRadians(this.xRot)));
         direction.z = (float)(Math.cos(Math.toRadians(this.yRot)) * Math.cos(Math.toRadians(this.xRot)));
         direction.y = (float)(Math.sin(Math.toRadians(this.yRot)));
-
-        // Normalize the direction vector
-        direction.nor();
-        return direction;
-    }
-
-    public static Vec3d getLookVector(float xRot, float yRot) {
-        // Calculate the direction vector
-        Vec3d direction = new Vec3d();
-
-        float yRot0 = Mth.clamp(yRot, -89.9F, 89.9F);
-        direction.x = (float)(Math.cos(Math.toRadians(yRot0)) * Math.sin(Math.toRadians(xRot)));
-        direction.z = (float)(Math.cos(Math.toRadians(yRot0)) * Math.cos(Math.toRadians(xRot)));
-        direction.y = (float)(Math.sin(Math.toRadians(yRot0)));
 
         // Normalize the direction vector
         direction.nor();
@@ -458,6 +474,65 @@ public class Entity {
     }
 
     public EntityType<?> getType() {
-        return type;
+        return this.type;
+    }
+
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
+    }
+
+    @Override
+    public String getName() {
+        return this.getDisplayName().getText();
+    }
+
+    @Override
+    public @Nullable String getPublicName() {
+        return null;
+    }
+
+    @Override
+    public TextObject getDisplayName() {
+        if (this.customName != null) return this.customName;
+        Identifier id1 = this.getType().getId();
+        if (id1 == null) return Translations.NULL_OBJECT;
+        return TextObject.translation("%s.entity.%s.name".formatted(
+                id1.location(),
+                id1.path().replace('/', '.')
+        ));
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    @Override
+    public UUID getUuid() {
+        return this.uuid;
+    }
+
+    @Override
+    public void sendMessage(@NotNull String message) {
+
+    }
+
+    @Override
+    public void sendMessage(@NotNull TextObject component) {
+
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return false;
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return false;
+    }
+
+    public AttributeMap getAttributes() {
+        return this.attributes;
     }
 }

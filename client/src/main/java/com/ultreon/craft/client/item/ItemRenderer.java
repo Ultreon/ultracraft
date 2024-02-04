@@ -18,7 +18,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.model.BakedCubeModel;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
@@ -63,13 +63,13 @@ public class ItemRenderer {
             return;
         }
 
-        Identifier curKey = Registries.ITEMS.getKey(item);
+        Identifier curKey = Registries.ITEM.getKey(item);
         if (curKey == null) {
-            renderer.setTextureColor(Color.WHITE);
+            renderer.blitColor(Color.WHITE);
             renderer.blit((TextureRegion) null, x, y, 16, 16);
         } else {
             TextureRegion texture = this.client.itemTextureAtlas.get(curKey.mapPath(path -> "textures/items/" + path + ".png"));
-            renderer.setTextureColor(Color.WHITE);
+            renderer.blitColor(Color.WHITE);
             renderer.blit(texture, x, y, 16, 16);
         }
     }
@@ -105,8 +105,8 @@ public class ItemRenderer {
     }
 
     public void resize(int width, int height) {
-        this.itemCam.viewportWidth = this.client.getScaledWidth();
-        this.itemCam.viewportHeight = this.client.getScaledHeight();
+        this.itemCam.viewportWidth = width / this.client.getGuiScale();
+        this.itemCam.viewportHeight = height / this.client.getGuiScale();
         this.itemCam.update(true);
     }
 }

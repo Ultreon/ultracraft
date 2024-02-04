@@ -15,11 +15,11 @@ public final class ClientSound {
     }
 
     public void register() {
-        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().location(), this.getId().path().replaceAll("\\.", "/"))));
+        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().location(), this.getId().path().replace(".", "/"))));
     }
 
     public Identifier getId() {
-        return Registries.SOUND_EVENTS.getKey(this.event);
+        return Registries.SOUND_EVENT.getKey(this.event);
     }
 
     public Sound getSound() {

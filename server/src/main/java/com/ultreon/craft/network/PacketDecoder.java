@@ -33,6 +33,10 @@ public class PacketDecoder extends ByteToMessageDecoder {
 
         PacketData<?> data = ctx.channel().attr(this.theirDataKey).get();
         Packet<?> packet = data.decode(id, buffer);
+        if (packet == null) {
+            ctx.channel().close();
+            return;
+        }
         out.add(packet);
     }
 }

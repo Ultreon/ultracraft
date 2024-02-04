@@ -15,8 +15,13 @@ import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ModPacketContext;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
+import com.ultreon.craft.network.packets.s2c.S2CPingPacket;
+import com.ultreon.craft.recipe.RecipeManager;
+import com.ultreon.craft.recipe.RecipeType;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.HitResult;
@@ -60,6 +65,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.connection.closeAll();
     }
 
+    @Override
     public boolean shouldHandlePacket(Packet<?> packet) {
         if (ServerPacketHandler.super.shouldHandlePacket(packet)) return true;
         else return this.connection.isConnected();
@@ -187,5 +193,19 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onCloseContainerMenu() {
         this.player.closeMenu();
+    }
+
+    public void onAbilities(AbilitiesPacket packet) {
+        this.player.onAbilities(packet);
+    }
+
+    public void onPing(long time) {
+        this.connection.send(new S2CPingPacket(time));
+    }
+
+    public void onCraftRecipe(int typeId, Identifier recipeId) {
+        RecipeType recipeType = Registries.RECIPE_TYPE.byId(typeId);
+        ItemStack crafted = RecipeManager.get().get(recipeId, recipeType).craft(this.player.inventory);
+        this.player.inventory.addItem(crafted);
     }
 }

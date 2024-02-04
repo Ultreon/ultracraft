@@ -43,8 +43,8 @@ apply plugin: 'java-library'
 java {
     withSourcesJar()
     
-    sourceCompatibility("17")
-    targetCompatibility("17")
+    sourceCompatibility("21")
+    targetCompatibility("21")
 }
 
 dependencies {
@@ -79,7 +79,7 @@ dependencies {
     implementation api("com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop")
     implementation api("com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version")
     implementation api("com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop")
-    implementation api("com.badlogicgames.gdx-video:gdx-video-lwjgl3:1.3.2-SNAPSHOT")
+//    implementation api("com.badlogicgames.gdx-video:gdx-video-lwjgl3:1.3.2-SNAPSHOT")
 
     // ImGui
     implementation api("io.github.spair:imgui-java-binding:$imgui_version")
@@ -146,6 +146,12 @@ dependencies {
     runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+
+    // Discord API
+    implementation api('com.github.jagrosh:DiscordIPC:master-SNAPSHOT')
 }
 
 processResources {
@@ -210,6 +216,10 @@ publishing {
             from components.java
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 compileJava {

@@ -17,11 +17,11 @@ public class MenuRegistry {
     }
 
     public static ContainerScreen getScreen(ContainerMenu menu) {
-        return MenuRegistry._getScreen(menu);
+        return MenuRegistry.getScreen0(menu);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends ContainerMenu> ContainerScreen _getScreen(T menu) {
+    private static <T extends ContainerMenu> ContainerScreen getScreen0(T menu) {
         ScreenBuilder<T> builder = (ScreenBuilder<T>) MenuRegistry.REGISTRY.get(menu.getType().getId());
         if (builder == null) return null;
         return builder.build(menu, menu.getTitle());

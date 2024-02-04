@@ -1,6 +1,5 @@
 package com.ultreon.craft.client.font;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.ultreon.craft.client.UltracraftClient;
@@ -29,7 +28,7 @@ public class TextObjectRenderer {
         return this.text.getText();
     }
 
-    public void render(Renderer renderer, BitmapFont font, Batch batch, Color altColor, float x, float y, boolean shadow) {
+    public void render(Renderer renderer, Color altColor, float x, float y, boolean shadow) {
         this.currentX = x;
 
         for (TextObject cur : this.text) {

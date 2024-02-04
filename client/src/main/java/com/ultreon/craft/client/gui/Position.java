@@ -40,6 +40,7 @@ public class Position implements Copyable<Position> {
         return "(" + this.x + ", " + this.y + ")";
     }
 
+    @Override
     public Position cpy() {
         return new Position(this.x, this.y);
     }

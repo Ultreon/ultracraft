@@ -7,7 +7,7 @@ import com.ultreon.craft.item.ItemStack;
  * Item slot for {@link ContainerMenu}.
  *
  * @see ItemStack
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 public class ItemSlot {
     private final ContainerMenu container;
@@ -110,6 +110,20 @@ public class ItemSlot {
     }
 
     public void update() {
+        this.container.onItemChanged(this);
+    }
+
+    public boolean isEmpty() {
+        return this.item.isEmpty();
+    }
+
+    public void shrink(int amount) {
+        this.item.shrink(amount);
+        this.container.onItemChanged(this);
+    }
+
+    public void grow(int amount) {
+        this.item.grow(amount);
         this.container.onItemChanged(this);
     }
 }

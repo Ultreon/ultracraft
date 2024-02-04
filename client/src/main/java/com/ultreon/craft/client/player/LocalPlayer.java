@@ -2,6 +2,7 @@ package com.ultreon.craft.client.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
 import com.ultreon.craft.client.input.GameInput;
@@ -12,9 +13,13 @@ import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
 import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
+import com.ultreon.craft.network.packets.s2c.C2SAbilitiesPacket;
+import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
+import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,20 +30,18 @@ public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
     public @Nullable ContainerMenu openMenu;
-    private UUID uuid;
     private int oldSelected;
-    private int moveUpdate = 10;
+    private final ClientPermissionMap permissions = new ClientPermissionMap();
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
         this.world = world;
-        this.uuid = uuid;
+        this.setUuid(uuid);
     }
 
     @Override
     public void tick() {
         if (!this.client.renderWorld) return;
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
 
         this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
@@ -49,27 +52,35 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (Math.abs(this.x - this.ox) >= 0.01 && Math.abs(this.y - this.oy) >= 0.01 && Math.abs(this.z - this.oz) >= 0.01
-                && (this.x != this.ox || this.y != this.oy || this.z != this.oz)) {
-            if (this.world.getChunk(this.getChunkPos()) == null) {
-                this.x = this.ox;
-                this.z = this.oz;
-            }
-            this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
-            this.ox = this.x;
-            this.oy = this.y;
-            this.oz = this.z;
+        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
+            this.handleMove();
+    }
+
+    private void handleMove() {
+        if (this.world.getChunk(this.getChunkPos()) == null) {
+            this.x = this.ox;
+            this.y = this.oy;
+            this.z = this.oz;
         }
+        this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
+        this.ox = this.x;
+        this.oy = this.y;
+        this.oz = this.z;
     }
 
     @Override
-    protected void onMoved() {
-        super.onMoved();
+    protected void hitGround() {
+
+    }
+
+    @Override
+    public boolean isWalking() {
+        return this.client.playerInput.isWalking();
     }
 
     @Override
     protected void hurtFromVoid() {
-
+        // The server should handle player void damage.
     }
 
     @Override
@@ -107,13 +118,8 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
-    public @NotNull UUID getUuid() {
-        return this.uuid;
-    }
-
-    @Override
-    protected void setUuid(@NotNull UUID uuid) {
-        this.uuid = uuid;
+    public float getWalkingSpeed() {
+        return this.isRunning() ? super.getWalkingSpeed() * this.runModifier : super.getWalkingSpeed();
     }
 
     @Override
@@ -122,6 +128,20 @@ public class LocalPlayer extends ClientPlayer {
         if (sound != null) {
             this.client.playSound(sound, volume);
         }
+    }
+
+    @Override
+    protected void sendAbilities() {
+        this.client.connection.send(new C2SAbilitiesPacket(this.abilities));
+    }
+
+    @Override
+    public void onAbilities(@NotNull AbilitiesPacket packet) {
+        this.abilities.flying = packet.isFlying();
+        this.abilities.allowFlight = packet.allowFlight();
+        this.abilities.instaMine = packet.isInstaMine();
+        this.abilities.invincible = packet.isInvincible();
+        super.onAbilities(packet);
     }
 
     @Override
@@ -148,5 +168,23 @@ public class LocalPlayer extends ClientPlayer {
     public void onOpenMenu(ContainerMenu menu) {
         this.openMenu = menu;
         this.client.showScreen(MenuRegistry.getScreen(menu));
+    }
+
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return this.permissions.has(permission);
+    }
+
+    public ClientPermissionMap getPermissions() {
+        return this.permissions;
+    }
+
+    public void onHurt(S2CPlayerHurtPacket packet) {
+        this.hurt(packet.getDamage(), packet.getSource());
     }
 }

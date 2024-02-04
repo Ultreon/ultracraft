@@ -1,7 +1,7 @@
 package com.ultreon.craft.server.dedicated;
 
-import com.ultreon.craft.debug.Profiler;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
+import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.libs.crash.v0.ApplicationCrash;
@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 /**
  * Dedicated server implementation.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public class DedicatedServer extends UltracraftServer {

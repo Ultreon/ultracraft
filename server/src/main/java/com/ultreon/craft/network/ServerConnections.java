@@ -11,6 +11,9 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.Identifier;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -33,7 +36,7 @@ public class ServerConnections {
     private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
 
     public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(ServerConnections::createServerEventGroup);
-    //    public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(ServerConnections::createEpollEventGroup);
+    public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(ServerConnections::createEpollEventGroup);
     final List<Connection> connections = new ArrayList<>();
     private boolean running;
 
@@ -57,12 +60,12 @@ public class ServerConnections {
     }
 
     private static NioEventLoopGroup createServerEventGroup() {
-        return new NioEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Server IO #%d").setDaemon(true).build());
+        return new NioEventLoopGroup(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), new ThreadFactoryBuilder().setNameFormat("Netty Server IO #%d").build());
     }
 
-//    private static EpollEventLoopGroup createEpollEventGroup() {
-//        return new EpollEventLoopGroup(8, new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
-//    }
+    private static EpollEventLoopGroup createEpollEventGroup() {
+        return new EpollEventLoopGroup(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").build());
+    }
 
     public SocketAddress startMemoryServer() {
         ChannelFuture channelFuture;
@@ -85,15 +88,15 @@ public class ServerConnections {
         synchronized (this.channels) {
             Class<? extends ServerChannel> clazz;
             EventLoopGroup group;
-//            if (Epoll.isAvailable()) {
-//                clazz = EpollServerSocketChannel.class;
-//                group = ServerConnections.SERVER_EPOLL_EVENT_GROUP.get();
-//                ServerConnections.LOGGER.info("Using Epoll server");
-//            } else {
+            if (Epoll.isAvailable()) {
+                clazz = EpollServerSocketChannel.class;
+                group = ServerConnections.SERVER_EPOLL_EVENT_GROUP.get();
+                ServerConnections.LOGGER.info("Using Epoll server");
+            } else {
                 clazz = NioServerSocketChannel.class;
                 group = ServerConnections.SERVER_EVENT_GROUP.get();
                 ServerConnections.LOGGER.info("Using Nio server");
-//            }
+            }
 
             this.channels.add(new ServerBootstrap()
                     .channel(clazz)
@@ -154,6 +157,7 @@ public class ServerConnections {
         for (ChannelFuture future : this.channels) {
             try {
                 future.channel().close().sync();
+                ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
             } catch (InterruptedException ex) {
                 ServerConnections.LOGGER.warn("Failed to close channel", ex);
             }
@@ -170,6 +174,7 @@ public class ServerConnections {
     }
 
     private class TcpChannelInitializer extends ChannelInitializer<Channel> {
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 
@@ -189,6 +194,7 @@ public class ServerConnections {
     }
 
     private class MemoryChannelInitializer extends ChannelInitializer<Channel> {
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 

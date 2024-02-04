@@ -3,6 +3,11 @@ package com.ultreon.craft.server.player;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.ultreon.craft.api.commands.Command;
+import com.ultreon.craft.api.commands.CommandContext;
+import com.ultreon.craft.api.commands.TabCompleting;
+import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -12,8 +17,15 @@ import com.ultreon.craft.item.Items;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
+import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.s2c.*;
+import com.ultreon.craft.registry.CommandRegistry;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.chat.Chat;
+import com.ultreon.craft.text.Formatter;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.Color;
+import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
@@ -29,10 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -48,12 +57,15 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public Connection connection;
     private final ServerWorld world;
     public int hotbarIdx;
-    private UUID uuid;
+    private final UUID uuid;
     private final String name;
     private final UltracraftServer server = UltracraftServer.get();
     private final Object2IntMap<ChunkPos> retryChunks = Object2IntMaps.synchronize(new Object2IntArrayMap<>());
-    private final Cache<ChunkPos, S2CChunkCancelPacket> pendingChunks = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).removalListener(notification -> { }).build();
+    private final Cache<ChunkPos, S2CChunkCancelPacket> pendingChunks = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).removalListener(notification -> {
+
+    }).build();
     private final Cache<ChunkPos, Unit> failedChunks = CacheBuilder.newBuilder().expireAfterWrite(90, TimeUnit.SECONDS).removalListener(notification -> {
+
     }).build();
     private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
     private final Set<ChunkPos> skippedChunks = new CopyOnWriteArraySet<>();
@@ -61,14 +73,18 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     private boolean sendingChunk;
     private boolean spawned;
     private boolean playedBefore;
+    private final MutablePermissionMap permissions = new MutablePermissionMap();
+    private boolean isAdmin;
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name, Connection connection) {
-        super(entityType, world);
+        super(entityType, world, name);
         this.world = world;
         this.uuid = uuid;
         this.name = name;
 
         this.connection = connection;
+
+        this.permissions.allows.add(new Permission("*")); // FIXME: Allow custom default permissions.
     }
 
     public void kick(String kick) {
@@ -104,9 +120,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     @Override
     public boolean onHurt(float damage, @NotNull DamageSource source) {
         if (this.damageImmunity > 0) return true;
-        boolean doDamage = super.onHurt(damage, source);
-        if (!doDamage) this.playSound(this.getHurtSound(), 1.0f);
-        return doDamage;
+        boolean noDamage = super.onHurt(damage, source);
+        if (!noDamage) {
+            this.playSound(this.getHurtSound(), 1.0f);
+            this.connection.send(new S2CPlayerHurtPacket(damage, source));
+            Chat.sendInfo(this, "Oww, that hurts! You lost approx. " + ((int) damage) + " HP.");
+        }
+        return noDamage;
     }
 
     @ApiStatus.Internal
@@ -119,6 +139,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         this.setPosition(position);
         this.world.prepareSpawn(this);
         this.world.spawn(this);
+        this.connection.send(new S2CGamemodePacket(this.getGamemode()));
         this.connection.send(new S2CRespawnPacket(this.getPosition()));
 
         this.spawned = true;
@@ -131,10 +152,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     @Override
     public void tick() {
         if (this.world.getChunk(this.getChunkPos()) == null) return;
-
-        if (!this.isChunkActive(this.getChunkPos())) {
-            return;
-        }
+        if (!this.isChunkActive(this.getChunkPos())) return;
 
         super.tick();
 
@@ -162,29 +180,15 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     protected void onMoved() {
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+        if (!this.isChunkActive(this.getChunkPos())) return;
+
         super.onMoved();
 
         // Send the new position to the client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
             this.setPosition(this.ox, this.oy, this.oz);
             this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
-        }
-
-        if (Math.abs(this.x - this.ox) < 0.001 &&
-                Math.abs(this.y - this.oy) < 0.001 &&
-                Math.abs(this.z - this.oz) < 0.001)
-            return;
-
-        // Limit player speed server-side.
-        double maxDistanceXZ = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed()) * 12.5;
-        double maxDistanceY = (this.isFlying() ? this.getFlyingSpeed() : this.getWalkingSpeed() * 5) * Math.max(this.fallDistance * this.gravity, 2);
-        if (this.getPosition().dst(this.ox, this.y, this.oz) > maxDistanceXZ) {
-            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max xz: " + maxDistanceXZ + ")");
-//            this.teleportTo(this.ox, this.oy, this.oz);
-        }
-        if (Math.abs(this.getY() - this.oy) > maxDistanceY) {
-            UltracraftServer.LOGGER.warn("Player moved too quickly: " + this.getName() + " (distance: " + this.getPosition().dst(this.ox, this.oy, this.oz) + ", max y: " + maxDistanceY + ")");
-//            this.teleportTo(this.ox, this.oy, this.oz);
         }
 
         // Set old position.
@@ -195,9 +199,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         for (var player : this.server.getPlayers()) {
             if (player == this) continue;
 
-            if (player.getPosition().dst(this.getPosition()) < this.server.getEntityRenderDistance()) {
+            if (player.getPosition().dst(this.getPosition()) < this.server.getEntityRenderDistance())
                 player.connection.send(new S2CPlayerPositionPacket(this.getUuid(), this.getPosition()));
-            }
         }
     }
 
@@ -216,14 +219,14 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         return false;
     }
 
-    public String getName() {
-        return this.name;
+    @Override
+    public @NotNull Location getLocation() {
+        return new Location(this.world, this.x, this.y, this.z, this.xRot, this.yRot);
     }
 
     @Override
-    protected void setUuid(@NotNull UUID uuid) {
-        if (this.uuid != null) throw new IllegalStateException("Uuid already set!");
-        this.uuid = uuid;
+    public @NotNull String getName() {
+        return this.name;
     }
 
     @Override
@@ -233,15 +236,25 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     public void onChunkStatus(@NotNull ChunkPos pos, Chunk.Status status) {
         switch (status) {
-            case FAILED -> {
-                if (this.retryChunks.computeInt(pos, (chunkPos, integer) -> integer == null ? 1 : integer + 1) == 3) {
-                    this.pendingChunks.invalidate(pos);
-                    this.failedChunks.put(pos, Unit.INSTANCE);
-                }
-            }
+            case FAILED -> this.handleFailedChunk(pos);
             case SKIP -> this.skippedChunks.add(pos);
-            case SUCCESS -> this.activeChunks.add(pos);
+            case SUCCESS -> this.handleClientLoadChunk(pos);
             case UNLOADED -> this.activeChunks.remove(pos);
+        }
+
+        if (status == Chunk.Status.FAILED)
+            this.server.handleChunkLoadFailure(pos, "Chunk failed to load on client.");
+    }
+
+    private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
+        this.setPosition(this.ox, this.oy, this.oz);
+        return this.activeChunks.add(pos);
+    }
+
+    private void handleFailedChunk(@NotNull ChunkPos pos) {
+        if (this.retryChunks.computeInt(pos, (chunkPos, integer) -> integer == null ? 1 : integer + 1) == 3) {
+            this.pendingChunks.invalidate(pos);
+            this.failedChunks.put(pos, Unit.INSTANCE);
         }
     }
 
@@ -266,6 +279,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         else this.oldChunkPos = chunkPos;
 
         // Remove all failed chunks.
+        toLoad.removeAll(this.pendingChunks.asMap().keySet());
         toLoad.removeAll(this.failedChunks.asMap().keySet());
         toLoad.removeAll(toUnload);
 
@@ -325,13 +339,32 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, ArrayUtils.clone(chunk.storage.getPalette()), new ArrayList<>(chunk.storage.getData())), PacketResult.onEither(() -> this.sendingChunk = false));
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
     public void playSound(@Nullable SoundEvent sound, float volume) {
         if (sound == null) return;
         this.connection.send(new S2CPlaySoundPacket(sound.getId(), volume));
+    }
+
+    @Override
+    protected void sendAbilities() {
+        this.connection.send(new S2CAbilitiesPacket(this.abilities));
+    }
+
+    @Override
+    public void onAbilities(@NotNull AbilitiesPacket packet) {
+        boolean flying = packet.isFlying();
+        boolean allowFlight = this.abilities.allowFlight;
+        System.out.println("allowFlight = " + allowFlight);
+        if (flying && !allowFlight) {
+            this.connection.disconnect("Kicked for flying.");
+            return;
+        }
+
+        super.onAbilities(packet);
+        this.abilities.flying = flying;
     }
 
     @Override
@@ -348,12 +381,51 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     @Override
+    public void setGamemode(@NotNull Gamemode gamemode) {
+        Gamemode old = this.getGamemode();
+        super.setGamemode(gamemode);
+
+        if (old != gamemode) {
+            this.connection.send(new S2CGamemodePacket(gamemode));
+
+            switch (gamemode) {
+                case BUILDER, BUILDER_PLUS -> {
+                    this.abilities.allowFlight = true;
+                    this.abilities.instaMine = true;
+                    this.abilities.invincible = true;
+                    this.abilities.blockBreak = true;
+                }
+                case MINI_GAME -> {
+                    this.abilities.allowFlight = false;
+                    this.abilities.instaMine = false;
+                    this.abilities.invincible = false;
+                    this.abilities.blockBreak = false;
+                }
+                case SURVIVAL -> {
+                    this.abilities.allowFlight = false;
+                    this.abilities.instaMine = false;
+                    this.abilities.invincible = false;
+                    this.abilities.blockBreak = true;
+                }
+                case SPECTATOR -> {
+                    this.abilities.allowFlight = true;
+                    this.abilities.instaMine = false;
+                    this.abilities.invincible = true;
+                    this.abilities.blockBreak = false;
+                }
+            }
+
+            this.connection.send(new S2CAbilitiesPacket(this.abilities));
+        }
+    }
+
+    @Override
     public @NotNull ServerWorld getWorld() {
         return this.world;
     }
 
     public Vec2i getChunkVec() {
-        return World.toChunkVec(this.blockPosition());
+        return World.toChunkVec(this.getBlockPos());
     }
 
     public boolean isChunkActive(ChunkPos chunkPos) {
@@ -370,9 +442,17 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void handlePlayerMove(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        if (this.world.getChunk(this.getChunkPos()) == null) return;
+        if (!this.isChunkActive(this.getChunkPos())) return;
+
+//        double dst = this.getPosition().dst(x, this.y, z);
+//        if (dst > this.getSpeed() * this.runModifier * TPS) {
+//            this.setPosition(this.x, this.y, this.z);
+//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
+//            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max xz: %s)".formatted(this.getName(), dst, this.getSpeed() * this.runModifier * 1.5));
+//            return;
+//        }
+        this.setPosition(x, y, z);
     }
 
     public boolean isSpawned() {
@@ -385,5 +465,94 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     public boolean hasPlayedBefore() {
         return this.playedBefore;
+    }
+
+    public void execute(String input) {
+        String command;
+        String[] argv;
+        if (!input.contains(" ")) {
+            argv = new String[0];
+            command = input;
+        } else {
+            argv = input.split(" ");
+            command = argv[0];
+            argv = ArrayUtils.remove(argv, 0);
+        }
+
+        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + input);
+
+        Command baseCommand = CommandRegistry.get(command);
+        if (baseCommand == null) {
+            Chat.sendError(this, "Unknown command&: " + command);
+            return;
+        }
+        baseCommand.onCommand(this, new CommandContext(command), command, argv);
+    }
+
+    public void tabComplete(String input) {
+        if (input.startsWith("/")) {
+            input = input.substring(1);
+            if (!input.contains(" ")) {
+                this.connection.send(new S2CTabCompletePacket(TabCompleting.commands(new ArrayList<>(), input)));
+                return;
+            }
+
+            String command;
+            String[] argv;
+            argv = input.split(" ");
+            command = argv[0];
+            argv = ArrayUtils.remove(argv, 0);
+
+            Command baseCommand = CommandRegistry.get(command);
+            if (baseCommand == null) {
+                return;
+            }
+
+            if (input.endsWith(" ")) {
+                argv = ArrayUtils.add(argv, "");
+            }
+
+            List<String> options = baseCommand.onTabComplete(this, new CommandContext(command), command, argv);
+            System.out.println("options = " + options);
+            if (options == null) options = Collections.emptyList();
+            this.connection.send(new S2CTabCompletePacket(options));
+        }
+    }
+
+    public void onMessageSent(String message) {
+        for (ServerPlayer player : this.server.getPlayers()) {
+            player.sendMessage(new Formatter(true, true, message, TextObject.empty(), TextObject.empty(), null, Color.WHITE).parse().getResult());
+        }
+    }
+
+    @Override
+    public void sendMessage(@NotNull TextObject textObj) {
+        String text = textObj.getText();
+        Debugger.log("MESSAGE_SENT: " + text);
+        this.connection.send(new S2CChatPacket(textObj));
+    }
+
+    @Override
+    public void sendMessage(@NotNull String message) {
+        this.sendMessage(new Formatter(true, true, message, TextObject.empty(), TextObject.empty(), null, Color.WHITE).parse().getResult());
+    }
+
+    @Override
+    public boolean hasExplicitPermission(@NotNull Permission permission) {
+        return this.permissions.has(permission);
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return this.isAdmin;
+    }
+
+    public void makeAdmin() {
+        this.isAdmin = true;
+        this.resendCommands();
+    }
+
+    private void resendCommands() {
+        this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().toList()));
     }
 }

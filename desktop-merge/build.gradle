@@ -52,7 +52,7 @@ tasks.register('runClient', JavaExec) {
     mainClass = 'com.ultreon.craft.premain.DevMain'
 
     // arguments to pass to the application
-    workingDir "$rootProject.projectDir/run/"
+    workingDir "$rootProject.projectDir/run/client/main/"
 }
 
 archivesBaseName = archives_base_name + "-gameprovider"
@@ -225,8 +225,8 @@ tasks.withType(Jar).configureEach {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 delete "$projectDir/build/jars"

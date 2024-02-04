@@ -1,12 +1,17 @@
 package com.ultreon.craft.client;
 
+import com.ultreon.craft.client.gui.Notification;
+import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerSetPosPacket;
-import com.ultreon.craft.server.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.WorldStorage;
 import com.ultreon.data.types.MapType;
+import com.ultreon.libs.crash.v0.CrashException;
+import com.ultreon.libs.crash.v0.CrashLog;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +55,7 @@ public class IntegratedServer extends UltracraftServer {
             this.host = player;
         }
 
-        if (CommonConstants.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node.createNode("host", () -> this.host);
         }
     }
@@ -77,7 +82,7 @@ public class IntegratedServer extends UltracraftServer {
 
     @Override
     protected void onTerminationFailed() {
-        throw new Error("Failed termination of integrated server.");
+        throw new CrashException(new CrashLog("onTerminationFailed", new Throwable("Failed termination of integrated server.")));
     }
 
     @Override
@@ -111,11 +116,6 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
-    public void load() throws IOException {
-        super.load();
-    }
-
-    @Override
     public void save(boolean silent) throws IOException {
         super.save(silent);
 
@@ -143,6 +143,26 @@ public class IntegratedServer extends UltracraftServer {
     @Override
     public UUID getHost() {
         return this.host != null ? this.host.getUuid() : null;
+    }
+
+    @Override
+    public void handleWorldSaveError(Exception e) {
+        super.handleWorldSaveError(e);
+
+        this.client.notifications.add(Notification.builder("Error", "Failed to save world.")
+                .subText("Auto Save")
+                .icon(MessageIcon.ERROR)
+                .build());
+    }
+
+    @Override
+    public void handleChunkLoadFailure(ChunkPos globalPos, String reason) {
+        super.handleChunkLoadFailure(globalPos, reason);
+
+        this.client.notifications.add(Notification.builder("Failed to load: " + globalPos.toString(), reason)
+                .subText("Chunk Loader")
+                .icon(MessageIcon.WARNING)
+                .build());
     }
 
     public UltracraftClient getClient() {

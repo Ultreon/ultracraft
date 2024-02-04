@@ -1,11 +1,12 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.input.GameInput;
-import com.ultreon.craft.client.input.MobileInput;
+import com.ultreon.craft.client.gui.hud.OverlayManager;
+import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.util.GameRenderable;
+import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
@@ -13,8 +14,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
+import com.ultreon.libs.commons.v0.vector.Vec3f;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -24,9 +24,6 @@ public class Hud implements GameRenderable {
 
     private final @NotNull Texture widgetsTex;
     private final @NotNull Texture iconsTex;
-    private final @NotNull Texture mobileTex;
-    private int stickPointer;
-    private Vector2 joyStick;
     public int leftY;
     public int rightY;
 
@@ -35,7 +32,6 @@ public class Hud implements GameRenderable {
         this.client = client;
         this.widgetsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/widgets.png"));
         this.iconsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/icons.png"));
-        this.mobileTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/mobile_widgets.png"));
     }
 
     @Override
@@ -47,80 +43,84 @@ public class Hud implements GameRenderable {
         if (player == null) return;
 
         this.renderHotbar(renderer, player);
-        this.renderHealth(renderer, player);
-
-        GameInput input = this.client.input;
-        //noinspection deprecation
-        if (input instanceof MobileInput mobileInput) {
-            this.renderMobileHud(renderer, mobileInput);
-        } else {
-            this.renderCrosshair(renderer);
+        if (!player.isInvincible()) {
+            this.renderHealth(renderer, player);
         }
+
+        OverlayManager.render(renderer, deltaTime);
+
+        this.renderCrosshair(renderer);
+    }
+
+    public void renderOutline(Renderer renderer, float deltaTime) {
+        GameCamera camera = this.client.camera;
+        Vec3f normal = this.client.hitResult.getNormal().f();
+        Vector3 relative = camera.relative(this.client.hitResult.getPosition());
+
+        BlockFace blockFace = BlockFace.ofNormal(normal);
+        float[] vertices = blockFace.getFaceVertices();
+
+        float[] verticesOut = new float[12];
+
+        // Loop vertices and uvs and add them to the output.
+        for (int i = 0, vertex = 0; vertex < vertices.length; vertex += 3, i++) {
+            float x = relative.x + vertices[vertex];
+            float y = relative.y + vertices[vertex + 1];
+            float z = relative.z + vertices[vertex + 2];
+
+            Vector3 project = camera.project(new Vector3(x, y, z));
+            verticesOut[i] = project.x;
+            verticesOut[i + 1] = project.y;
+            verticesOut[i + 2] = project.z;
+        }
+
+        renderer.polygon(verticesOut, Color.BLACK, 3);
     }
 
     private void renderCrosshair(Renderer renderer) {
         renderer.flush();
-        renderer.enableInvert();
+        renderer.invertOn();
 
         float x = this.client.getScaledWidth() / 2f;
         float y = this.client.getScaledHeight() / 2f;
         renderer.blit(UltracraftClient.id("textures/gui/crosshair.png"), x - 4.5f, y - 4.5f, 9, 9);
 
         renderer.flush();
-        renderer.disableInvert();
-    }
-
-    @SuppressWarnings("deprecation")
-    private void renderMobileHud(Renderer renderer, MobileInput input) {
-        renderer.blit(this.mobileTex, 20, 25, 50, 45, 0, 0);
-
-        int joyStickX = 24 - 7 + 21;
-        int joyStickY = 24 - 7 + 21;
-        if (this.joyStick != null) {
-            joyStickX = (int) (((this.joyStick.x + 1) / 2) * (48 - 14) + 21F);
-            joyStickY = (int) (((this.joyStick.y + 1) / 2) * (48 - 14) + 21F);
-        }
-
-        renderer.blit(this.mobileTex, joyStickX, joyStickY, 14, 18, 50, 0);
-        renderer.blit(this.mobileTex, 20, 20, 50, 5, 0, 45);
-
-        Vec2i touchPos = input.getTouchPos();
-        renderer.setColor(Color.argb(0x7fffffff));
-        renderer.circle(touchPos.x, touchPos.y, 30);
-        renderer.setColor(Color.argb(0xffffffff));
-        renderer.circle(touchPos.x, touchPos.y, 30 * this.client.getBreakProgress());
+        renderer.invertOff();
     }
 
     private void renderHotbar(Renderer renderer, Player player) {
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
-        Identifier key = Registries.ITEMS.getKey(selectedItem.getItem());
+        Identifier key = Registries.ITEM.getKey(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
 
         List<ItemSlot> allowed = player.inventory.getHotbarSlots();
-        for (int i = 0, allowedLength = allowed.size(); i < allowedLength; i++) {
-            ItemStack item = allowed.get(i).getItem();
-            int ix = (int)((float)this.client.getScaledWidth() / 2) - 90 + i * 20 + 2;
-            this.client.itemRenderer.render(item.getItem(), renderer, ix, this.client.getScaledHeight() - 24);
-            int count = item.getCount();
-            if (!item.isEmpty() && count > 1) {
-                String text = Integer.toString(count);
-                renderer.drawTextLeft(text, ix + 18 - this.client.font.width(text), this.client.getScaledHeight() - 7 - this.client.font.lineHeight, Color.WHITE, false);
-            }
+        for (int index = 0, allowedLength = allowed.size(); index < allowedLength; index++) {
+            this.drawHotbarSlot(renderer, allowed, index);
         }
 
-        if (key != null && !selectedItem.isEmpty()) {
-            if (renderer.pushScissors((int) ((float) this.client.getScaledWidth() / 2) - 84, this.leftY - 44, 168, 12)) {
-                TextObject name = selectedItem.getItem().getTranslation();
-                renderer.drawTextCenter(name, (int) ((float) this.client.getScaledWidth()) / 2, this.leftY - 41);
-                renderer.popScissors();
-            }
+        if (key != null && !selectedItem.isEmpty() && renderer.pushScissors((int) ((float) this.client.getScaledWidth() / 2) - 84, this.leftY - 44, 168, 12)) {
+            TextObject name = selectedItem.getItem().getTranslation();
+            renderer.textCenter(name, (int) ((float) this.client.getScaledWidth()) / 2, this.leftY - 41);
+            renderer.popScissors();
         }
 
         this.leftY -= 47;
         this.rightY -= 47;
+    }
+
+    private void drawHotbarSlot(Renderer renderer, List<ItemSlot> allowed, int index) {
+        ItemStack item = allowed.get(index).getItem();
+        int ix = (int) ((float) this.client.getScaledWidth() / 2) - 90 + index * 20 + 2;
+        this.client.itemRenderer.render(item.getItem(), renderer, ix, this.client.getScaledHeight() - 24);
+        int count = item.getCount();
+        if (!item.isEmpty() && count > 1) {
+            String text = Integer.toString(count);
+            renderer.textLeft(text, ix + 18 - this.client.font.width(text), this.client.getScaledHeight() - 7 - this.client.font.lineHeight, Color.WHITE, false);
+        }
     }
 
     private void renderHealth(Renderer renderer, Player player) {
@@ -139,43 +139,4 @@ public class Hud implements GameRenderable {
         this.leftY -= 13;
     }
 
-    @SuppressWarnings("deprecation")
-    public boolean touchDown(int screenX, int screenY, int pointer) {
-        screenX /= (int) this.client.getGuiScale();
-        screenY /= (int) this.client.getGuiScale();
-        if (this.client.input instanceof MobileInput) {
-            if (screenX >= 20 && screenX <= 70 &&
-                    screenY >= 20 && screenY <= 70) {
-                this.stickPointer = pointer;
-                this.joyStick = new Vector2((screenX - 20F - 25F) / 25F, (screenY - 20F - 25F) / 25F);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @SuppressWarnings({"UnnecessaryReturnStatement", "unused"})
-    public void touchUp(int screenX, int screenY, int pointer) {
-        if (this.stickPointer == pointer) {
-            this.joyStick = null;
-            this.stickPointer = -1;
-            return;
-        }
-    }
-
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        screenX /= (int) this.client.getGuiScale();
-        screenY /= (int) this.client.getGuiScale();
-        Vector2 stickTouch = this.joyStick;
-        if (this.stickPointer == pointer && stickTouch != null) {
-            float x = Mth.clamp((screenX - 20F - 25F) / 25F, -1, 1);
-            float y = Mth.clamp((screenY - 20F - 25F) / 25F, -1, 1);
-            stickTouch.set(x, y);
-        }
-        return false;
-    }
-
-    public Vector2 getJoyStick() {
-        return this.joyStick;
-    }
 }

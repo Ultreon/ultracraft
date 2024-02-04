@@ -14,7 +14,7 @@ public class Debugger {
      * @see FabricLoader#isDevelopmentEnvironment()
      */
     public static void log(String message) {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment() || DebugFlags.IS_RUNNING_IN_DEBUG) {
             Debugger.LOGGER.debug(message);
         }
     }
@@ -27,7 +27,7 @@ public class Debugger {
      * @see FabricLoader#isDevelopmentEnvironment()
      */
     public static void log(String message, Throwable t) {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment() || DebugFlags.IS_RUNNING_IN_DEBUG) {
             Debugger.LOGGER.debug(message, t);
         }
     }

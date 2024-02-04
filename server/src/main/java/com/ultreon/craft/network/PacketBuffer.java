@@ -1,13 +1,16 @@
 package com.ultreon.craft.network;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.TypeRegistry;
 import com.ultreon.data.types.IType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.tuple.Pair;
+import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.commons.v0.vector.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -26,7 +29,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@SuppressWarnings({"deprecation", "EqualsWhichDoesntCheckParameterClass"})
 public class PacketBuffer extends ByteBuf {
     private static final int MAX_UBO_SIZE = 1024 * 1024 * 2;
     private final ByteBuf buf;
@@ -35,17 +37,8 @@ public class PacketBuffer extends ByteBuf {
         this.buf = buf;
     }
 
-    @Deprecated
-    public String readUTF() {
-        int len = this.readVarInt();
-        if (len == 0) return "";
-        byte[] bytes = new byte[len];
-        this.readBytes(bytes);
-        return new String(bytes, StandardCharsets.UTF_8);
-    }
-
     public String readUTF(int max) {
-        if (max < 0) throw new IllegalArgumentException("Invalid data");
+        if (max < 0) throw new IllegalArgumentException(CommonConstants.EX_INVALID_DATA);
         int len = this.readVarInt();
         if (len > max) throw new PacketOverflowException("string", len, max);
         byte[] bytes = new byte[len];
@@ -55,7 +48,7 @@ public class PacketBuffer extends ByteBuf {
 
     @CanIgnoreReturnValue
     public ByteBuf writeUTF(String string, int max) {
-        if (max < 0) throw new IllegalArgumentException("Invalid data");
+        if (max < 0) throw new IllegalArgumentException(CommonConstants.EX_INVALID_DATA);
         byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
         if (bytes.length > max) throw new PacketOverflowException("string", bytes.length, max);
         this.writeVarInt(bytes.length);
@@ -64,7 +57,7 @@ public class PacketBuffer extends ByteBuf {
     }
 
     public byte[] readByteArray(int max) {
-        if (max < 0) throw new IllegalArgumentException("Invalid data");
+        if (max < 0) throw new IllegalArgumentException(CommonConstants.EX_INVALID_DATA);
         int len = this.buf.readInt();
         if (len > max) throw new PacketOverflowException("byte array", len, max);
         byte[] bytes = new byte[len];
@@ -89,110 +82,137 @@ public class PacketBuffer extends ByteBuf {
         this.writeUTF(id.path(), 200);
     }
 
+    @Override
     public byte readByte() {
         return this.buf.readByte();
     }
 
+    @Override
     public short readUnsignedByte() {
         return this.buf.readUnsignedByte();
     }
 
+    @Override
     public ByteBuf writeByte(int value) {
         return this.buf.writeByte(value);
     }
 
+    @Override
     public short readShort() {
         return this.buf.readShort();
     }
 
+    @Override
     public int readUnsignedShort() {
         return this.buf.readUnsignedShort();
     }
 
+    @Override
     public ByteBuf writeShort(int value) {
         return this.buf.writeShort(value);
     }
 
+    @Override
     public int readInt() {
         return this.buf.readInt();
     }
 
+    @Override
     public long readUnsignedInt() {
         return this.buf.readUnsignedInt();
     }
 
+    @Override
     public ByteBuf writeInt(int value) {
         return this.buf.writeInt(value);
     }
 
+    @Override
     public long readLong() {
         return this.buf.readLong();
     }
 
+    @Override
     public ByteBuf writeLong(long value) {
         return this.buf.writeLong(value);
     }
 
+    @Override
     public float readFloat() {
         return this.buf.readFloat();
     }
 
+    @Override
     public ByteBuf writeFloat(float value) {
         return this.buf.writeFloat(value);
     }
 
+    @Override
     public double readDouble() {
         return this.buf.readDouble();
     }
 
+    @Override
     public ByteBuf writeDouble(double value) {
         return this.buf.writeDouble(value);
     }
 
+    @Override
     public short readShortLE() {
         return this.buf.readShortLE();
     }
 
+    @Override
     public int readUnsignedShortLE() {
         return this.buf.readUnsignedShortLE();
     }
 
+    @Override
     public ByteBuf writeShortLE(int value) {
         return this.buf.writeShortLE(value);
     }
 
+    @Override
     public int readIntLE() {
         return this.buf.readIntLE();
     }
 
+    @Override
     public ByteBuf writeIntLE(int value) {
         return this.buf.writeIntLE(value);
     }
 
+    @Override
     public long readUnsignedIntLE() {
         return this.buf.readUnsignedIntLE();
     }
 
+    @Override
     public long readLongLE() {
         return this.buf.readLongLE();
     }
 
+    @Override
     public ByteBuf writeLongLE(long value) {
         return this.buf.writeLongLE(value);
     }
 
+    @Override
     public float readFloatLE() {
         return this.buf.readFloatLE();
     }
 
+    @Override
     public ByteBuf writeFloatLE(float value) {
         return this.buf.writeFloatLE(value);
     }
 
+    @Override
     public double readDoubleLE() {
         return this.buf.readDoubleLE();
     }
 
+    @Override
     public char readChar() {
         return this.buf.readChar();
     }
@@ -201,10 +221,12 @@ public class PacketBuffer extends ByteBuf {
         return this.buf.writeChar(value);
     }
 
+    @Override
     public boolean readBoolean() {
         return this.buf.readBoolean();
     }
 
+    @Override
     public ByteBuf writeBoolean(boolean value) {
         return this.buf.writeBoolean(value);
     }
@@ -371,6 +393,7 @@ public class PacketBuffer extends ByteBuf {
         return new BlockPos(x, y, z);
     }
 
+    @CanIgnoreReturnValue
     public ByteBuf writeBlockPos(BlockPos pos) {
         this.buf.writeInt(pos.x());
         this.buf.writeInt(pos.y());
@@ -487,8 +510,8 @@ public class PacketBuffer extends ByteBuf {
     }
 
     @Override
-    public ByteBuf order(ByteOrder endianness) {
-        return this.buf.order(endianness);
+    public ByteBuf order(ByteOrder order) {
+        return this.buf.order(order);
     }
 
     @Override
@@ -1300,7 +1323,7 @@ public class PacketBuffer extends ByteBuf {
     public short[] readShortArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         short[] array = new short[len];
@@ -1336,7 +1359,7 @@ public class PacketBuffer extends ByteBuf {
     public int[] readMediumArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         int[] array = new int[len];
@@ -1372,7 +1395,7 @@ public class PacketBuffer extends ByteBuf {
     public int[] readIntArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         int[] array = new int[len];
@@ -1408,7 +1431,7 @@ public class PacketBuffer extends ByteBuf {
     public long[] readLongArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         long[] array = new long[len];
@@ -1443,7 +1466,7 @@ public class PacketBuffer extends ByteBuf {
     public float[] readFloatArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         float[] array = new float[len];
@@ -1478,7 +1501,7 @@ public class PacketBuffer extends ByteBuf {
     public double[] readDoubleArray(int max) {
         int len = this.readVarInt();
         if (len > max) {
-            throw new PacketException("Array too large, max = " + max + ", actual = " + len);
+            throw new PacketException(CommonConstants.EX_ARRAY_TOO_LARGE.formatted(max, len));
         }
 
         double[] array = new double[len];
@@ -1514,7 +1537,7 @@ public class PacketBuffer extends ByteBuf {
     public <T> List<T> readList(Function<PacketBuffer, T> decoder, int max) {
         int size = this.readInt();
         if (size > max) {
-            throw new PacketException("List too large, max = " + max + ", actual = " + size);
+            throw new PacketException("List too large, max = %d, actual = %d".formatted(max, size));
         }
 
         var list = new ArrayList<T>();
@@ -1550,7 +1573,7 @@ public class PacketBuffer extends ByteBuf {
     public <K, V> Map<K, V> readMap(Function<PacketBuffer, K> keyDecoder, Function<PacketBuffer, V> valueDecoder, int max) {
         int size = this.readInt();
         if (size > max) {
-            throw new PacketException("Map too large, max = " + max + ", actual = " + size);
+            throw new PacketException("Map too large, max = %d, actual = %d".formatted(max, size));
         }
 
         var map = new HashMap<K, V>();
@@ -1587,8 +1610,21 @@ public class PacketBuffer extends ByteBuf {
         return ItemStack.load(this.readUbo());
     }
 
+    @CanIgnoreReturnValue
     public ByteBuf writeItemStack(ItemStack stack) {
         this.writeUbo(stack.save());
         return this.buf;
+    }
+
+    public TextObject readTextObject() {
+        return TextObject.deserialize(this.readUbo());
+    }
+
+    public void writeTextObject(TextObject message) {
+        this.writeUbo(message.serialize());
+    }
+
+    public <T extends Enum<T>> T readEnum(T fallback) {
+        return EnumUtils.byOrdinal(this.readVarInt(), fallback);
     }
 }

@@ -1,15 +1,13 @@
 package com.ultreon.craft.client.input;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.util.JoystickType;
-import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.client.util.Utils;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import org.jetbrains.annotations.ApiStatus;
 
 public class PlayerInput {
     public boolean forward;
@@ -23,6 +21,8 @@ public class PlayerInput {
     private final Vector3 vel = new Vector3();
     private final Vector3 tmp = new Vector3();
     private final UltracraftClient client;
+    private int flyCountdown = 0;
+
 
     public PlayerInput(UltracraftClient client) {
         this.client = client;
@@ -37,44 +37,70 @@ public class PlayerInput {
         this.moveX = 0;
         this.moveY = 0;
 
-        this.forward = Gdx.input.isKeyPressed(Input.Keys.W) && Gdx.input.isCursorCatched();
-        this.backward = Gdx.input.isKeyPressed(Input.Keys.S) && Gdx.input.isCursorCatched();
-        this.strafeLeft = Gdx.input.isKeyPressed(Input.Keys.A) && Gdx.input.isCursorCatched();
-        this.strafeRight = Gdx.input.isKeyPressed(Input.Keys.D) && Gdx.input.isCursorCatched();
-        this.up = Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched();
-        this.down = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && Gdx.input.isCursorCatched();
+        this.forward = KeyBinds.walkForwardsKey.isPressed() && Gdx.input.isCursorCatched();
+        this.backward = KeyBinds.walkBackwardsKey.isPressed() && Gdx.input.isCursorCatched();
+        this.strafeLeft = KeyBinds.walkLeftKey.isPressed() && Gdx.input.isCursorCatched();
+        this.strafeRight = KeyBinds.walkRightKey.isPressed() && Gdx.input.isCursorCatched();
+        this.up = KeyBinds.jumpKey.isPressed() && Gdx.input.isCursorCatched();
+        this.down = KeyBinds.crouchKey.isPressed() && Gdx.input.isCursorCatched();
+        player.setRunning(KeyBinds.runningKey.isPressed() && Gdx.input.isCursorCatched());
 
-        if (this.forward || this.backward || this.strafeLeft || this.strafeRight) {
-            if (this.forward) {
-                this.moveY += 1;
+        if (this.flyCountdown > 0) {
+            this.flyCountdown--;
+
+            if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight() && !player.isSpectator()) {
+                player.setFlying(!player.isFlying());
             }
-            if (this.backward) {
-                this.moveY -= 1;
-            }
-            if (this.strafeLeft) {
-                this.moveX -= 1;
-            }
-            if (this.strafeRight) {
-                this.moveX += 1;
-            }
+        } else if (KeyBinds.jumpKey.isJustPressed() && player.isAllowFlight()) {
+            this.flyCountdown = 10;
         }
 
-        if (this.client.input.isControllerConnected() && this.moveX == 0 && this.moveY == 0) {
-            Vector2 joystick = GameInput.getJoystick(JoystickType.LEFT);
-            if (joystick != null) {
-                this.moveX = -joystick.x;
-                this.moveY = joystick.y;
-            }
-        }
 
-        this.tmp.set(-speed * this.moveX, 0, speed * this.moveY).rotate(player.getXRot(), 0, 1, 0);
+        this.move();
+
+        this.controllerMove();
+
+        if (this.moveX > 0)
+            player.xRot = Math.max(player.xRot - 45 / (player.xHeadRot - player.xRot + 50), player.xRot - 90);
+        else if (this.moveX < -0)
+            player.xRot = Math.min(player.xRot + 45 / (player.xRot - player.xHeadRot + 50), player.xRot + 90);
+        else if (this.moveY != 0 && player.xRot > player.xHeadRot)
+            player.xRot = Math.max(player.xRot - (45 / (player.xRot - player.xHeadRot)), player.xHeadRot);
+        else if (this.moveY != 0 && player.xRot < player.xHeadRot)
+            player.xRot = Math.min(player.xRot + (45 / (player.xHeadRot - player.xRot)), player.xHeadRot);
+
+        this.tmp.set(-speed * this.moveX, 0, speed * this.moveY).rotate(player.xHeadRot, 0, 1, 0);
         this.vel.set(this.tmp);
     }
 
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
-    private void setVel(Vector3 vel) {
-        this.vel.set(vel);
+    private void controllerMove() {
+        if (!this.client.input.isControllerConnected() || this.moveX != 0 || this.moveY != 0)
+            return;
+
+        Vector2 joystick = GameInput.getJoystick(JoystickType.LEFT);
+
+        if (joystick == null)
+            return;
+
+        this.moveX = -joystick.x;
+        this.moveY = joystick.y;
+    }
+
+    private void move() {
+        if (!this.forward && !this.backward && !this.strafeLeft && !this.strafeRight)
+            return;
+
+        if (this.forward)
+            this.moveY += 1;
+
+        if (this.backward)
+            this.moveY -= 1;
+
+        if (this.strafeLeft)
+            this.moveX -= 1;
+
+        if (this.strafeRight)
+            this.moveX += 1;
     }
 
     public Vec3d getVel() {
@@ -83,5 +109,9 @@ public class PlayerInput {
 
     public Vector3 getVelocity() {
         return this.vel;
+    }
+
+    public boolean isWalking() {
+        return this.forward || this.backward || this.strafeLeft || this.strafeRight;
     }
 }

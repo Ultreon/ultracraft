@@ -1,34 +1,37 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
+public class CycleButton<T extends Enum<T>> extends TextButton {
     private TextObject label = TextObject.empty();
     private T[] values;
     private Function<T, TextObject> formatter;
     private int cur;
 
-    public CycleButton(int x, int y, @IntRange(from = 21) int width, TextObject name) {
-        super(x, y, width);
+    public CycleButton(int x, int y, @IntRange(from = 21) int width, MutableText name) {
+        super(width);
 
         this.label = name;
-        this.text(name);
+        this.text().set(name);
     }
 
     public CycleButton(int x, int y, @IntRange(from = 21) int width, @IntRange(from = 21) int height, MutableText name) {
-        super(x, y, width, height);
+        super(width, height);
 
-        this.text(name);
         this.label = name;
+        this.text().set(name);
     }
 
     public CycleButton() {
-        super(0, 0, 200, 21);
+        super(200, 21);
     }
 
     @SafeVarargs
@@ -43,9 +46,21 @@ public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
     }
 
     @Override
+    public CycleButton<T> position(Supplier<Position> position) {
+        this.onRevalidate(widget -> this.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public CycleButton<T> bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> this.setBounds(position.get()));
+        return this;
+    }
+
+    @Override
     public boolean click() {
         this.cur = (this.cur + 1) % this.values.length;
-        this.text(this.label.copy().append(": ").append(this.formatter.apply(this.values[this.cur])));
+        this.text().set(this.label.copy().append(": ").append(this.formatter.apply(this.values[this.cur])));
         return true;
     }
 

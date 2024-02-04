@@ -230,7 +230,7 @@ commonProperties
                         Application::class.java
                     ) {                       // Create new run configuration "MyApp" that will run class foo.App
                         jvmArgs =
-                            "-Xmx2g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
+                            "-Xmx4g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
                         mainClass = "net.fabricmc.devlaunchinjector.Main"
                         moduleName = idea.module.name + ".desktop.main"
                         workingDirectory = "$projectDir/run/client/main/"
@@ -246,7 +246,7 @@ commonProperties
                         Application::class.java
                     ) {                       // Create new run configuration "MyApp" that will run class foo.App
                         jvmArgs =
-                            "-Xmx2g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
+                            "-Xmx4g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=CLIENT -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
                         mainClass = "net.fabricmc.devlaunchinjector.Main"
                         moduleName = idea.module.name + ".desktop.main"
                         workingDirectory = "$projectDir/run/client/alt/"
@@ -262,7 +262,7 @@ commonProperties
                         Application::class.java
                     ) {                       // Create new run configuration "MyApp" that will run class foo.App
                         jvmArgs =
-                            "-Xmx2g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=SERVER -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
+                            "-Xmx4g -Dfabric.skipMcProvider=true -Dfabric.dli.config=${launchFile.path} -Dfabric.dli.env=SERVER -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient -Dfabric.zipfs.use_temp_file=false"
                         mainClass = "net.fabricmc.devlaunchinjector.Main"
                         moduleName = idea.module.name + ".server.main"
                         workingDirectory = "$projectDir/run/server/"
@@ -296,7 +296,9 @@ afterEvaluate {
         classpath = files(subprojects.map { subproject ->
             subproject?.extensions?.getByType(JavaPluginExtension::class.java)?.sourceSets?.getByName("main")?.compileClasspath
         })
-        (options as StandardJavadocDocletOptions).links(
+        val options = options as StandardJavadocDocletOptions
+        options.addFileOption("-add-stylesheet", project.file("javadoc.css"))
+        options.links(
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx/${project.property("gdx_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-ai/${project.property("ai_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-backend-lwjgl3/${project.property("gdx_version")}",

@@ -1,51 +1,58 @@
 package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+
+import static com.badlogic.gdx.math.MathUtils.lerp;
 
 public final class ClientWorld extends World implements Disposable {
+    private static final int DAY_CYCLE = 24000;
+    private static final Color DAY_COLOR = new Color(0.6F, 0.7F, 1.0F, 1.0F);
+    private static final Color NIGHT_COLOR = new Color(0.05F, 0.075F, 0.15F, 1.0F);
     @NotNull
     private final UltracraftClient client;
-    private final Map<ChunkPos, ClientChunk> chunks = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, ClientChunk> chunks = new HashMap<>();
     private int chunkRefresh;
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
+    private int time = 0;
 
     public ClientWorld(@NotNull UltracraftClient client) {
         super();
         this.client = client;
     }
 
+    @Override
     public int getRenderDistance() {
         return this.client.settings.renderDistance.get();
     }
 
     @Override
     protected boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos) {
-        return this.chunks.remove(pos) == chunk;
-    }
-
-    @Override
-    public boolean set(int x, int y, int z, @NotNull Block block) {
-        boolean isBlockSet = super.set(x, y, z, block);
-        if (isBlockSet) {
-//            this.client.connection.send(new C2SBlockBreakPacket(new BlockPos(x, y, z)));
+        if (!UltracraftClient.isOnMainThread()) {
+            return UltracraftClient.invokeAndWait(() -> this.unloadChunk(chunk, pos));
         }
-        return isBlockSet;
+        return this.chunks.remove(pos) == chunk;
     }
 
     @Override
@@ -63,6 +70,11 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     @Override
+    public ClientChunk getChunk(int x, int z) {
+        return (ClientChunk) super.getChunk(x, z);
+    }
+
+    @Override
     public @Nullable ClientChunk getChunkAt(@NotNull BlockPos pos) {
         return (ClientChunk) super.getChunkAt(pos);
     }
@@ -74,16 +86,30 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public Collection<ClientChunk> getLoadedChunks() {
+        ClientWorld.crashOnWrongThread();
+
         return this.chunks.values();
+    }
+
+    private static void crashOnWrongThread() {
+        if (!UltracraftClient.isOnMainThread()) {
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+        }
     }
 
     @Override
     public boolean isChunkInvalidated(@NotNull Chunk chunk) {
-        if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
-        }
-
+        ClientWorld.crashOnWrongThread();
         return super.isChunkInvalidated(chunk);
+    }
+
+    @Override
+    public void updateChunk(@Nullable Chunk chunk) {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invokeAndWait(() -> this.updateChunk(chunk));
+            return;
+        }
+        super.updateChunk(chunk);
     }
 
     @Override
@@ -103,6 +129,7 @@ public final class ClientWorld extends World implements Disposable {
         if (breakResult == BreakResult.BROKEN) {
             this.client.connection.send(new C2SBlockBreakingPacket(breaking, C2SBlockBreakingPacket.BlockStatus.STOP));
             this.client.connection.send(new C2SBlockBreakPacket(breaking));
+            this.set(breaking, Blocks.AIR);
         }
         return breakResult;
     }
@@ -117,9 +144,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public void onChunkUpdated(@NotNull Chunk chunk) {
-        if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException("Should be on rendering thread.");
-        }
+        ClientWorld.crashOnWrongThread();
 
         super.onChunkUpdated(chunk);
     }
@@ -138,28 +163,34 @@ public final class ClientWorld extends World implements Disposable {
         return true;
     }
 
-    public Map<ChunkPos, ClientChunk> getChunks() {
-        return this.chunks;
-    }
-
     public void loadChunk(ChunkPos pos, ClientChunk data) {
-        var _chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
-        if (_chunk == null) _chunk = data;
-        else return; // FIXME Should fix duplicated chunk packets.
+        var chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
+        if (chunk == null) chunk = data;
+        else {
+            World.LOGGER.warn("Duplicate chunk packet detected! Chunk {}", pos);
+            return;
+        }
         LocalPlayer player = this.client.player;
-        if (player == null || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+        if (player == null) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
             return;
         }
+        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
+            return;
+        }
 
-        UltracraftClient.invoke(_chunk::ready);
-
-        this.chunks.put(pos, data);
-
-        this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
+        ClientChunk finalChunk = chunk;
+        UltracraftClient.invoke(() -> {
+            finalChunk.ready();
+            this.chunks.put(pos, data);
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
+        });
     }
 
     public void tick() {
+        this.time++;
+
         if (this.chunkRefresh-- <= 0) {
             this.chunkRefresh = 40;
 
@@ -167,15 +198,82 @@ public final class ClientWorld extends World implements Disposable {
             if (player != null) {
                 if (this.oldChunkPos.equals(player.getChunkPos())) return;
                 this.oldChunkPos = player.getChunkPos();
-                this.chunks.forEach((chunkPos, clientChunk) -> {
+                for (Iterator<Map.Entry<ChunkPos, ClientChunk>> iterator = this.chunks.entrySet().iterator(); iterator.hasNext(); ) {
+                    Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
+                    ChunkPos chunkPos = entry.getKey();
+                    ClientChunk clientChunk = entry.getValue();
                     if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
-                        this.chunks.remove(chunkPos);
+                        iterator.remove();
                         clientChunk.dispose();
+                        this.updateNeighbours(clientChunk);
 
                         this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.UNLOADED));
                     }
-                });
+                }
             }
         }
     }
+
+    public Stream<Entity> getAllEntities() {
+        return this.entities.values().stream();
+    }
+
+    public float getGlobalSunlight() {
+        int daytime = this.getDaytime();
+        final int riseSetDuration = ClientWorld.DAY_CYCLE / 24;
+        if (daytime < riseSetDuration / 2) {
+            return lerp(
+                    0.25f, 1.0f,
+                    0.5f + (daytime / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
+            return 1.0f;
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
+            return lerp(
+                    1.0f, 0.25f,
+                    ((daytime - ((float) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
+            return 0.25f;
+        } else {
+            return lerp(
+                    0.25f, 1.0f,
+                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        }
+    }
+
+    public Color getSkyColor() {
+        int daytime = this.getDaytime();
+        final int riseSetDuration = ClientWorld.DAY_CYCLE / 24;
+        if (daytime < riseSetDuration / 2) {
+            return ClientWorld.mixColors(
+                    ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
+                    0.5f + (daytime / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
+            return ClientWorld.DAY_COLOR;
+        } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
+            return ClientWorld.mixColors(
+                    ClientWorld.NIGHT_COLOR, ClientWorld.DAY_COLOR,
+                    ((daytime - ((double) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
+            return ClientWorld.NIGHT_COLOR;
+        } else {
+            return ClientWorld.mixColors(
+                    ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
+                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+        }
+    }
+
+    private int getDaytime() {
+        return this.time % DAY_CYCLE;
+    }
+
+    private static Color mixColors(Color color1, Color color2, double percent) {
+        percent = Mth.clamp(percent, 0.0, 1.0);
+        double inverse_percent = 1.0 - percent;
+        int redPart = (int) (color1.getRed() * percent + color2.getRed() * inverse_percent);
+        int greenPart = (int) (color1.getGreen() * percent + color2.getGreen() * inverse_percent);
+        int bluePart = (int) (color1.getBlue() * percent + color2.getBlue() * inverse_percent);
+        int alphaPart = (int) (color1.getAlpha() * percent + color2.getAlpha() * inverse_percent);
+        return Color.rgba(redPart, greenPart, bluePart, alphaPart);
+    }
+
 }

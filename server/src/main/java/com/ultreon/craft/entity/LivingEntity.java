@@ -9,6 +9,7 @@ import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.events.v1.ValueEventResult;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +24,9 @@ public class LivingEntity extends Entity {
     public boolean jumping = false;
     public boolean invincible = false;
     protected float oldHealth;
+    public float xHeadRot;
+    protected float lastDamage;
+    protected @Nullable DamageSource lastDamageSource;
 
     public LivingEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -60,6 +64,10 @@ public class LivingEntity extends Entity {
         this.invincible = invincible;
     }
 
+    public double getSpeed() {
+        return this.attributes.get(Attribute.SPEED);
+    }
+
     @Override
     public void tick() {
         if (this.isDead) return;
@@ -79,19 +87,32 @@ public class LivingEntity extends Entity {
         if (this.health <= 0) {
             this.health = 0;
 
-            if (!this.isDead) {
-                if (!EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
-                    this.isDead = true;
-                    this.onDeath();
-                }
+            if (!this.isDead && !EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
+                this.isDead = true;
+                this.onDeath();
             }
         }
 
         super.tick();
     }
 
+    @Override
+    public Vec3d getLookVector() {
+        // Calculate the direction vector
+        Vec3d direction = new Vec3d();
+
+        this.yRot = Mth.clamp(this.yRot, -89.9F, 89.9F);
+        direction.x = (float) (Math.cos(Math.toRadians(this.yRot)) * Math.sin(Math.toRadians(this.xHeadRot)));
+        direction.z = (float) (Math.cos(Math.toRadians(this.yRot)) * Math.cos(Math.toRadians(this.xHeadRot)));
+        direction.y = (float) (Math.sin(Math.toRadians(this.yRot)));
+
+        // Normalize the direction vector
+        direction.nor();
+        return direction;
+    }
+
     protected void hurtFromVoid() {
-        this.hurt(5, DamageSource.VOID);
+        this.hurt(Integer.MAX_VALUE, DamageSource.VOID);
     }
 
     public void jump() {
@@ -110,7 +131,7 @@ public class LivingEntity extends Entity {
     }
 
     public final void hurt(float damage, DamageSource source) {
-        if (this.isDead || this.health <= 0 || this.invincible || this.damageImmunity > 0) return;
+        if (this.isDead || this.health <= 0 || ((this.invincible || this.damageImmunity > 0) && source.byPassInvincibility())) return;
 
         ValueEventResult<Float> result = EntityEvents.DAMAGE.factory().onEntityDamage(this, source, damage);
         Float value = result.getValue();
@@ -166,7 +187,7 @@ public class LivingEntity extends Entity {
 
         this.health = data.getFloat("health", this.health);
         this.maxHeath = data.getFloat("maxHealth", this.maxHeath);
-        this.damageImmunity = data.getInt("damageImmunity", this.damageImmunity);
+        this.damageImmunity = data.getInt("damageImmuhghnity", this.damageImmunity);
         this.isDead = data.getBoolean("isDead", this.isDead);
         this.jumpVel = data.getFloat("jumpVelocity", this.jumpVel);
         this.jumping = data.getBoolean("jumping", this.jumping);
@@ -193,10 +214,19 @@ public class LivingEntity extends Entity {
     }
 
     public boolean isInWater() {
-        return this.world.get(this.blockPosition()) == Blocks.WATER;
+        return this.world.get(this.getBlockPos()) == Blocks.WATER;
     }
 
     public ChunkPos getChunkPos() {
-        return Utils.toChunkPos(this.blockPosition());
+        return Utils.toChunkPos(this.getBlockPos());
+    }
+
+    public void kill() {
+        this.lastDamage = this.health;
+        this.lastDamageSource = DamageSource.KILL;
+        this.health = 0;
+        this.isDead = true;
+
+        this.onDeath();
     }
 }

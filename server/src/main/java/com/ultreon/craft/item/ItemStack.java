@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * A class that hold items with a certain amount and with data.
  *
- * @author XyperCode
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @see Item
  */
 public class ItemStack {
@@ -61,7 +61,7 @@ public class ItemStack {
         @Nullable Identifier id = Identifier.tryParse(data.getString("item"));
         if (id == null) return new ItemStack();
 
-        Item item = Registries.ITEMS.getValue(id);
+        Item item = Registries.ITEM.getValue(id);
         if (item == null || item == Items.AIR) return new ItemStack();
 
         int count = data.getInt("count", 0);
@@ -189,14 +189,32 @@ public class ItemStack {
         return new ItemStack(this.item, this.count, this.tag.copy());
     }
 
+    /**
+     * Gets the description of the item.
+     *
+     * @return the description
+     */
     public List<TextObject> getDescription() {
         return this.item.getDescription(this);
     }
 
-    public boolean isSameItemSameTag(ItemStack other) {
+    /**
+     * Determines if this ItemStack is similar to another ItemStack.
+     * Checks the item and the data tag.
+     *
+     * @param  other   the ItemStack to compare with
+     * @return         true if the ItemStacks are similar, false otherwise
+     */
+    public boolean isSimilar(ItemStack other) {
         return this.item == other.item && this.tag.equals(other.tag);
     }
 
+    /**
+     * Checks if the current item is the same as the given item.
+     *
+     * @param  other  the item to compare with
+     * @return        true if the items are the same, false otherwise
+     */
     public boolean isSameItem(ItemStack other) {
         return this.item == other.item;
     }

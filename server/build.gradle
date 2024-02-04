@@ -39,14 +39,17 @@ java {
     withSourcesJar()
     withJavadocJar()
     
-    sourceCompatibility("17")
-    targetCompatibility("17")
+    sourceCompatibility("21")
+    targetCompatibility("21")
 }
 
 dependencies {
     implementation api(project(":gameprovider"))
 
     implementation api("com.formdev:flatlaf:3.2.1")
+    implementation api("com.github.FusionYAML:FusionYAML:$fusion_yaml_version")
+
+    annotationProcessor "com.google.errorprone:error_prone_annotations:2.18.0"
 
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")
@@ -83,6 +86,9 @@ dependencies {
     // SLF4J
     implementation api("org.slf4j:slf4j-api:$slf4j_version")
 
+    // JSON5
+    implementation api("de.marhali:json5-java:2.0.0")
+
     // Google
     implementation api("com.google.code.gson:gson:2.10.1")
     implementation api("com.google.guava:guava:32.0.0-jre")
@@ -90,6 +96,7 @@ dependencies {
     // Misc
     implementation api("it.unimi.dsi:fastutil:8.5.12")
     implementation api("com.raylabz:opensimplex:1.0.3")
+    implementation api("de.articdive:jnoise-pipeline:4.1.0")
 
     implementation api("space.earlygrey:shapedrawer:$shapedrawer_version")
 

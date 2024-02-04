@@ -8,7 +8,6 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.Label;
-import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
@@ -45,18 +44,18 @@ public class WorldLoadScreen extends Screen {
         this.client.integratedServer = server;
         this.world = server.getWorld();
 
-        this.titleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 - 25))
+        this.titleLabel = builder.add(Label.of(this.title)
                 .alignment(Alignment.CENTER)
-                .text(this.title)
-                .scale(2);
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 - 25))
+                .scale(2));
 
-        this.descriptionLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 3))
+        this.descriptionLabel = builder.add(Label.of("Preparing")
                 .alignment(Alignment.CENTER)
-                .text("Preparing");
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 + 3)));
 
-        this.subTitleLabel = builder.label(() -> new Position(this.size.width / 2, this.size.height / 3 + 31))
+        this.subTitleLabel = builder.add(Label.of()
                 .alignment(Alignment.CENTER)
-                .text("");
+                .position(() -> new Position(this.size.width / 2, this.size.height / 3 + 31)));
 
         new Thread(this::run, "World Loading").start();
     }
@@ -81,68 +80,36 @@ public class WorldLoadScreen extends Screen {
             this.message("Starting integrated server..");
             this.client.startIntegratedServer();
 
-            this.message("Loading world...");
-            try {
-                this.world.load();
-                this.message("World loaded!");
-            } catch (IOException e) {
-                UltracraftClient.crash(e);
-                return;
-            }
+            this.message("Loading saved world...");
+            if (this.loadGeneric()) return;
 
             this.message("Set spawn point");
 
             this.world.setupSpawn();
 
-            UltracraftServer.invokeAndWait(() -> {
-                try {
-                    WorldLoadScreen.LOGGER.info("Loading spawn chunks...");
-
-                    ChunkPos spawnChunk = World.toChunkPos(this.world.getSpawnPoint());
-                    int spawnChunkX = spawnChunk.x();
-                    int spawnChunkZ = spawnChunk.z();
-
-                    for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
-                        for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
-                            this.world.loadChunk(spawnChunkX, spawnChunkZ);
-                            this.message("Loading spawn chunk " + chunkX + ", " + chunkZ);
-                        }
-                    }
-
-                    ChunkRefresher refresher = new ChunkRefresher();
-                    ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk, ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5)).stream().filter(chunkPos -> {
-                        Vec2i loadChunk = new Vec2i(chunkPos.x(), chunkPos.z());
-                        Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
-                        return loadChunk.dst(spawnChunkXZ) < this.client.settings.renderDistance.get();
-                    }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
-                    this.world.doRefreshNow(refresher);
-
-                    this.message("Spawn chunks loaded!");
-
-                    UltracraftClient.invoke(() -> {
-                        this.client.worldRenderer = new WorldRenderer(this.client.world);
-                        this.client.renderWorld = true;
-                        this.client.showScreen(null);
-                    });
-                } catch (Throwable t) {
-                    if (t instanceof Error) {
-                        UltracraftClient.crash(t);
-                        return;
-                    }
-                    UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
-                }
-            });
+            UltracraftServer.invokeAndWait(this::loadWithinServer);
 
             this.message("Waiting for server to finalize...");
-        } catch (Throwable throwable) {
+        } catch (Exception throwable) {
             UltracraftClient.LOGGER.error("Failed to load world:", throwable);
             UltracraftClient.crash(throwable);
         }
     }
 
+    private boolean loadGeneric() {
+        try {
+            this.client.integratedServer.load();
+            this.message("Saved world loaded!");
+        } catch (IOException e) {
+            UltracraftClient.crash(e);
+            return true;
+        }
+        return false;
+    }
+
     private void message(String message) {
         WorldLoadScreen.LOGGER.debug(message);
-        this.descriptionLabel.text(message);
+        this.descriptionLabel.text().setRaw(message);
     }
 
     @Override
@@ -154,17 +121,17 @@ public class WorldLoadScreen extends Screen {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
                 String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                this.subTitleLabel.text(s);
+                this.subTitleLabel.text().setRaw(s);
 
                 if (this.nextLog <= System.currentTimeMillis()) {
                     this.nextLog = System.currentTimeMillis() + 1000;
-                    UltracraftClient.LOGGER.info(World.MARKER, "Loading world: " + s);
+                    UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", s);
                 }
             } else {
-                this.subTitleLabel.text("");
+                this.subTitleLabel.text().setRaw("");
             }
         } else {
-            this.subTitleLabel.text("");
+            this.subTitleLabel.text().setRaw("");
         }
     }
 
@@ -183,5 +150,34 @@ public class WorldLoadScreen extends Screen {
 
     public Label getDescriptionLabel() {
         return this.descriptionLabel;
+    }
+
+    private void loadWithinServer() {
+        try {
+            WorldLoadScreen.LOGGER.info("Loading spawn chunks...");
+
+            ChunkPos spawnChunk = World.toChunkPos(this.world.getSpawnPoint());
+            int spawnChunkX = spawnChunk.x();
+            int spawnChunkZ = spawnChunk.z();
+
+            for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
+                for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
+                    this.world.loadChunk(spawnChunkX, spawnChunkZ);
+                    this.message("Loading spawn chunk " + chunkX + ", " + chunkZ);
+                }
+            }
+
+            ChunkRefresher refresher = new ChunkRefresher();
+            ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk, ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5)).stream().filter(chunkPos -> {
+                Vec2i loadChunk = new Vec2i(chunkPos.x(), chunkPos.z());
+                Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
+                return loadChunk.dst(spawnChunkXZ) < this.client.settings.renderDistance.get();
+            }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
+            this.world.doRefreshNow(refresher);
+
+            this.message("Spawn chunks loaded!");
+        } catch (Exception t) {
+            UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
+        }
     }
 }

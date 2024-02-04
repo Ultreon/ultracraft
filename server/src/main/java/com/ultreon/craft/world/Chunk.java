@@ -2,133 +2,164 @@ package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
-import com.ultreon.craft.collection.PaletteStorage;
-import com.ultreon.craft.debug.DebugFlags;
+import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
+import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.ultreon.craft.world.World.*;
+import static com.ultreon.libs.commons.v0.Mth.lerp;
 
+/**
+ * Represents a chunk in the world.
+ * <p style="color: red;">NOTE: This class isn't meant to be extended</p>
+ * <p style="color: red;">NOTE: This class isn't thread safe</p>
+ *
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ * @since 0.1.0
+ */
 @NotThreadSafe
 @ApiStatus.NonExtendable
-public abstract class Chunk implements ServerDisposable {
+public abstract class Chunk implements ServerDisposable, ChunkAccess {
     public static final int VERTEX_SIZE = 6;
     private final ChunkPos pos;
     final Map<BlockPos, Float> breaking = new HashMap<>();
-    final Map<BlockPos, Integer> breakingId = new HashMap<>();
     protected final Object lock = new Object();
     protected boolean active;
-    protected boolean modifiedByPlayer;
     protected boolean ready;
-    //	protected Node[] sections;
-    public final int size;
-    public final int height;
+
+    /**
+     * @deprecated Use {@link World#CHUNK_SIZE} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public final int size = CHUNK_SIZE;
+    /**
+     * @deprecated Use {@link World#CHUNK_HEIGHT} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public final int height = CHUNK_HEIGHT;
     protected final Vec3i offset;
-    @Nullable
+    @MonotonicNonNull
+    @ApiStatus.Internal
     public TreeData treeData;
     private boolean disposed;
-    @Deprecated
-    protected boolean updateNeighbours;
     private final World world;
-    protected List<Palette.@NotNull Index> blockData = new ArrayList<>();
-    Block[] blocks = new Block[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
-    //	protected final Palette<Block> palette = new Palette<>(this::encodeBlock, this::decodeBlock);
-    public final PaletteStorage<Block> storage;
 
-    protected Chunk(World world, int size, int height, ChunkPos pos) {
-        this(world, size, height, pos, new PaletteStorage<>(size * height * size));
+    public final Storage<Block> storage;
+    protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+    protected final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
+    public final Storage<Biome> biomeStorage;
+
+    protected static final int MAX_LIGHT_LEVEL = 15;
+    protected static final float[] lightLevelMap = new float[Chunk.MAX_LIGHT_LEVEL + 1];
+
+    static {
+        for (int i = 0; i <= Chunk.MAX_LIGHT_LEVEL; i++) {
+            double lerp = lerp(0.15f, 1.5f, (double) i / Chunk.MAX_LIGHT_LEVEL);
+            Chunk.lightLevelMap[i] = (float) lerp;
+        }
     }
 
-    protected Chunk(World world, int size, int height, ChunkPos pos, PaletteStorage<Block> storage) {
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos)} instead@
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    protected Chunk(World world, int size, int height, ChunkPos pos) {
+        this(world, size, height, pos, new FlatStorage<>(size * height * size));
+    }
+
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos, Storage)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    protected Chunk(World world, int size, int height, ChunkPos pos, Storage<Block> storage) {
+        this(world, size, height, pos, storage, new FlatStorage<>(256));
+    }
+
+    /**
+     * @deprecated Use {@link #Chunk(World, ChunkPos, Storage, Storage)} instead@
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    protected Chunk(World world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        this(world, pos, storage, biomeStorage);
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world the world the chunk is in.
+     * @param pos   the chunk position.
+     */
+    protected Chunk(World world, ChunkPos pos) {
+        this(world, pos, new FlatStorage<>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE));
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world   the world the chunk is in.
+     * @param pos     the chunk position.
+     * @param storage the block storage.
+     */
+    protected Chunk(World world, ChunkPos pos, Storage<Block> storage) {
+        this(world, pos, storage, new FlatStorage<>(256));
+    }
+
+    /**
+     * Creates a new chunk.
+     *
+     * @param world        the world the chunk is in.
+     * @param pos          the chunk position.
+     * @param storage      the block storage.
+     * @param biomeStorage the biome storage
+     */
+    protected Chunk(World world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
         this.world = world;
 
         this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
 
         this.pos = pos;
-        this.size = size;
-        this.height = height;
         this.storage = storage;
+        this.biomeStorage = biomeStorage;
     }
 
-    public static Block decodeBlock(MapType inputData) {
-        @Nullable String stringId = inputData.getString("id");
-        if (stringId == null) {
-            LOGGER.error("Unable to decode block, missing ID.");
-            return Blocks.ERROR;
-        }
-
-        @Nullable Identifier id = Identifier.tryParse(stringId);
-
-        if (id == null) {
-            LOGGER.error("Unknown block: " + stringId);
-            return Blocks.BARRIER;
-        }
-        return Registries.BLOCKS.getValue(id);
+    /**
+     * Decodes a block from a Packet Buffer object.
+     *
+     * @param buffer The input data.
+     * @return The decoded block data.
+     */
+    public static Block decodeBlock(PacketBuffer buffer) {
+        int id = buffer.readInt();
+        return Registries.BLOCK.byId(id);
     }
 
-    // Serialize the chunk to a byte array
-    public void serializeChunk(PacketBuffer buffer) {
-        synchronized (this.lock) {
-            this.storage.write(buffer);
-
-            try {
-                if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-                    Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/before/");
-                    if (Files.notExists(readDir)) Files.createDirectories(readDir);
-
-                    Files.writeString(readDir.resolve("before_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-                }
-            } catch (IOException ignored) {
-
-            }
-
-            // Debug network packet dump.
-//            if (DebugFlags.CHUNK_PACKET_DUMP) {
-//                Path readDir = Path.of(".cache/ultracraft/_debug/packet/written/");
-//                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-//                Files.write(readDir.resolve("written_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), buffer, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-//            }
-//            return byteArray;
-        }
-    }
-
-    // Deserialize the chunk from a byte array
-    public void deserializeChunk(PacketBuffer buffer) {
-//        // Debug network packet dump.
-//        if (DebugFlags.CHUNK_PACKET_DUMP) {
-//            var readDir = Path.of(".cache/ultracraft/_debug/packet/read/");
-//            if (Files.notExists(readDir)) Files.createDirectories(readDir);
-//            Files.write(readDir.resolve("read_chunk_%s.%s.ucchunk".formatted(this.pos.x(), this.pos.z())), bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-//        }
-
-        this.storage.read(buffer, Chunk::decodeBlock);
-
-        try {
-            if (DebugFlags.CHUNK_BLOCK_DATA_DUMP) {
-                Path readDir = Path.of(".cache/ultracraft/_debug/chunk_block_data/after/");
-                if (Files.notExists(readDir)) Files.createDirectories(readDir);
-                Files.writeString(readDir.resolve("after_%s.%s.ucdebug".formatted(this.pos.x(), this.pos.z())), this.blockData.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-            }
-        } catch (IOException ignored) {
-
-        }
+    /**
+     * Decodes a block from a UBO object.
+     *
+     * @param data The input data.
+     * @return The decoded block data.
+     */
+    public static Block loadBlock(MapType data) {
+        @Nullable Identifier id = Identifier.parse(data.getString("id"));
+        return Registries.BLOCK.getValue(id);
     }
 
     public Block get(Vec3i pos) {
@@ -136,9 +167,14 @@ public abstract class Chunk implements ServerDisposable {
         return this.get(pos.x, pos.y, pos.z);
     }
 
+    public Block get(BlockPos pos) {
+        if (this.disposed) return Blocks.BARRIER;
+        return this.get(pos.x(), pos.y(), pos.z());
+    }
+
     public Block get(int x, int y, int z) {
         if (this.disposed) return Blocks.BARRIER;
-        if (this.isOutOfBounds(x, y, z)) return Blocks.BARRIER;
+        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
         return this.getFast(x, y, z);
     }
 
@@ -151,8 +187,7 @@ public abstract class Chunk implements ServerDisposable {
         int dataIdx = this.getIndex(x, y, z);
 
         Block block = this.storage.get(dataIdx);
-        if (block == null) return Blocks.AIR;
-        return block;
+        return block == null ? Blocks.AIR : block;
     }
 
     public void set(Vec3i pos, Block block) {
@@ -174,18 +209,35 @@ public abstract class Chunk implements ServerDisposable {
 
         this.breaking.remove(new BlockPos(x, y, z));
         this.storage.set(index, block);
+
+        if (this.heightMap.get(x, z) < y && block != Blocks.AIR) {
+            this.heightMap.set(x, z, (short) y);
+        } else if (this.heightMap.get(x, z) == y && block == Blocks.AIR) {
+            int curY;
+            for (curY = y; curY >= 0; curY--) {
+                if (this.getFast(x, curY, z) != Blocks.AIR) {
+                    this.heightMap.set(x, z, (short) (curY + 1));
+                    break;
+                }
+            }
+
+            if (curY < 0) {
+                this.heightMap.set(x, z, (short) 0);
+            }
+        }
+
         return true;
     }
 
     private int getIndex(int x, int y, int z) {
         if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE) {
-            return z * (this.size * this.height) + y * this.size + x;
+            return z * (CHUNK_SIZE * CHUNK_HEIGHT) + y * CHUNK_SIZE + x;
         }
         return -1; // Out of bounds
     }
 
-    private boolean isOutOfBounds(int x, int y, int z) {
-        return x < 0 || x >= this.size || y < 0 || y >= this.height || z < 0 || z >= this.size;
+    protected boolean isOutOfBounds(int x, int y, int z) {
+        return x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE;
     }
 
     @Override
@@ -195,9 +247,9 @@ public abstract class Chunk implements ServerDisposable {
             this.disposed = true;
             this.ready = false;
 
-            this.storage.dispose();
-            this.blockData = null;
-            this.blocks = null;
+            if (this.storage instanceof ServerDisposable disposable) {
+                disposable.dispose();
+            }
         }
     }
 
@@ -249,12 +301,6 @@ public abstract class Chunk implements ServerDisposable {
         return this.disposed;
     }
 
-    @Deprecated
-    @ApiStatus.Internal
-    public void onNeighboursUpdated() {
-
-    }
-
     @ApiStatus.Internal
     public void onUpdated() {
         this.world.onChunkUpdated(this);
@@ -272,17 +318,25 @@ public abstract class Chunk implements ServerDisposable {
         return this.pos;
     }
 
-
-    // TODO: Make faster with heightmaps.
+    /**
+     * Find the highest block at the given position.
+     *
+     * @param x the x coordinate
+     * @param z the z coordinate
+     * @return The highest block Y coordinate.
+     */
     public int getHighest(int x, int z) {
-        for (int y = CHUNK_HEIGHT; y > 0; y--) {
-            if (!this.get(x, y, z).isAir()) {
-                return y;
-            }
-        }
-        return 0;
+        return this.heightMap.get(x, z);
     }
 
+    /**
+     * Find an empty space above the given position.
+     *
+     * @param x The x position.
+     * @param y The y position to use as base.
+     * @param z The z position.
+     * @return The found position.
+     */
     public int ascend(int x, int y, int z) {
         for (; y < CHUNK_HEIGHT; y++) {
             if (this.getFast(x, y, z).isAir()) {
@@ -292,11 +346,93 @@ public abstract class Chunk implements ServerDisposable {
         return CHUNK_HEIGHT;
     }
 
+    /**
+     * Find an empty space with a given {@code height} above the given position.
+     *
+     * @param x      The x position.
+     * @param y      The y position to use as base.
+     * @param z      The z position.
+     * @param height The height of the space.
+     * @return The found position.
+     */
+    public int ascend(int x, int y, int z, int height) {
+        for (; y < CHUNK_HEIGHT; y++) {
+            if (!this.getFast(x, y, z).isAir()) continue;
+
+            for (int i = 0; i < height; i++) {
+                if (this.getFast(x, y + i, z).isAir()) return y;
+            }
+        }
+        return CHUNK_HEIGHT;
+    }
+
+    public void setTreeData(TreeData treeData) {
+        if (this.treeData != null) return;
+
+        this.treeData = treeData;
+    }
+
+    protected int toFlatIndex(int x, int z) {
+        return x + z * CHUNK_SIZE;
+    }
+
+    public Biome getBiome(int x, int y, int z) {
+        int index = this.toFlatIndex(x, z);
+        return this.biomeStorage.get(index);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        Chunk chunk = (Chunk) o;
+        return Objects.equals(this.pos, chunk.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.pos);
+    }
+
+    public int getSunlight(int x, int y, int z) throws PosOutOfBoundsException {
+        if(this.isOutOfBounds(x, y, z))
+            return 0;
+
+        return 15;
+    }
+
+    public int getSunlight(Vec3i localBlockPos) {
+        return this.getSunlight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
+    }
+
+    public int getBlockLight(int x, int y, int z) throws PosOutOfBoundsException {
+        if(this.isOutOfBounds(x, y, z))
+            return 0;
+
+        return this.lightMap.getBlockLight(x, y, z);
+    }
+
+    public int getBlockLight(Vec3i localBlockPos) {
+        return this.getBlockLight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
+    }
+
+    public float getBrightness(int lightLevel) {
+        if(lightLevel > Chunk.MAX_LIGHT_LEVEL)
+            return 1;
+        if(lightLevel < 0)
+            return 0;
+        return Chunk.lightLevelMap[lightLevel];
+    }
+
+    /**
+     * Chunk status for client chunk load response.
+     *
+     * @author <a href="https://github.com/XyperCode">XyperCode</a>
+     */
     public enum Status {
         SUCCESS,
         SKIP,
         UNLOADED,
         FAILED
     }
-
 }

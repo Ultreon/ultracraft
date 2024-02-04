@@ -7,6 +7,9 @@ import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
+import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
+import static com.ultreon.craft.world.World.CHUNK_SIZE;
+
 @SuppressWarnings("UnqualifiedStaticUsage")
 public class WorldRayCaster {
 	private static final Vec3i abs = new Vec3i();
@@ -68,16 +71,23 @@ public class WorldRayCaster {
 				chunk = world.getChunkAt(abs.x, abs.y, abs.z);
 				if(chunk == null || chunk.isDisposed()) return result;
 			}
+
 			loc.set(abs).sub(chunk.getOffset().x, chunk.getOffset().y, chunk.getOffset().z);
+
+			if (loc.y >= World.WORLD_HEIGHT && dir.y >= 0) return result;
+			if (loc.y < 0 && dir.y < 0) return result;
+
 			if(loc.x < 0 || loc.y < 0 || loc.z < 0 ||
-					loc.x >= chunk.size || loc.y >= chunk.height || loc.z >= chunk.size){
+					loc.x >= CHUNK_SIZE || loc.y >= CHUNK_HEIGHT || loc.z >= CHUNK_SIZE){
 				chunk = null;
 				continue;
 			}
+
 			Block block = chunk.get(loc.cpy());
 			if(block != null && block != Blocks.AIR && predicate.test(block)) {
 				box.set(box.min.set(abs.x, abs.y, abs.z), box.max.set(abs.x+1,abs.y+1,abs.z+1));
 				box.update();
+
 				if(Intersector.intersectRayBounds(ray, box, intersection)){
 					double dst = intersection.dst(ray.origin);
 					result.collide = true;

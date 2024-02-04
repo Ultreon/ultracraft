@@ -6,10 +6,6 @@ import com.badlogic.gdx.math.Vector3;
 import org.checkerframework.common.returnsreceiver.qual.This;
 
 public class SimpleVertexBuilder extends VertexBuilder {
-    public SimpleVertexBuilder() {
-
-    }
-
     public Vertex<SimpleVertexBuilder> vertex(float x, float y, float z) {
         return new Vertex<>(this, x, y, z);
     }

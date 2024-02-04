@@ -37,7 +37,7 @@ public class MultiplayerData {
 
     @CanIgnoreReturnValue
     public RemotePlayer addPlayer(UUID uuid, String name, Vec3d position) {
-        UltracraftClient.LOGGER.info(name + " joined the server.");
+        UltracraftClient.LOGGER.info("{} joined the server.", name);
         RemotePlayer player = new RemotePlayer(this.client.world);
         player.setUuid(uuid);
         player.setName(name);
@@ -50,7 +50,7 @@ public class MultiplayerData {
         RemotePlayer remotePlayer = this.remotePlayers.get(uuid);
         if (remotePlayer == null) return;
 
-        UltracraftClient.LOGGER.info(remotePlayer.getName() + " left the server.");
+        UltracraftClient.LOGGER.info("{} left the server.", remotePlayer.getName());
         this.remotePlayers.remove(uuid);
     }
 

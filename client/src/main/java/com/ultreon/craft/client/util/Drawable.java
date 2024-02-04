@@ -3,6 +3,7 @@ package com.ultreon.craft.client.util;
 import com.badlogic.gdx.Graphics;
 import com.ultreon.craft.client.gui.Renderer;
 
+@Deprecated
 public interface Drawable {
     /**
      * Rendering method, should not be called if you don't know what you are doing.

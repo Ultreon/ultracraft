@@ -3,10 +3,7 @@ package com.ultreon.craft.client.gui.widget;
 import com.badlogic.gdx.utils.Array;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.client.gui.Callback;
-import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.gui.Size;
+import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.value.qual.IntRange;
@@ -16,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @ApiStatus.NonExtendable
 public class SelectionList<T> extends UIContainer<SelectionList<T>> {
@@ -48,18 +46,13 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         super(0, 0, 400, 500);
     }
 
-    public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
-        this.itemRenderer = itemRenderer;
-        return this;
+    public SelectionList(int itemHeight) {
+        this();
+        this.itemHeight(itemHeight);
     }
 
     public boolean isSelectable() {
         return this.selectable;
-    }
-
-    public SelectionList<T> selectable(boolean selectable) {
-        this.selectable = selectable;
-        return this;
     }
 
     @Override
@@ -67,7 +60,6 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         renderer.fill(this.pos.x, this.pos.y, this.size.width, this.size.height, Color.argb(0x40000000));
 
         renderer.pushMatrix();
-
         if (renderer.pushScissors(this.getBounds())) {
             this.renderChildren(renderer, mouseX, mouseY, deltaTime);
             renderer.popScissors();
@@ -75,6 +67,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         renderer.popMatrix();
     }
 
+    @Override
     public void renderChildren(@NotNull Renderer renderer, int mouseX, int mouseY, float deltaTime) {
         for (Entry<T> entry : this.entries) {
             if (entry.visible) {
@@ -171,14 +164,15 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     @Override
-    public boolean mouseDrag(int x, int y, int drawX, int dragY, int button) {
+    public boolean mouseDrag(int x, int y, int drawX, int dragY, int pointer) {
         @Nullable Entry<T> widgetAt = this.getEntryAt(x, y);
         x -= this.pos.x + this.innerXOffset;
         y -= this.pos.y + this.innerYOffset;
         drawX -= this.pos.x + this.innerXOffset;
         dragY -= this.pos.y + this.innerYOffset;
-        if (widgetAt != null) return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), drawX, dragY, button);
-        return super.mouseDrag(x, y, drawX, dragY, button);
+        if (widgetAt != null)
+            return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), drawX, dragY, pointer);
+        return super.mouseDrag(x, y, drawX, dragY, pointer);
     }
 
     @Override
@@ -208,11 +202,8 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.selected.value;
     }
 
-    @CanIgnoreReturnValue
-    public Entry<T> addEntry(T value) {
-        Entry<T> entry = new Entry<>(value, this);
-        this.entries.add(entry);
-        return entry;
+    public int getGap() {
+        return this.gap;
     }
 
     @CanIgnoreReturnValue
@@ -247,12 +238,31 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this.entries;
     }
 
-    public SelectionList<T> entries(Collection<? extends T> values) {
-        values.forEach(this::addEntry);
+    @CanIgnoreReturnValue
+    public SelectionList<T> itemRenderer(ItemRenderer<T> itemRenderer) {
+        this.itemRenderer = itemRenderer;
         return this;
     }
 
-    public SelectionList<T> onSelected(Callback<T> onSelected) {
+    @CanIgnoreReturnValue
+    public SelectionList<T> selectable(boolean selectable) {
+        this.selectable = selectable;
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Entry<T> entry(T value) {
+        Entry<T> entry = new Entry<>(value, this);
+        this.entries.add(entry);
+        return entry;
+    }
+
+    public SelectionList<T> entries(Collection<? extends T> values) {
+        values.forEach(this::entry);
+        return this;
+    }
+
+    public SelectionList<T> callback(Callback<T> onSelected) {
         this.onSelected = onSelected;
         return this;
     }
@@ -262,12 +272,24 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
         return this;
     }
 
-    public static class Entry<T> extends Widget<Entry<T>> {
+    @Override
+    public SelectionList<T> position(Supplier<Position> position) {
+        this.onRevalidate(widget -> widget.setPos(position.get()));
+        return this;
+    }
+
+    @Override
+    public SelectionList<T> bounds(Supplier<Bounds> position) {
+        this.onRevalidate(widget -> widget.setBounds(position.get()));
+        return this;
+    }
+
+    public static class Entry<T> extends Widget {
         private final T value;
         private final SelectionList<T> list;
 
         public Entry(T value, SelectionList<T> list) {
-            super(list.pos.x, list.pos.y, list.size.width, list.itemHeight);
+            super(list.size.width, list.itemHeight);
             this.value = value;
             this.list = list;
         }
@@ -278,19 +300,27 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
             this.size.width = this.list.size.width - SelectionList.SCROLLBAR_WIDTH;
             this.size.height = this.list.itemHeight;
             ItemRenderer<T> itemRenderer = this.list.itemRenderer;
-            if (itemRenderer != null) {
-                if (renderer.pushScissors(this.pos.x, this.pos.y, this.size.width, this.size.height)) {
-                    if (selected)
-                        renderer.box(this.pos.x, this.pos.y, this.size.width - 2, this.size.height - 2, Color.rgb(0xffffff));
+            if (itemRenderer != null && renderer.pushScissors(this.pos.x, this.pos.y, this.size.width, this.size.height)) {
+                if (selected)
+                    renderer.box(this.pos.x, this.pos.y, this.size.width - 2, this.size.height - 2, Color.rgb(0xffffff));
 
-                    itemRenderer.render(renderer, this.value, this.pos.y, mouseX, mouseY, selected, deltaTime);
-                    renderer.popScissors();
-                }
+                itemRenderer.render(renderer, this.value, this.pos.y, mouseX, mouseY, selected, deltaTime);
+                renderer.popScissors();
             }
         }
 
         public T getValue() {
             return this.value;
+        }
+
+        @Override
+        public Entry<T> position(Supplier<Position> position) {
+            return this;
+        }
+
+        @Override
+        public Entry<T> bounds(Supplier<Bounds> position) {
+            return this;
         }
 
         @Override
