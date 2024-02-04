@@ -51,7 +51,7 @@ public record CraftingRecipe(List<ItemStack> ingredients, ItemStack result) impl
     private static void collectItems(ItemSlot slot, List<ItemStack> copy, boolean simulate) {
         int i = 0;
         while (i < copy.size()) {
-            if (copy.get(i).isSimilar(slot.getItem())) {
+            if (copy.get(i).sameItemSameData(slot.getItem())) {
                 int count = slot.getItem().getCount();
                 int actualAmount = copy.get(i).shrink(count);
                 if (!simulate) {

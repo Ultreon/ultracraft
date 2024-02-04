@@ -4,34 +4,50 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.events.ConfigEvents;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.ElementID;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import org.apache.logging.log4j.core.util.FileWatcher;
 import org.fusionyaml.library.FusionYAML;
-import org.fusionyaml.library.configurations.FileConfiguration;
 import org.fusionyaml.library.object.YamlElement;
-import org.jetbrains.annotations.Nullable;
+import org.fusionyaml.library.object.YamlPrimitive;
+import org.fusionyaml.library.serialization.ObjectTypeAdapter;
+import org.fusionyaml.library.serialization.TypeAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class UcConfiguration<T> {
-    private final FusionYAML yaml = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).build();
-    @Nullable
-    private FileConfiguration config = null;
+    private final FusionYAML yaml;
 
     private T object;
     private Path configPath;
     public final Event<Reload> event = Event.create();
+    private final FileWatcher fileWatcher = file -> UcConfiguration.this.reload();
 
     public UcConfiguration(String name, EnvType configEnv, T object) {
-        if (FabricLoader.getInstance().getEnvironmentType() != configEnv) {
-            this.config = null;
-            return;
+        FusionYAML.Builder builder = getBuilder();
+        for (var member : object.getClass().getNestMembers()) {
+            builder.addTypeAdapter(new MyTypeAdapter<>(member), member);
         }
 
+        yaml = builder.build();
+
         ConfigEvents.LOAD.listen(loadingEnv -> this.load(name, configEnv, object, loadingEnv));
+    }
+
+    @NotNull
+    private static FusionYAML.Builder getBuilder() {
+        FusionYAML.Builder builder = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).onlyExposed(true);
+        builder.addTypeAdapter(new ElementIDAdapter(), ElementID.class);
+        return builder;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -45,7 +61,9 @@ public final class UcConfiguration<T> {
                 var element = this.yaml.serialize(object, object.getClass());
 
                 Files.createDirectories(this.configPath.getParent());
-                Files.writeString(this.configPath, this.yaml.toYAML(element));
+                try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.configPath)) {
+                    this.yaml.toYAML(element, bufferedWriter);
+                }
             } catch (IOException e) {
                 CommonConstants.LOGGER.error("Failed to create config file!", e);
                 return;
@@ -57,12 +75,20 @@ public final class UcConfiguration<T> {
         } catch (IOException e) {
             CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             return;
+        } catch (Exception e) {
+            this.object = object;
+            this.save();
+            return;
         }
 
-        UltracraftServer.getWatchManager().watchFile(this.configPath.toFile(), file -> UcConfiguration.this.reload());
+        if (this.object == null) {
+            this.object = object;
+            this.save();
+        }
 
-        if (!existed) this.save();
-        else {
+        if (!existed) {
+            this.save();
+        } else {
             this.reload(false);
             this.save();
         }
@@ -82,8 +108,6 @@ public final class UcConfiguration<T> {
     }
 
     private void reload(boolean reloadFile) {
-        if (this.config == null) return;
-
         if (reloadFile) {
             try {
                 this.reloadFromFile();
@@ -98,34 +122,104 @@ public final class UcConfiguration<T> {
 
     @SuppressWarnings("unchecked")
     private void reloadFromFile() throws IOException {
-        if (this.config == null) {
-            return;
-        }
-
-        this.config.reload();
-
         try {
+            var object = this.object;
             this.object = this.yaml.deserialize(Files.readString(this.configPath), (Class<T>) this.object.getClass());
+
+            if (this.object == null) {
+                this.object = object;
+                this.save();
+            }
         } catch (IOException e) {
             CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
         }
     }
 
     public boolean save() {
-        if (this.config == null) return false;
+        UltracraftServer.getWatchManager().unwatchFile(this.configPath.toFile());
 
-        YamlElement serialize = this.yaml.serialize(this.config, this.object.getClass());
-
-        try {
-            Files.writeString(this.configPath, this.yaml.toYAML(serialize));
-            return true;
-        } catch (IOException e) {
+        YamlElement serialize = this.yaml.serialize(this.object, this.object.getClass());
+        if (serialize == null) {
             return false;
         }
+        if (serialize.getAsYamlObject().keySet().isEmpty()) {
+            throw new RuntimeException("Failed to serialize object: " + this.object);
+        }
+
+
+        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(this.configPath)) {
+            this.yaml.toYAML(serialize, bufferedWriter);
+        } catch (IOException e) {
+            UltracraftServer.getWatchManager().watchFile(this.configPath.toFile(), fileWatcher);
+            return false;
+        }
+        this.event.factory().onReload();
+        UltracraftServer.getWatchManager().watchFile(this.configPath.toFile(), fileWatcher);
+        return true;
     }
 
     @FunctionalInterface
     public interface Reload {
         void onReload();
+    }
+
+    private static class ElementIDAdapter extends TypeAdapter<ElementID> {
+        @Override
+        public YamlElement serialize(ElementID obj, Type type) {
+            if (obj == null) {
+                return null;
+            }
+            return new YamlPrimitive(obj.toString());
+        }
+
+        @Override
+        public ElementID deserialize(YamlElement element, Type type) {
+            if (element == null) {
+                return null;
+            }
+            return ElementID.tryParse(element.toString());
+        }
+    }
+
+    private static class MyTypeAdapter<T> extends TypeAdapter<T> {
+        private final Constructor<T> constructor;
+
+        public MyTypeAdapter(Class<T> member) {
+            super();
+
+            try {
+                this.constructor = member.getConstructor();
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public YamlElement serialize(Object obj, Type type) {
+            return new ObjectTypeAdapter<>(new FusionYAML()).serialize(obj, type);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T deserialize(YamlElement element, Type type) {
+            if (element == null) {
+                try {
+                    return constructor.newInstance();
+                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            Object deserialize = new ObjectTypeAdapter<>(new FusionYAML()).deserialize(element, type);
+            if (deserialize == null) {
+                try {
+                    return constructor.newInstance();
+                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            return (T) deserialize;
+        }
     }
 }

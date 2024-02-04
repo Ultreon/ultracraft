@@ -22,7 +22,6 @@ public class CollectNode extends RenderPipeline.RenderNode {
             LOGGER.warn("worldRenderer or localPlayer is null");
             return input;
         }
-        worldRenderer.collectEntity(localPlayer, input, this.pool());
         worldRenderer.collect(input, this.pool());
         return input;
     }

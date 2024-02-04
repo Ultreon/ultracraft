@@ -1,6 +1,7 @@
 package com.ultreon.craft.registry;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -14,26 +15,36 @@ import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 
 public final class Registries {
-    public static final Registry<Registry<?>> REGISTRY = Registry.create(new ElementID("registry"));
-    public static final Registry<Block> BLOCK = Registries.create(new ElementID("block"));
-    public static final Registry<Item> ITEM = Registries.create(new ElementID("item"));
-    public static final Registry<NoiseConfig> NOISE_SETTINGS = Registries.create(new ElementID("noise_settings"));
-    public static final Registry<EntityType<?>> ENTITY_TYPE = Registries.create(new ElementID("entity_type"));
-    public static final Registry<SoundEvent> SOUND_EVENT = Registries.create(new ElementID("sound"));
-    public static final Registry<MenuType<?>> MENU_TYPE = Registries.create(new ElementID("menu_type"));
-    public static final Registry<Biome> BIOME = Registries.create(new ElementID("biome"));
-    public static final Registry<Weather> WEATHER = Registries.create(new ElementID("weather"));
-    public static final Registry<Attribute> ATTRIBUTE = Registries.create(new ElementID("attribute"));
-    public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(new ElementID("damage_source"));
-    public static final Registry<RecipeType> RECIPE_TYPE = Registries.create(new ElementID("recipe_type"));
+    public static final Registry<Registry<?>> REGISTRY = Registry.REGISTRY;
+
+    public static final Registry<Block> BLOCK = Registries.create(RegistryKeys.BLOCK);
+    public static final Registry<Item> ITEM = Registries.create(RegistryKeys.ITEM);
+    public static final Registry<NoiseConfig> NOISE_SETTINGS = Registries.create(RegistryKeys.NOISE_SETTINGS);
+    public static final Registry<EntityType<?>> ENTITY_TYPE = Registries.create(RegistryKeys.ENTITY_TYPE);
+    public static final Registry<SoundEvent> SOUND_EVENT = Registries.create(RegistryKeys.SOUND_EVENT);
+    public static final Registry<MenuType<?>> MENU_TYPE = Registries.create(RegistryKeys.MENU_TYPE);
+    public static final Registry<Biome> BIOME = Registries.create(RegistryKeys.BIOME);
+    public static final Registry<Weather> WEATHER = Registries.create(RegistryKeys.WEATHER);
+    public static final Registry<Attribute> ATTRIBUTE = Registries.create(RegistryKeys.ATTRIBUTE);
+    public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(RegistryKeys.DAMAGE_SOURCE);
+    public static final Registry<RecipeType> RECIPE_TYPE = Registries.create(RegistryKeys.RECIPE_TYPE);
+    public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = Registries.create(RegistryKeys.BLOCK_ENTITY_TYPE);
 
     public static void nopInit() {
         // Load class
     }
 
+    @SafeVarargs
     public static <T> Registry<T> create(ElementID id, T... typeGetter) {
-        Registry<T> registry = Registry.create(id, typeGetter);
+        Registry<T> registry = Registry.builder(id, typeGetter).build();
         Registries.REGISTRY.register(id, registry);
+        return registry;
+    }
+
+    @SafeVarargs
+    public static <T> Registry<T> create(RegistryKey<Registry<T>> id, T... typeGetter) {
+        Registry<T> registry = Registry.builder(id.element(), typeGetter).build();
+        Registries.REGISTRY.register(id.element(), registry);
         return registry;
     }
 }

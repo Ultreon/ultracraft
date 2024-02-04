@@ -32,7 +32,7 @@ public class Item {
     }
 
     public ElementID getId() {
-        return Registries.ITEM.getKey(this);
+        return Registries.ITEM.getId(this);
     }
 
     public List<TextObject> getDescription(ItemStack itemStack) {

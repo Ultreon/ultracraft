@@ -5,6 +5,7 @@ import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ public class ModelRegistry {
         ModelRegistry.registry.put(entityType, model);
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
     public static <T extends Entity> EntityModel<T> get(EntityType<@NotNull T> entityType) {
         return (EntityModel<T>) ModelRegistry.registry.get(entityType);

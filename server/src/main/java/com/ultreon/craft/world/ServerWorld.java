@@ -2,10 +2,12 @@ package com.ultreon.craft.world;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.debug.WorldGenDebugContext;
@@ -14,6 +16,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CBlockEntitySetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
@@ -31,7 +34,6 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -164,10 +166,20 @@ public class ServerWorld extends World {
     @Override
     public boolean set(int x, int y, int z, @NotNull Block block) {
         boolean isBlockSet = super.set(x, y, z, block);
+        block.onPlace(this, new BlockPos(x, y, z));
         if (isBlockSet) {
             this.update(x, y, z, block);
         }
         return isBlockSet;
+    }
+
+    @Override
+    public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
+        super.setBlockEntity(pos, blockEntity);
+
+        if (this.getBlockEntity(pos) == blockEntity) {
+            this.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockEntitySetPacket(pos, blockEntity.getType().getRawId()));
+        }
     }
 
     private void update(int x, int y, int z, @NotNull Block block) {
@@ -662,7 +674,8 @@ public class ServerWorld extends World {
         //<editor-fold defaultstate="collapsed" desc="<<Saving: regions/>>">
         for (var region : this.regionStorage.regions.values()) {
             try {
-                this.saveRegion(region, false);
+                if (region.isDirty())
+                    this.saveRegion(region, false);
             } catch (Exception e) {
                 World.LOGGER.warn("Failed to save region %s:".formatted(region.getPos()), e);
                 var remove = this.regionStorage.regions.remove(region.getPos());
@@ -698,8 +711,11 @@ public class ServerWorld extends World {
         try (var stream = new GZIPOutputStream(new FileOutputStream(file, false), true)) {
             var dataStream = new DataOutputStream(stream);
 
+            region.writeLock();
             this.regionStorage.save(region, dataStream, dispose);
-            stream.flush();
+            region.writeUnlock();
+            if (!region.dirtyWhileSaving) region.dirty = false;
+            else region.dirtyWhileSaving = false;
         } catch (IOException e) {
             World.LOGGER.error("Failed to save region %s".formatted(region.getPos()), e);
         }
@@ -893,11 +909,15 @@ public class ServerWorld extends World {
         private final RegionPos pos;
         public int dataVersion;
         public String lastPlayedIn = UltracraftServer.get().getGameVersion();
+        public boolean saving;
+        public boolean dirtyWhileSaving;
         private Map<ChunkPos, ServerChunk> chunks = Object2ObjectMaps.synchronize(new Object2ObjectArrayMap<>());
         private boolean disposed = false;
         private final ServerWorld world;
         private final List<ChunkPos> generatingChunks = new CopyOnWriteArrayList<>();
         private final Object buildLock = new Object();
+        private boolean dirty;
+        private final Lock writeLock = new ReentrantLock(true);
 
         /**
          * Constructs a new region with the given world and position.
@@ -1178,7 +1198,7 @@ public class ServerWorld extends World {
         @CheckReturnValue
         private ServerChunk buildChunk(ChunkPos globalPos) {
             var localPos = World.toLocalChunkPos(globalPos);
-            var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalPos);
+            var chunk = new BuilderChunk(this.world, Thread.currentThread(), globalPos, this);
 
             // Generate terrain using the terrain generator.
             this.world.terrainGen.generate(chunk, List.copyOf(world.recordedChanges));
@@ -1256,6 +1276,35 @@ public class ServerWorld extends World {
         public RegionPos getPos() {
             return this.pos;
         }
+
+        public boolean isDirty() {
+            return dirty;
+        }
+
+        public void markDirty() {
+            if (saving) this.dirtyWhileSaving = true;
+            this.dirty = true;
+        }
+
+        public <T> Result<T> trySet(Supplier<T> supplier) {
+            if (!this.writeLock.tryLock()) {
+                return Result.failure(new IllegalStateException("Cannot acquire write lock"));
+            }
+
+            try {
+                return Result.ok(supplier.get());
+            } finally {
+                this.writeLock.unlock();
+            }
+        }
+
+        public void writeLock() {
+            this.writeLock.lock();
+        }
+
+        public void writeUnlock() {
+            this.writeLock.unlock();
+        }
     }
 
     /**
@@ -1332,6 +1381,8 @@ public class ServerWorld extends World {
             // Read chunks from region file.
             Map<ChunkPos, ServerChunk> chunkMap = new HashMap<>();
             var maxIdx = stream.readUnsignedShort();
+            var regionPos = new RegionPos(x, z);
+            var region = new Region(world, regionPos, chunkMap);
             for (var idx = 0; idx < maxIdx; idx++) {
                 // Read local chunk pos.
                 var chunkX = stream.readUnsignedByte();
@@ -1345,11 +1396,9 @@ public class ServerWorld extends World {
                 var localChunkPos = new ChunkPos(chunkX, chunkZ);
 
                 // Load server chunk.
-                var chunk = ServerChunk.load(world, localChunkPos, MapType.read(stream));
+                var chunk = ServerChunk.load(world, localChunkPos, MapType.read(stream), region);
                 chunkMap.put(localChunkPos, chunk);
             }
-
-            var regionPos = new RegionPos(x, z);
 
             // Chceck if region already exists, if so, then throw an error.
             var oldRegion = this.regions.get(regionPos);
@@ -1358,7 +1407,6 @@ public class ServerWorld extends World {
             }
 
             // Create region instance.
-            var region = new Region(world, regionPos, chunkMap);
             this.regions.put(regionPos, region);
             return region;
         }
@@ -1412,7 +1460,7 @@ public class ServerWorld extends World {
             mapType.putInt("x", this.x);
             mapType.putInt("y", this.y);
             mapType.putInt("z", this.z);
-            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
+            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getId(this.block)).toString());
             return mapType;
         }
 

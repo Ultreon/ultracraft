@@ -44,7 +44,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public int getRenderDistance() {
-        return this.client.settings.renderDistance.get();
+        return this.client.config.get().renderDistance;
     }
 
     @Override
@@ -58,15 +58,14 @@ public final class ClientWorld extends World implements Disposable {
     @Override
     protected void checkThread() {
         if (!UltracraftClient.isOnMainThread())
-            throw new InvalidThreadException("Should be on client main thread.");
+            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
     }
 
     @Override
     public @Nullable ClientChunk getChunk(@NotNull ChunkPos pos) {
-        if (!UltracraftClient.isOnMainThread()) {
-            return UltracraftClient.invokeAndWait(() -> this.getChunk(pos));
+        synchronized (this) {
+            return this.chunks.get(pos);
         }
-        return this.chunks.get(pos);
     }
 
     @Override
@@ -86,20 +85,14 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public Collection<ClientChunk> getLoadedChunks() {
-        ClientWorld.crashOnWrongThread();
+        this.checkThread();
 
         return this.chunks.values();
     }
 
-    private static void crashOnWrongThread() {
-        if (!UltracraftClient.isOnMainThread()) {
-            throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
-        }
-    }
-
     @Override
     public boolean isChunkInvalidated(@NotNull Chunk chunk) {
-        ClientWorld.crashOnWrongThread();
+        this.checkThread();
         return super.isChunkInvalidated(chunk);
     }
 
@@ -144,7 +137,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public void onChunkUpdated(@NotNull Chunk chunk) {
-        ClientWorld.crashOnWrongThread();
+        this.checkThread();
 
         super.onChunkUpdated(chunk);
     }
@@ -175,7 +168,7 @@ public final class ClientWorld extends World implements Disposable {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
             return;
         }
-        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()) {
+        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.config.get().renderDistance) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
@@ -183,7 +176,9 @@ public final class ClientWorld extends World implements Disposable {
         ClientChunk finalChunk = chunk;
         UltracraftClient.invoke(() -> {
             finalChunk.ready();
-            this.chunks.put(pos, data);
+            synchronized (this) {
+                this.chunks.put(pos, data);
+            }
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
         });
     }
@@ -202,7 +197,7 @@ public final class ClientWorld extends World implements Disposable {
                     Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
                     ChunkPos chunkPos = entry.getKey();
                     ClientChunk clientChunk = entry.getValue();
-                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.settings.renderDistance.get()) {
+                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.config.get().renderDistance) {
                         iterator.remove();
                         clientChunk.dispose();
                         this.updateNeighbours(clientChunk);
@@ -224,19 +219,19 @@ public final class ClientWorld extends World implements Disposable {
         if (daytime < riseSetDuration / 2) {
             return lerp(
                     0.25f, 1.0f,
-                    0.5f + (daytime / (float) riseSetDuration));
+                    0.5f + daytime / (float) riseSetDuration);
         } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
             return 1.0f;
         } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
             return lerp(
                     1.0f, 0.25f,
-                    ((daytime - ((float) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+                    (daytime - ((float) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / riseSetDuration);
         } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
             return 0.25f;
         } else {
             return lerp(
                     0.25f, 1.0f,
-                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+                    (daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / riseSetDuration);
         }
     }
 
@@ -246,34 +241,49 @@ public final class ClientWorld extends World implements Disposable {
         if (daytime < riseSetDuration / 2) {
             return ClientWorld.mixColors(
                     ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
-                    0.5f + (daytime / (float) riseSetDuration));
+                    0.5f + daytime / (float) riseSetDuration);
         } else if (daytime <= ClientWorld.DAY_CYCLE / 2 - riseSetDuration / 2) {
             return ClientWorld.DAY_COLOR;
         } else if (daytime <= ClientWorld.DAY_CYCLE / 2 + riseSetDuration / 2) {
             return ClientWorld.mixColors(
                     ClientWorld.NIGHT_COLOR, ClientWorld.DAY_COLOR,
-                    ((daytime - ((double) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+                    (daytime - ((double) ClientWorld.DAY_CYCLE / 2 - (float) riseSetDuration / 2)) / riseSetDuration);
         } else if (daytime <= ClientWorld.DAY_CYCLE - riseSetDuration / 2) {
             return ClientWorld.NIGHT_COLOR;
         } else {
             return ClientWorld.mixColors(
                     ClientWorld.DAY_COLOR, ClientWorld.NIGHT_COLOR,
-                    ((daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / (float) riseSetDuration));
+                    (daytime - (ClientWorld.DAY_CYCLE - (float) riseSetDuration / 2)) / riseSetDuration);
         }
     }
 
-    private int getDaytime() {
+    public int getDaytime() {
         return this.time % DAY_CYCLE;
     }
 
     private static Color mixColors(Color color1, Color color2, double percent) {
         percent = Mth.clamp(percent, 0.0, 1.0);
-        double inverse_percent = 1.0 - percent;
-        int redPart = (int) (color1.getRed() * percent + color2.getRed() * inverse_percent);
-        int greenPart = (int) (color1.getGreen() * percent + color2.getGreen() * inverse_percent);
-        int bluePart = (int) (color1.getBlue() * percent + color2.getBlue() * inverse_percent);
-        int alphaPart = (int) (color1.getAlpha() * percent + color2.getAlpha() * inverse_percent);
+        double inversePercent = 1.0 - percent;
+        int redPart = (int) (color1.getRed() * percent + color2.getRed() * inversePercent);
+        int greenPart = (int) (color1.getGreen() * percent + color2.getGreen() * inversePercent);
+        int bluePart = (int) (color1.getBlue() * percent + color2.getBlue() * inversePercent);
+        int alphaPart = (int) (color1.getAlpha() * percent + color2.getAlpha() * inversePercent);
         return Color.rgba(redPart, greenPart, bluePart, alphaPart);
     }
+    
+    @Override
+    public void dispose() {
+        this.checkThread();
+        
+        super.dispose();
+        
+        synchronized (this) {
+            this.chunks.forEach((chunkPos, clientChunk) -> clientChunk.dispose());
+            this.chunks.clear();
+        }
+    }
 
+    public void setDaytime(int daytime) {
+        this.time = daytime;
+    }
 }

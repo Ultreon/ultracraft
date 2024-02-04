@@ -262,11 +262,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             }
             if (!this.channel.isOpen()) return;
 
+            ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
+
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
             sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-
-            ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
 
             if (stateListener != null) {
                 sent.addListener(future -> this.handleListener(packet, stateListener, future));

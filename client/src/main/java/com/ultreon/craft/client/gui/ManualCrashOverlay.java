@@ -54,7 +54,7 @@ public class ManualCrashOverlay implements StaticWidget {
         for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
             StackTraceElement[] stackTrace = entry.getValue();
             String name = entry.getKey().getName();
-            long id = entry.getKey().getId();
+            long id = entry.getKey().threadId();
 
             Throwable throwable = new Throwable();
             throwable.setStackTrace(stackTrace);

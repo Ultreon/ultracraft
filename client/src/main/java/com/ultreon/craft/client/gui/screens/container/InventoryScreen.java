@@ -23,7 +23,7 @@ public class InventoryScreen extends ContainerScreen {
     private static final int CONTAINER_SIZE = 40;
     private static final ElementID BACKGROUND = UltracraftClient.id("textures/gui/container/inventory.png");
     private final Inventory inventory;
-    private final PagedList<Recipe> recipes;
+    private PagedList<Recipe> recipes;
     private List<Recipe> currentPage;
     private int page = 0;
     private final List<ItemSlot> recipeSlots = new ArrayList<>();
@@ -36,6 +36,7 @@ public class InventoryScreen extends ContainerScreen {
         this.currentPage = this.recipes.getFullPage(this.page);
         this.rebuildSlots();
     }
+
 
     public void nextPage() {
         var page = this.page + 1;
@@ -67,6 +68,8 @@ public class InventoryScreen extends ContainerScreen {
         List<ItemSlot> list = new ArrayList<>();
         int x = 0;
         int y = 0;
+        this.recipes = RecipeManager.get().getRecipes(RecipeType.CRAFTING, 30, inventory);
+        this.currentPage = this.recipes.getFullPage(this.page);
         for (Recipe recipe : this.currentPage) {
             if (recipe.canCraft(this.inventory)) {
                 if (x >= 5) {
@@ -160,7 +163,7 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     private boolean showOnlyCraftable() {
-        return this.client.settings.craftingShowOnlyCraftable.get();
+        return this.client.config.get().crafting.showOnlyCraftable;
     }
 
     @Nullable

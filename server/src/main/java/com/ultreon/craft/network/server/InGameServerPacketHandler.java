@@ -156,7 +156,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         UltracraftServer.invoke(() -> {
             if (Math.abs(pos.vec().d().add(1).dst(this.player.getPosition())) > this.player.getAttributes().get(Attribute.BLOCK_REACH)
                     || this.player.blockBrokenTick) {
-                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getId(world.get(pos))));
+                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getRawId(world.get(pos))));
                 return;
             }
 
@@ -219,4 +219,12 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         ItemStack crafted = RecipeManager.get().get(recipeId, recipeType).craft(this.player.inventory);
         this.player.inventory.addItem(crafted);
     }
+
+//    public void handleContainerClick(int slot, ContainerInteraction interaction) {
+//        ContainerMenu openMenu = player.getOpenMenu();
+//
+//        if (openMenu != null) {
+//            openMenu.onSlotClick(slot, this.player, interaction);
+//        }
+//    }
 }

@@ -31,8 +31,12 @@ public class WorldShaderProvider extends DefaultShaderProvider implements OpenSh
     public Shader createShader(Renderable renderable) {
         if (renderable != null && renderable.userData instanceof ClientChunk) {
             WorldShader worldShader = new WorldShader(renderable, this.config);
-            Shaders.checkShaderCompilation(worldShader.program);
+            Shaders.checkShaderCompilation(worldShader.program, "WorldShader");
             return worldShader;
+        }
+
+        if (renderable != null && renderable.userData instanceof OpenShaderProvider provider) {
+            return provider.createShader(renderable);
         }
 
         assert renderable != null;

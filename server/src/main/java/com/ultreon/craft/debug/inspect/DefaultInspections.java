@@ -1,6 +1,7 @@
 package com.ultreon.craft.debug.inspect;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.LivingEntity;
@@ -113,7 +114,7 @@ public class DefaultInspections {
         InspectionRoot.registerAutoFill(ServerWorld.class, node -> {
             node.create("playTime", ServerWorld::getPlayTime);
             node.create("chunksToLoad", ServerWorld::getChunksToLoad);
-            node.create("chunkLoads", ServerWorld::getChunkLoads);
+            node.create("chunkLoads", ValueTracker::getChunkLoads);
             node.create("chunkUnloads", ServerWorld::getChunkUnloads);
             node.create("chunkSaves", ServerWorld::getChunkSaves);
         });

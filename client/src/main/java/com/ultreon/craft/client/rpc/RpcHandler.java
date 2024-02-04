@@ -12,9 +12,16 @@ import java.time.OffsetDateTime;
 @ApiStatus.Experimental
 public class RpcHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("RpcHandler");
+    private static boolean shuttingDown;
+    private static final Thread HOOK = new Thread(() -> {
+        shuttingDown = true;
+        shutdown();
+    });
     private static IPCClient client;
     private static OffsetDateTime start;
     private static boolean failed;
+    private static boolean ready = false;
+    private static boolean enabled = false;
 
     public static void start() {
         try {
@@ -31,30 +38,32 @@ public class RpcHandler {
                             .setLargeImage("icon")
                             .setStartTimestamp(RpcHandler.start);
                     client.sendRichPresence(builder.build());
+
+                    RpcHandler.ready = true;
                 }
 
                 @Override
                 public void onDisconnect(IPCClient client, Throwable t) {
+                    RpcHandler.failed = true;
+                    RpcHandler.ready = false;
                     RpcHandler.LOGGER.warn("Discord RPC over IPC disconnected!", t);
                 }
-
-
             });
 
             RpcHandler.client.connect();
-            Runtime.getRuntime().addShutdownHook(new Thread(RpcHandler.client::close));
+            Runtime.getRuntime().addShutdownHook(HOOK);
         } catch (Exception e) {
             RpcHandler.failed = true;
         }
     }
 
     public static void setActivity(GameActivity newActivity) {
-        if (RpcHandler.failed) {
+        if (RpcHandler.failed || !RpcHandler.ready) {
             return;
         }
 
         RichPresence.Builder builder = new RichPresence.Builder();
-        String description = null;
+        String description;
         try {
             description = newActivity.getDescription();
         } catch (Exception e) {
@@ -74,5 +83,31 @@ public class RpcHandler {
         }
 
         RpcHandler.client.sendRichPresence(builder.build());
+    }
+
+    public static void disable() {
+        if (RpcHandler.enabled) {
+            RpcHandler.enabled = false;
+            shutdown();
+        }
+    }
+
+    public static void enable() {
+        if (!RpcHandler.enabled) {
+            RpcHandler.enabled = true;
+            start();
+        }
+    }
+
+    private static void shutdown() {
+        if (!ready) {
+            RpcHandler.LOGGER.warn("Failed to send RPC shutdown message, not ready!");
+            return;
+        }
+
+        if (!RpcHandler.shuttingDown) {
+            Runtime.getRuntime().removeShutdownHook(RpcHandler.HOOK);
+        }
+        RpcHandler.client.close();
     }
 }

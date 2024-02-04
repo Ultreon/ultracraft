@@ -12,6 +12,7 @@ public class GameCommands {
         CommandRegistry.register(new InvincibleCommand());
         CommandRegistry.register(new WhereAmICommand());
         CommandRegistry.register(new GamemodeCommand());
+        CommandRegistry.register(new TimeCommand());
 
         Command.runCommandLoaders();
     }

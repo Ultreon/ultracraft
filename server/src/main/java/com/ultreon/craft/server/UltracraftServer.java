@@ -9,6 +9,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.debug.inspect.InspectionNode;
@@ -332,6 +333,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         // Send event for server stopping to mods.
         ServerLifecycleEvents.SERVER_STOPPED.factory().onServerStopped(this);
+
+        UltracraftServer.LOGGER.info("Server stopped.");
     }
 
     /**
@@ -339,7 +342,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      *
      * @param t the throwable that caused the crash.
      */
-    public abstract void crash(Throwable t);
+    public void crash(Throwable t) {
+        // Create crash log.
+        CrashLog crashLog = new CrashLog("Server crashed! :(", t);
+        this.world.fillCrashInfo(crashLog);
+
+        this.crash(crashLog);
+    }
 
     /**
      * Stops the server thread in a clean state.
@@ -359,8 +368,21 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Set running flag to make server stop.
         this.running = false;
 
+        long startTime = System.currentTimeMillis();
         try {
-            this.thread.join(60000);
+            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
+                this.onTerminationFailed();
+            }
+        } catch (ApplicationCrash crash) {
+            this.crash(crash.getCrashLog());
+            throw new Error();
+        } catch (Exception exc) {
+            this.crash(exc);
+            throw new Error();
+        }
+
+        try {
+            this.thread.join(6000 - (System.currentTimeMillis() - startTime));
         } catch (InterruptedException e) {
             this.crash(new RuntimeException("Safe shutdown got interrupted."));
             Runtime.getRuntime().halt(1);
@@ -369,6 +391,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Shut down the parent executor service.
         super.shutdownNow();
     }
+
+    public abstract void crash(CrashLog crashLog);
 
     @OverridingMethodsMustInvokeSuper
     protected void runTick() {
@@ -493,14 +517,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.world.dispose();
 
         this.scheduler.shutdown();
-
-        try {
-            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
-                this.onTerminationFailed();
-            }
-        } catch (InterruptedException | ApplicationCrash exc) {
-            this.crash(exc);
-        }
     }
 
     /**

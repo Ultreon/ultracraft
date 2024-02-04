@@ -124,9 +124,6 @@ public class ServerConnections {
 
                 if (connection.isConnected()) {
                     try {
-                        if (connection.tickKeepAlive()) {
-                            connection.send(new S2CKeepAlivePacket());
-                        }
                         connection.tick();
                     } catch (Exception e) {
                         if (connection.isMemoryConnection()) {

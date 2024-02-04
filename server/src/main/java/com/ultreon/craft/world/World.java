@@ -5,11 +5,14 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
+import com.ultreon.craft.entity.DroppedItem;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -675,7 +678,7 @@ public abstract class World implements ServerDisposable {
         BlockPos localPos = World.toLocalBlockPos(pos);
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return null;
-        return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
+        return chunk.getBiome(localPos.x(), localPos.z());
     }
 
     public DimensionInfo getDimension() {
@@ -692,5 +695,30 @@ public abstract class World implements ServerDisposable {
 
     public UUID getUID() {
         return this.uid;
+    }
+
+    public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
+        Chunk chunk = this.getChunkAt(pos);
+        if (chunk == null) return;
+
+        chunk.setBlockEntity(World.toLocalBlockPos(pos), blockEntity);
+    }
+
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        Chunk chunk = this.getChunkAt(pos);
+        if (chunk == null) return null;
+
+        BlockPos localPos = World.toLocalBlockPos(pos);
+        return chunk.getBlockEntity(localPos.x(), localPos.y(), localPos.z());
+    }
+
+    public void drop(ItemStack itemStack, Vec3d position) {
+        drop(itemStack, position, new Vec3d());
+    }
+
+    public void drop(ItemStack itemStack, Vec3d position, Vec3d velocity) {
+        if (this.isClientSide()) return;
+
+        this.spawn(new DroppedItem(this, itemStack, position, velocity));
     }
 }

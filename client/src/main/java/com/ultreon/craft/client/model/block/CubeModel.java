@@ -3,8 +3,12 @@ package com.ultreon.craft.client.model.block;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
+import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashCategory;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.util.ElementID;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -72,23 +76,48 @@ public final class CubeModel {
         return new CubeModel(top, bottom, left, right, front, back, properties);
     }
 
-    public BakedCubeModel bake(TextureAtlas texture) {
-        if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(texture));
-        TextureRegion topTex = texture.get(this.top);
-        TextureRegion bottomTex = texture.get(this.bottom);
-        TextureRegion leftTex = texture.get(this.left);
-        TextureRegion rightTex = texture.get(this.right);
-        TextureRegion frontTex = texture.get(this.front);
-        TextureRegion backTex = texture.get(this.back);
-        BakedCubeModel baked = new BakedCubeModel(
-                topTex, bottomTex,
-                leftTex, rightTex,
-                frontTex, backTex,
-                this.properties
-        );
+    public BakedCubeModel bake(ElementID resourceId, TextureAtlas texture) {
+        if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(resourceId, texture));
+        try {
+            TextureRegion topTex = texture.get(this.top);
+            TextureRegion bottomTex = texture.get(this.bottom);
+            TextureRegion leftTex = texture.get(this.left);
+            TextureRegion rightTex = texture.get(this.right);
+            TextureRegion frontTex = texture.get(this.front);
+            TextureRegion backTex = texture.get(this.back);
+            BakedCubeModel baked = new BakedCubeModel(
+                    resourceId,
+                    topTex, bottomTex,
+                    leftTex, rightTex,
+                    frontTex, backTex,
+                    this.properties
+            );
 
-        UltracraftClient.get().deferDispose(baked);
-        return baked;
+            UltracraftClient.get().deferDispose(baked);
+            return baked;
+        } catch (RuntimeException e) {
+            CrashLog crashLog = createCrash(resourceId, e);
+
+            throw new ApplicationCrash(crashLog);
+        }
+    }
+
+    @NotNull
+    private CrashLog createCrash(ElementID resourceId, RuntimeException e) {
+        CrashLog crashLog = new CrashLog("Failed to bake cube model", e);
+        CrashCategory bakingModel = new CrashCategory("Baking Model");
+        bakingModel.add("ID", resourceId);
+        crashLog.addCategory(bakingModel);
+
+        CrashCategory model = new CrashCategory("Model");
+        model.add("Top", this.top);
+        model.add("Bottom", this.bottom);
+        model.add("Left", this.left);
+        model.add("Right", this.right);
+        model.add("Front", this.front);
+        model.add("Back", this.back);
+        crashLog.addCategory(model);
+        return crashLog;
     }
 
     public ElementID top() {

@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.model.entity.renderer;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Vector3;
@@ -12,10 +13,9 @@ import com.ultreon.craft.client.render.EntityTextures;
 import com.ultreon.craft.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerRenderer extends LivingEntityRenderer<PlayerModel<@NotNull Player>, @NotNull Player> {
-    public PlayerRenderer(PlayerModel<@NotNull Player> model) {
-        super(model);
-
+public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
+    public PlayerRenderer(PlayerModel<@NotNull Player> playerModel, Model model) {
+        super(playerModel, model);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class PlayerRenderer extends LivingEntityRenderer<PlayerModel<@NotNull Pl
         instance.getNode("Head").rotation.setFromMatrix(this.tmp.idt().rotate(Vector3.Y, player.xHeadRot - xRot).rotate(Vector3.X, yRot));
         EntityRenderer.tmp0.set(localPlayer.getPosition());
         EntityRenderer.tmp0.sub(player.getPosition());
-        float generalScale = 1 / 4096f;
+        float generalScale = 1 / 128f;
         instance.transform.idt()
                 .setToTranslationAndScaling(0, -1.6f, 0, generalScale, generalScale, generalScale)
 //                .scale(1, 1, -1)

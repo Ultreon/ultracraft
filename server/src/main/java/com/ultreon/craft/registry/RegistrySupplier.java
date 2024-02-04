@@ -23,7 +23,7 @@ public class RegistrySupplier<T> implements Supplier<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T get() {
-        return (T) this.registry.getValue(this.elementID);
+        return (T) this.registry.getElement(this.elementID);
     }
 
     public ElementID id() {

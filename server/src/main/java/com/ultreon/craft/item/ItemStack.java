@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * A class that hold items with a certain amount and with data.
+ * A class that holds items with a certain amount and with data.
  *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @see Item
@@ -20,7 +20,7 @@ import java.util.List;
 public class ItemStack {
     private Item item;
     @NotNull
-    private MapType tag;
+    private MapType data;
     private int count;
 
     /**
@@ -38,7 +38,7 @@ public class ItemStack {
     }
 
     /**
-     * @param item the item type to hold.
+     * @param item  the item type to hold.
      * @param count the stack amount.
      */
     public ItemStack(Item item, int count) {
@@ -46,14 +46,14 @@ public class ItemStack {
     }
 
     /**
-     * @param item the item type to hold.
+     * @param item  the item type to hold.
      * @param count the stack amount.
-     * @param tag the data tag.
+     * @param data  the data tag.
      */
-    public ItemStack(Item item, int count, @NotNull MapType tag) {
+    public ItemStack(Item item, int count, @NotNull MapType data) {
         this.item = item;
         this.count = count;
-        this.tag = tag;
+        this.data = data;
         this.checkCount(); // Note: used method so mods can use @Redirect to remove stack limits.
     }
 
@@ -61,7 +61,7 @@ public class ItemStack {
         @Nullable ElementID id = ElementID.tryParse(data.getString("item"));
         if (id == null) return new ItemStack();
 
-        Item item = Registries.ITEM.getValue(id);
+        Item item = Registries.ITEM.getElement(id);
         if (item == null || item == Items.AIR) return new ItemStack();
 
         int count = data.getInt("count", 0);
@@ -75,7 +75,7 @@ public class ItemStack {
         MapType data = new MapType();
         data.putString("item", this.item.getId().toString());
         data.putInt("count", this.count);
-        data.put("Tag", this.tag);
+        data.put("Tag", this.data);
         return data;
     }
 
@@ -104,12 +104,12 @@ public class ItemStack {
     /**
      * @return the item stack's data tag.
      */
-    public @NotNull MapType getTag() {
-        return this.tag;
+    public @NotNull MapType getData() {
+        return this.data;
     }
 
-    public void setTag(@NotNull MapType tag) {
-        this.tag = tag;
+    public void setData(@NotNull MapType data) {
+        this.data = data;
     }
 
     /**
@@ -157,7 +157,7 @@ public class ItemStack {
      * Grows the item stack by an amount.
      *
      * @param amount the amount to grow by.
-     * @return the amount of item that have overflown.
+     * @return the amount of item that has overflown.
      */
     @CanIgnoreReturnValue
     public int grow(int amount) {
@@ -186,7 +186,7 @@ public class ItemStack {
      * @return a copy of this item stack.
      */
     public ItemStack copy() {
-        return new ItemStack(this.item, this.count, this.tag.copy());
+        return new ItemStack(this.item, this.count, this.data.copy());
     }
 
     /**
@@ -202,18 +202,18 @@ public class ItemStack {
      * Determines if this ItemStack is similar to another ItemStack.
      * Checks the item and the data tag.
      *
-     * @param  other   the ItemStack to compare with
-     * @return         true if the ItemStacks are similar, false otherwise
+     * @param other the ItemStack to compare with
+     * @return true if the ItemStacks are similar, false otherwise
      */
-    public boolean isSimilar(ItemStack other) {
-        return this.item == other.item && this.tag.equals(other.tag);
+    public boolean sameItemSameData(ItemStack other) {
+        return this.item == other.item && this.data.equals(other.data);
     }
 
     /**
      * Checks if the current item is the same as the given item.
      *
-     * @param  other  the item to compare with
-     * @return        true if the items are the same, false otherwise
+     * @param other the item to compare with
+     * @return true if the items are the same, false otherwise
      */
     public boolean isSameItem(ItemStack other) {
         return this.item == other.item;
@@ -234,7 +234,7 @@ public class ItemStack {
             return copy;
         } else {
             this.count -= amount;
-            return new ItemStack(this.item, amount, this.tag.copy());
+            return new ItemStack(this.item, amount, this.data.copy());
         }
     }
 
@@ -259,13 +259,17 @@ public class ItemStack {
     public int transferTo(ItemStack target, int amount) {
         Preconditions.checkArgument(amount >= 0, "The transfer amount should be non-negative.");
         Preconditions.checkArgument(amount <= this.count, "Can't transfer more than the current stack count.");
+
         if (target.isEmpty()) {
             target.item = this.item;
-            target.tag = this.tag.copy();
+            target.data = this.data.copy();
+            target.count = amount;
+            this.shrink(amount);
+            return 0;
         }
 
         Preconditions.checkArgument(this.item == target.item, "The item of source stack should match the i destination stack.");
-        Preconditions.checkArgument(this.tag.equals(target.tag), "The tag of source stack should match the tag of the destination stack.");
+        Preconditions.checkArgument(this.data.equals(target.data), "The tag of source stack should match the tag of the destination stack.");
 
         int remainder = target.grow(amount);
         if (remainder == 0) {
@@ -294,5 +298,18 @@ public class ItemStack {
 
     public String toString() {
         return this.item.getId() + " x" + this.count;
+    }
+
+    public ItemStack merge(ItemStack with) {
+        if (!this.sameItemSameData(with)) return with;
+
+        if (this.count + with.count > this.getItem().getMaxStackSize()) {
+            with.count = this.getItem().getMaxStackSize() - this.count;
+            this.count = this.getItem().getMaxStackSize();
+            return with;
+        }
+
+        this.count += with.count;
+        return with;
     }
 }

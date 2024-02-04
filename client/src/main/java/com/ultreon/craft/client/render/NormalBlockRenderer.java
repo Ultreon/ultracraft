@@ -20,6 +20,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     public void renderNorth(TextureRegion region, float x1, float y1, float x2, float y2, float z, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
 
+        if (region == null) return;
+
         // POSITIVE Z
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -47,6 +49,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     @Override
     public void renderSouth(TextureRegion region, float x1, float y1, float x2, float y2, float z, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
+
+        if (region == null) return;
 
         // NEGATIVE Z
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
@@ -76,6 +80,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     public void renderWest(TextureRegion region, float z1, float y1, float z2, float y2, float x, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
 
+        if (region == null) return;
+
         // NEGATIVE X
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -103,6 +109,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     @Override
     public void renderEast(TextureRegion region, float z1, float y1, float z2, float y2, float x, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
+
+        if (region == null) return;
 
         // POSITIVE X
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
@@ -132,6 +140,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     public void renderTop(TextureRegion region, float x1, float z1, float x2, float z2, float y, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
 
+        if (region == null) return;
+
         // POSITIVE Y
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -159,6 +169,8 @@ public class NormalBlockRenderer implements BlockRenderer {
     @Override
     public void renderBottom(TextureRegion region, float x1, float z1, float x2, float z2, float y, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
         var lightLevel = lld.lightLevel();
+
+        if (region == null) return;
 
         // NEGATIVE Y
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));

@@ -2,7 +2,6 @@ package com.ultreon.craft.client.imgui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Array;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.UIContainer;
@@ -12,6 +11,7 @@ import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.ImGuiEx;
 import imgui.ImGui;
 
+import java.util.List;
 import java.util.Map;
 
 public class GuiEditor {
@@ -53,7 +53,7 @@ public class GuiEditor {
             ImGui.treePush();
 
             var children = screen.children();
-            for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
+            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
                 var component = children.get(i);
                 if (component == null) continue;
 
@@ -64,7 +64,6 @@ public class GuiEditor {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private static void renderWidgetTools(int index, Widget widget) {
         if (ImGui.collapsingHeader("Widget #" + index + ": " + widget.path().getFileName())) {
             ImGui.treePush();
@@ -94,10 +93,10 @@ public class GuiEditor {
                 ImGui.treePop();
             }
 
-            if (widget instanceof UIContainer container && ImGui.collapsingHeader("Children")) {
+            if (widget instanceof UIContainer<?> container && ImGui.collapsingHeader("Children")) {
                 ImGui.treePush();
-                Array<Widget> children = container.children();
-                for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
+                List<? extends Widget> children = container.children();
+                for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
                     var child = children.get(i);
                     if (child == null) continue;
 

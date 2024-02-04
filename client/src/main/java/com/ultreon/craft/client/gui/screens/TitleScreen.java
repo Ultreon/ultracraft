@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
+import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.Panel;
 import com.ultreon.craft.client.gui.widget.TextButton;
@@ -74,7 +75,7 @@ public class TitleScreen extends Screen {
     }
 
     private void showOptions(TextButton caller) {
-        this.client.showScreen(new OptionsScreen());
+        this.client.showScreen(new SettingsScreen());
     }
 
     private void showModList(TextButton caller) {

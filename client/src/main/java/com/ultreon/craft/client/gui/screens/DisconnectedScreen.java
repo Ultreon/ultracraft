@@ -18,7 +18,7 @@ public class DisconnectedScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.backToTitle"), 150)
+        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 150)
                 .position(() -> new Position(this.size.width / 2 - 75, this.size.height / 2 - 10))
                 .callback(caller -> new TitleScreen()));
     }

@@ -97,8 +97,9 @@ public class TextEntry extends Widget {
                 .blit(texture, tx + tw - 4, ty + th - 4, 4, 4, 8 + u, 8 + v, 4, 4, 36, 12);
 
         renderer.textLeft(this.value, this.pos.x + 5, this.pos.y + 6, false);
-        if (this.value.isEmpty()) {
-            renderer.textLeft(this.hint.get(), this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
+        TextObject textObject = this.hint.get();
+        if (this.value.isEmpty() && textObject != null) {
+            renderer.textLeft(textObject, this.pos.x + 5, this.pos.y + 6, Color.WHITE.withAlpha(0x80), false);
         }
 
         if (this.focused) {

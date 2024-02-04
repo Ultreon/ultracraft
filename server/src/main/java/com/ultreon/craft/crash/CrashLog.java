@@ -1,13 +1,14 @@
 package com.ultreon.craft.crash;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.util.Result;
 import org.apache.commons.lang3.SystemProperties;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -63,7 +64,9 @@ public final class CrashLog extends CrashCategory {
     private void addCrash(ApplicationCrash exception) {
         CrashLog crashLog = exception.getCrashLog();
         CrashLog crashLog1 = new CrashLog(crashLog.details, crashLog.throwable);
-        crashLog1.categories.addAll(crashLog.categories.subList(0, crashLog.categories.size() - 1));
+        if (!crashLog.categories.isEmpty()) {
+            crashLog1.categories.addAll(crashLog.categories.subList(0, crashLog.categories.size() - 1));
+        }
         crashLog1.entries.addAll(crashLog.entries);
         this.addCrashLog(crashLog1);
     }
@@ -130,9 +133,13 @@ public final class CrashLog extends CrashCategory {
         return HEADER + "\r\n" + s1 + "\r\n" + sw + cs + "\r\n" + sb;
     }
 
-    public String getDefaultFileName() {
-        LocalDateTime now = LocalDateTime.now();
-        return "Crash [" + now.format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH.mm.ss")) + "].txt";
+    public static String getFileName() {
+        return CrashLog.getFileNameWithoutExt() + ".txt";
+    }
+
+    @NotNull
+    public static String getFileNameWithoutExt() {
+        return "crash-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss"));
     }
 
     @CanIgnoreReturnValue
@@ -146,19 +153,35 @@ public final class CrashLog extends CrashCategory {
             }
         }
 
-        this.writeToFile(new File(file, this.getDefaultFileName()));
+        this.writeToFile(new File(file, CrashLog.getFileName()));
         return Result.ok(null);
     }
 
     @CanIgnoreReturnValue
     public Result<Void> writeToFile(File file) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            fileOutputStream.write(this.toString().getBytes(StandardCharsets.UTF_8));
-            fileOutputStream.flush();
+        try (FileOutputStream stream = new FileOutputStream(file)) {
+            this.writeToStream(stream);
         } catch (IOException e) {
             return Result.failure(e);
         }
 
         return Result.ok(null);
+    }
+
+    public void writeToStream(OutputStream stream) throws IOException {
+        stream.write(this.toString().getBytes());
+        stream.flush();
+    }
+
+    public void writeToLog() {
+        this.toString().lines().forEach(CommonConstants.LOGGER::error);
+    }
+
+    @ApiStatus.Internal
+    public void addLog(CrashLog crashLog) {
+        CrashCategory crashCategory = new CrashCategory(crashLog.getDetails(), crashLog.getThrowable());
+        crashCategory.entries.addAll(crashLog.entries);
+
+        this.categories.add(crashCategory);
     }
 }

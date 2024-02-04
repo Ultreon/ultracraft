@@ -59,13 +59,15 @@ public class ImGuiOverlay {
     public static void setupImGui() {
         UltracraftClient.LOGGER.info("Setting up ImGui");
 
-        GLFWErrorCallback.create((error, description) -> UltracraftClient.LOGGER.error("GLFW Error: {}", description)).set();
+        UltracraftClient.get().deferClose(GLFWErrorCallback.create((error, description) -> UltracraftClient.LOGGER.error("GLFW Error: {}", description)).set());
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
-        ImGui.createContext();
-        ImGuiOverlay.imPlotCtx = ImPlot.createContext();
-        ImGuiOverlay.isContextCreated = true;
+        synchronized (ImGuiOverlay.class) {
+            ImGui.createContext();
+            ImGuiOverlay.imPlotCtx = ImPlot.createContext();
+            ImGuiOverlay.isContextCreated = true;
+        }
         final ImGuiIO io = ImGui.getIO();
         io.setIniFilename(null);
         io.getFonts().addFontDefault();
@@ -79,9 +81,11 @@ public class ImGuiOverlay {
     }
 
     public static void preInitImGui() {
-        ImGuiOverlay.imGuiGlfw = new ImGuiImplGlfw();
-        ImGuiOverlay.imGuiGl3 = new ImGuiImplGl3();
-        ImGuiOverlay.isImplCreated = true;
+        synchronized (ImGuiOverlay.class) {
+            ImGuiOverlay.imGuiGlfw = new ImGuiImplGlfw();
+            ImGuiOverlay.imGuiGl3 = new ImGuiImplGl3();
+            ImGuiOverlay.isImplCreated = true;
+        }
     }
 
     public static boolean isChunkSectionBordersShown() {
@@ -148,7 +152,7 @@ public class ImGuiOverlay {
         if (ImGuiOverlay.SHOW_GUI_UTILS.get()) ImGuiOverlay.showGuiEditor(client);
         if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
         if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
-        if (ImGuiOverlay.SHOW_SHADER_EDITOR.get()) ImGuiOverlay.showShaderEditor(client);
+        if (ImGuiOverlay.SHOW_SHADER_EDITOR.get()) ImGuiOverlay.showShaderEditor();
     }
 
     private static void handleInput() {
@@ -220,7 +224,7 @@ public class ImGuiOverlay {
         }
     }
 
-    private static void showShaderEditor(UltracraftClient client) {
+    private static void showShaderEditor() {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (ImGui.begin("Shader Editor", ImGuiOverlay.getDefaultFlags())) {
@@ -322,14 +326,16 @@ public class ImGuiOverlay {
     }
 
     public static void dispose() {
-        if (ImGuiOverlay.isImplCreated) {
-            ImGuiOverlay.imGuiGl3.dispose();
-            ImGuiOverlay.imGuiGlfw.dispose();
-        }
+        synchronized (ImGuiOverlay.class) {
+            if (ImGuiOverlay.isImplCreated) {
+                ImGuiOverlay.imGuiGl3.dispose();
+                ImGuiOverlay.imGuiGlfw.dispose();
+            }
 
-        if (ImGuiOverlay.isContextCreated) {
-            ImGui.destroyContext();
-            ImPlot.destroyContext(ImGuiOverlay.imPlotCtx);
+            if (ImGuiOverlay.isContextCreated) {
+                ImGui.destroyContext();
+                ImPlot.destroyContext(ImGuiOverlay.imPlotCtx);
+            }
         }
     }
 }

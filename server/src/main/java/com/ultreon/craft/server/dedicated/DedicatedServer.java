@@ -62,13 +62,10 @@ public class DedicatedServer extends UltracraftServer {
     /**
      * Dedicated server crash handler.
      *
-     * @param t the throwable that caused the crash.
+     * @param crashLog the throwable that caused the crash.
      */
     @Override
-    public void crash(Throwable t) {
-        // Create crash log.
-        CrashLog crashLog = new CrashLog("Server crashed! :(", t);
-        this.world.fillCrashInfo(crashLog);
+    public void crash(CrashLog crashLog) {
         ApplicationCrash crash = crashLog.createCrash();
 
         // Print and save the crash log.

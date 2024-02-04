@@ -45,7 +45,11 @@ public class ChunkMesh implements Pool.Poolable {
         ValueTracker.setMeshDisposes(ValueTracker.getMeshDisposes() + 1);
         if (this.meshPart.mesh != null) {
             ValueTracker.setVertexCount(ValueTracker.getVertexCount() - this.meshPart.mesh.getMaxVertices());
-            this.meshPart.mesh.dispose();
+            try {
+                this.meshPart.mesh.dispose();
+            } catch (Exception ignored) {
+
+            }
 
 //            this.meshPart.mesh = null;
         }

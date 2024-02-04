@@ -39,7 +39,7 @@ public class Label extends Widget {
         super(0, 0);
         this.alignment = this.register(id("alignment"), new AlignmentComponent(alignment));
         this.textColor = this.register(id("text_color"), new ColorComponent(textColor));
-        this.text = this.register(id("text"), new TextComponent(TextObject.empty()));
+        this.text = this.register(id("text"), new TextComponent(null));
         this.scale = this.register(id("scale"), new ScaleComponent(1));
     }
 
@@ -94,6 +94,8 @@ public class Label extends Widget {
         int scale = this.scale.get();
         var text = this.text.get();
         var textColor = this.textColor.get();
+
+        if (text == null) return;
 
         switch (this.alignment.get()) {
             case LEFT -> renderer.textLeft(text, scale, this.pos.x, this.pos.y, textColor);
