@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.gen;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
@@ -25,7 +25,7 @@ public abstract class WorldGenFeature implements Disposable {
      * @return true to finish the column building, false to continue.
      */
     @ApiStatus.OverrideOnly
-    public abstract boolean handle(World world, Chunk chunk, int x, int z, int height);
+    public abstract boolean handle(World world, ChunkAccess chunk, int x, int z, int height);
 
     /**
      * Create the world generator feature in the given world.

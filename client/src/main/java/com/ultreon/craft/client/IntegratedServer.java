@@ -55,7 +55,7 @@ public class IntegratedServer extends UltracraftServer {
             this.host = player;
         }
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node.createNode("host", () -> this.host);
         }
     }

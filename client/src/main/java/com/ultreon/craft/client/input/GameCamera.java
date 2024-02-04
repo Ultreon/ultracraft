@@ -34,7 +34,7 @@ public class GameCamera extends PerspectiveCamera {
     public GameCamera(float fieldOfViewY, float viewportWidth, float viewportHeight) {
         super(fieldOfViewY, viewportWidth, viewportHeight);
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = this.client.inspection.createNode("camera", () -> this);
             this.node.create("position", () -> this.position);
             this.node.create("direction", () -> this.direction);
@@ -65,7 +65,7 @@ public class GameCamera extends PerspectiveCamera {
             this.updateThirdPerson(lookVec);
         } else {
 //            this.updateThirdPerson(lookVec);
-            if (this.node != null) {
+            if (DebugFlags.INSPECTION_ENABLED.enabled()) {
                 this.node.remove("hitPosition");
                 this.node.remove("eyePosition");
                 this.node.remove("playerPosition");

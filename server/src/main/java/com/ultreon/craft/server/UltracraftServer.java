@@ -129,7 +129,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 new ElementID("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = parentNode.createNode("server", () -> this);
             this.playersNode = this.node.createNode("players", this.players::values);
             this.node.createNode("world", () -> this.world);
@@ -600,7 +600,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.players.put(player.getUuid(), player);
         this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.playersNode.createNode(player.getName(), () -> player);
         }
 

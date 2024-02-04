@@ -384,7 +384,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         LanguageManager.setCurrentLanguage(Locale.of("en", "us"));
 
         Gdx.graphics.setCursor(this.normalCursor);
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             InspectionNode<Application> libGdxNode = this.inspection.createNode("libGdx", value -> Gdx.app);
             InspectionNode<Graphics> graphicsNode = libGdxNode.createNode("graphics", Application::getGraphics);
             graphicsNode.create("backBufferScale", Graphics::getBackBufferScale);

@@ -84,7 +84,7 @@ public class GameRenderer {
         if (player != null) {
             UltracraftClient.PROFILER.section("camera", () -> {
                 if (this.client.screen == null && !ImGuiOverlay.isShown()) {
-                    player.rotateHead(-Gdx.input.getDeltaX() / 2f * Gdx.graphics.getDeltaTime() * 100, -Gdx.input.getDeltaY() / 2f * Gdx.graphics.getDeltaTime() * 100);
+                    player.rotateHead(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
                 }
 
                 this.client.camera.update(player);

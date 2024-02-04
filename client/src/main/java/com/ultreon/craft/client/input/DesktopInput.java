@@ -133,7 +133,7 @@ public class DesktopInput extends GameInput {
     }
 
     private void handleInspectKey() {
-        if (UltracraftClient.get().config.get().debugUtils && DebugFlags.INSPECTION_ENABLED) {
+        if (UltracraftClient.get().config.get().debugUtils && DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
         }
     }
