@@ -58,6 +58,7 @@ com.ultreon.craft.collection
 com.ultreon.craft.command
 com.ultreon.craft.component
 com.ultreon.craft.config
+com.ultreon.craft.crash
 com.ultreon.craft.debug
 com.ultreon.craft.debug.inspect
 com.ultreon.craft.debug.profiler
@@ -66,6 +67,7 @@ com.ultreon.craft.entity.damagesource
 com.ultreon.craft.entity.player
 com.ultreon.craft.entity.util
 com.ultreon.craft.events
+com.ultreon.craft.events.api
 com.ultreon.craft.gamerule
 com.ultreon.craft.item
 com.ultreon.craft.item.material
@@ -87,6 +89,8 @@ com.ultreon.craft.recipe
 com.ultreon.craft.registry
 com.ultreon.craft.registry.event
 com.ultreon.craft.registry.exception
+com.ultreon.craft.resources
+com.ultreon.craft.resources.android
 com.ultreon.craft.server
 com.ultreon.craft.server.chat
 com.ultreon.craft.server.dedicated
@@ -104,4 +108,6 @@ com.ultreon.craft.world.gen.biome
 com.ultreon.craft.world.gen.feature
 com.ultreon.craft.world.gen.layer
 com.ultreon.craft.world.gen.noise
+com.ultreon.craft.world.loot
+com.ultreon.craft.world.rng
 com.ultreon.gameprovider.craft

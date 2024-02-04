@@ -113,7 +113,7 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="../NetworkChannel.html" title="class in com.ultreon.craft.network">NetworkChannel</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getChannel(com.ultreon.libs.commons.v0.Identifier)" class="member-name-link">getChannel</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;channelId)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getChannel(com.ultreon.craft.util.ElementID)" class="member-name-link">getChannel</a><wbr>(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;channelId)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onAbilities(com.ultreon.craft.network.packets.AbilitiesPacket)" class="member-name-link">onAbilities</a><wbr>(<a href="../packets/AbilitiesPacket.html" title="interface in com.ultreon.craft.network.packets">AbilitiesPacket</a>&nbsp;packet)</code></div>
@@ -127,8 +127,8 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
  <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a>&nbsp;position)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onBlockSet(com.ultreon.craft.world.BlockPos,com.ultreon.libs.commons.v0.Identifier)" class="member-name-link">onBlockSet</a><wbr>(<a href="../../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos,
- <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;block)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onBlockSet(com.ultreon.craft.world.BlockPos,com.ultreon.craft.block.Block)" class="member-name-link">onBlockSet</a><wbr>(<a href="../../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos,
+ <a href="../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onChatReceived(com.ultreon.craft.text.TextObject)" class="member-name-link">onChatReceived</a><wbr>(<a href="../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;message)</code></div>
@@ -166,7 +166,7 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
  <a href="../api/packet/ModPacket.html" title="class in com.ultreon.craft.network.api.packet">ModPacket</a>&lt;?&gt;&nbsp;packet)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onOpenContainerMenu(com.ultreon.libs.commons.v0.Identifier)" class="member-name-link">onOpenContainerMenu</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;menuType)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onOpenContainerMenu(com.ultreon.craft.util.ElementID)" class="member-name-link">onOpenContainerMenu</a><wbr>(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;menuType)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onPing(long,long)" class="member-name-link">onPing</a><wbr>(long&nbsp;serverTime,
@@ -187,7 +187,7 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onPlayerSetPos(com.ultreon.libs.commons.v0.vector.Vec3d)" class="member-name-link">onPlayerSetPos</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3d.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3d</a>&nbsp;pos)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onPlaySound(com.ultreon.libs.commons.v0.Identifier,float)" class="member-name-link">onPlaySound</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;sound,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onPlaySound(com.ultreon.craft.util.ElementID,float)" class="member-name-link">onPlaySound</a><wbr>(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;sound,
  float&nbsp;volume)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
@@ -230,9 +230,9 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 </section>
 </li>
 <li>
-<section class="detail" id="getChannel(com.ultreon.libs.commons.v0.Identifier)">
+<section class="detail" id="getChannel(com.ultreon.craft.util.ElementID)">
 <h3>getChannel</h3>
-<div class="member-signature"><span class="return-type"><a href="../NetworkChannel.html" title="class in com.ultreon.craft.network">NetworkChannel</a></span>&nbsp;<span class="element-name">getChannel</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;channelId)</span></div>
+<div class="member-signature"><span class="return-type"><a href="../NetworkChannel.html" title="class in com.ultreon.craft.network">NetworkChannel</a></span>&nbsp;<span class="element-name">getChannel</span><wbr><span class="parameters">(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;channelId)</span></div>
 </section>
 </li>
 <li>
@@ -282,9 +282,9 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 </section>
 </li>
 <li>
-<section class="detail" id="onPlaySound(com.ultreon.libs.commons.v0.Identifier,float)">
+<section class="detail" id="onPlaySound(com.ultreon.craft.util.ElementID,float)">
 <h3>onPlaySound</h3>
-<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">onPlaySound</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;sound,
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">onPlaySound</span><wbr><span class="parameters">(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;sound,
  float&nbsp;volume)</span></div>
 </section>
 </li>
@@ -303,10 +303,10 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 </section>
 </li>
 <li>
-<section class="detail" id="onBlockSet(com.ultreon.craft.world.BlockPos,com.ultreon.libs.commons.v0.Identifier)">
+<section class="detail" id="onBlockSet(com.ultreon.craft.world.BlockPos,com.ultreon.craft.block.Block)">
 <h3>onBlockSet</h3>
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">onBlockSet</span><wbr><span class="parameters">(<a href="../../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos,
- <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;block)</span></div>
+ <a href="../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
 </section>
 </li>
 <li>
@@ -330,9 +330,9 @@ extends <a href="ClientPacketHandler.html" title="interface in com.ultreon.craft
 </section>
 </li>
 <li>
-<section class="detail" id="onOpenContainerMenu(com.ultreon.libs.commons.v0.Identifier)">
+<section class="detail" id="onOpenContainerMenu(com.ultreon.craft.util.ElementID)">
 <h3>onOpenContainerMenu</h3>
-<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">onOpenContainerMenu</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;menuType)</span></div>
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">onOpenContainerMenu</span><wbr><span class="parameters">(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;menuType)</span></div>
 </section>
 </li>
 <li>

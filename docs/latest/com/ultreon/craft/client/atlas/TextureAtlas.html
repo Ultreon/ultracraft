@@ -112,7 +112,7 @@ implements <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.client.atlas.TextureStitcher,com.badlogic.gdx.graphics.Texture,com.badlogic.gdx.graphics.Texture,java.util.Map)" class="member-name-link">TextureAtlas</a><wbr>(<a href="TextureStitcher.html" title="class in com.ultreon.craft.client.atlas">TextureStitcher</a>&nbsp;stitcher,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;atlas,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;emissiveAtlas,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>,<wbr><a href="../util/TextureOffset.html" title="class in com.ultreon.craft.client.util">TextureOffset</a>&gt;&nbsp;uvMap)</code></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>,<wbr><a href="../util/TextureOffset.html" title="class in com.ultreon.craft.client.util">TextureOffset</a>&gt;&nbsp;uvMap)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -132,7 +132,7 @@ implements <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#dispose()" class="member-name-link">dispose</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/TextureRegion.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">TextureRegion</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(com.ultreon.libs.commons.v0.Identifier)" class="member-name-link">get</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;id)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#get(com.ultreon.craft.util.ElementID)" class="member-name-link">get</a><wbr>(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getEmissiveTexture()" class="member-name-link">getEmissiveTexture</a>()</code></div>
@@ -163,7 +163,7 @@ implements <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">TextureAtlas</span><wbr><span class="parameters">(<a href="TextureStitcher.html" title="class in com.ultreon.craft.client.atlas">TextureStitcher</a>&nbsp;stitcher,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;atlas,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/Texture.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">Texture</a>&nbsp;emissiveAtlas,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>,<wbr><a href="../util/TextureOffset.html" title="class in com.ultreon.craft.client.util">TextureOffset</a>&gt;&nbsp;uvMap)</span></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>,<wbr><a href="../util/TextureOffset.html" title="class in com.ultreon.craft.client.util">TextureOffset</a>&gt;&nbsp;uvMap)</span></div>
 </section>
 </li>
 </ul>
@@ -175,9 +175,9 @@ implements <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="get(com.ultreon.libs.commons.v0.Identifier)">
+<section class="detail" id="get(com.ultreon.craft.util.ElementID)">
 <h3>get</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/TextureRegion.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">TextureRegion</a></span>&nbsp;<span class="element-name">get</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;id)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g2d/TextureRegion.html" title="class or interface in com.badlogic.gdx.graphics.g2d" class="external-link">TextureRegion</a></span>&nbsp;<span class="element-name">get</span><wbr><span class="parameters">(<a href="../../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id)</span></div>
 </section>
 </li>
 <li>

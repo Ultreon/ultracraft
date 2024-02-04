@@ -133,7 +133,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#NAMESPACE" class="member-name-link">NAMESPACE</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated, for removal: This API element is subject to removal in a future version.</span></div>
+</div>
 <div class="col-first even-row-color"><code>static final long</code></div>
 <div class="col-second even-row-color"><code><a href="#NANOSECONDS_PER_SECOND" class="member-name-link">NANOSECONDS_PER_SECOND</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
@@ -169,9 +171,11 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <section class="constructor-summary" id="constructor-summary">
 <h2>Constructor Summary</h2>
 <div class="caption"><span>Constructors</span></div>
-<div class="summary-table two-column-summary">
-<div class="table-header col-first">Constructor</div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>protected </code></div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.WorldStorage,com.ultreon.craft.debug.profiler.Profiler,com.ultreon.craft.debug.inspect.InspectionNode)" class="member-name-link">UltracraftServer</a><wbr>(<a href="../world/WorldStorage.html" title="class in com.ultreon.craft.world">WorldStorage</a>&nbsp;storage,
  <a href="../debug/profiler/Profiler.html" title="class in com.ultreon.craft.debug.profiler">Profiler</a>&nbsp;profiler,
  <a href="../debug/inspect/InspectionNode.html" title="class in com.ultreon.craft.debug.inspect">InspectionNode</a>&lt;?&gt;&nbsp;parentNode)</code></div>
@@ -227,7 +231,7 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Gets a player from the cache.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html" title="class or interface in java.util" class="external-link">ArrayList</a><wbr>&lt;<a href="player/CachedPlayer.html" title="class in com.ultreon.craft.server.player">CachedPlayer</a>&gt;</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="player/CachedPlayer.html" title="class in com.ultreon.craft.server.player">CachedPlayer</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getCachedPlayers()" class="member-name-link">getCachedPlayers</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../network/ServerConnections.html" title="class in com.ultreon.craft.network">ServerConnections</a></code></div>
@@ -302,7 +306,7 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld()" class="member-name-link">getWorld</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../world/ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld(com.ultreon.libs.commons.v0.Identifier)" class="member-name-link">getWorld</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;name)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorld(com.ultreon.craft.util.ElementID)" class="member-name-link">getWorld</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;name)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a><wbr>&lt;? extends <a href="../world/World.html" title="class in com.ultreon.craft.world">World</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWorlds()" class="member-name-link">getWorlds</a>()</code></div>
@@ -496,7 +500,10 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <li>
 <section class="detail" id="NAMESPACE">
 <h3>NAMESPACE</h3>
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">NAMESPACE</span></div>
+<div class="member-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Deprecated.html" title="class or interface in java.lang" class="external-link">@Deprecated</a>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Deprecated.html#since()" title="class or interface in java.lang" class="external-link">since</a>="0.1.0",
+            <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Deprecated.html#forRemoval()" title="class or interface in java.lang" class="external-link">forRemoval</a>=true)
+</span><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">NAMESPACE</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated, for removal: This API element is subject to removal in a future version.</span></div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -560,7 +567,7 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <li>
 <section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.WorldStorage,com.ultreon.craft.debug.profiler.Profiler,com.ultreon.craft.debug.inspect.InspectionNode)">
 <h3>UltracraftServer</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">UltracraftServer</span><wbr><span class="parameters">(<a href="../world/WorldStorage.html" title="class in com.ultreon.craft.world">WorldStorage</a>&nbsp;storage,
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">UltracraftServer</span><wbr><span class="parameters">(<a href="../world/WorldStorage.html" title="class in com.ultreon.craft.world">WorldStorage</a>&nbsp;storage,
  <a href="../debug/profiler/Profiler.html" title="class in com.ultreon.craft.debug.profiler">Profiler</a>&nbsp;profiler,
  <a href="../debug/inspect/InspectionNode.html" title="class in com.ultreon.craft.debug.inspect">InspectionNode</a>&lt;?&gt;&nbsp;parentNode)</span></div>
 <div class="block">Creates a new <a href="UltracraftServer.html" title="class in com.ultreon.craft.server"><code>UltracraftServer</code></a> instance.</div>
@@ -1144,7 +1151,7 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <li>
 <section class="detail" id="getCachedPlayers()">
 <h3>getCachedPlayers</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html" title="class or interface in java.util" class="external-link">ArrayList</a>&lt;<a href="player/CachedPlayer.html" title="class in com.ultreon.craft.server.player">CachedPlayer</a>&gt;</span>&nbsp;<span class="element-name">getCachedPlayers</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="player/CachedPlayer.html" title="class in com.ultreon.craft.server.player">CachedPlayer</a>&gt;</span>&nbsp;<span class="element-name">getCachedPlayers</span>()</div>
 </section>
 </li>
 <li>
@@ -1160,9 +1167,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="getWorld(com.ultreon.libs.commons.v0.Identifier)">
+<section class="detail" id="getWorld(com.ultreon.craft.util.ElementID)">
 <h3>getWorld</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></span>&nbsp;<span class="element-name">getWorld</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Identifier.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Identifier</a>&nbsp;name)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a></span>&nbsp;<span class="element-name">getWorld</span><wbr><span class="parameters">(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;name)</span></div>
 </section>
 </li>
 <li>
