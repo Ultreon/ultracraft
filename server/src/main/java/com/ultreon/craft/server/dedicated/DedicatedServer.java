@@ -62,7 +62,7 @@ public class DedicatedServer extends UltracraftServer {
     /**
      * Dedicated server crash handler.
      *
-     * @param t the throwable that caused the crash.
+     * @param crashLog the throwable that caused the crash.
      */
     @Override
     public void crash(CrashLog crashLog) {
