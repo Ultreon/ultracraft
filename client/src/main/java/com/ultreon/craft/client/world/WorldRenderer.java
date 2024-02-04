@@ -90,7 +90,7 @@ public final class WorldRenderer implements DisposableContainer {
     private final Int2ObjectMap<ModelInstance> modelInstances = new Int2ObjectOpenHashMap<>();
     private final List<Disposable> disposables = new ArrayList<>();
     private final MeshBuilder meshBuilder = new MeshBuilder();
-    private long lastChunkRender;
+    private long lastChunkBuild;
 
     public WorldRenderer(ClientWorld world) {
         this.world = world;
@@ -283,7 +283,7 @@ public final class WorldRenderer implements DisposableContainer {
     }
 
     private void collectChunks(Array<Renderable> output, Pool<Renderable> renderablePool, List<ClientChunk> chunks, Array<ChunkPos> positions, LocalPlayer player, ChunkRenderRef ref) {
-        boolean hasRenderedChunk = false;
+        var lambdaContext = new ChunkBuildContext();
         for (var chunk : chunks) {
             if (positions.contains(chunk.getPos(), false)) {
                 UltracraftClient.LOGGER.warn("Duplicate chunk: " + chunk.getPos());
@@ -316,18 +316,18 @@ public final class WorldRenderer implements DisposableContainer {
 
             chunk.dirty = false;
 
-            if (!chunk.initialized || !hasRenderedChunk && (Gdx.graphics.getFrameId() / 2) % 20 == 0) {
+            if (!chunk.initialized || !lambdaContext.hasRenderedChunk && this.shouldBuildChunks()) {
                 chunk.whileLocked(() -> {
-                    if (chunk.mesh == null) {
-                        chunk.mesh = this.pool.obtain();
-                        var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
-                        chunk.mesh.meshPart.size = mesh.getNumIndices();
-                        chunk.mesh.meshPart.offset = 0;
-                        chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
-                        chunk.mesh.renderable.material = this.material;
-                        chunk.mesh.renderable.userData = chunk;
+                    if (chunk.solidMesh == null) {
+                        chunk.solidMesh = this.pool.obtain();
+                        var mesh = chunk.solidMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
+                        chunk.solidMesh.meshPart.size = mesh.getNumIndices();
+                        chunk.solidMesh.meshPart.offset = 0;
+                        chunk.solidMesh.meshPart.primitiveType = GL_TRIANGLES;
+                        chunk.solidMesh.renderable.material = this.material;
+                        chunk.solidMesh.renderable.userData = chunk;
 
-                        hasRenderedChunk = true;
+                        lambdaContext.hasRenderedChunk = true;
                     }
 
                     if (chunk.transparentMesh == null) {
@@ -337,15 +337,16 @@ public final class WorldRenderer implements DisposableContainer {
                         chunk.transparentMesh.meshPart.offset = 0;
                         chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
                         chunk.transparentMesh.renderable.material = this.transparentMaterial;
-                        chunk.mesh.renderable.userData = chunk;
-                        hasRenderedChunk = true;
+                        chunk.transparentMesh.renderable.userData = chunk;
+
+                        lambdaContext.hasRenderedChunk = true;
                     }
                     chunk.loadCustomRendered();
 
                     chunk.initialized = true;
-                    this.lastChunkRender = System.currentTimeMillis();
+                    this.lastChunkBuild = System.currentTimeMillis();
                 });
-            } else if (chunk.mesh == null || chunk.transparentMesh == null) {
+            } else if (chunk.solidMesh == null || chunk.transparentMesh == null) {
                 continue;
             }
 
@@ -415,8 +416,8 @@ public final class WorldRenderer implements DisposableContainer {
         }
     }
 
-    private boolean canRenderNewChunk() {
-        return this.lastChunkRender < System.currentTimeMillis() - 1000L;
+    private boolean shouldBuildChunks() {
+        return this.lastChunkBuild < System.currentTimeMillis() - 1000L;
     }
 
     public void collectEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
@@ -434,7 +435,7 @@ public final class WorldRenderer implements DisposableContainer {
             renderer.animate(instance, entity);
             renderer.render(instance, output, renderablePool);
         } catch (Exception e) {
-            e.printStackTrace();
+            UltracraftClient.LOGGER.error("Failed to render entity " + entity.getId(), e);
             CrashLog crashLog = new CrashLog("Error rendering entity " + entity.getId(), new Exception());
             CrashCategory category = new CrashCategory("Entity", e);
             category.add("Entity ID", entity.getId());
@@ -573,5 +574,9 @@ public final class WorldRenderer implements DisposableContainer {
 
     private static class ChunkRenderRef {
         boolean chunkRendered = false;
+    }
+
+    private static class ChunkBuildContext {
+        boolean hasRenderedChunk = false;
     }
 }

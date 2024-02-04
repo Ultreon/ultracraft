@@ -9,6 +9,7 @@ import com.ultreon.craft.client.input.util.JoystickType;
 import com.ultreon.craft.client.util.Utils;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 public class PlayerInput {
     public boolean forward;
@@ -29,10 +30,7 @@ public class PlayerInput {
         this.client = client;
     }
 
-    public void tick(float speed) {
-        Player player = this.client.player;
-        if (player == null) return;
-
+    public void tick(@NotNull Player player, float speed) {
         this.vel.set(0, 0, 0);
 
         this.moveX = 0;
@@ -104,6 +102,7 @@ public class PlayerInput {
             this.moveX += 1;
     }
 
+    @Deprecated
     public Vec3d getVel() {
         return Utils.toCoreLibs(this.vel);
     }

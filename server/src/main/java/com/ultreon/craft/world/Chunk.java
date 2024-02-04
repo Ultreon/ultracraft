@@ -75,7 +75,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
         }
     }
 
-    private Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
+    private final Map<BlockPos, BlockEntity> blockEntities = new HashMap<>();
 
     /**
      * @deprecated Use {@link #Chunk(World, ChunkPos)} instead@
@@ -162,47 +162,119 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
         return Registries.BLOCK.getElement(id);
     }
 
+    /**
+     * Gets the block at the given coordinates. Note that this method is not thread safe.
+     *
+     * @param pos the position of the block
+     * @return the block at the given coordinates
+     */
     public Block get(Vec3i pos) {
-        if (this.disposed) return Blocks.BARRIER;
+        if (this.disposed) return Blocks.AIR;
         return this.get(pos.x, pos.y, pos.z);
     }
 
+    /**
+     * Gets the block at the given coordinates. Note that this method is not thread safe.
+     *
+     * @param pos the position of the block
+     * @return the block at the given coordinates
+     */
     public Block get(BlockPos pos) {
-        if (this.disposed) return Blocks.BARRIER;
+        if (this.disposed) return Blocks.AIR;
         return this.get(pos.x(), pos.y(), pos.z());
     }
 
+    /**
+     * Gets the block at the given coordinates. Note that this method is not thread safe.
+     *
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
+     * @return the block at the given coordinates
+     */
     public Block get(int x, int y, int z) {
-        if (this.disposed) return Blocks.BARRIER;
+        if (this.disposed) return Blocks.AIR;
         if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
         return this.getFast(x, y, z);
     }
 
+    /**
+     * Gets the block at the given coordinates.
+     * Note that this method is not thread safe.
+     * <p>This method isn't checking for out of bounds, so be careful when using it.</p>
+     *
+     * @param pos the position of the block
+     * @return the block at the given coordinates
+     */
     public Block getFast(Vec3i pos) {
         return this.getFast(pos.x, pos.y, pos.z);
     }
 
+    /**
+     * Gets the block at the given coordinates.
+     * Note that this method is not thread safe.
+     * <p>This method isn't checking for out of bounds, so be careful when using it.</p>
+     *
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
+     * @return the block at the given coordinates
+     */
     public Block getFast(int x, int y, int z) {
-        if (this.disposed) return Blocks.BARRIER;
+        if (this.disposed) return Blocks.AIR;
         int dataIdx = this.getIndex(x, y, z);
 
         Block block = this.storage.get(dataIdx);
         return block == null ? Blocks.AIR : block;
     }
 
+    /**
+     * Sets the block at the given coordinates. Note that this method is not thread safe.
+     *
+     * @param pos   the position of the block
+     * @param block the block to set
+     */
     public void set(Vec3i pos, Block block) {
         this.set(pos.x, pos.y, pos.z, block);
     }
 
+    /**
+     * Sets the block at the given coordinates. Note that this method is not thread safe.
+     *
+     * @param x     the x coordinate of the block
+     * @param y     the y coordinate of the block
+     * @param z     the z coordinate of the block
+     * @param block the block to set
+     * @return true if the block was successfully set, false if setting the block failed
+     */
     public boolean set(int x, int y, int z, Block block) {
         if (this.isOutOfBounds(x, y, z)) return false;
         return this.setFast(x, y, z, block);
     }
 
+    /**
+     * Sets the block at the given coordinates.
+     * Note that this method is not thread safe.
+     * <p>This method also isn't checking for out of bounds, so be careful when using it.</p>
+     *
+     * @param pos   the position of the block
+     * @param block the block to set
+     */
     public void setFast(Vec3i pos, Block block) {
         this.setFast(pos.x, pos.y, pos.z, block);
     }
 
+    /**
+     * Sets the block at the given coordinates.
+     * Note that this method is not thread safe.
+     * <p>This method also isn't checking for out of bounds, so be careful when using it.</p>
+     *
+     * @param x     the x coordinate of the block
+     * @param y     the y coordinate of the block
+     * @param z     the z coordinate of the block
+     * @param block the block to set
+     * @return true if the block was successfully set, false if setting the block failed
+     */
     public boolean setFast(int x, int y, int z, Block block) {
         if (this.disposed) return false;
         int index = this.getIndex(x, y, z);
@@ -236,10 +308,26 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
         return -1; // Out of bounds
     }
 
+    /**
+     * Checks if the given coordinates are out of bounds
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return true if the coordinates are out of bounds
+     */
     protected boolean isOutOfBounds(int x, int y, int z) {
         return x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE;
     }
 
+    /**
+     * Disposes the chunk.
+     * When the chunk is disposed, the chunk will no longer be usable.
+     * <p>NOTE: This method is not thread safe.</p>
+     * <p>NOTE: This is internal API, do not use it if you don't know what you are doing.</p>
+     *
+     * @exception ValidationError if the chunk is already disposed
+     */
     @Override
     public void dispose() {
         synchronized (this.lock) {
@@ -376,11 +464,37 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
         return x + z * CHUNK_SIZE;
     }
 
-    public Biome getBiome(int x, int y, int z) {
+    /**
+     * Get the biome at the given position.
+     *
+     * @param x the x position in the chunk
+     * @param ignoredY the y position in the chunk
+     * @param z the z position in the chunk
+     * @return the biome at the given position
+     * @deprecated deprecated until biomes are 3 dimensional
+     */
+    @Deprecated
+    public Biome getBiome(int x, int ignoredY, int z) {
         int index = this.toFlatIndex(x, z);
         return this.biomeStorage.get(index);
     }
 
+    /**
+     * Get the biome at the given position.
+     *
+     * @param x the x column position in the chunk
+     * @param z the z column position in the chunk
+     * @return the biome at the given position
+     */
+    public Biome getBiome(int x, int z) {
+        int index = this.toFlatIndex(x, z);
+        return this.biomeStorage.get(index);
+    }
+
+    /**
+     * @param o the object to compare with
+     * @return {@code true} if the objects are equal
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -394,32 +508,69 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
         return Objects.hash(this.pos);
     }
 
+    /**
+     * Get the sunlight level at the given position.
+     *
+     * @param x the x position in the chunk
+     * @param y the y position in the chunk
+     * @param z the z position in the chunk
+     * @return the sunlight level at the given position between 0 and 15
+     * @throws PosOutOfBoundsException if the position is out of bounds
+     */
     public int getSunlight(int x, int y, int z) throws PosOutOfBoundsException {
-        if(this.isOutOfBounds(x, y, z))
+        if (this.isOutOfBounds(x, y, z))
             return 0;
 
         return 15;
     }
 
+    /**
+     * Get the sunlight level at the given position.
+     *
+     * @param localBlockPos the position in the chunk
+     * @return the sunlight level at the given position between 0 and 15
+     */
     public int getSunlight(Vec3i localBlockPos) {
         return this.getSunlight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
     }
 
+    /**
+     * Get the block light level at the given position.
+     *
+     * @param x the x position in the chunk
+     * @param y the y position in the chunk
+     * @param z the z position in the chunk
+     * @return the block light level at the given position
+     * @throws PosOutOfBoundsException if the position is out of bounds
+     */
     public int getBlockLight(int x, int y, int z) throws PosOutOfBoundsException {
-        if(this.isOutOfBounds(x, y, z))
+        if (this.isOutOfBounds(x, y, z))
             return 0;
 
         return this.lightMap.getBlockLight(x, y, z);
     }
 
+    /**
+     * Get the block light level at the given position.
+     *
+     * @param localBlockPos the position in the chunk
+     * @return the block light level at the given position
+     * @throws PosOutOfBoundsException if the position is out of bounds
+     */
     public int getBlockLight(Vec3i localBlockPos) {
         return this.getBlockLight(localBlockPos.x, localBlockPos.y, localBlockPos.z);
     }
 
+    /**
+     * Get the brightness for the given light level.
+     *
+     * @param lightLevel the light level between 0 and 15
+     * @return the brightness for the given light level between zero and one.
+     */
     public float getBrightness(int lightLevel) {
-        if(lightLevel > Chunk.MAX_LIGHT_LEVEL)
+        if (lightLevel > Chunk.MAX_LIGHT_LEVEL)
             return 1;
-        if(lightLevel < 0)
+        if (lightLevel < 0)
             return 0;
         return Chunk.lightLevelMap[lightLevel];
     }

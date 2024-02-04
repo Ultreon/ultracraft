@@ -133,5 +133,6 @@ public class ChatTextEntry extends TextEntry {
         this.completeX = s.length();
         this.popup.x = (int) this.font.width(this.getValue().substring(0, s.length()));
         this.popup.setValues(options);
+        this.popup.visible = true;
     }
 }

@@ -65,7 +65,7 @@ public class VideoSettingsUI {
                 })
                 .callback(this::setScale));
 
-        builder.add(TextObject.translation("ultracraft.screen.options.video.frameRate"), Slider.of(200, 1, 240)
+        builder.add(TextObject.translation("ultracraft.screen.options.video.frameRate"), Slider.of(200, 10, 240)
                 .value(this.client.config.get().video.fpsLimit)
                 .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 175, 150, 21))
                 .callback(this::setFrameRate));

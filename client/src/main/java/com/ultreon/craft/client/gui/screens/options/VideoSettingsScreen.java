@@ -77,7 +77,7 @@ public class VideoSettingsScreen extends Screen {
                 .callback(this::setScale)
         );
 
-        builder.add(Slider.of(200, 1, 240)
+        builder.add(Slider.of(200, 10, 240)
                 .text(TextObject.translation("ultracraft.screen.options.video.frameRate"))
                 .value(this.client.config.get().video.fpsLimit)
                 .bounds(() -> new Bounds(this.getWidth() / 2 + 2, this.getHeight() / 2, 150, 21))

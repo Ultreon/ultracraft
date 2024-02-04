@@ -120,7 +120,7 @@ public class GreedyMesher implements Mesher {
                     try {
                         Block curBlock = this.block(this.chunk, x, y, z);
                         BlockModel blockModel = BlockModelRegistry.get(curBlock);
-                        if (blockModel != null && blockModel instanceof JsonModel) {
+                        if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             this.chunk.addModel(new BlockPos(x, y, z), new ModelInstance(blockModel.getModel()));
                             continue;
                         }
@@ -175,6 +175,10 @@ public class GreedyMesher implements Mesher {
                 for (int z = 0; z < depth; z++) {
                     try {
                         Block curBlock = this.block(this.chunk, x, y, z);
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
+                        if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
+                            continue;
+                        }
                         if (curBlock == null || !condition.shouldUse(curBlock)) continue;
 
                         int westNeighborX = x - 1;
@@ -246,6 +250,10 @@ public class GreedyMesher implements Mesher {
                 for (int x = 0; x < width; x++) {
                     try {
                         Block curBlock = this.block(this.chunk, x, y, z);
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
+                        if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
+                            continue;
+                        }
                         if (curBlock == null || !condition.shouldUse(curBlock)) continue;
 
                         int northNeighborZ = z + 1;

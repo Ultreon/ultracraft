@@ -207,7 +207,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         if (player.isCrouching()) speed *= player.crouchModifier;
         else if (player.isRunning()) speed *= player.runModifier;
 
-        this.client.playerInput.tick(speed);
+        this.client.playerInput.tick(player, speed);
         this.updateControllerMove(deltaTime, player, speed);
     }
 

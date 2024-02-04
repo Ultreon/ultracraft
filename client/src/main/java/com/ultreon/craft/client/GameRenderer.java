@@ -96,10 +96,11 @@ public class GameRenderer {
                 quaternion.mul(new Quaternion(Vector3.X, rotation.y));
                 quaternion.conjugate();
 
-                float speed = (17.5f / (17.5f - (cameraBop * 2.0f))) * (1 - (Math.max(Math.abs(rotation.y) - 45, 0)) / 45);
-                cameraBop += Gdx.graphics.getDeltaTime() * (revert ? -speed : speed);
-                if (cameraBop > 4.0f) revert = true;
-                else if (cameraBop < -4.0f) revert = false;
+//                float genSpeed = 35.0f;
+//                float speed = (genSpeed / (17.5f - (cameraBop * 2.0f))) * (1 - (Math.max(Math.abs(rotation.y) - 45, 0)) / 45);
+//                cameraBop += Gdx.graphics.getDeltaTime() * (revert ? -speed : speed);
+//                if (cameraBop > 4.0f) revert = true;
+//                else if (cameraBop < -4.0f) revert = false;
 
                 this.client.camera.up.set(0, 1, 0);
                 this.client.camera.up.rotate(Vector3.Y, rotation.x);

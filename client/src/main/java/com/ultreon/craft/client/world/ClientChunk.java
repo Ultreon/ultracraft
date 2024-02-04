@@ -180,14 +180,6 @@ public final class ClientChunk extends Chunk {
             float z = (float) key.z() % 16;
             if (x < 0) x += 16;
             if (z < 0) z += 16;
-            value.materials.forEach(attributes -> {
-                float sunlight = clientWorld.getGlobalSunlight();
-                if (attributes.has(ColorAttribute.Ambient)) {
-                    ((ColorAttribute)attributes.get(ColorAttribute.Ambient)).color.set(sunlight, sunlight, sunlight, 1);
-                } else {
-                    attributes.set(new ColorAttribute(ColorAttribute.Ambient, sunlight, sunlight, sunlight, 1));
-                }
-            });
             value.userData = Shaders.MODEL_VIEW;
             value.transform.setToTranslationAndScaling(this.tmp.set(this.renderOffset).add(x, (float) key.y() % 65536, z), this.tmp1.set(1 / 16f, 1 / 16f, 1 / 16f));
             value.getRenderables(output, renderablePool);

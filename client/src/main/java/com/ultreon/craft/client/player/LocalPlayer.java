@@ -57,11 +57,6 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     private void handleMove() {
-        if (this.world.getChunk(this.getChunkPos()) == null) {
-            this.x = this.ox;
-            this.y = this.oy;
-            this.z = this.oz;
-        }
         this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
         this.ox = this.x;
         this.oy = this.y;

@@ -7,6 +7,7 @@ import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -251,6 +252,9 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
         this.setPosition(this.ox, this.oy, this.oz);
+        if (DebugFlags.LOG_POSITION_RESET_ON_CHUNK_LOAD.enabled()) {
+            Chat.sendInfo(this, "Position reset on chunk load.");
+        }
         return this.activeChunks.add(pos);
     }
 
@@ -517,7 +521,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             }
 
             List<String> options = baseCommand.onTabComplete(this, new CommandContext(command), command, argv);
-            System.out.println("options = " + options);
             if (options == null) options = Collections.emptyList();
             this.connection.send(new S2CTabCompletePacket(options));
         }
@@ -531,8 +534,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     public void sendMessage(@NotNull TextObject textObj) {
-        String text = textObj.getText();
-        Debugger.log("MESSAGE_SENT: " + text);
         this.connection.send(new S2CChatPacket(textObj));
     }
 

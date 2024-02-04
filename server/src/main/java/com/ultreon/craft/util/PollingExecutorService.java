@@ -229,7 +229,7 @@ public class PollingExecutorService implements ExecutorService {
     }
 
     private boolean isSameThread() {
-        return Thread.currentThread().getId() == this.thread.getId();
+        return Thread.currentThread().threadId() == this.thread.threadId();
     }
 
     public void poll() {

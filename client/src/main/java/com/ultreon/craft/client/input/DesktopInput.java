@@ -216,7 +216,6 @@ public class DesktopInput extends GameInput {
             return false;
 
         if (!Gdx.input.isCursorCatched() && !UltracraftClient.get().isShowingImGui()) {
-            DesktopInput.setCursorCaught(true);
             return true;
         }
 

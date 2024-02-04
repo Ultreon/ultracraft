@@ -8,7 +8,9 @@ import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.world.ClientChunk;
+import com.ultreon.craft.client.world.ClientWorld;
 
 public class ModelViewShader extends DefaultShader {
     private final static Attributes tmpAttributes = new Attributes();
@@ -48,22 +50,23 @@ public class ModelViewShader extends DefaultShader {
         public final static Setter globalSunlight = new LocalSetter() {
             @Override
             public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-                if (renderable != null) {
-                    if (renderable.userData instanceof ClientChunk clientChunk) {
-                        shader.set(inputID, clientChunk.getWorld().getGlobalSunlight());
-                    } else {
-                        shader.set(inputID, 1.0f);
-                    }
-                } else {
+                if (renderable == null) {
                     shader.set(inputID, 1.0f);
+                    return;
                 }
+                ClientWorld world = UltracraftClient.get().world;
+                if (world == null) {
+                    shader.set(inputID, 1.0f);
+                    return;
+                }
+                shader.set(inputID, world.getGlobalSunlight());
             }
         };
     }
     public static String createPrefix (final Renderable renderable, final Config config) {
         final Attributes attributes = ModelViewShader.combineAttributes(renderable);
         StringBuilder prefix = new StringBuilder();
-//        prefix.append("#version ").append(ModelViewShader.version).append("\n");
+        prefix.append("#version ").append(ModelViewShader.version).append("\n");
         final long attributesMask = attributes.getMask();
         final long vertexMask = renderable.meshPart.mesh.getVertexAttributes().getMask();
         if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.Position)) prefix.append("#define positionFlag\n");
@@ -71,17 +74,19 @@ public class ModelViewShader extends DefaultShader {
         if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.BiNormal)) prefix.append("#define binormalFlag\n");
         if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.Tangent)) prefix.append("#define tangentFlag\n");
         if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.Normal)) prefix.append("#define normalFlag\n");
-        if ((ModelViewShader.and(vertexMask, VertexAttributes.Usage.Normal) || ModelViewShader.and(vertexMask, VertexAttributes.Usage.Tangent | VertexAttributes.Usage.BiNormal)) && renderable.environment != null) {
-            prefix.append("#define lightingFlag\n");
-            prefix.append("#define ambientCubemapFlag\n");
-            prefix.append("#define numDirectionalLights ").append(config.numDirectionalLights).append("\n");
-            prefix.append("#define numPointLights ").append(config.numPointLights).append("\n");
-            prefix.append("#define numSpotLights ").append(config.numSpotLights).append("\n");
-            if (attributes.has(ColorAttribute.Fog)) {
-                prefix.append("#define fogFlag\n");
+        if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.Normal) || ModelViewShader.and(vertexMask, VertexAttributes.Usage.Tangent | VertexAttributes.Usage.BiNormal)) {
+            if (renderable.environment != null) {
+                prefix.append("#define lightingFlag\n");
+                prefix.append("#define ambientCubemapFlag\n");
+                prefix.append("#define numDirectionalLights ").append(config.numDirectionalLights).append("\n");
+                prefix.append("#define numPointLights ").append(config.numPointLights).append("\n");
+                prefix.append("#define numSpotLights ").append(config.numSpotLights).append("\n");
+                if (attributes.has(ColorAttribute.Fog)) {
+                    prefix.append("#define fogFlag\n");
+                }
+                if (renderable.environment.shadowMap != null) prefix.append("#define shadowMapFlag\n");
+                if (attributes.has(CubemapAttribute.EnvironmentMap)) prefix.append("#define environmentCubemapFlag\n");
             }
-            if (renderable.environment.shadowMap != null) prefix.append("#define shadowMapFlag\n");
-            if (attributes.has(CubemapAttribute.EnvironmentMap)) prefix.append("#define environmentCubemapFlag\n");
         }
         final int n = renderable.meshPart.mesh.getVertexAttributes().size();
         for (int i = 0; i < n; i++) {

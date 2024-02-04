@@ -14,26 +14,24 @@ public final class BuilderChunk extends Chunk {
     private final Thread thread;
     private final FlatStorage<BiomeGenerator> biomeData = new FlatStorage<>(256);
     private List<Vec3i> biomeCenters;
+    private final ServerWorld.Region region;
 
-    public BuilderChunk(ServerWorld world, Thread thread, int size, int height, ChunkPos pos) {
-        this(world, thread, pos);
-    }
-
-    public BuilderChunk(ServerWorld world, Thread thread, ChunkPos pos) {
+    public BuilderChunk(ServerWorld world, Thread thread, ChunkPos pos, ServerWorld.Region region) {
         super(world, pos);
         this.world = world;
         this.thread = thread;
+        this.region = region;
     }
 
     @Override
     public Block getFast(int x, int y, int z) {
-        if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
+        if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         return super.getFast(x, y, z);
     }
 
     @Override
     public void set(Vec3i pos, Block block) {
-        if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
+        if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(pos.x, pos.y, pos.z)) {
             this.world.recordOutOfBounds(this.offset.x + pos.x, this.offset.y + pos.y, this.offset.z + pos.z, block);
             return;
@@ -43,7 +41,7 @@ public final class BuilderChunk extends Chunk {
 
     @Override
     public boolean set(int x, int y, int z, Block block) {
-        if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
+        if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(x, y, z)) {
             this.world.recordOutOfBounds(this.offset.x + x, this.offset.y + y, this.offset.z + z, block);
             return false;
@@ -53,7 +51,7 @@ public final class BuilderChunk extends Chunk {
 
     @Override
     public void setFast(Vec3i pos, Block block) {
-        if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
+        if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(pos.x, pos.y, pos.z)) {
             this.world.recordOutOfBounds(this.offset.x + pos.x, this.offset.y + pos.y, this.offset.z + pos.z, block);
             return;
@@ -63,7 +61,7 @@ public final class BuilderChunk extends Chunk {
 
     @Override
     public boolean setFast(int x, int y, int z, Block block) {
-        if (!this.isOnBuilderThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
+        if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(x, y, z)) {
             this.world.recordOutOfBounds(this.offset.x + x, this.offset.y + y, this.offset.z + z, block);
             return false;
@@ -76,13 +74,17 @@ public final class BuilderChunk extends Chunk {
         return this.world;
     }
 
+    public boolean isOnInvalidThread() {
+        return this.thread.threadId() != Thread.currentThread().threadId();
+    }
+
     public boolean isOnBuilderThread() {
-        return this.thread.getId() == Thread.currentThread().getId();
+        return this.thread.threadId() == Thread.currentThread().threadId();
     }
 
     public ServerChunk build() {
         Storage<Biome> map = this.biomeData.map(BiomeGenerator::getBiome, Biome.class);
-        return new ServerChunk(this.world, World.toLocalChunkPos(this.getPos()), this.storage, map);
+        return new ServerChunk(this.world, World.toLocalChunkPos(this.getPos()), this.storage, map, region);
     }
 
     public void setBiomeGenerator(int x, int z, BiomeGenerator generator) {

@@ -13,6 +13,7 @@ public class DebugFlags {
         return debugFlagPresent || jdwpPresent;
     }
 
+
     public static final boolean IS_RUNNING_IN_DEBUG = detectDebug();
 
     public static final DebugFlag CHUNK_PACKET_DUMP = new DebugFlag(false);
@@ -21,6 +22,7 @@ public class DebugFlags {
     public static final DebugFlag INSPECTION_ENABLED = new DebugFlag(true); //! Only enable for debugging
     public static final DebugFlag DUMP_TEXTURE_ATLAS = new DebugFlag(true);
     public static final DebugFlag WORLD_GEN = new DebugFlag(false);
+    public static final DebugFlag LOG_POSITION_RESET_ON_CHUNK_LOAD = new DebugFlag(false);
 
     static {
         if (IS_RUNNING_IN_DEBUG)

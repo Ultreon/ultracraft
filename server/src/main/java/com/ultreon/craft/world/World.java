@@ -678,7 +678,7 @@ public abstract class World implements ServerDisposable {
         BlockPos localPos = World.toLocalBlockPos(pos);
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return null;
-        return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
+        return chunk.getBiome(localPos.x(), localPos.z());
     }
 
     public DimensionInfo getDimension() {

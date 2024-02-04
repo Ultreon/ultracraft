@@ -103,7 +103,7 @@ public class TextureStitcher {
         spriteBatch.end();
 
         if (DebugFlags.DUMP_TEXTURE_ATLAS.enabled()) {
-            Pixmap frameBufferPixmap = ScreenUtils.getFrameBufferPixmap(0, 0, width, height);
+            Pixmap frameBufferPixmap = Pixmap.createFromFrameBuffer(0, 0, width, height);
             PixmapIO.writePNG(Gdx.files.local("%s.%s.atlas-png".formatted(this.atlasId.toString().replace(':', '.').replace('/', '_'), type.name().toLowerCase(Locale.ROOT))), frameBufferPixmap);
         }
 

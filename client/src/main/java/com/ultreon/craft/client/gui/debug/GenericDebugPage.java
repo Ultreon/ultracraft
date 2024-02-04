@@ -6,6 +6,7 @@ import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.world.ChunkMesh;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.WorldRenderer;
+import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.registry.Registries;
@@ -81,10 +82,11 @@ public class GenericDebugPage implements DebugPage {
 
             context.left("Chunk Mesh Disposes", WorldRenderer.getChunkMeshFrees());
             if (client.isSinglePlayer()) {
-                context.left("Chunk Loads", ServerWorld.getChunkLoads())
+                context.left("Chunk Loads", ValueTracker.getChunkLoads())
                         .left("Chunk Unloads", ServerWorld.getChunkUnloads())
                         .left("Chunk Saves", ServerWorld.getChunkSaves());
             }
+
             context.left("Pool Free", WorldRenderer.getPoolFree())
                     .left("Pool Max", WorldRenderer.getPoolMax())
                     .left("Pool Peak", WorldRenderer.getPoolPeak())

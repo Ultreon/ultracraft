@@ -76,8 +76,8 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
-    public void crash(Throwable t) {
-        UltracraftClient.crash(t);
+    public void crash(CrashLog crashLog) {
+        UltracraftClient.crash(crashLog);
     }
 
     @Override
