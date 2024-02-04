@@ -83,6 +83,7 @@ com.ultreon.craft.network.stage
 com.ultreon.craft.premain
 com.ultreon.craft.premain.posix
 com.ultreon.craft.premain.win32
+com.ultreon.craft.recipe
 com.ultreon.craft.registry
 com.ultreon.craft.registry.event
 com.ultreon.craft.registry.exception
@@ -100,6 +101,7 @@ com.ultreon.craft.weather
 com.ultreon.craft.world
 com.ultreon.craft.world.gen
 com.ultreon.craft.world.gen.biome
+com.ultreon.craft.world.gen.feature
 com.ultreon.craft.world.gen.layer
 com.ultreon.craft.world.gen.noise
 com.ultreon.gameprovider.craft
