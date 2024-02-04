@@ -2,6 +2,7 @@ package com.ultreon.craft.world.gen.feature;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.WorldGenFeature;
@@ -25,7 +26,7 @@ public class GrassFeature extends WorldGenFeature {
     }
 
     @Override
-    public boolean handle(@NotNull World world, @NotNull Chunk chunk, int x, int z, int height) {
+    public boolean handle(@NotNull World world, @NotNull ChunkAccess chunk, int x, int z, int height) {
         if (this.noiseConfig == null) return false;
 
         height = chunk.getHighest(x, z);
