@@ -77,9 +77,9 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/UltracraftClient.html#NAMESPACE">com.ultreon.craft.client.UltracraftClient.NAMESPACE</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)">com.ultreon.craft.client.world.ClientChunk<wbr>(ClientWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage,java.util.Map)">com.ultreon.craft.client.world.ClientChunk<wbr>(ClientWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;, Map&lt;BlockPos, BlockEntityType&lt;?&gt;&gt;)</a></div>
 <div class="col-last even-row-color">
-<div class="block">Use <a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)"><code>ClientChunk(ClientWorld, ChunkPos, Storage, Storage)</code></a> instead</div>
+<div class="block">Use <a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage,java.util.Map)"><code>ClientChunk(ClientWorld, ChunkPos, Storage, Storage, Map)</code></a> instead</div>
 </div>
 <div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/crash/CrashException.html" title="class in com.ultreon.craft.crash">com.ultreon.craft.crash.CrashException</a></div>
 <div class="col-last odd-row-color">
@@ -118,10 +118,6 @@ loadScripts(document, 'script');</script>
 <div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/gen/feature/PatchFeature.html#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseConfig,com.ultreon.craft.block.Block,float)">com.ultreon.craft.world.gen.feature.PatchFeature<wbr>(NoiseConfig, Block, float)</a></div>
 <div class="col-last even-row-color">
 <div class="block">Use <a href="com/ultreon/craft/world/gen/feature/PatchFeature.html#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseConfig,com.ultreon.craft.block.Block,float,int)"><code>PatchFeature(NoiseConfig, Block, float, int)</code></a> instead</div>
-</div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/ServerChunk.html#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)">com.ultreon.craft.world.ServerChunk<wbr>(ServerWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;)</a></div>
-<div class="col-last odd-row-color">
-<div class="block">Use <a href="com/ultreon/craft/world/ServerChunk.html#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)"><code>ServerChunk(ServerWorld, ChunkPos, Storage, Storage)</code></a> instead</div>
 </div>
 </div>
 </div>
@@ -168,20 +164,22 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color"></div>
 <div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/UltracraftClient.html#NAMESPACE">com.ultreon.craft.client.UltracraftClient.NAMESPACE</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/server/UltracraftServer.html#NAMESPACE">com.ultreon.craft.server.UltracraftServer.NAMESPACE</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/UltracraftClient.html#settings">com.ultreon.craft.client.UltracraftClient.settings</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/Chunk.html#height">com.ultreon.craft.world.Chunk.height</a></div>
-<div class="col-last even-row-color">
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/server/UltracraftServer.html#NAMESPACE">com.ultreon.craft.server.UltracraftServer.NAMESPACE</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/Chunk.html#height">com.ultreon.craft.world.Chunk.height</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Use <a href="com/ultreon/craft/world/World.html#CHUNK_HEIGHT"><code>World.CHUNK_HEIGHT</code></a> instead</div>
 </div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/Chunk.html#size">com.ultreon.craft.world.Chunk.size</a></div>
-<div class="col-last odd-row-color">
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/Chunk.html#size">com.ultreon.craft.world.Chunk.size</a></div>
+<div class="col-last even-row-color">
 <div class="block">Use <a href="com/ultreon/craft/world/World.html#CHUNK_SIZE"><code>World.CHUNK_SIZE</code></a> instead</div>
 </div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/gen/noise/NoiseConfigs.html#DEFAULT">com.ultreon.craft.world.gen.noise.NoiseConfigs.DEFAULT</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/gen/noise/NoiseConfigs.html#OCEAN">com.ultreon.craft.world.gen.noise.NoiseConfigs.OCEAN</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/gen/noise/NoiseConfigs.html#DEFAULT">com.ultreon.craft.world.gen.noise.NoiseConfigs.DEFAULT</a></div>
 <div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/gen/noise/NoiseConfigs.html#OCEAN">com.ultreon.craft.world.gen.noise.NoiseConfigs.OCEAN</a></div>
+<div class="col-last even-row-color"></div>
 </div>
 </div>
 </li>
@@ -193,123 +191,143 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/GuiBuilder.html#addWithBounds(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.GuiBuilder.addWithBounds<wbr>(T, Supplier&lt;Bounds&gt;)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/GuiBuilder.html#addWithPos(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.GuiBuilder.addWithPos<wbr>(T, Supplier&lt;Position&gt;)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#blit(com.ultreon.craft.util.ElementID,float,float)">com.ultreon.craft.client.gui.Renderer.blit<wbr>(ElementID, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#blit(com.ultreon.craft.util.ElementID,float,float,com.ultreon.craft.util.Color)">com.ultreon.craft.client.gui.Renderer.blit<wbr>(ElementID, float, float, Color)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#model(java.lang.Runnable)">com.ultreon.craft.client.gui.Renderer.model<wbr>(Runnable)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/block/Block.Properties.html#instaBreak()">com.ultreon.craft.block.Block.Properties.instaBreak()</a></div>
 <div class="col-last even-row-color">
+<div class="block">Blocks are now instantly broken by default</div>
+</div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/GuiBuilder.html#addWithBounds(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.GuiBuilder.addWithBounds<wbr>(T, Supplier&lt;Bounds&gt;)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/GuiBuilder.html#addWithPos(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.GuiBuilder.addWithPos<wbr>(T, Supplier&lt;Position&gt;)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#blit(com.ultreon.craft.util.ElementID,float,float)">com.ultreon.craft.client.gui.Renderer.blit<wbr>(ElementID, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#blit(com.ultreon.craft.util.ElementID,float,float,com.ultreon.craft.util.Color)">com.ultreon.craft.client.gui.Renderer.blit<wbr>(ElementID, float, float, Color)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/Renderer.html#model(java.lang.Runnable)">com.ultreon.craft.client.gui.Renderer.model<wbr>(Runnable)</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Use <a href="com/ultreon/craft/client/gui/Renderer.html#external(java.lang.Runnable)"><code>Renderer.external(Runnable)</code></a> instead</div>
 </div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#arrow(float,float,float,float,float,float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.arrow<wbr>(float, float, float, float, float, float, float, float, int)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(float, float, float)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/screens/tabs/TabbedUI.TabbedUIBuilder.html#addWithBounds(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.screens.tabs.TabbedUI.TabbedUIBuilder.addWithBounds<wbr>(T, Supplier&lt;Bounds&gt;)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(float, float, float, float, float, float)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/screens/tabs/TabbedUI.TabbedUIBuilder.html#addWithPos(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.screens.tabs.TabbedUI.TabbedUIBuilder.addWithPos<wbr>(T, Supplier&lt;Position&gt;)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/screens/tabs/TabBuilder.html#addWithBounds(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.screens.tabs.TabBuilder.addWithBounds<wbr>(T, Supplier&lt;Bounds&gt;)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.math.Matrix4)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(Matrix4)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/gui/screens/tabs/TabBuilder.html#addWithPos(T,java.util.function.Supplier)">com.ultreon.craft.client.gui.screens.tabs.TabBuilder.addWithPos<wbr>(T, Supplier&lt;Position&gt;)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#capsule(float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.capsule<wbr>(float, float, int)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, Vector3, Vector3)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, Vector3, Vector3, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cone(float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cone<wbr>(float, float, float, int)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cone(float,float,float,int,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cone<wbr>(float, float, float, int, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int,float,float,boolean)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int, float, float, boolean)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, Vector3, Vector3)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, Vector3, Vector3)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, Vector3, Vector3, float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangles(int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureRectangles<wbr>(int)</a></div>
-<div class="col-last odd-row-color">
-<div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangleIndices(int)"><code>AdvancedMeshBuilder.ensureRectangleIndices(int)</code></a> instead.</div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/gui/screens/tabs/TabBuilder.html#screen()">com.ultreon.craft.client.gui.screens.tabs.TabBuilder.screen()</a></div>
+<div class="col-last even-row-color">
+<div class="block">Use <a href="com/ultreon/craft/client/gui/screens/tabs/TabBuilder.html#content()"><code>TabBuilder.content()</code></a> instead</div>
 </div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangles(int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureRectangles<wbr>(int, int)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/input/PlayerInput.html#getVel()">com.ultreon.craft.client.input.PlayerInput.getVel()</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#arrow(float,float,float,float,float,float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.arrow<wbr>(float, float, float, float, float, float, float, float, int)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.math.Matrix4)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(Matrix4)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#box(com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.box<wbr>(Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#capsule(float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.capsule<wbr>(float, float, int)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, Vector3, Vector3)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#circle(float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.circle<wbr>(float, int, Vector3, Vector3, Vector3, Vector3, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cone(float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cone<wbr>(float, float, float, int)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cone(float,float,float,int,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cone<wbr>(float, float, float, int, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#cylinder(float,float,float,int,float,float,boolean)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.cylinder<wbr>(float, float, float, int, float, float, boolean)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, float, float, int, Vector3, Vector3)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,float,float,float,float,float,float,float,float,float,float,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, float, float, float, float, float, float, float, float, float, float, float, float, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, Vector3, Vector3)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ellipse(float,float,int,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ellipse<wbr>(float, float, int, Vector3, Vector3, Vector3, Vector3, float, float)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangles(int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureRectangles<wbr>(int)</a></div>
 <div class="col-last even-row-color">
 <div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangleIndices(int)"><code>AdvancedMeshBuilder.ensureRectangleIndices(int)</code></a> instead.</div>
 </div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangles(int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureTriangles<wbr>(int)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangles(int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureRectangles<wbr>(int, int)</a></div>
 <div class="col-last odd-row-color">
-<div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangleIndices(int)"><code>AdvancedMeshBuilder.ensureTriangleIndices(int)</code></a> instead.</div>
+<div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureRectangleIndices(int)"><code>AdvancedMeshBuilder.ensureRectangleIndices(int)</code></a> instead.</div>
 </div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangles(int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureTriangles<wbr>(int, int)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangles(int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureTriangles<wbr>(int)</a></div>
 <div class="col-last even-row-color">
 <div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangleIndices(int)"><code>AdvancedMeshBuilder.ensureTriangleIndices(int)</code></a> instead.</div>
 </div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, int, int)</a></div>
-<div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, int, int)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangles(int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.ensureTriangles<wbr>(int, int)</a></div>
+<div class="col-last odd-row-color">
+<div class="block">use <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureVertices(int)"><code>AdvancedMeshBuilder.ensureVertices(int)</code></a> followed by <a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#ensureTriangleIndices(int)"><code>AdvancedMeshBuilder.ensureTriangleIndices(int)</code></a> instead.</div>
+</div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, int, int)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(Vector3, Vector3, Vector3, Vector3, Vector3, int, int)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, MeshPartBuilder.VertexInfo, int, int)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(float, float, float, int, int)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#patch(com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,com.badlogic.gdx.math.Vector3,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.patch<wbr>(Vector3, Vector3, Vector3, Vector3, Vector3, int, int)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(float,float,float,int,int,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(float, float, float, int, int, float, float, float, float)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(float, float, float, int, int)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(com.badlogic.gdx.math.Matrix4,float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(Matrix4, float, float, float, int, int)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(float,float,float,int,int,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(float, float, float, int, int, float, float, float, float)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(com.badlogic.gdx.math.Matrix4,float,float,float,int,int,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(Matrix4, float, float, float, int, int, float, float, float, float)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(com.badlogic.gdx.math.Matrix4,float,float,float,int,int)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(Matrix4, float, float, float, int, int)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/util/AxisAlignedBB.html#calculateIntersect(com.ultreon.craft.client.util.AxisAlignedBB,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.util.AxisAlignedBB.calculateIntersect<wbr>(AxisAlignedBB, Vector3)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/render/meshing/AdvancedMeshBuilder.html#sphere(com.badlogic.gdx.math.Matrix4,float,float,float,int,int,float,float,float,float)">com.ultreon.craft.client.render.meshing.AdvancedMeshBuilder.sphere<wbr>(Matrix4, float, float, float, int, int, float, float, float, float)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/collection/OrderedMap.html#keySet()">com.ultreon.craft.collection.OrderedMap.keySet()</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/client/util/AxisAlignedBB.html#calculateIntersect(com.ultreon.craft.client.util.AxisAlignedBB,com.badlogic.gdx.math.Vector3)">com.ultreon.craft.client.util.AxisAlignedBB.calculateIntersect<wbr>(AxisAlignedBB, Vector3)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/collection/OrderedMap.html#values()">com.ultreon.craft.collection.OrderedMap.values()</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/collection/OrderedMap.html#keySet()">com.ultreon.craft.collection.OrderedMap.keySet()</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/entity/Player.html#isSpectating()">com.ultreon.craft.entity.Player.isSpectating()</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/collection/OrderedMap.html#values()">com.ultreon.craft.collection.OrderedMap.values()</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/entity/Player.html#setSpectating(boolean)">com.ultreon.craft.entity.Player.setSpectating<wbr>(boolean)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/entity/Player.html#isSpectating()">com.ultreon.craft.entity.Player.isSpectating()</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/registry/Registry.html#create(com.ultreon.craft.util.ElementID,T...)">com.ultreon.craft.registry.Registry.create<wbr>(ElementID, T...)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/entity/Player.html#setSpectating(boolean)">com.ultreon.craft.entity.Player.setSpectating<wbr>(boolean)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/registry/Registry.html#create(com.ultreon.craft.util.ElementID,T...)">com.ultreon.craft.registry.Registry.create<wbr>(ElementID, T...)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/resources/StaticResource.html#openStream()">com.ultreon.craft.resources.StaticResource.openStream()</a></div>
 <div class="col-last odd-row-color"></div>
 <div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/server/util/Utils.html#chunkPosFromBlockCoords(com.ultreon.libs.commons.v0.vector.Vec3i)">com.ultreon.craft.server.util.Utils.chunkPosFromBlockCoords<wbr>(Vec3i)</a></div>
 <div class="col-last even-row-color"></div>
@@ -323,14 +341,18 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color">
 <div class="block">Setting default namespace is deprecated and will be removed in the future.</div>
 </div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(float,float)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(float, float)</a></div>
-<div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(com.ultreon.craft.entity.Player)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(Player)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/Chunk.html#getBiome(int,int,int)">com.ultreon.craft.world.Chunk.getBiome<wbr>(int, int, int)</a></div>
+<div class="col-last even-row-color">
+<div class="block">deprecated until biomes are 3 dimensional</div>
+</div>
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(float,float)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(float, float)</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(com.ultreon.libs.commons.v0.vector.Vec3d)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(Vec3d)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(com.ultreon.craft.entity.Player)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(Player)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#unloadChunk(com.ultreon.craft.world.ChunkPos,boolean,boolean)">com.ultreon.craft.world.ServerWorld.unloadChunk<wbr>(ChunkPos, boolean, boolean)</a></div>
-<div class="col-last odd-row-color">
+<div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#refreshChunks(com.ultreon.libs.commons.v0.vector.Vec3d)">com.ultreon.craft.world.ServerWorld.refreshChunks<wbr>(Vec3d)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/ServerWorld.html#unloadChunk(com.ultreon.craft.world.ChunkPos,boolean,boolean)">com.ultreon.craft.world.ServerWorld.unloadChunk<wbr>(ChunkPos, boolean, boolean)</a></div>
+<div class="col-last even-row-color">
 <div class="block">use <a href="com/ultreon/craft/world/ServerWorld.html#unloadChunk(com.ultreon.craft.world.ChunkPos,boolean)"><code>ServerWorld.unloadChunk(ChunkPos, boolean)</code></a> instead.</div>
 </div>
 </div>
@@ -344,9 +366,9 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)">com.ultreon.craft.client.world.ClientChunk<wbr>(ClientWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;)</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage,java.util.Map)">com.ultreon.craft.client.world.ClientChunk<wbr>(ClientWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;, Map&lt;BlockPos, BlockEntityType&lt;?&gt;&gt;)</a></div>
 <div class="col-last even-row-color">
-<div class="block">Use <a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)"><code>ClientChunk(ClientWorld, ChunkPos, Storage, Storage)</code></a> instead</div>
+<div class="block">Use <a href="com/ultreon/craft/client/world/ClientChunk.html#%3Cinit%3E(com.ultreon.craft.client.world.ClientWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage,java.util.Map)"><code>ClientChunk(ClientWorld, ChunkPos, Storage, Storage, Map)</code></a> instead</div>
 </div>
 <div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/network/api/Network.html#%3Cinit%3E(java.lang.String,java.lang.String,int)">com.ultreon.craft.network.api.Network<wbr>(String, String, int)</a></div>
 <div class="col-last odd-row-color"></div>
@@ -365,10 +387,6 @@ loadScripts(document, 'script');</script>
 <div class="col-summary-item-name odd-row-color"><a href="com/ultreon/craft/world/gen/feature/PatchFeature.html#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseConfig,com.ultreon.craft.block.Block,float)">com.ultreon.craft.world.gen.feature.PatchFeature<wbr>(NoiseConfig, Block, float)</a></div>
 <div class="col-last odd-row-color">
 <div class="block">Use <a href="com/ultreon/craft/world/gen/feature/PatchFeature.html#%3Cinit%3E(com.ultreon.craft.world.gen.noise.NoiseConfig,com.ultreon.craft.block.Block,float,int)"><code>PatchFeature(NoiseConfig, Block, float, int)</code></a> instead</div>
-</div>
-<div class="col-summary-item-name even-row-color"><a href="com/ultreon/craft/world/ServerChunk.html#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,int,int,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)">com.ultreon.craft.world.ServerChunk<wbr>(ServerWorld, int, int, ChunkPos, Storage&lt;Block&gt;, Storage&lt;Biome&gt;)</a></div>
-<div class="col-last even-row-color">
-<div class="block">Use <a href="com/ultreon/craft/world/ServerChunk.html#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.collection.Storage,com.ultreon.craft.collection.Storage)"><code>ServerChunk(ServerWorld, ChunkPos, Storage, Storage)</code></a> instead</div>
 </div>
 </div>
 </div>

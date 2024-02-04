@@ -84,18 +84,18 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.client.model.entity.renderer</a></div>
-<h1 title="Class EntityRenderer" class="title">Class EntityRenderer&lt;M extends <a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;?&gt;,<wbr>E extends <a href="../../../../entity/Entity.html" title="class in com.ultreon.craft.entity">Entity</a>&gt;</h1>
+<h1 title="Class EntityRenderer" class="title">Class EntityRenderer&lt;E extends <a href="../../../../entity/Entity.html" title="class in com.ultreon.craft.entity">Entity</a>&gt;</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance">com.ultreon.craft.client.model.entity.renderer.EntityRenderer&lt;M,<wbr>E&gt;</div>
+<div class="inheritance">com.ultreon.craft.client.model.entity.renderer.EntityRenderer&lt;E&gt;</div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="LivingEntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">LivingEntityRenderer</a></code></dd>
+<dd><code><a href="DroppedItemRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">DroppedItemRenderer</a></code>, <code><a href="LivingEntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">LivingEntityRenderer</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">EntityRenderer&lt;M extends <a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;?&gt;,<wbr>E extends <a href="../../../../entity/Entity.html" title="class in com.ultreon.craft.entity">Entity</a>&gt;</span>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">EntityRenderer&lt;E extends <a href="../../../../entity/Entity.html" title="class in com.ultreon.craft.entity">Entity</a>&gt;</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
 </section>
 <section class="summary">
@@ -146,7 +146,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>protected </code></div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(M)" class="member-name-link">EntityRenderer</a><wbr>(<a href="EntityRenderer.html" title="type parameter in EntityRenderer">M</a>&nbsp;model)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">EntityRenderer</a>()</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -166,20 +166,17 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#animate(com.badlogic.gdx.graphics.g3d.ModelInstance,E)" class="member-name-link">animate</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;instance,
  <a href="EntityRenderer.html" title="type parameter in EntityRenderer">E</a>&nbsp;entity)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createInstance(com.badlogic.gdx.graphics.g3d.Model)" class="member-name-link">createInstance</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Model.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Model</a>&nbsp;model)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="EntityRenderer.html" title="type parameter in EntityRenderer">M</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getModel()" class="member-name-link">getModel</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="../../../render/EntityTextures.html" title="class in com.ultreon.craft.client.render">EntityTextures</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getTextures()" class="member-name-link">getTextures</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract @Nullable <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#createInstance(E)" class="member-name-link">createInstance</a><wbr>(<a href="EntityRenderer.html" title="type parameter in EntityRenderer">E</a>&nbsp;entity)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render(com.badlogic.gdx.graphics.g3d.ModelInstance,com.badlogic.gdx.utils.Array,com.badlogic.gdx.utils.Pool)" class="member-name-link">render</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;instance,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="../../../render/EntityTextures.html" title="class in com.ultreon.craft.client.render">EntityTextures</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getTextures()" class="member-name-link">getTextures</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render(com.badlogic.gdx.graphics.g3d.ModelInstance,com.badlogic.gdx.utils.Array,com.badlogic.gdx.utils.Pool)" class="member-name-link">render</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;instance,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Array.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Array</a>&lt;<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Renderable.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Renderable</a>&gt;&nbsp;output,
  <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/utils/Pool.html" title="class or interface in com.badlogic.gdx.utils" class="external-link">Pool</a>&lt;<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Renderable.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Renderable</a>&gt;&nbsp;renderablePool)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -254,9 +251,9 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(M)">
-<h3 id="&lt;init&gt;(com.ultreon.craft.client.model.entity.EntityModel)">EntityRenderer</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">EntityRenderer</span><wbr><span class="parameters">(<a href="EntityRenderer.html" title="type parameter in EntityRenderer">M</a>&nbsp;model)</span></div>
+<section class="detail" id="&lt;init&gt;()">
+<h3>EntityRenderer</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">EntityRenderer</span>()</div>
 </section>
 </li>
 </ul>
@@ -267,12 +264,6 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="getModel()">
-<h3>getModel</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="EntityRenderer.html" title="type parameter in EntityRenderer">M</a></span>&nbsp;<span class="element-name">getModel</span>()</div>
-</section>
-</li>
 <li>
 <section class="detail" id="render(com.badlogic.gdx.graphics.g3d.ModelInstance,com.badlogic.gdx.utils.Array,com.badlogic.gdx.utils.Pool)">
 <h3>render</h3>
@@ -289,9 +280,10 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="createInstance(com.badlogic.gdx.graphics.g3d.Model)">
-<h3>createInstance</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></span>&nbsp;<span class="element-name">createInstance</span><wbr><span class="parameters">(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Model.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Model</a>&nbsp;model)</span></div>
+<section class="detail" id="createInstance(E)">
+<h3 id="createInstance(com.ultreon.craft.entity.Entity)">createInstance</h3>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">@Nullable <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></span>&nbsp;<span class="element-name">createInstance</span><wbr><span class="parameters">(<a href="EntityRenderer.html" title="type parameter in EntityRenderer">E</a>&nbsp;entity)</span></div>
 </section>
 </li>
 <li>

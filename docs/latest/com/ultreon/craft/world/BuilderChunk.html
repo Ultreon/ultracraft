@@ -128,16 +128,11 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,java.lang.Thread,int,int,com.ultreon.craft.world.ChunkPos)" class="member-name-link">BuilderChunk</a><wbr>(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,java.lang.Thread,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.ServerWorld.Region)" class="member-name-link">BuilderChunk</a><wbr>(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html" title="class or interface in java.lang" class="external-link">Thread</a>&nbsp;thread,
- int&nbsp;size,
- int&nbsp;height,
- <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos)</code></div>
+ <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos,
+ <a href="ServerWorld.Region.html" title="class in com.ultreon.craft.world">ServerWorld.Region</a>&nbsp;region)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.world.ServerWorld,java.lang.Thread,com.ultreon.craft.world.ChunkPos)" class="member-name-link">BuilderChunk</a><wbr>(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html" title="class or interface in java.lang" class="external-link">Thread</a>&nbsp;thread,
- <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -166,7 +161,9 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFast(int,int,int)" class="member-name-link">getFast</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the block at the given coordinates.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="LightMap.html" title="class in com.ultreon.craft.world">LightMap</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLightMap()" class="member-name-link">getLightMap</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -177,39 +174,50 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOnBuilderThread()" class="member-name-link">isOnBuilderThread</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOnInvalidThread()" class="member-name-link">isOnInvalidThread</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the block at the given coordinates.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">set</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the block at the given coordinates.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBiomeCenters(java.util.List)" class="member-name-link">setBiomeCenters</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&gt;&nbsp;biomeCenters)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBiomeCenters(java.util.List)" class="member-name-link">setBiomeCenters</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&gt;&nbsp;biomeCenters)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBiomeGenerator(int,int,com.ultreon.craft.world.gen.biome.BiomeGenerator)" class="member-name-link">setBiomeGenerator</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBiomeGenerator(int,int,com.ultreon.craft.world.gen.biome.BiomeGenerator)" class="member-name-link">setBiomeGenerator</a><wbr>(int&nbsp;x,
  int&nbsp;z,
  <a href="gen/biome/BiomeGenerator.html" title="class in com.ultreon.craft.world.gen.biome">BiomeGenerator</a>&nbsp;generator)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(int&nbsp;x,
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(int,int,int,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the block at the given coordinates.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)" class="member-name-link">setFast</a><wbr>(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the block at the given coordinates.</div>
+</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.world.Chunk">Methods inherited from class&nbsp;com.ultreon.craft.world.<a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></h3>
-<code><a href="Chunk.html#ascend(int,int,int)">ascend</a>, <a href="Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="Chunk.html#decodeBlock(com.ultreon.craft.network.PacketBuffer)">decodeBlock</a>, <a href="Chunk.html#dispose()">dispose</a>, <a href="Chunk.html#equals(java.lang.Object)">equals</a>, <a href="Chunk.html#get(int,int,int)">get</a>, <a href="Chunk.html#get(com.ultreon.craft.world.BlockPos)">get</a>, <a href="Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="Chunk.html#getBlockLight(int,int,int)">getBlockLight</a>, <a href="Chunk.html#getBlockLight(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockLight</a>, <a href="Chunk.html#getBreaking()">getBreaking</a>, <a href="Chunk.html#getBrightness(int)">getBrightness</a>, <a href="Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="Chunk.html#getHighest(int,int)">getHighest</a>, <a href="Chunk.html#getOffset()">getOffset</a>, <a href="Chunk.html#getPos()">getPos</a>, <a href="Chunk.html#getSunlight(int,int,int)">getSunlight</a>, <a href="Chunk.html#getSunlight(com.ultreon.libs.commons.v0.vector.Vec3i)">getSunlight</a>, <a href="Chunk.html#hashCode()">hashCode</a>, <a href="Chunk.html#isActive()">isActive</a>, <a href="Chunk.html#isDisposed()">isDisposed</a>, <a href="Chunk.html#isOutOfBounds(int,int,int)">isOutOfBounds</a>, <a href="Chunk.html#isReady()">isReady</a>, <a href="Chunk.html#loadBlock(com.ultreon.data.types.MapType)">loadBlock</a>, <a href="Chunk.html#onUpdated()">onUpdated</a>, <a href="Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="Chunk.html#toString()">toString</a></code></div>
+<code><a href="Chunk.html#ascend(int,int,int)">ascend</a>, <a href="Chunk.html#ascend(int,int,int,int)">ascend</a>, <a href="Chunk.html#continueBreaking(int,int,int,float)">continueBreaking</a>, <a href="Chunk.html#decodeBlock(com.ultreon.craft.network.PacketBuffer)">decodeBlock</a>, <a href="Chunk.html#dispose()">dispose</a>, <a href="Chunk.html#equals(java.lang.Object)">equals</a>, <a href="Chunk.html#get(int,int,int)">get</a>, <a href="Chunk.html#get(com.ultreon.craft.world.BlockPos)">get</a>, <a href="Chunk.html#get(com.ultreon.libs.commons.v0.vector.Vec3i)">get</a>, <a href="Chunk.html#getBiome(int,int)">getBiome</a>, <a href="Chunk.html#getBiome(int,int,int)">getBiome</a>, <a href="Chunk.html#getBlockEntities()">getBlockEntities</a>, <a href="Chunk.html#getBlockEntity(int,int,int)">getBlockEntity</a>, <a href="Chunk.html#getBlockEntity(com.ultreon.craft.world.BlockPos)">getBlockEntity</a>, <a href="Chunk.html#getBlockEntity(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockEntity</a>, <a href="Chunk.html#getBlockLight(int,int,int)">getBlockLight</a>, <a href="Chunk.html#getBlockLight(com.ultreon.libs.commons.v0.vector.Vec3i)">getBlockLight</a>, <a href="Chunk.html#getBreaking()">getBreaking</a>, <a href="Chunk.html#getBrightness(int)">getBrightness</a>, <a href="Chunk.html#getFast(com.ultreon.libs.commons.v0.vector.Vec3i)">getFast</a>, <a href="Chunk.html#getHighest(int,int)">getHighest</a>, <a href="Chunk.html#getOffset()">getOffset</a>, <a href="Chunk.html#getPos()">getPos</a>, <a href="Chunk.html#getSunlight(int,int,int)">getSunlight</a>, <a href="Chunk.html#getSunlight(com.ultreon.libs.commons.v0.vector.Vec3i)">getSunlight</a>, <a href="Chunk.html#hashCode()">hashCode</a>, <a href="Chunk.html#isActive()">isActive</a>, <a href="Chunk.html#isDisposed()">isDisposed</a>, <a href="Chunk.html#isOutOfBounds(int,int,int)">isOutOfBounds</a>, <a href="Chunk.html#isReady()">isReady</a>, <a href="Chunk.html#loadBlock(com.ultreon.data.types.MapType)">loadBlock</a>, <a href="Chunk.html#onUpdated()">onUpdated</a>, <a href="Chunk.html#removeBlockEntity(com.ultreon.craft.world.BlockPos)">removeBlockEntity</a>, <a href="Chunk.html#setBlockEntity(com.ultreon.craft.world.BlockPos,com.ultreon.craft.block.entity.BlockEntity)">setBlockEntity</a>, <a href="Chunk.html#setTreeData(com.ultreon.craft.world.gen.TreeData)">setTreeData</a>, <a href="Chunk.html#startBreaking(int,int,int)">startBreaking</a>, <a href="Chunk.html#stopBreaking(int,int,int)">stopBreaking</a>, <a href="Chunk.html#toFlatIndex(int,int)">toFlatIndex</a>, <a href="Chunk.html#toString()">toString</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -225,21 +233,12 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.ServerWorld,java.lang.Thread,int,int,com.ultreon.craft.world.ChunkPos)">
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.ServerWorld,java.lang.Thread,com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.ServerWorld.Region)">
 <h3>BuilderChunk</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BuilderChunk</span><wbr><span class="parameters">(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html" title="class or interface in java.lang" class="external-link">Thread</a>&nbsp;thread,
- int&nbsp;size,
- int&nbsp;height,
- <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos)</span></div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(com.ultreon.craft.world.ServerWorld,java.lang.Thread,com.ultreon.craft.world.ChunkPos)">
-<h3>BuilderChunk</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BuilderChunk</span><wbr><span class="parameters">(<a href="ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html" title="class or interface in java.lang" class="external-link">Thread</a>&nbsp;thread,
- <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos)</span></div>
+ <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos,
+ <a href="ServerWorld.Region.html" title="class in com.ultreon.craft.world">ServerWorld.Region</a>&nbsp;region)</span></div>
 </section>
 </li>
 </ul>
@@ -256,11 +255,21 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a></span>&nbsp;<span class="element-name">getFast</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;z)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#getFast(int,int,int)">Chunk</a></code></span></div>
+<div class="block">Gets the block at the given coordinates.
+ Note that this method is not thread safe.
+ <p>This method isn't checking for out of bounds, so be careful when using it.</p></div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="ChunkAccess.html#getFast(int,int,int)">getFast</a></code>&nbsp;in interface&nbsp;<code><a href="ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a></code></dd>
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#getFast(int,int,int)">getFast</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x coordinate of the block</dd>
+<dd><code>y</code> - the y coordinate of the block</dd>
+<dd><code>z</code> - the z coordinate of the block</dd>
+<dt>Returns:</dt>
+<dd>the block at the given coordinates</dd>
 </dl>
 </section>
 </li>
@@ -269,9 +278,14 @@ loadScripts(document, 'script');</script>
 <h3>set</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">Chunk</a></code></span></div>
+<div class="block">Sets the block at the given coordinates. Note that this method is not thread safe.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#set(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">set</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>pos</code> - the position of the block</dd>
+<dd><code>block</code> - the block to set</dd>
 </dl>
 </section>
 </li>
@@ -282,11 +296,20 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;z,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">Chunk</a></code></span></div>
+<div class="block">Sets the block at the given coordinates. Note that this method is not thread safe.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="ChunkAccess.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a></code>&nbsp;in interface&nbsp;<code><a href="ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a></code></dd>
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x coordinate of the block</dd>
+<dd><code>y</code> - the y coordinate of the block</dd>
+<dd><code>z</code> - the z coordinate of the block</dd>
+<dd><code>block</code> - the block to set</dd>
+<dt>Returns:</dt>
+<dd>true if the block was successfully set, false if setting the block failed</dd>
 </dl>
 </section>
 </li>
@@ -295,9 +318,16 @@ loadScripts(document, 'script');</script>
 <h3>setFast</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFast</span><wbr><span class="parameters">(<a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/vector/Vec3i.html" title="class or interface in com.ultreon.libs.commons.v0.vector" class="external-link">Vec3i</a>&nbsp;pos,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">Chunk</a></code></span></div>
+<div class="block">Sets the block at the given coordinates.
+ Note that this method is not thread safe.
+ <p>This method also isn't checking for out of bounds, so be careful when using it.</p></div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#setFast(com.ultreon.libs.commons.v0.vector.Vec3i,com.ultreon.craft.block.Block)">setFast</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>pos</code> - the position of the block</dd>
+<dd><code>block</code> - the block to set</dd>
 </dl>
 </section>
 </li>
@@ -308,11 +338,22 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;z,
  <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="Chunk.html#setFast(int,int,int,com.ultreon.craft.block.Block)">Chunk</a></code></span></div>
+<div class="block">Sets the block at the given coordinates.
+ Note that this method is not thread safe.
+ <p>This method also isn't checking for out of bounds, so be careful when using it.</p></div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="ChunkAccess.html#setFast(int,int,int,com.ultreon.craft.block.Block)">setFast</a></code>&nbsp;in interface&nbsp;<code><a href="ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a></code></dd>
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#setFast(int,int,int,com.ultreon.craft.block.Block)">setFast</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x coordinate of the block</dd>
+<dd><code>y</code> - the y coordinate of the block</dd>
+<dd><code>z</code> - the z coordinate of the block</dd>
+<dd><code>block</code> - the block to set</dd>
+<dt>Returns:</dt>
+<dd>true if the block was successfully set, false if setting the block failed</dd>
 </dl>
 </section>
 </li>
@@ -324,6 +365,12 @@ loadScripts(document, 'script');</script>
 <dt>Overrides:</dt>
 <dd><code><a href="Chunk.html#getWorld()">getWorld</a></code>&nbsp;in class&nbsp;<code><a href="Chunk.html" title="class in com.ultreon.craft.world">Chunk</a></code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isOnInvalidThread()">
+<h3>isOnInvalidThread</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isOnInvalidThread</span>()</div>
 </section>
 </li>
 <li>

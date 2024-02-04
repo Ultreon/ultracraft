@@ -98,7 +98,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="IconButton.html" title="class in com.ultreon.craft.client.gui.widget">IconButton</a></code>, <code><a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></code></dd>
+<dd><code><a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a></code>, <code><a href="IconButton.html" title="class in com.ultreon.craft.client.gui.widget">IconButton</a></code>, <code><a href="Tab.html" title="class in com.ultreon.craft.client.gui.widget">Tab</a></code>, <code><a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">Button&lt;T extends Button&lt;T&gt;&gt;</span>
@@ -160,13 +160,13 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a><wbr>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#bounds(java.util.function.Supplier)" class="member-name-link">bounds</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/CallbackComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">CallbackComponent</a><wbr>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#callback()" class="member-name-link">callback</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Button.html" title="type parameter in Button">T</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#callback(com.ultreon.craft.client.gui.Callback)" class="member-name-link">callback</a><wbr>(<a href="../Callback.html" title="interface in com.ultreon.craft.client.gui">Callback</a>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;&nbsp;callback)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
@@ -191,7 +191,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;button)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a><wbr>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#position(java.util.function.Supplier)" class="member-name-link">position</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
@@ -318,7 +318,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="position(java.util.function.Supplier)">
 <h3>position</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></span>&nbsp;<span class="element-name">position</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</span></div>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;</span>&nbsp;<span class="element-name">position</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="Widget.html#position(java.util.function.Supplier)">position</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
@@ -328,7 +328,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="bounds(java.util.function.Supplier)">
 <h3>bounds</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></span>&nbsp;<span class="element-name">bounds</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</span></div>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;</span>&nbsp;<span class="element-name">bounds</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="Widget.html#bounds(java.util.function.Supplier)">bounds</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
@@ -338,7 +338,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="callback(com.ultreon.craft.client.gui.Callback)">
 <h3>callback</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></span>&nbsp;<span class="element-name">callback</span><wbr><span class="parameters">(<a href="../Callback.html" title="interface in com.ultreon.craft.client.gui">Callback</a>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;&nbsp;callback)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Button.html" title="type parameter in Button">T</a></span>&nbsp;<span class="element-name">callback</span><wbr><span class="parameters">(<a href="../Callback.html" title="interface in com.ultreon.craft.client.gui">Callback</a>&lt;<a href="Button.html" title="type parameter in Button">T</a>&gt;&nbsp;callback)</span></div>
 </section>
 </li>
 <li>

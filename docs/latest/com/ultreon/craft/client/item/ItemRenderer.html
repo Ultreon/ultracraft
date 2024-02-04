@@ -135,19 +135,36 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/OrthographicCamera.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">OrthographicCamera</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getItemCam()" class="member-name-link">getItemCam</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createModelInstance(com.ultreon.craft.item.ItemStack)" class="member-name-link">createModelInstance</a><wbr>(<a href="../../item/ItemStack.html" title="class in com.ultreon.craft.item">ItemStack</a>&nbsp;stack)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/OrthographicCamera.html" title="class or interface in com.badlogic.gdx.graphics" class="external-link">OrthographicCamera</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getItemCam()" class="member-name-link">getItemCam</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadModels(com.ultreon.craft.client.UltracraftClient)" class="member-name-link">loadModels</a><wbr>(<a href="../UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a>&nbsp;client)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render(com.ultreon.craft.item.Item,com.ultreon.craft.client.gui.Renderer,int,int)" class="member-name-link">render</a><wbr>(<a href="../../item/Item.html" title="class in com.ultreon.craft.item">Item</a>&nbsp;item,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerBlockModel(com.ultreon.craft.item.BlockItem,java.util.function.Supplier)" class="member-name-link">registerBlockModel</a><wbr>(<a href="../../item/BlockItem.html" title="class in com.ultreon.craft.item">BlockItem</a>&nbsp;blockItem,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../model/block/BlockModel.html" title="interface in com.ultreon.craft.client.model.block">BlockModel</a>&gt;&nbsp;model)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerModel(com.ultreon.craft.item.Item,com.ultreon.craft.client.model.item.ItemModel)" class="member-name-link">registerModel</a><wbr>(<a href="../../item/Item.html" title="class in com.ultreon.craft.item">Item</a>&nbsp;item,
+ <a href="../model/item/ItemModel.html" title="interface in com.ultreon.craft.client.model.item">ItemModel</a>&nbsp;model)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerModels(com.ultreon.craft.client.model.JsonModelLoader)" class="member-name-link">registerModels</a><wbr>(<a href="../model/JsonModelLoader.html" title="class in com.ultreon.craft.client.model">JsonModelLoader</a>&nbsp;loader)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render(com.ultreon.craft.item.Item,com.ultreon.craft.client.gui.Renderer,int,int)" class="member-name-link">render</a><wbr>(<a href="../../item/Item.html" title="class in com.ultreon.craft.item">Item</a>&nbsp;item,
  <a href="../gui/Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;x,
  int&nbsp;y)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resize(int,int)" class="member-name-link">resize</a><wbr>(int&nbsp;width,
- int&nbsp;height)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resize(int,int)" class="member-name-link">resize</a><wbr>(int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -213,6 +230,38 @@ loadScripts(document, 'script');</script>
 <h3>resize</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">resize</span><wbr><span class="parameters">(int&nbsp;width,
  int&nbsp;height)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="createModelInstance(com.ultreon.craft.item.ItemStack)">
+<h3>createModelInstance</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></span>&nbsp;<span class="element-name">createModelInstance</span><wbr><span class="parameters">(<a href="../../item/ItemStack.html" title="class in com.ultreon.craft.item">ItemStack</a>&nbsp;stack)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="registerModel(com.ultreon.craft.item.Item,com.ultreon.craft.client.model.item.ItemModel)">
+<h3>registerModel</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerModel</span><wbr><span class="parameters">(<a href="../../item/Item.html" title="class in com.ultreon.craft.item">Item</a>&nbsp;item,
+ <a href="../model/item/ItemModel.html" title="interface in com.ultreon.craft.client.model.item">ItemModel</a>&nbsp;model)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="registerBlockModel(com.ultreon.craft.item.BlockItem,java.util.function.Supplier)">
+<h3>registerBlockModel</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerBlockModel</span><wbr><span class="parameters">(<a href="../../item/BlockItem.html" title="class in com.ultreon.craft.item">BlockItem</a>&nbsp;blockItem,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../model/block/BlockModel.html" title="interface in com.ultreon.craft.client.model.block">BlockModel</a>&gt;&nbsp;model)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="loadModels(com.ultreon.craft.client.UltracraftClient)">
+<h3>loadModels</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">loadModels</span><wbr><span class="parameters">(<a href="../UltracraftClient.html" title="class in com.ultreon.craft.client">UltracraftClient</a>&nbsp;client)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="registerModels(com.ultreon.craft.client.model.JsonModelLoader)">
+<h3>registerModels</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerModels</span><wbr><span class="parameters">(<a href="../model/JsonModelLoader.html" title="class in com.ultreon.craft.client.model">JsonModelLoader</a>&nbsp;loader)</span></div>
 </section>
 </li>
 </ul>

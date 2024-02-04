@@ -147,7 +147,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;byte[]&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAllDataByPath(java.lang.String)" class="member-name-link">getAllDataByPath</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Resource.html" title="class in com.ultreon.craft.resources">Resource</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="Resource.html" title="interface in com.ultreon.craft.resources">Resource</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getResource(com.ultreon.craft.util.ElementID)" class="member-name-link">getResource</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;entry)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
@@ -228,14 +228,19 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="openResourceStream(com.ultreon.craft.util.ElementID)">
 <h3>openResourceStream</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/InputStream.html" title="class or interface in java.io" class="external-link">InputStream</a></span>&nbsp;<span class="element-name">openResourceStream</span><wbr><span class="parameters">(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;entry)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/InputStream.html" title="class or interface in java.io" class="external-link">InputStream</a></span>&nbsp;<span class="element-name">openResourceStream</span><wbr><span class="parameters">(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;entry)</span>
+                               throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></span></div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></code></dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="getResource(com.ultreon.craft.util.ElementID)">
 <h3>getResource</h3>
 <div class="member-signature"><span class="annotations">@Nullable
-</span><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Resource.html" title="class in com.ultreon.craft.resources">Resource</a></span>&nbsp;<span class="element-name">getResource</span><wbr><span class="parameters">(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;entry)</span></div>
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="Resource.html" title="interface in com.ultreon.craft.resources">Resource</a></span>&nbsp;<span class="element-name">getResource</span><wbr><span class="parameters">(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;entry)</span></div>
 </section>
 </li>
 <li>

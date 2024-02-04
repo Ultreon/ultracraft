@@ -144,13 +144,13 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>protected </code></div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.client.gui.screens.Screen,com.ultreon.craft.text.TextObject,int)" class="member-name-link">ContainerScreen</a><wbr>(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;container,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.client.gui.screens.Screen,com.ultreon.craft.text.TextObject,int)" class="member-name-link">ContainerScreen</a><wbr>(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;menu,
  @Nullable <a href="../Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&nbsp;back,
  <a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title,
  int&nbsp;maxSlots)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>protected </code></div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.text.TextObject,int)" class="member-name-link">ContainerScreen</a><wbr>(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;container,
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.text.TextObject,int)" class="member-name-link">ContainerScreen</a><wbr>(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;menu,
  <a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title,
  int&nbsp;maxSlots)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
@@ -207,54 +207,58 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Non-cancelable version of <a href="../Screen.html#onClose(com.ultreon.craft.client.gui.screens.Screen)"><code>Screen.onClose(Screen)</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackground</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onItemChanged(int,com.ultreon.craft.item.ItemStack)" class="member-name-link">onItemChanged</a><wbr>(int&nbsp;slot,
+ <a href="../../../../item/ItemStack.html" title="class in com.ultreon.craft.item">ItemStack</a>&nbsp;newStack)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackground</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the background of this screen.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackgroundImage(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackgroundImage</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderForeground(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderForeground</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackgroundImage(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackgroundImage</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderForeground(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderForeground</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSlot(com.ultreon.craft.client.gui.Renderer,int,int,com.ultreon.craft.menu.ItemSlot)" class="member-name-link">renderSlot</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSlot(com.ultreon.craft.client.gui.Renderer,int,int,com.ultreon.craft.menu.ItemSlot)" class="member-name-link">renderSlot</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  <a href="../../../../menu/ItemSlot.html" title="class in com.ultreon.craft.menu">ItemSlot</a>&nbsp;slot)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSlots(com.ultreon.craft.client.gui.Renderer,int,int)" class="member-name-link">renderSlots</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
- int&nbsp;mouseX,
- int&nbsp;mouseY)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderTooltip(com.ultreon.craft.client.gui.Renderer,int,int,com.ultreon.craft.text.TextObject,java.util.List,java.lang.String)" class="member-name-link">renderTooltip</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSlots(com.ultreon.craft.client.gui.Renderer,int,int)" class="member-name-link">renderSlots</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+ int&nbsp;mouseX,
+ int&nbsp;mouseY)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderTooltip(com.ultreon.craft.client.gui.Renderer,int,int,com.ultreon.craft.text.TextObject,java.util.List,java.lang.String)" class="member-name-link">renderTooltip</a><wbr>(<a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;x,
  int&nbsp;y,
  <a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&gt;&nbsp;description,
  @Nullable <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;subTitle)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(@NotNull <a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(@NotNull <a href="../../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  int&nbsp;mouseX,
  int&nbsp;mouseY,
  float&nbsp;deltaTime)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#top()" class="member-name-link">top</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#top()" class="member-name-link">top</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.screens.Screen">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.screens.<a href="../Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a></h3>
-<code><a href="../Screen.html#add(C)">add</a>, <a href="../Screen.html#back()">back</a>, <a href="../Screen.html#canClose()">canClose</a>, <a href="../Screen.html#canCloseWithEsc()">canCloseWithEsc</a>, <a href="../Screen.html#charType(char)">charType</a>, <a href="../Screen.html#close()">close</a>, <a href="../Screen.html#filesDropped(java.util.List)">filesDropped</a>, <a href="../Screen.html#getName()">getName</a>, <a href="../Screen.html#getRawTitle()">getRawTitle</a>, <a href="../Screen.html#getTitle()">getTitle</a>, <a href="../Screen.html#init(int,int)">init</a>, <a href="../Screen.html#isHoveringClickable()">isHoveringClickable</a>, <a href="../Screen.html#keyPress(int)">keyPress</a>, <a href="../Screen.html#keyRelease(int)">keyRelease</a>, <a href="../Screen.html#onClose(com.ultreon.craft.client.gui.screens.Screen)">onClose</a>, <a href="../Screen.html#path()">path</a>, <a href="../Screen.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="../Screen.html#renderSolidBackground(com.ultreon.craft.client.gui.Renderer)">renderSolidBackground</a>, <a href="../Screen.html#renderTransparentBackground(com.ultreon.craft.client.gui.Renderer)">renderTransparentBackground</a>, <a href="../Screen.html#resize(int,int)">resize</a>, <a href="../Screen.html#revalidate()">revalidate</a>, <a href="../Screen.html#title(com.ultreon.craft.text.TextObject)">title</a>, <a href="../Screen.html#title(java.lang.String)">title</a>, <a href="../Screen.html#titleTranslation(java.lang.String)">titleTranslation</a></code></div>
+<code><a href="../Screen.html#add(C)">add</a>, <a href="../Screen.html#back()">back</a>, <a href="../Screen.html#canClose()">canClose</a>, <a href="../Screen.html#canCloseWithEsc()">canCloseWithEsc</a>, <a href="../Screen.html#charType(char)">charType</a>, <a href="../Screen.html#close()">close</a>, <a href="../Screen.html#defineRoot(C)">defineRoot</a>, <a href="../Screen.html#filesDropped(java.util.List)">filesDropped</a>, <a href="../Screen.html#getName()">getName</a>, <a href="../Screen.html#getRawTitle()">getRawTitle</a>, <a href="../Screen.html#getTitle()">getTitle</a>, <a href="../Screen.html#init(int,int)">init</a>, <a href="../Screen.html#isHoveringClickable()">isHoveringClickable</a>, <a href="../Screen.html#keyPress(int)">keyPress</a>, <a href="../Screen.html#keyRelease(int)">keyRelease</a>, <a href="../Screen.html#onClose(com.ultreon.craft.client.gui.screens.Screen)">onClose</a>, <a href="../Screen.html#path()">path</a>, <a href="../Screen.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="../Screen.html#renderSolidBackground(com.ultreon.craft.client.gui.Renderer)">renderSolidBackground</a>, <a href="../Screen.html#renderTransparentBackground(com.ultreon.craft.client.gui.Renderer)">renderTransparentBackground</a>, <a href="../Screen.html#resize(int,int)">resize</a>, <a href="../Screen.html#revalidate()">revalidate</a>, <a href="../Screen.html#title(com.ultreon.craft.text.TextObject)">title</a>, <a href="../Screen.html#title(java.lang.String)">title</a>, <a href="../Screen.html#titleTranslation(java.lang.String)">titleTranslation</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.UIContainer">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="../../widget/UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a></h3>
 <code><a href="../../widget/UIContainer.html#bounds(java.util.function.Supplier)">bounds</a>, <a href="../../widget/UIContainer.html#children()">children</a>, <a href="../../widget/UIContainer.html#getExactWidgetAt(int,int)">getExactWidgetAt</a>, <a href="../../widget/UIContainer.html#getLayout()">getLayout</a>, <a href="../../widget/UIContainer.html#getWidgetAt(int,int)">getWidgetAt</a>, <a href="../../widget/UIContainer.html#getWidgets()">getWidgets</a>, <a href="../../widget/UIContainer.html#getWidgetsAt(int,int)">getWidgetsAt</a>, <a href="../../widget/UIContainer.html#mouseDrag(int,int,int,int,int)">mouseDrag</a>, <a href="../../widget/UIContainer.html#mouseMove(int,int)">mouseMove</a>, <a href="../../widget/UIContainer.html#mousePress(int,int,int)">mousePress</a>, <a href="../../widget/UIContainer.html#mouseRelease(int,int,int)">mouseRelease</a>, <a href="../../widget/UIContainer.html#mouseWheel(int,int,double)">mouseWheel</a>, <a href="../../widget/UIContainer.html#position(java.util.function.Supplier)">position</a>, <a href="../../widget/UIContainer.html#renderChild(com.ultreon.craft.client.gui.Renderer,int,int,float,com.ultreon.craft.client.gui.widget.Widget)">renderChild</a>, <a href="../../widget/UIContainer.html#renderChildren(com.ultreon.craft.client.gui.Renderer,int,int,float)">renderChildren</a>, <a href="../../widget/UIContainer.html#setLayout(com.ultreon.craft.client.gui.widget.layout.Layout)">setLayout</a></code></div>
@@ -281,7 +285,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.text.TextObject,int)">
 <h3>ContainerScreen</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">ContainerScreen</span><wbr><span class="parameters">(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;container,
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">ContainerScreen</span><wbr><span class="parameters">(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;menu,
  <a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title,
  int&nbsp;maxSlots)</span></div>
 </section>
@@ -289,7 +293,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(com.ultreon.craft.menu.ContainerMenu,com.ultreon.craft.client.gui.screens.Screen,com.ultreon.craft.text.TextObject,int)">
 <h3>ContainerScreen</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">ContainerScreen</span><wbr><span class="parameters">(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;container,
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">ContainerScreen</span><wbr><span class="parameters">(<a href="../../../../menu/ContainerMenu.html" title="class in com.ultreon.craft.menu">ContainerMenu</a>&nbsp;menu,
  @Nullable
  @Nullable <a href="../Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&nbsp;back,
  <a href="../../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title,
@@ -467,6 +471,13 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="emitUpdate()">
 <h3>emitUpdate</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">emitUpdate</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="onItemChanged(int,com.ultreon.craft.item.ItemStack)">
+<h3>onItemChanged</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onItemChanged</span><wbr><span class="parameters">(int&nbsp;slot,
+ <a href="../../../../item/ItemStack.html" title="class in com.ultreon.craft.item">ItemStack</a>&nbsp;newStack)</span></div>
 </section>
 </li>
 </ul>

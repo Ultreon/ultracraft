@@ -50,7 +50,7 @@ loadScripts(document, 'script');</script>
 <ul>
 <li>Field</li>
 <li><a href="#constructor-detail">Constr</a></li>
-<li>Method</li>
+<li><a href="#method-detail">Method</a></li>
 </ul>
 </li>
 </ul>
@@ -68,7 +68,7 @@ loadScripts(document, 'script');</script>
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor-detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method-detail">Method</a></li>
 </ul>
 </div>
 <div class="nav-list-search"><a href="../../../../../../../search.html">SEARCH</a>
@@ -84,11 +84,11 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">com.ultreon.craft.client.model.entity.renderer</a></div>
-<h1 title="Class LivingEntityRenderer" class="title">Class LivingEntityRenderer&lt;M extends <a href="../LivingEntityModel.html" title="class in com.ultreon.craft.client.model.entity">LivingEntityModel</a>&lt;?&gt;,<wbr>E extends <a href="../../../../entity/LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a>&gt;</h1>
+<h1 title="Class LivingEntityRenderer" class="title">Class LivingEntityRenderer&lt;E extends <a href="../../../../entity/LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a>&gt;</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">com.ultreon.craft.client.model.entity.renderer.EntityRenderer</a>&lt;M,<wbr>E&gt;
-<div class="inheritance">com.ultreon.craft.client.model.entity.renderer.LivingEntityRenderer&lt;M,<wbr>E&gt;</div>
+<div class="inheritance"><a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">com.ultreon.craft.client.model.entity.renderer.EntityRenderer</a>&lt;E&gt;
+<div class="inheritance">com.ultreon.craft.client.model.entity.renderer.LivingEntityRenderer&lt;E&gt;</div>
 </div>
 </div>
 <section class="class-description" id="class-description">
@@ -97,8 +97,8 @@ loadScripts(document, 'script');</script>
 <dd><code><a href="PlayerRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">PlayerRenderer</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">LivingEntityRenderer&lt;M extends <a href="../LivingEntityModel.html" title="class in com.ultreon.craft.client.model.entity">LivingEntityModel</a>&lt;?&gt;,<wbr>E extends <a href="../../../../entity/LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a>&gt;</span>
-<span class="extends-implements">extends <a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">EntityRenderer</a>&lt;M,<wbr>E&gt;</span></div>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">LivingEntityRenderer&lt;E extends <a href="../../../../entity/LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a>&gt;</span>
+<span class="extends-implements">extends <a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">EntityRenderer</a>&lt;E&gt;</span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -121,7 +121,8 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>protected </code></div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(M)" class="member-name-link">LivingEntityRenderer</a><wbr>(<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">M</a>&nbsp;model)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.client.model.entity.EntityModel,com.badlogic.gdx.graphics.g3d.Model)" class="member-name-link">LivingEntityRenderer</a><wbr>(<a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&gt;&nbsp;entityModel,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Model.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Model</a>&nbsp;model)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -130,9 +131,25 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
+<div id="method-summary-table">
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div id="method-summary-table.tabpanel" role="tabpanel">
+<div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createInstance(E)" class="member-name-link">createInstance</a><wbr>(<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&nbsp;entity)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a><wbr>&lt;<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getEntityModel()" class="member-name-link">getEntityModel</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+</div>
+</div>
+</div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.model.entity.renderer.EntityRenderer">Methods inherited from class&nbsp;com.ultreon.craft.client.model.entity.renderer.<a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">EntityRenderer</a></h3>
-<code><a href="EntityRenderer.html#animate(com.badlogic.gdx.graphics.g3d.ModelInstance,E)">animate</a>, <a href="EntityRenderer.html#createInstance(com.badlogic.gdx.graphics.g3d.Model)">createInstance</a>, <a href="EntityRenderer.html#getModel()">getModel</a>, <a href="EntityRenderer.html#getTextures()">getTextures</a>, <a href="EntityRenderer.html#render(com.badlogic.gdx.graphics.g3d.ModelInstance,com.badlogic.gdx.utils.Array,com.badlogic.gdx.utils.Pool)">render</a></code></div>
+<code><a href="EntityRenderer.html#animate(com.badlogic.gdx.graphics.g3d.ModelInstance,E)">animate</a>, <a href="EntityRenderer.html#getTextures()">getTextures</a>, <a href="EntityRenderer.html#render(com.badlogic.gdx.graphics.g3d.ModelInstance,com.badlogic.gdx.utils.Array,com.badlogic.gdx.utils.Pool)">render</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -148,9 +165,35 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(M)">
-<h3 id="&lt;init&gt;(com.ultreon.craft.client.model.entity.LivingEntityModel)">LivingEntityRenderer</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">LivingEntityRenderer</span><wbr><span class="parameters">(<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">M</a>&nbsp;model)</span></div>
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.client.model.entity.EntityModel,com.badlogic.gdx.graphics.g3d.Model)">
+<h3>LivingEntityRenderer</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="element-name">LivingEntityRenderer</span><wbr><span class="parameters">(<a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&gt;&nbsp;entityModel,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/Model.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">Model</a>&nbsp;model)</span></div>
+</section>
+</li>
+</ul>
+</section>
+</li>
+<!-- ============ METHOD DETAIL ========== -->
+<li>
+<section class="method-details" id="method-detail">
+<h2>Method Details</h2>
+<ul class="member-list">
+<li>
+<section class="detail" id="createInstance(E)">
+<h3 id="createInstance(com.ultreon.craft.entity.LivingEntity)">createInstance</h3>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></span>&nbsp;<span class="element-name">createInstance</span><wbr><span class="parameters">(<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&nbsp;entity)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="EntityRenderer.html#createInstance(E)">createInstance</a></code>&nbsp;in class&nbsp;<code><a href="EntityRenderer.html" title="class in com.ultreon.craft.client.model.entity.renderer">EntityRenderer</a>&lt;<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a> extends <a href="../../../../entity/LivingEntity.html" title="class in com.ultreon.craft.entity">LivingEntity</a>&gt;</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getEntityModel()">
+<h3>getEntityModel</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../EntityModel.html" title="class in com.ultreon.craft.client.model.entity">EntityModel</a>&lt;<a href="LivingEntityRenderer.html" title="type parameter in LivingEntityRenderer">E</a>&gt;</span>&nbsp;<span class="element-name">getEntityModel</span>()</div>
 </section>
 </li>
 </ul>

@@ -40,7 +40,7 @@ loadScripts(document, 'script');</script>
 <p>Summary:</p>
 <ul>
 <li><a href="#nested-class-summary">Nested</a></li>
-<li>Field</li>
+<li><a href="#field-summary">Field</a></li>
 <li>Constr</li>
 <li><a href="#method-summary">Method</a></li>
 </ul>
@@ -48,7 +48,7 @@ loadScripts(document, 'script');</script>
 <li>
 <p>Detail:</p>
 <ul>
-<li>Field</li>
+<li><a href="#field-detail">Field</a></li>
 <li>Constr</li>
 <li><a href="#method-detail">Method</a></li>
 </ul>
@@ -60,13 +60,13 @@ loadScripts(document, 'script');</script>
 <ul class="sub-nav-list">
 <li>Summary:&nbsp;</li>
 <li><a href="#nested-class-summary">Nested</a>&nbsp;|&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field-summary">Field</a>&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method-summary">Method</a></li>
 </ul>
 <ul class="sub-nav-list">
 <li>Detail:&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field-detail">Field</a>&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method-detail">Method</a></li>
 </ul>
@@ -116,6 +116,21 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </div>
 </section>
 </li>
+<!-- =========== FIELD SUMMARY =========== -->
+<li>
+<section class="field-summary" id="field-summary">
+<h2>Field Summary</h2>
+<div class="caption"><span>Fields</span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Field</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static final <a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a><wbr>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;?&gt;&gt;</code></div>
+<div class="col-second even-row-color"><code><a href="#REGISTRY" class="member-name-link">REGISTRY</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
+</section>
+</li>
 <!-- ========== METHOD SUMMARY =========== -->
 <li>
 <section class="method-summary" id="method-summary">
@@ -127,32 +142,26 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#allowOverride()" class="member-name-link">allowOverride</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static &lt;T&gt;&nbsp;<a href="Registry.Builder.html" title="class in com.ultreon.craft.registry">Registry.Builder</a><wbr>&lt;T&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#builder(com.ultreon.craft.util.ElementID,T...)" class="member-name-link">builder</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id,
- T...&nbsp;typeGetter)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static &lt;T&gt;&nbsp;<a href="Registry.Builder.html" title="class in com.ultreon.craft.registry">Registry.Builder</a><wbr>&lt;T&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#builder(java.lang.String,T...)" class="member-name-link">builder</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#builder(com.ultreon.craft.util.ElementID,T...)" class="member-name-link">builder</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id,
  T...&nbsp;typeGetter)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Registry.html" title="type parameter in Registry">T</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#byId(int)" class="member-name-link">byId</a><wbr>(int&nbsp;id)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#contains(com.ultreon.craft.util.ElementID)" class="member-name-link">contains</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;rl)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static &lt;T&gt;&nbsp;<a href="Registry.Builder.html" title="class in com.ultreon.craft.registry">Registry.Builder</a><wbr>&lt;T&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#builder(java.lang.String,T...)" class="member-name-link">builder</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ T...&nbsp;typeGetter)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Registry.html" title="type parameter in Registry">T</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#byId(int)" class="member-name-link">byId</a><wbr>(int&nbsp;id)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code>static &lt;T&gt;&nbsp;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a><wbr>&lt;T&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code><a href="#create(com.ultreon.craft.util.ElementID,T...)" class="member-name-link">create</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#contains(com.ultreon.craft.util.ElementID)" class="member-name-link">contains</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;rl)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code>static &lt;T&gt;&nbsp;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a><wbr>&lt;T&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code><a href="#create(com.ultreon.craft.util.ElementID,T...)" class="member-name-link">create</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;id,
  T...&nbsp;type)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6">
 <div class="block"><span class="deprecated-label">Deprecated.</span></div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#doNotSync()" class="member-name-link">doNotSync</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#dump()" class="member-name-link">dump</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
@@ -168,33 +177,60 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://ultreon.github.io/corelibs/docs/0.2.0/com/ultreon/libs/commons/v0/Logger.html" title="class or interface in com.ultreon.libs.commons.v0" class="external-link">Logger</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getDumpLogger()" class="member-name-link">getDumpLogger</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getId(T)" class="member-name-link">getId</a><wbr>(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;object)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Registry.html" title="type parameter in Registry">T</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getElement(com.ultreon.craft.registry.RegistryKey)" class="member-name-link">getElement</a><wbr>(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&nbsp;key)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Registry.html" title="type parameter in Registry">T</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getElement(com.ultreon.craft.util.ElementID)" class="member-name-link">getElement</a><wbr>(@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;key)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the registered instance from the given <a href="../util/ElementID.html" title="class in com.ultreon.craft.util"><code>ElementID</code></a></div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getId(T)" class="member-name-link">getId</a><wbr>(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;obj)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the element id of the given registered instance.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a><wbr>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getKey(T)" class="member-name-link">getKey</a><wbr>(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;obj)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the identifier of the given registered instance.</div>
+<div class="block">Returns the registry key of the given registered instance.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a><wbr>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;?&gt;&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getRegistries()" class="member-name-link">getRegistries</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRawId(T)" class="member-name-link">getRawId</a><wbr>(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;object)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a><wbr>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;?&gt;&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getRegistries()" class="member-name-link">getRegistries</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static &lt;T&gt;&nbsp;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a><wbr>&lt;T&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getRegistry(com.ultreon.craft.registry.RegistryKey)" class="member-name-link">getRegistry</a><wbr>(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;T&gt;&gt;&nbsp;key)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a><wbr>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getType()" class="member-name-link">getType</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Registry.html" title="type parameter in Registry">T</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getValue(com.ultreon.craft.util.ElementID)" class="member-name-link">getValue</a><wbr>(@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;key)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the registered instance from the given <a href="../util/ElementID.html" title="class in com.ultreon.craft.util"><code>ElementID</code></a></div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#id()" class="member-name-link">id</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#id()" class="member-name-link">id</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#ids()" class="member-name-link">ids</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isFrozen()" class="member-name-link">isFrozen</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keys()" class="member-name-link">keys</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isOverrideAllowed()" class="member-name-link">isOverrideAllowed</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isSyncDisabled()" class="member-name-link">isSyncDisabled</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a><wbr>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#key()" class="member-name-link">key</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a><wbr>&lt;<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keys()" class="member-name-link">keys</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(com.ultreon.craft.registry.RegistryKey,T)" class="member-name-link">register</a><wbr>(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&nbsp;id,
+ <a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;element)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#register(com.ultreon.craft.util.ElementID,T)" class="member-name-link">register</a><wbr>(<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;rl,
@@ -220,6 +256,20 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 <section class="details">
 <ul class="details-list">
+<!-- ============ FIELD DETAIL =========== -->
+<li>
+<section class="field-details" id="field-detail">
+<h2>Field Details</h2>
+<ul class="member-list">
+<li>
+<section class="detail" id="REGISTRY">
+<h3>REGISTRY</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;?&gt;&gt;</span>&nbsp;<span class="element-name">REGISTRY</span></div>
+</section>
+</li>
+</ul>
+</section>
+</li>
 <!-- ============ METHOD DETAIL ========== -->
 <li>
 <section class="method-details" id="method-detail">
@@ -256,6 +306,12 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 </li>
 <li>
+<section class="detail" id="key()">
+<h3>key</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&gt;</span>&nbsp;<span class="element-name">key</span>()</div>
+</section>
+</li>
+<li>
 <section class="detail" id="create(com.ultreon.craft.util.ElementID,T...)">
 <h3 id="create(com.ultreon.craft.util.ElementID,java.lang.Object[])">create</h3>
 <div class="member-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/SafeVarargs.html" title="class or interface in java.lang" class="external-link">@SafeVarargs</a>
@@ -283,23 +339,36 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 </li>
 <li>
-<section class="detail" id="getKey(T)">
-<h3 id="getKey(java.lang.Object)">getKey</h3>
+<section class="detail" id="getId(T)">
+<h3 id="getId(java.lang.Object)">getId</h3>
 <div class="member-signature"><span class="annotations">@Nullable
-</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></span>&nbsp;<span class="element-name">getKey</span><wbr><span class="parameters">(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;obj)</span></div>
-<div class="block">Returns the identifier of the given registered instance.</div>
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a></span>&nbsp;<span class="element-name">getId</span><wbr><span class="parameters">(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;obj)</span></div>
+<div class="block">Returns the element id of the given registered instance.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>obj</code> - the registered instance.</dd>
 <dt>Returns:</dt>
-<dd>the identifier of it.</dd>
+<dd>the element id of it.</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="getValue(com.ultreon.craft.util.ElementID)">
-<h3>getValue</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Registry.html" title="type parameter in Registry">T</a></span>&nbsp;<span class="element-name">getValue</span><wbr><span class="parameters">(@Nullable
+<section class="detail" id="getKey(T)">
+<h3 id="getKey(java.lang.Object)">getKey</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</span>&nbsp;<span class="element-name">getKey</span><wbr><span class="parameters">(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;obj)</span></div>
+<div class="block">Returns the registry key of the given registered instance.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>obj</code> - the registered instance.</dd>
+<dt>Returns:</dt>
+<dd>the registry key of it.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getElement(com.ultreon.craft.util.ElementID)">
+<h3>getElement</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Registry.html" title="type parameter in Registry">T</a></span>&nbsp;<span class="element-name">getElement</span><wbr><span class="parameters">(@Nullable
  @Nullable <a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&nbsp;key)</span></div>
 <div class="block">Returns the registered instance from the given <a href="../util/ElementID.html" title="class in com.ultreon.craft.util"><code>ElementID</code></a></div>
 <dl class="notes">
@@ -338,15 +407,15 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 </li>
 <li>
-<section class="detail" id="allowOverride()">
-<h3>allowOverride</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">allowOverride</span>()</div>
+<section class="detail" id="isOverrideAllowed()">
+<h3>isOverrideAllowed</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isOverrideAllowed</span>()</div>
 </section>
 </li>
 <li>
-<section class="detail" id="doNotSync()">
-<h3>doNotSync</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">doNotSync</span>()</div>
+<section class="detail" id="isSyncDisabled()">
+<h3>isSyncDisabled</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isSyncDisabled</span>()</div>
 </section>
 </li>
 <li>
@@ -356,9 +425,15 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 </li>
 <li>
+<section class="detail" id="ids()">
+<h3>ids</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&gt;</span>&nbsp;<span class="element-name">ids</span>()</div>
+</section>
+</li>
+<li>
 <section class="detail" id="keys()">
 <h3>keys</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../util/ElementID.html" title="class in com.ultreon.craft.util">ElementID</a>&gt;</span>&nbsp;<span class="element-name">keys</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&gt;</span>&nbsp;<span class="element-name">keys</span>()</div>
 </section>
 </li>
 <li>
@@ -386,12 +461,12 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 </section>
 </li>
 <li>
-<section class="detail" id="getId(T)">
-<h3 id="getId(java.lang.Object)">getId</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getId</span><wbr><span class="parameters">(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;object)</span></div>
+<section class="detail" id="getRawId(T)">
+<h3 id="getRawId(java.lang.Object)">getRawId</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getRawId</span><wbr><span class="parameters">(<a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;object)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="IdRegistry.html#getId(T)">getId</a></code>&nbsp;in interface&nbsp;<code><a href="IdRegistry.html" title="interface in com.ultreon.craft.registry">IdRegistry</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</code></dd>
+<dd><code><a href="IdRegistry.html#getRawId(T)">getRawId</a></code>&nbsp;in interface&nbsp;<code><a href="IdRegistry.html" title="interface in com.ultreon.craft.registry">IdRegistry</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</code></dd>
 </dl>
 </section>
 </li>
@@ -403,6 +478,25 @@ implements <a href="IdRegistry.html" title="interface in com.ultreon.craft.regis
 <dt>Specified by:</dt>
 <dd><code><a href="IdRegistry.html#byId(int)">byId</a></code>&nbsp;in interface&nbsp;<code><a href="IdRegistry.html" title="interface in com.ultreon.craft.registry">IdRegistry</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;</code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getRegistry(com.ultreon.craft.registry.RegistryKey)">
+<h3>getRegistry</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;T&gt;</span>&nbsp;<span class="element-name">getRegistry</span><wbr><span class="parameters">(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="class in com.ultreon.craft.registry">Registry</a>&lt;T&gt;&gt;&nbsp;key)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="register(com.ultreon.craft.registry.RegistryKey,T)">
+<h3 id="register(com.ultreon.craft.registry.RegistryKey,java.lang.Object)">register</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">register</span><wbr><span class="parameters">(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&nbsp;id,
+ <a href="Registry.html" title="type parameter in Registry">T</a>&nbsp;element)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getElement(com.ultreon.craft.registry.RegistryKey)">
+<h3>getElement</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Registry.html" title="type parameter in Registry">T</a></span>&nbsp;<span class="element-name">getElement</span><wbr><span class="parameters">(<a href="RegistryKey.html" title="class in com.ultreon.craft.registry">RegistryKey</a>&lt;<a href="Registry.html" title="type parameter in Registry">T</a>&gt;&nbsp;key)</span></div>
 </section>
 </li>
 </ul>

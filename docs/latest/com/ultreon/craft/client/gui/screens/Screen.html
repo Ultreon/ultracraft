@@ -100,7 +100,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="ChatScreen.html" title="class in com.ultreon.craft.client.gui.screens">ChatScreen</a></code>, <code><a href="container/ContainerScreen.html" title="class in com.ultreon.craft.client.gui.screens.container">ContainerScreen</a></code>, <code><a href="DeathScreen.html" title="class in com.ultreon.craft.client.gui.screens">DeathScreen</a></code>, <code><a href="DisconnectedScreen.html" title="class in com.ultreon.craft.client.gui.screens">DisconnectedScreen</a></code>, <code><a href="LanguageScreen.html" title="class in com.ultreon.craft.client.gui.screens">LanguageScreen</a></code>, <code><a href="MessageScreen.html" title="class in com.ultreon.craft.client.gui.screens">MessageScreen</a></code>, <code><a href="ModListScreen.html" title="class in com.ultreon.craft.client.gui.screens">ModListScreen</a></code>, <code><a href="MultiplayerScreen.html" title="class in com.ultreon.craft.client.gui.screens">MultiplayerScreen</a></code>, <code><a href="options/OptionsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">OptionsScreen</a></code>, <code><a href="../../OutOfMemoryScreen.html" title="class in com.ultreon.craft.client">OutOfMemoryScreen</a></code>, <code><a href="PauseScreen.html" title="class in com.ultreon.craft.client.gui.screens">PauseScreen</a></code>, <code><a href="TitleScreen.html" title="class in com.ultreon.craft.client.gui.screens">TitleScreen</a></code>, <code><a href="WorldCreationScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldCreationScreen</a></code>, <code><a href="WorldDeleteConfirmScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldDeleteConfirmScreen</a></code>, <code><a href="WorldLoadScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldLoadScreen</a></code>, <code><a href="WorldSelectionScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldSelectionScreen</a></code></dd>
+<dd><code><a href="options/AccessibilitySettingsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">AccessibilitySettingsScreen</a></code>, <code><a href="ChatScreen.html" title="class in com.ultreon.craft.client.gui.screens">ChatScreen</a></code>, <code><a href="container/ContainerScreen.html" title="class in com.ultreon.craft.client.gui.screens.container">ContainerScreen</a></code>, <code><a href="../../CrashScreen.html" title="class in com.ultreon.craft.client">CrashScreen</a></code>, <code><a href="DeathScreen.html" title="class in com.ultreon.craft.client.gui.screens">DeathScreen</a></code>, <code><a href="../../DevScreen.html" title="class in com.ultreon.craft.client">DevScreen</a></code>, <code><a href="DisconnectedScreen.html" title="class in com.ultreon.craft.client.gui.screens">DisconnectedScreen</a></code>, <code><a href="LanguageScreen.html" title="class in com.ultreon.craft.client.gui.screens">LanguageScreen</a></code>, <code><a href="MessageScreen.html" title="class in com.ultreon.craft.client.gui.screens">MessageScreen</a></code>, <code><a href="ModListScreen.html" title="class in com.ultreon.craft.client.gui.screens">ModListScreen</a></code>, <code><a href="MultiplayerScreen.html" title="class in com.ultreon.craft.client.gui.screens">MultiplayerScreen</a></code>, <code><a href="options/OptionsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">OptionsScreen</a></code>, <code><a href="../../OutOfMemoryScreen.html" title="class in com.ultreon.craft.client">OutOfMemoryScreen</a></code>, <code><a href="PauseScreen.html" title="class in com.ultreon.craft.client.gui.screens">PauseScreen</a></code>, <code><a href="options/PersonalSettingsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">PersonalSettingsScreen</a></code>, <code><a href="options/PrivacySettingsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">PrivacySettingsScreen</a></code>, <code><a href="tabs/TabbedUI.html" title="class in com.ultreon.craft.client.gui.screens.tabs">TabbedUI</a></code>, <code><a href="TitleScreen.html" title="class in com.ultreon.craft.client.gui.screens">TitleScreen</a></code>, <code><a href="options/VideoSettingsScreen.html" title="class in com.ultreon.craft.client.gui.screens.options">VideoSettingsScreen</a></code>, <code><a href="WorldCreationScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldCreationScreen</a></code>, <code><a href="WorldDeleteConfirmScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldDeleteConfirmScreen</a></code>, <code><a href="WorldLoadScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldLoadScreen</a></code>, <code><a href="WorldSelectionScreen.html" title="class in com.ultreon.craft.client.gui.screens">WorldSelectionScreen</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="annotations">@Experimental
@@ -206,87 +206,90 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected final void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#close()" class="member-name-link">close</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#filesDropped(java.util.List)" class="member-name-link">filesDropped</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/files/FileHandle.html" title="class or interface in com.badlogic.gdx.files" class="external-link">FileHandle</a>&gt;&nbsp;files)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected &lt;C extends <a href="../widget/Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;<br>C</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#defineRoot(C)" class="member-name-link">defineRoot</a><wbr>(C&nbsp;widget)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#filesDropped(java.util.List)" class="member-name-link">filesDropped</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/files/FileHandle.html" title="class or interface in com.badlogic.gdx.files" class="external-link">FileHandle</a>&gt;&nbsp;files)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Handles files being dropped into this screen.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getName()" class="member-name-link">getName</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRawTitle()" class="member-name-link">getRawTitle</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getName()" class="member-name-link">getName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTitle()" class="member-name-link">getTitle</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRawTitle()" class="member-name-link">getRawTitle</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#init(int,int)" class="member-name-link">init</a><wbr>(int&nbsp;width,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTitle()" class="member-name-link">getTitle</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#init(int,int)" class="member-name-link">init</a><wbr>(int&nbsp;width,
  int&nbsp;height)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isHoveringClickable()" class="member-name-link">isHoveringClickable</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyPress(int)" class="member-name-link">keyPress</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isHoveringClickable()" class="member-name-link">isHoveringClickable</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyRelease(int)" class="member-name-link">keyRelease</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyPress(int)" class="member-name-link">keyPress</a><wbr>(int&nbsp;keyCode)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseClick(int,int,int,int)" class="member-name-link">mouseClick</a><wbr>(int&nbsp;mouseX,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyRelease(int)" class="member-name-link">keyRelease</a><wbr>(int&nbsp;keyCode)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mouseClick(int,int,int,int)" class="member-name-link">mouseClick</a><wbr>(int&nbsp;mouseX,
  int&nbsp;mouseY,
  int&nbsp;button,
  int&nbsp;clicks)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onClose(com.ultreon.craft.client.gui.screens.Screen)" class="member-name-link">onClose</a><wbr>(<a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&nbsp;next)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onClose(com.ultreon.craft.client.gui.screens.Screen)" class="member-name-link">onClose</a><wbr>(<a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&nbsp;next)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when this screen is closing.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onClosed()" class="member-name-link">onClosed</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onClosed()" class="member-name-link">onClosed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Non-cancelable version of <a href="#onClose(com.ultreon.craft.client.gui.screens.Screen)"><code>onClose(Screen)</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#path()" class="member-name-link">path</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#path()" class="member-name-link">path</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the background of this screen.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected final void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer,float)" class="member-name-link">renderBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderBackground(com.ultreon.craft.client.gui.Renderer,float)" class="member-name-link">renderBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
  float&nbsp;deltaTime)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSolidBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderSolidBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderSolidBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderSolidBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders a solid background</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderTransparentBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderTransparentBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderTransparentBackground(com.ultreon.craft.client.gui.Renderer)" class="member-name-link">renderTransparentBackground</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders a transparent background.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resize(int,int)" class="member-name-link">resize</a><wbr>(int&nbsp;width,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resize(int,int)" class="member-name-link">resize</a><wbr>(int&nbsp;width,
  int&nbsp;height)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revalidate()" class="member-name-link">revalidate</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#title(com.ultreon.craft.text.TextObject)" class="member-name-link">title</a><wbr>(<a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revalidate()" class="member-name-link">revalidate</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#title(java.lang.String)" class="member-name-link">title</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#title(com.ultreon.craft.text.TextObject)" class="member-name-link">title</a><wbr>(<a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a>&nbsp;title)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#titleTranslation(java.lang.String)" class="member-name-link">titleTranslation</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#title(java.lang.String)" class="member-name-link">title</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#titleTranslation(java.lang.String)" class="member-name-link">titleTranslation</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -563,6 +566,16 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="../widget/UIContainer.html#add(C)">add</a></code>&nbsp;in class&nbsp;<code><a href="../widget/UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&gt;</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="defineRoot(C)">
+<h3 id="defineRoot(com.ultreon.craft.client.gui.widget.Widget)">defineRoot</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="type-parameters">&lt;C extends <a href="../widget/Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a>&gt;</span>&nbsp;<span class="return-type">C</span>&nbsp;<span class="element-name">defineRoot</span><wbr><span class="parameters">(C&nbsp;widget)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="../widget/UIContainer.html#defineRoot(C)">defineRoot</a></code>&nbsp;in class&nbsp;<code><a href="../widget/UIContainer.html" title="class in com.ultreon.craft.client.gui.widget">UIContainer</a>&lt;<a href="Screen.html" title="class in com.ultreon.craft.client.gui.screens">Screen</a>&gt;</code></dd>
 </dl>
 </section>
 </li>

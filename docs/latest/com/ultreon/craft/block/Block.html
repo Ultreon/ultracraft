@@ -94,6 +94,10 @@ loadScripts(document, 'script');</script>
 <dt>All Implemented Interfaces:</dt>
 <dd><code><a href="../ubo/DataWriter.html" title="interface in com.ultreon.craft.ubo">DataWriter</a>&lt;<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&gt;</code></dd>
 </dl>
+<dl class="notes">
+<dt>Direct Known Subclasses:</dt>
+<dd><code><a href="EntityBlock.html" title="class in com.ultreon.craft.block">EntityBlock</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">Block</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
@@ -204,20 +208,36 @@ implements <a href="../ubo/DataWriter.html" title="interface in com.ultreon.craf
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Block.html" title="class in com.ultreon.craft.block">Block</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#load(com.ultreon.data.types.MapType)" class="member-name-link">load</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;data)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save()" class="member-name-link">save</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onPlace(com.ultreon.craft.world.World,com.ultreon.craft.world.BlockPos)" class="member-name-link">onPlace</a><wbr>(<a href="../world/World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ <a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save()" class="member-name-link">save</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Saves this object to a UBO object.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#shouldGreedyMerge()" class="member-name-link">shouldGreedyMerge</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#shouldGreedyMerge()" class="member-name-link">shouldGreedyMerge</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#shouldOcclude(com.ultreon.craft.world.BlockFace,com.ultreon.craft.world.Chunk,int,int,int)" class="member-name-link">shouldOcclude</a><wbr>(<a href="../world/BlockFace.html" title="enum class in com.ultreon.craft.world">BlockFace</a>&nbsp;face,
+ <a href="../world/Chunk.html" title="class in com.ultreon.craft.world">Chunk</a>&nbsp;chunk,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#write(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">write</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../world/InteractResult.html" title="enum class in com.ultreon.craft.world">InteractResult</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#use(com.ultreon.craft.world.World,com.ultreon.craft.entity.Player,com.ultreon.craft.world.BlockPos)" class="member-name-link">use</a><wbr>(@NotNull <a href="../world/World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ @NotNull <a href="../entity/Player.html" title="class in com.ultreon.craft.entity">Player</a>&nbsp;player,
+ @NotNull <a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#write(com.ultreon.craft.network.PacketBuffer)" class="member-name-link">write</a><wbr>(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -326,6 +346,17 @@ implements <a href="../ubo/DataWriter.html" title="interface in com.ultreon.craf
 </section>
 </li>
 <li>
+<section class="detail" id="use(com.ultreon.craft.world.World,com.ultreon.craft.entity.Player,com.ultreon.craft.world.BlockPos)">
+<h3>use</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../world/InteractResult.html" title="enum class in com.ultreon.craft.world">InteractResult</a></span>&nbsp;<span class="element-name">use</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="../world/World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ @NotNull
+ @NotNull <a href="../entity/Player.html" title="class in com.ultreon.craft.entity">Player</a>&nbsp;player,
+ @NotNull
+ @NotNull <a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos)</span></div>
+</section>
+</li>
+<li>
 <section class="detail" id="write(com.ultreon.craft.network.PacketBuffer)">
 <h3>write</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">write</span><wbr><span class="parameters">(<a href="../network/PacketBuffer.html" title="class in com.ultreon.craft.network">PacketBuffer</a>&nbsp;buffer)</span></div>
@@ -413,6 +444,23 @@ implements <a href="../ubo/DataWriter.html" title="interface in com.ultreon.craf
 <section class="detail" id="isReplaceable()">
 <h3>isReplaceable</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isReplaceable</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="shouldOcclude(com.ultreon.craft.world.BlockFace,com.ultreon.craft.world.Chunk,int,int,int)">
+<h3>shouldOcclude</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">shouldOcclude</span><wbr><span class="parameters">(<a href="../world/BlockFace.html" title="enum class in com.ultreon.craft.world">BlockFace</a>&nbsp;face,
+ <a href="../world/Chunk.html" title="class in com.ultreon.craft.world">Chunk</a>&nbsp;chunk,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;z)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="onPlace(com.ultreon.craft.world.World,com.ultreon.craft.world.BlockPos)">
+<h3>onPlace</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onPlace</span><wbr><span class="parameters">(<a href="../world/World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ <a href="../world/BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos)</span></div>
 </section>
 </li>
 </ul>

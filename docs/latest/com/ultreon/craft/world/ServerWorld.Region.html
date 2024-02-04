@@ -124,8 +124,14 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-first even-row-color"><code>int</code></div>
 <div class="col-second even-row-color"><code><a href="#dataVersion" class="member-name-link">dataVersion</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#lastPlayedIn" class="member-name-link">lastPlayedIn</a></code></div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#dirtyWhileSaving" class="member-name-link">dirtyWhileSaving</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#lastPlayedIn" class="member-name-link">lastPlayedIn</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#saving" class="member-name-link">saving</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
@@ -216,7 +222,13 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasActiveChunks()" class="member-name-link">hasActiveChunks</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEmpty()" class="member-name-link">isEmpty</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isDirty()" class="member-name-link">isDirty</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEmpty()" class="member-name-link">isEmpty</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#markDirty()" class="member-name-link">markDirty</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="ServerChunk.html" title="class in com.ultreon.craft.world">ServerChunk</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#openChunk(com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.ChunkPos)" class="member-name-link">openChunk</a><wbr>(<a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos,
@@ -237,6 +249,15 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#putChunk(com.ultreon.craft.world.ChunkPos,com.ultreon.craft.world.ServerChunk)" class="member-name-link">putChunk</a><wbr>(@NotNull <a href="ChunkPos.html" title="class in com.ultreon.craft.world">ChunkPos</a>&nbsp;pos,
  @NotNull <a href="ServerChunk.html" title="class in com.ultreon.craft.world">ServerChunk</a>&nbsp;chunk)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>&lt;T&gt;&nbsp;<a href="../util/Result.html" title="class in com.ultreon.craft.util">Result</a><wbr>&lt;T&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#trySet(com.google.common.base.Supplier)" class="member-name-link">trySet</a><wbr>(com.google.common.base.Supplier&lt;T&gt;&nbsp;supplier)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#writeLock()" class="member-name-link">writeLock</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#writeUnlock()" class="member-name-link">writeUnlock</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -264,6 +285,18 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <section class="detail" id="lastPlayedIn">
 <h3>lastPlayedIn</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">lastPlayedIn</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="saving">
+<h3>saving</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">saving</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="dirtyWhileSaving">
+<h3>dirtyWhileSaving</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">dirtyWhileSaving</span></div>
 </section>
 </li>
 </ul>
@@ -513,6 +546,36 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <section class="detail" id="getPos()">
 <h3>getPos</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RegionPos.html" title="class in com.ultreon.craft.world">RegionPos</a></span>&nbsp;<span class="element-name">getPos</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isDirty()">
+<h3>isDirty</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isDirty</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="markDirty()">
+<h3>markDirty</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">markDirty</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="trySet(com.google.common.base.Supplier)">
+<h3>trySet</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="../util/Result.html" title="class in com.ultreon.craft.util">Result</a>&lt;T&gt;</span>&nbsp;<span class="element-name">trySet</span><wbr><span class="parameters">(com.google.common.base.Supplier&lt;T&gt;&nbsp;supplier)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="writeLock()">
+<h3>writeLock</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">writeLock</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="writeUnlock()">
+<h3>writeUnlock</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">writeUnlock</span>()</div>
 </section>
 </li>
 </ul>

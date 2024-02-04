@@ -88,10 +88,8 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
 <div class="inheritance"><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.Widget</a>
-<div class="inheritance"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.Button</a>&lt;<a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a>&gt;
-<div class="inheritance"><a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.TextButton</a>
+<div class="inheritance"><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">com.ultreon.craft.client.gui.widget.Button</a>&lt;<a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;T&gt;&gt;
 <div class="inheritance">com.ultreon.craft.client.gui.widget.CycleButton&lt;T&gt;</div>
-</div>
 </div>
 </div>
 </div>
@@ -102,7 +100,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">CycleButton&lt;T extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;T&gt;&gt;</span>
-<span class="extends-implements">extends <a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></span></div>
+<span class="extends-implements">extends <a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;T&gt;&gt;</span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -137,16 +135,12 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">CycleButton</a>()</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(int,int,int,int,com.ultreon.craft.text.MutableText)" class="member-name-link">CycleButton</a><wbr>(int&nbsp;x,
- int&nbsp;y,
- @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(int,int,com.ultreon.craft.text.MutableText)" class="member-name-link">CycleButton</a><wbr>(@org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
  @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;height,
- <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</code></div>
+ @Nullable <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int,int,int,com.ultreon.craft.text.MutableText)" class="member-name-link">CycleButton</a><wbr>(int&nbsp;x,
- int&nbsp;y,
- @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
- <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int,com.ultreon.craft.text.MutableText)" class="member-name-link">CycleButton</a><wbr>(@org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
+ @Nullable <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -174,7 +168,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getIndex()" class="member-name-link">getIndex</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLabel()" class="member-name-link">getLabel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
@@ -199,6 +193,21 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a><wbr>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#position(java.util.function.Supplier)" class="member-name-link">position</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)" class="member-name-link">renderWidget</a><wbr>(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+ int&nbsp;mouseX,
+ int&nbsp;mouseY,
+ float&nbsp;deltaTime)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#revalidate()" class="member-name-link">revalidate</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/TextComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">TextComponent</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="components/ColorComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">ColorComponent</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#textColor()" class="member-name-link">textColor</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a><wbr>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#value(T)" class="member-name-link">value</a><wbr>(<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&nbsp;o)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -209,14 +218,11 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <div class="inherited-list">
-<h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.TextButton">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></h3>
-<code><a href="TextButton.html#callback(com.ultreon.craft.client.gui.Callback)">callback</a>, <a href="TextButton.html#getName()">getName</a>, <a href="TextButton.html#isClickable()">isClickable</a>, <a href="TextButton.html#of(com.ultreon.craft.text.TextObject)">of</a>, <a href="TextButton.html#of(com.ultreon.craft.text.TextObject,int)">of</a>, <a href="TextButton.html#of(com.ultreon.craft.text.TextObject,int,int)">of</a>, <a href="TextButton.html#of(java.lang.String)">of</a>, <a href="TextButton.html#of(java.lang.String,int)">of</a>, <a href="TextButton.html#of(java.lang.String,int,int)">of</a>, <a href="TextButton.html#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">renderWidget</a>, <a href="TextButton.html#text()">text</a>, <a href="TextButton.html#textColor()">textColor</a>, <a href="TextButton.html#translation(java.lang.String,java.lang.Object...)">translation</a></code></div>
-<div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.Button">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a></h3>
-<code><a href="Button.html#callback()">callback</a>, <a href="Button.html#isPressed()">isPressed</a>, <a href="Button.html#mouseClick(int,int,int,int)">mouseClick</a>, <a href="Button.html#mousePress(int,int,int)">mousePress</a>, <a href="Button.html#mouseRelease(int,int,int)">mouseRelease</a>, <a href="Button.html#renderButton(com.ultreon.craft.client.gui.Renderer,int,int,com.badlogic.gdx.graphics.Texture,int,int)">renderButton</a></code></div>
+<code><a href="Button.html#callback()">callback</a>, <a href="Button.html#callback(com.ultreon.craft.client.gui.Callback)">callback</a>, <a href="Button.html#isPressed()">isPressed</a>, <a href="Button.html#mouseClick(int,int,int,int)">mouseClick</a>, <a href="Button.html#mousePress(int,int,int)">mousePress</a>, <a href="Button.html#mouseRelease(int,int,int)">mouseRelease</a>, <a href="Button.html#renderButton(com.ultreon.craft.client.gui.Renderer,int,int,com.badlogic.gdx.graphics.Texture,int,int)">renderButton</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.ultreon.craft.client.gui.widget.Widget">Methods inherited from class&nbsp;com.ultreon.craft.client.gui.widget.<a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></h3>
-<code><a href="Widget.html#charType(char)">charType</a>, <a href="Widget.html#componentRegistry()">componentRegistry</a>, <a href="Widget.html#disable()">disable</a>, <a href="Widget.html#enable()">enable</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getComponent(com.ultreon.craft.util.ElementID,T...)">getComponent</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#hide()">hide</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPosWithin(int,int,int,int,int,int)">isPosWithin</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#keyPress(int)">keyPress</a>, <a href="Widget.html#keyRelease(int)">keyRelease</a>, <a href="Widget.html#mouseDrag(int,int,int,int,int)">mouseDrag</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#mouseMove(int,int)">mouseMove</a>, <a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a>, <a href="Widget.html#onFocusGained()">onFocusGained</a>, <a href="Widget.html#onFocusLost()">onFocusLost</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.widget.Widget.RevalidateListener)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#register(com.ultreon.craft.util.ElementID,C)">register</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#revalidate()">revalidate</a>, <a href="Widget.html#setBounds(com.ultreon.craft.client.gui.Bounds)">setBounds</a>, <a href="Widget.html#setEnabled(boolean)">setEnabled</a>, <a href="Widget.html#setPos(int,int)">setPos</a>, <a href="Widget.html#setPos(com.ultreon.craft.client.gui.Position)">setPos</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#setSize(int,int)">setSize</a>, <a href="Widget.html#setSize(com.ultreon.craft.client.gui.Size)">setSize</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#show()">show</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#withComponent(com.ultreon.craft.util.ElementID,java.util.function.Consumer,T...)">withComponent</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
+<code><a href="Widget.html#charType(char)">charType</a>, <a href="Widget.html#componentRegistry()">componentRegistry</a>, <a href="Widget.html#disable()">disable</a>, <a href="Widget.html#enable()">enable</a>, <a href="Widget.html#getBounds()">getBounds</a>, <a href="Widget.html#getComponent(com.ultreon.craft.util.ElementID,T...)">getComponent</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getName()">getName</a>, <a href="Widget.html#getPreferredHeight()">getPreferredHeight</a>, <a href="Widget.html#getPreferredPos()">getPreferredPos</a>, <a href="Widget.html#getPreferredSize()">getPreferredSize</a>, <a href="Widget.html#getPreferredWidth()">getPreferredWidth</a>, <a href="Widget.html#getPreferredX()">getPreferredX</a>, <a href="Widget.html#getPreferredY()">getPreferredY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#height(int)">height</a>, <a href="Widget.html#hide()">hide</a>, <a href="Widget.html#isClickable()">isClickable</a>, <a href="Widget.html#isEnabled()">isEnabled</a>, <a href="Widget.html#isFocused()">isFocused</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPosWithin(int,int,int,int,int,int)">isPosWithin</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#isWithinBounds(int,int)">isWithinBounds</a>, <a href="Widget.html#keyPress(int)">keyPress</a>, <a href="Widget.html#keyRelease(int)">keyRelease</a>, <a href="Widget.html#mouseDrag(int,int,int,int,int)">mouseDrag</a>, <a href="Widget.html#mouseEnter(int,int)">mouseEnter</a>, <a href="Widget.html#mouseExit()">mouseExit</a>, <a href="Widget.html#mouseMove(int,int)">mouseMove</a>, <a href="Widget.html#mouseWheel(int,int,double)">mouseWheel</a>, <a href="Widget.html#onFocusGained()">onFocusGained</a>, <a href="Widget.html#onFocusLost()">onFocusLost</a>, <a href="Widget.html#onRevalidate(com.ultreon.craft.client.gui.widget.Widget.RevalidateListener)">onRevalidate</a>, <a href="Widget.html#path()">path</a>, <a href="Widget.html#register(com.ultreon.craft.util.ElementID,C)">register</a>, <a href="Widget.html#render(com.ultreon.craft.client.gui.Renderer,int,int,float)">render</a>, <a href="Widget.html#renderBackground(com.ultreon.craft.client.gui.Renderer,float)">renderBackground</a>, <a href="Widget.html#setBounds(com.ultreon.craft.client.gui.Bounds)">setBounds</a>, <a href="Widget.html#setEnabled(boolean)">setEnabled</a>, <a href="Widget.html#setPos(int,int)">setPos</a>, <a href="Widget.html#setPos(com.ultreon.craft.client.gui.Position)">setPos</a>, <a href="Widget.html#setPreferredHeight(int)">setPreferredHeight</a>, <a href="Widget.html#setPreferredPos(int,int)">setPreferredPos</a>, <a href="Widget.html#setPreferredSize(int,int)">setPreferredSize</a>, <a href="Widget.html#setPreferredWidth(int)">setPreferredWidth</a>, <a href="Widget.html#setPreferredX(int)">setPreferredX</a>, <a href="Widget.html#setPreferredY(int)">setPreferredY</a>, <a href="Widget.html#setSize(int,int)">setSize</a>, <a href="Widget.html#setSize(com.ultreon.craft.client.gui.Size)">setSize</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#show()">show</a>, <a href="Widget.html#tick()">tick</a>, <a href="Widget.html#width(int)">width</a>, <a href="Widget.html#withComponent(com.ultreon.craft.util.ElementID,java.util.function.Consumer,T...)">withComponent</a>, <a href="Widget.html#x(int)">x</a>, <a href="Widget.html#y(int)">y</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -235,22 +241,20 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(int,int,int,com.ultreon.craft.text.MutableText)">
+<section class="detail" id="&lt;init&gt;(int,com.ultreon.craft.text.MutableText)">
 <h3>CycleButton</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CycleButton</span><wbr><span class="parameters">(int&nbsp;x,
- int&nbsp;y,
- @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
- <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CycleButton</span><wbr><span class="parameters">(@org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
+ @Nullable
+ @Nullable <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</span></div>
 </section>
 </li>
 <li>
-<section class="detail" id="&lt;init&gt;(int,int,int,int,com.ultreon.craft.text.MutableText)">
+<section class="detail" id="&lt;init&gt;(int,int,com.ultreon.craft.text.MutableText)">
 <h3>CycleButton</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CycleButton</span><wbr><span class="parameters">(int&nbsp;x,
- int&nbsp;y,
- @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CycleButton</span><wbr><span class="parameters">(@org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;width,
  @org.checkerframework.common.value.qual.IntRange(from=21L) int&nbsp;height,
- <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</span></div>
+ @Nullable
+ @Nullable <a href="../../../text/MutableText.html" title="class in com.ultreon.craft.text">MutableText</a>&nbsp;name)</span></div>
 </section>
 </li>
 <li>
@@ -267,6 +271,16 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="revalidate()">
+<h3>revalidate</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">revalidate</span>()</div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="Widget.html#revalidate()">revalidate</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
+</dl>
+</section>
+</li>
 <li>
 <section class="detail" id="values(T...)">
 <h3 id="values(java.lang.Enum[])">values</h3>
@@ -285,8 +299,8 @@ loadScripts(document, 'script');</script>
 <h3>position</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;</span>&nbsp;<span class="element-name">position</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Position.html" title="class in com.ultreon.craft.client.gui">Position</a>&gt;&nbsp;position)</span></div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="TextButton.html#position(java.util.function.Supplier)">position</a></code>&nbsp;in class&nbsp;<code><a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="Button.html#position(java.util.function.Supplier)">position</a></code>&nbsp;in class&nbsp;<code><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a> extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;&gt;&gt;</code></dd>
 </dl>
 </section>
 </li>
@@ -295,9 +309,21 @@ loadScripts(document, 'script');</script>
 <h3>bounds</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;</span>&nbsp;<span class="element-name">bounds</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="../Bounds.html" title="class in com.ultreon.craft.client.gui">Bounds</a>&gt;&nbsp;position)</span></div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="TextButton.html#bounds(java.util.function.Supplier)">bounds</a></code>&nbsp;in class&nbsp;<code><a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a></code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="Button.html#bounds(java.util.function.Supplier)">bounds</a></code>&nbsp;in class&nbsp;<code><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a> extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;&gt;&gt;</code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="text()">
+<h3>text</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="components/TextComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">TextComponent</a></span>&nbsp;<span class="element-name">text</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="textColor()">
+<h3>textColor</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="components/ColorComponent.html" title="class in com.ultreon.craft.client.gui.widget.components">ColorComponent</a></span>&nbsp;<span class="element-name">textColor</span>()</div>
 </section>
 </li>
 <li>
@@ -306,7 +332,20 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">click</span>()</div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Button.html#click()">click</a></code>&nbsp;in class&nbsp;<code><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="TextButton.html" title="class in com.ultreon.craft.client.gui.widget">TextButton</a>&gt;</code></dd>
+<dd><code><a href="Button.html#click()">click</a></code>&nbsp;in class&nbsp;<code><a href="Button.html" title="class in com.ultreon.craft.client.gui.widget">Button</a>&lt;<a href="CycleButton.html" title="class in com.ultreon.craft.client.gui.widget">CycleButton</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a> extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html" title="class or interface in java.lang" class="external-link">Enum</a>&lt;<a href="CycleButton.html" title="type parameter in CycleButton">T</a>&gt;&gt;&gt;</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">
+<h3>renderWidget</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">renderWidget</span><wbr><span class="parameters">(<a href="../Renderer.html" title="class in com.ultreon.craft.client.gui">Renderer</a>&nbsp;renderer,
+ int&nbsp;mouseX,
+ int&nbsp;mouseY,
+ float&nbsp;deltaTime)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="Widget.html#renderWidget(com.ultreon.craft.client.gui.Renderer,int,int,float)">renderWidget</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.ultreon.craft.client.gui.widget">Widget</a></code></dd>
 </dl>
 </section>
 </li>
@@ -325,7 +364,8 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getLabel()">
 <h3>getLabel</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></span>&nbsp;<span class="element-name">getLabel</span>()</div>
+<div class="member-signature"><span class="annotations">@Nullable
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="../../../text/TextObject.html" title="class in com.ultreon.craft.text">TextObject</a></span>&nbsp;<span class="element-name">getLabel</span>()</div>
 </section>
 </li>
 <li>
