@@ -208,6 +208,8 @@ public final class WorldRenderer implements DisposableContainer {
             return;
         }
 
+        if (!chunk.initialized) return;
+
         @Nullable ChunkMesh mesh = chunk.solidMesh;
         @Nullable ChunkMesh transparentMesh = chunk.transparentMesh;
         if (mesh == null && transparentMesh == null) return;
@@ -311,12 +313,13 @@ public final class WorldRenderer implements DisposableContainer {
             if (chunk.dirty && !ref.chunkRendered && (chunk.solidMesh != null || chunk.transparentMesh != null) || (chunk.solidMesh != null || chunk.transparentMesh != null) && !ref.chunkRendered && chunk.getWorld().isChunkInvalidated(chunk)) {
                 this.free(chunk);
                 chunk.getWorld().onChunkUpdated(chunk);
+                chunk.dirty = false;
                 ref.chunkRendered = true;
             }
 
             chunk.dirty = false;
 
-            if (!chunk.initialized || !lambdaContext.hasRenderedChunk) {
+            if (chunk.solidMesh == null || chunk.transparentMesh == null) {
                 if (!this.shouldBuildChunks()) continue;
                 chunk.whileLocked(() -> {
                     if (chunk.solidMesh == null) {
@@ -344,11 +347,11 @@ public final class WorldRenderer implements DisposableContainer {
                     }
                     chunk.loadCustomRendered();
 
+                    chunk.dirty = false;
+                    chunk.onUpdated();
                     chunk.initialized = true;
                     this.lastChunkBuild = System.currentTimeMillis();
                 });
-            } else if (chunk.solidMesh == null || chunk.transparentMesh == null) {
-                continue;
             }
 
             chunk.solidMesh.chunk = chunk;
@@ -418,7 +421,7 @@ public final class WorldRenderer implements DisposableContainer {
     }
 
     private boolean shouldBuildChunks() {
-        return this.lastChunkBuild < System.currentTimeMillis() - 1000L;
+        return this.lastChunkBuild < System.currentTimeMillis() - 100L;
     }
 
     public void collectEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
