@@ -283,6 +283,7 @@ public final class WorldRenderer implements DisposableContainer {
     }
 
     private void collectChunks(Array<Renderable> output, Pool<Renderable> renderablePool, List<ClientChunk> chunks, Array<ChunkPos> positions, LocalPlayer player, ChunkRenderRef ref) {
+        boolean hasRenderedChunk = false;
         for (var chunk : chunks) {
             if (positions.contains(chunk.getPos(), false)) {
                 UltracraftClient.LOGGER.warn("Duplicate chunk: " + chunk.getPos());
@@ -315,29 +316,37 @@ public final class WorldRenderer implements DisposableContainer {
 
             chunk.dirty = false;
 
-            if (!chunk.initialized || chunk.solidMesh == null || chunk.transparentMesh == null && canRenderNewChunk()) {
+            if (!chunk.initialized || !hasRenderedChunk && (Gdx.graphics.getFrameId() / 2) % 20 == 0) {
                 chunk.whileLocked(() -> {
-                    chunk.solidMesh = this.pool.obtain();
-                    var solidMesh = chunk.solidMesh.meshPart.mesh = chunk.mesher.meshVoxels(meshBuilder, block -> block.doesRender() && !block.isTransparent() && !block.hasCustomRender());
-                    chunk.solidMesh.meshPart.size = solidMesh.getNumIndices();
-                    chunk.solidMesh.meshPart.offset = 0;
-                    chunk.solidMesh.meshPart.primitiveType = GL_TRIANGLES;
-                    chunk.solidMesh.renderable.material = this.material;
-                    chunk.solidMesh.renderable.userData = chunk;
+                    if (chunk.mesh == null) {
+                        chunk.mesh = this.pool.obtain();
+                        var mesh = chunk.mesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
+                        chunk.mesh.meshPart.size = mesh.getNumIndices();
+                        chunk.mesh.meshPart.offset = 0;
+                        chunk.mesh.meshPart.primitiveType = GL_TRIANGLES;
+                        chunk.mesh.renderable.material = this.material;
+                        chunk.mesh.renderable.userData = chunk;
 
-                    chunk.transparentMesh = this.pool.obtain();
-                    var transparentMesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(meshBuilder, block -> block.doesRender() && block.isTransparent() && !block.hasCustomRender());
-                    chunk.transparentMesh.meshPart.size = transparentMesh.getNumIndices();
-                    chunk.transparentMesh.meshPart.offset = 0;
-                    chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
-                    chunk.transparentMesh.renderable.material = this.transparentMaterial;
-                    chunk.transparentMesh.renderable.userData = chunk;
+                        hasRenderedChunk = true;
+                    }
 
+                    if (chunk.transparentMesh == null) {
+                        chunk.transparentMesh = this.pool.obtain();
+                        var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isTransparent());
+                        chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
+                        chunk.transparentMesh.meshPart.offset = 0;
+                        chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
+                        chunk.transparentMesh.renderable.material = this.transparentMaterial;
+                        chunk.mesh.renderable.userData = chunk;
+                        hasRenderedChunk = true;
+                    }
                     chunk.loadCustomRendered();
 
                     chunk.initialized = true;
                     this.lastChunkRender = System.currentTimeMillis();
                 });
+            } else if (chunk.mesh == null || chunk.transparentMesh == null) {
+                continue;
             }
 
             chunk.solidMesh.chunk = chunk;
