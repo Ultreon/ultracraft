@@ -5,7 +5,6 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.Biome;
-import com.ultreon.craft.world.gen.feature.FiolageFeature;
 import com.ultreon.craft.world.gen.feature.PatchFeature;
 import com.ultreon.craft.world.gen.feature.RockFeature;
 import com.ultreon.craft.world.gen.feature.TreeFeature;
