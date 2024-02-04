@@ -316,7 +316,8 @@ public final class WorldRenderer implements DisposableContainer {
 
             chunk.dirty = false;
 
-            if (!chunk.initialized || !lambdaContext.hasRenderedChunk && this.shouldBuildChunks()) {
+            if (!chunk.initialized || !lambdaContext.hasRenderedChunk) {
+                if (!this.shouldBuildChunks()) continue;
                 chunk.whileLocked(() -> {
                     if (chunk.solidMesh == null) {
                         chunk.solidMesh = this.pool.obtain();
