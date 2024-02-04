@@ -1,19 +1,16 @@
 package com.ultreon.craft.api.commands.selector;
 
-import com.ultreon.craft.api.commands.TabCompleting;
-import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.api.commands.Selections;
+import com.ultreon.craft.api.commands.TabCompleting;
+import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
 
 import java.util.ArrayList;
 import java.util.UUID;
-
-import static com.ultreon.craft.api.commands.TabCompleting.entityUuids;
-import static com.ultreon.craft.api.commands.TabCompleting.selectors;
 
 @SuppressWarnings("unused")
 public class EntityBaseSelector<T extends Entity> extends BaseSelector<T> {

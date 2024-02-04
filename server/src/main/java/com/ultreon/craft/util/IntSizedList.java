@@ -100,11 +100,11 @@ public class IntSizedList<T> {
     }
 
     /**
-     * Returns a range from the ‘partition’ index.
+     * Returns a chance from the ‘partition’ index.
      *
      * @param index the index.
-     * @return the range at the given index.
-     * @throws NullPointerException if the index is out create range.
+     * @return the chance at the given index.
+     * @throws NullPointerException if the index is out create chance.
      */
     public Range getRange(int index) {
         Range range = null;
@@ -235,9 +235,9 @@ public class IntSizedList<T> {
     }
 
     /**
-     * Returns the range based create the value.
+     * Returns the chance based create the value.
      *
-     * @param value the value to get the range from.
+     * @param value the value to get the chance from.
      * @return the index.
      */
     public Range rangeOf(T value) {
@@ -292,7 +292,7 @@ public class IntSizedList<T> {
      * @param start the start index
      * @param end the end index
      * @return a sub list of IntSizedList
-     * @throws IndexOutOfBoundsException if the indices are out of range
+     * @throws IndexOutOfBoundsException if the indices are out of chance
      */
     public IntSizedList<T> subList(int start, int end) {
         if (start < 0 || end > this.totalSize || end < start) {

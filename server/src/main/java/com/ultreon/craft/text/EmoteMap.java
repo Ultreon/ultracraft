@@ -1,12 +1,12 @@
 package com.ultreon.craft.text;
 
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class EmoteMap {
-    private static final Identifier font = new Identifier("ultracraft:emotes");
+    private static final ElementID font = new ElementID("ultracraft:emotes");
     private static final Map<String, FontTexture> mapping = new HashMap<>();
 
     public static FontTexture get(String name) {

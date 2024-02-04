@@ -1,17 +1,17 @@
 package com.ultreon.craft.text;
 
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class FontTexture {
     private final char c;
-    private final Identifier font;
+    private final ElementID font;
 
-    public FontTexture(char c, Identifier font) {
+    public FontTexture(char c, ElementID font) {
         this.c = c;
         this.font = font;
     }
 
-    public FontTexture(int id, Identifier font) {
+    public FontTexture(int id, ElementID font) {
         this((char) id, font);
     }
 
@@ -19,7 +19,7 @@ public class FontTexture {
         return this.c;
     }
 
-    public Identifier getFont() {
+    public ElementID getFont() {
         return this.font;
     }
 

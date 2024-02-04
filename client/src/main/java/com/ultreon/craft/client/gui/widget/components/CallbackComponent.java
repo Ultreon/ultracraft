@@ -2,8 +2,8 @@ package com.ultreon.craft.client.gui.widget.components;
 
 import com.ultreon.craft.client.gui.Callback;
 import com.ultreon.craft.client.gui.widget.Widget;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.ImGuiEx;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 public class CallbackComponent<T extends Widget> extends UIComponent {
@@ -30,7 +30,7 @@ public class CallbackComponent<T extends Widget> extends UIComponent {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void handleImGui(String path, Identifier key, Widget widget) {
+    public void handleImGui(String path, ElementID key, Widget widget) {
         ImGuiEx.button("Callback (" + key + "): ", path, () -> this.call((T) widget));
     }
 }

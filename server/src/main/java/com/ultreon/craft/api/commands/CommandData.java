@@ -11,21 +11,21 @@ import com.ultreon.craft.gamerule.Rule;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.chat.Chat;
 import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.server.util.Utils;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.datetime.v0.Duration;
-import com.ultreon.craft.registry.Registry;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +61,7 @@ public class CommandData {
     }
 
     public CommandData aliases(String... aliases) {
-        this.aliases0.addAll(java.util.List.of(aliases));
+        this.aliases0.addAll(List.of(aliases));
         return this;
     }
 
@@ -404,7 +404,7 @@ public class CommandData {
         throw new CommandParseException.NotFound("item", ctx.getOffset());
     }
 
-    private static Item getItem(@Nullable Identifier id) {
+    private static Item getItem(@Nullable ElementID id) {
         for (var value : Registries.ITEM.entries()) {
             if (value.getKey() == id) {
                 return value.getValue();
@@ -508,7 +508,7 @@ public class CommandData {
         throw new CommandParseException.NotFound(type, ctx.getOffset());
     }
 
-    public static <T> T readFromFunc(CommandReader ctx, String type, Function<Identifier, T> enum_) throws CommandParseException {
+    public static <T> T readFromFunc(CommandReader ctx, String type, Function<ElementID, T> enum_) throws CommandParseException {
         var id = ctx.readId();
         T apply = enum_.apply(id);
         if (apply == null) throw new CommandParseException.NotFound(type, ctx.getOffset());

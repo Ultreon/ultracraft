@@ -2,7 +2,6 @@ package com.ultreon.craft.client.registry;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.render.RenderType;
-import com.ultreon.craft.entity.Entity;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -3,7 +3,6 @@ package com.ultreon.craft.client.render;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
-import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.client.render.meshing.GreedyMesher.LightLevelData;
 import com.ultreon.craft.client.render.meshing.PerCornerLightData;
 import com.ultreon.craft.util.Color;

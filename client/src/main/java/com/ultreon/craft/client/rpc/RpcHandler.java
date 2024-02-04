@@ -3,15 +3,11 @@ package com.ultreon.craft.client.rpc;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.IPCListener;
 import com.jagrosh.discordipc.entities.RichPresence;
-import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.time.OffsetDateTime;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 @ApiStatus.Experimental
 public class RpcHandler {

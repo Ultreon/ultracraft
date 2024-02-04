@@ -1,7 +1,7 @@
 package com.ultreon.craft.weather;
 
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import org.jetbrains.annotations.Nullable;
 
 public class Weather {
@@ -9,7 +9,7 @@ public class Weather {
     public static final Weather RAIN = new Weather();
     public static final Weather THUNDER = new Weather();
 
-    public @Nullable Identifier getId() {
+    public @Nullable ElementID getId() {
         return Registries.WEATHER.getKey(this);
     }
 }

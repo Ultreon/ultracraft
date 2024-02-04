@@ -4,7 +4,7 @@ import com.ultreon.libs.functions.v0.BiDouble2DoubleFunction;
 
 import java.util.UUID;
 
-public record AttributeModifier(UUID id, com.ultreon.craft.entity.AttributeModifier.Operation operation, double value) {
+public record AttributeModifier(UUID id, AttributeModifier.Operation operation, double value) {
 
     public enum Operation {
         PLUS((a, b) -> a + b),

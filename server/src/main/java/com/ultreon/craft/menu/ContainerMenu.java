@@ -11,9 +11,9 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,7 +86,7 @@ public abstract class ContainerMenu {
     public abstract void build();
 
     public ItemSlot get(int index) {
-        Preconditions.checkElementIndex(index, this.slots.length, "Slot index out of range");
+        Preconditions.checkElementIndex(index, this.slots.length, "Slot index out of chance");
         return this.slots[index];
     }
 
@@ -200,10 +200,10 @@ public abstract class ContainerMenu {
      * @return the title
      */
     public TextObject getTitle() {
-        Identifier id = this.getType().getId();
+        ElementID id = this.getType().getId();
 
         if (this.customTitle == null)
-            return TextObject.translation(id.location() + ".container." + id.path().replace("/", ".") + ".title");
+            return TextObject.translation(id.namespace() + ".container." + id.path().replace("/", ".") + ".title");
         return this.customTitle;
     }
 

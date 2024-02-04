@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.events;
 
 import com.ultreon.craft.client.player.ClientPlayer;
-import com.ultreon.libs.events.v1.Event;
+import com.ultreon.craft.events.api.Event;
 
 public class ClientPlayerEvents {
     public static final Event<PlayerJoined> PLAYER_JOINED = Event.create();

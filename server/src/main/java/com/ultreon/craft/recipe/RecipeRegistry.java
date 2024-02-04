@@ -3,28 +3,30 @@ package com.ultreon.craft.recipe;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.registry.AbstractRegistry;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.PagedList;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifier, T> {
-    private final OrderedMap<Identifier, T> keyMap = new OrderedMap<>();
-    private final OrderedMap<T, Identifier> valueMap = new OrderedMap<>();
+public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<ElementID, T> {
+    private final OrderedMap<ElementID, T> keyMap = new OrderedMap<>();
+    private final OrderedMap<T, ElementID> valueMap = new OrderedMap<>();
 
     public RecipeRegistry(T... typeGetter) {
 
     }
 
     @Override
-    public T get(Identifier obj) {
+    public T get(ElementID obj) {
         return this.keyMap.get(obj);
     }
 
     @Override
-    public void register(Identifier key, T val) {
+    public void register(ElementID key, T val) {
         this.keyMap.put(key, val);
         this.valueMap.put(val, key);
     }
@@ -35,12 +37,12 @@ public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifie
     }
 
     @Override
-    public Set<Identifier> keys() {
+    public Set<ElementID> keys() {
         return Set.copyOf(this.keyMap.keyList());
     }
 
     @Override
-    public Set<Map.Entry<Identifier, T>> entries() throws IllegalAccessException {
+    public Set<Map.Entry<ElementID, T>> entries() throws IllegalAccessException {
         return this.keyMap.entrySet();
     }
 
@@ -52,7 +54,7 @@ public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifie
         return new PagedList<>(pageSize, values);
     }
 
-    public Identifier getKey(T recipe) {
+    public ElementID getKey(T recipe) {
         return this.valueMap.get(recipe);
     }
 }

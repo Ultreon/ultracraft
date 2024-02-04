@@ -35,9 +35,12 @@ import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.Gamemode;
-import com.ultreon.craft.world.*;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.world.Biome;
+import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +52,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler {
     private final Connection connection;
-    private final Map<Identifier, NetworkChannel> channels = new HashMap<>();
+    private final Map<ElementID, NetworkChannel> channels = new HashMap<>();
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private long ping = 0;
@@ -59,7 +62,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         this.context = new PacketContext(null, connection, EnvType.CLIENT);
     }
 
-    public NetworkChannel registerChannel(Identifier id) {
+    public NetworkChannel registerChannel(ElementID id) {
         NetworkChannel networkChannel = NetworkChannel.create(id);
         this.channels.put(id, networkChannel);
         return networkChannel;
@@ -71,7 +74,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public NetworkChannel getChannel(Identifier channelId) {
+    public NetworkChannel getChannel(ElementID channelId) {
         return this.channels.get(channelId);
     }
 
@@ -218,7 +221,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onPlaySound(Identifier sound, float volume) {
+    public void onPlaySound(ElementID sound, float volume) {
         this.client.playSound(Registries.SOUND_EVENT.getValue(sound), volume);
     }
 
@@ -233,9 +236,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onBlockSet(BlockPos pos, Identifier blockId) {
-        var block = Registries.BLOCK.getValue(blockId);
-
+    public void onBlockSet(BlockPos pos, Block block) {
         ClientWorld world = this.client.world;
         if (this.client.world != null) {
             this.client.submit(() -> world.set(pos, block));
@@ -284,7 +285,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onOpenContainerMenu(Identifier menuTypeId) {
+    public void onOpenContainerMenu(ElementID menuTypeId) {
         var menuType = Registries.MENU_TYPE.getValue(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;

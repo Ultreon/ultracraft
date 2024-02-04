@@ -1,6 +1,6 @@
 package com.ultreon.craft;
 
-import com.ultreon.libs.crash.v0.CrashLog;
+import com.ultreon.craft.crash.CrashLog;
 import org.oxbow.swingbits.dialog.task.TaskDialog;
 import org.oxbow.swingbits.util.Strings;
 import org.slf4j.Logger;

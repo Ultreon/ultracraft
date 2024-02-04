@@ -47,6 +47,7 @@
   "ultracraft.screen.options": "Options...",
   "ultracraft.screen.options.title": "Options",
   "ultracraft.screen.options.fov": "FOV",
+  "ultracraft.screen.options.guiScale": "GUI Scale",
   "ultracraft.screen.options.language": "Language",
   "ultracraft.screen.pause.back_to_game": "Back to the game",
   "ultracraft.screen.pause.exit_world": "Exit World",

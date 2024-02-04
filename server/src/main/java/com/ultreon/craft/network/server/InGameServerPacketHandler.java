@@ -2,6 +2,7 @@ package com.ultreon.craft.network.server;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
@@ -18,22 +19,23 @@ import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
+import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPingPacket;
 import com.ultreon.craft.recipe.RecipeManager;
 import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.*;
-import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.api.EnvType;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class InGameServerPacketHandler implements ServerPacketHandler {
-    private static final Map<Identifier, NetworkChannel> CHANNEL = new HashMap<>();
+    private static final Map<ElementID, NetworkChannel> CHANNEL = new HashMap<>();
     private final UltracraftServer server;
     private final ServerPlayer player;
     private final Connection connection;
@@ -46,7 +48,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.context = new PacketContext(player, connection, EnvType.SERVER);
     }
 
-    public static NetworkChannel registerChannel(Identifier id) {
+    public static NetworkChannel registerChannel(ElementID id) {
         NetworkChannel channel = NetworkChannel.create(id);
         InGameServerPacketHandler.CHANNEL.put(id, channel);
         return channel;
@@ -59,7 +61,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-        Connection.LOGGER.info("Player " + this.player.getName() + " disconnected: " + message);
+        Connection.LOGGER.info("Player {} disconnected: {}", this.player.getName(), message);
         PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
 
         this.connection.closeAll();
@@ -85,12 +87,12 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         packet.handlePacket(() -> new ModPacketContext(channel, this.player, this.connection, EnvType.SERVER));
     }
 
-    public NetworkChannel getChannel(Identifier channelId) {
+    public NetworkChannel getChannel(ElementID channelId) {
         return InGameServerPacketHandler.CHANNEL.get(channelId);
     }
 
     public void onRespawn() {
-        UltracraftServer.LOGGER.debug("Respawning player: " + this.player);
+        UltracraftServer.LOGGER.debug("Respawning player: {}", this.player.getName());
         this.server.submit(this.player::respawn);
     }
 
@@ -145,24 +147,31 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     public void onBlockBroken(BlockPos pos) {
         var world = this.player.getWorld();
         var chunkPos = World.toChunkPos(pos);
-        if (this.player.isChunkActive(chunkPos)) {
-            // TODO Add reach check.
-            UltracraftServer.invoke(() -> {
-                Block original = world.get(pos);
-                world.set(pos, Blocks.AIR);
-                ItemStack stack = this.player.getSelectedItem();
-                Block block = world.get(pos);
-                world.set(pos, Blocks.AIR);
 
-                if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
-                    return;
-                }
-
-                this.player.inventory.addItems(original.getItemDrops());
-            });
-        } else {
-            UltracraftServer.LOGGER.warn("Player " + this.player.getName() + " attempted to break block that is not loaded.");
+        if (!this.player.isChunkActive(chunkPos)) {
+            UltracraftServer.LOGGER.warn("Player {} attempted to break block that is not loaded.", this.player.getName());
+            return;
         }
+
+        UltracraftServer.invoke(() -> {
+            if (Math.abs(pos.vec().d().add(1).dst(this.player.getPosition())) > this.player.getAttributes().get(Attribute.BLOCK_REACH)
+                    || this.player.blockBrokenTick) {
+                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getId(world.get(pos))));
+                return;
+            }
+
+            Block original = world.get(pos);
+            world.set(pos, Blocks.AIR);
+            ItemStack stack = this.player.getSelectedItem();
+            Block block = world.get(pos);
+            world.set(pos, Blocks.AIR);
+
+            if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
+                return;
+            }
+
+            this.player.inventory.addItems(original.getLootGen().generate(this.player.getRng()));
+        });
     }
 
     public void onHotbarIndex(int hotbarIdx) {
@@ -182,8 +191,10 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         if (item == null) return;
 
         UltracraftServer.invoke(() -> {
-            item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
-            slot.update();
+            InteractResult result = item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
+            if (result == InteractResult.DENY) {
+                slot.update();
+            }
         });
     }
 
@@ -203,7 +214,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.connection.send(new S2CPingPacket(time));
     }
 
-    public void onCraftRecipe(int typeId, Identifier recipeId) {
+    public void onCraftRecipe(int typeId, ElementID recipeId) {
         RecipeType recipeType = Registries.RECIPE_TYPE.byId(typeId);
         ItemStack crafted = RecipeManager.get().get(recipeId, recipeType).craft(this.player.inventory);
         this.player.inventory.addItem(crafted);

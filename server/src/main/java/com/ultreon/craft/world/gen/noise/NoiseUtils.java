@@ -34,7 +34,7 @@ public class NoiseUtils {
         double total = 0.0F;
         double frequency = 1.0F;
         double amplitude = 1.0F;
-        double amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 range
+        double amplitudeSum = 0.0F;  // Used for normalizing result to 0.0 - 1.0 chance
 
 //        for (int i = 0; i < settings.octaves(); i++) {
             total += settings.eval((offset.x + x) * frequency, (offset.y + z) * frequency) * amplitude;

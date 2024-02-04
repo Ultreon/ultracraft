@@ -1,6 +1,5 @@
 package com.ultreon.craft.network;
 
-import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.Packet;
 

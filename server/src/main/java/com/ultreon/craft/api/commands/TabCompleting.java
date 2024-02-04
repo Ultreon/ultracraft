@@ -11,8 +11,8 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.util.Difficulty;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.World;
-import com.ultreon.libs.commons.v0.Identifier;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.NotNull;
@@ -129,20 +129,20 @@ public class TabCompleting {
     }
 
     public static List<String> blocks(List<String> list, String currentArgument) {
-        for (Identifier id : Registries.BLOCK.keys()) {
+        for (ElementID id : Registries.BLOCK.keys()) {
             TabCompleting.addIfStartsWith(list, id, currentArgument);
         }
         return list;
     }
 
     public static List<String> items(List<String> list, String currentArgument) {
-        for (Identifier id : Registries.ITEM.keys()) {
+        for (ElementID id : Registries.ITEM.keys()) {
             TabCompleting.addIfStartsWith(list, id, currentArgument);
         }
         return list;
     }
 
-    public static List<String> keys(String currentArgument, Collection<Identifier> keys) {
+    public static List<String> keys(String currentArgument, Collection<ElementID> keys) {
         List<String> list = new ArrayList<>();
         for (var key : keys) {
             TabCompleting.addIfStartsWith(list, key.toString(), currentArgument);
@@ -152,7 +152,7 @@ public class TabCompleting {
 
     public static List<String> worlds(List<String> list, String currentArgument) {
         for (World world : UltracraftServer.get().getWorlds()) {
-            Identifier id = world.getDimension().getId();
+            ElementID id = world.getDimension().getId();
             TabCompleting.addIfStartsWith(list, id, currentArgument);
         }
         return list;
@@ -343,12 +343,12 @@ public class TabCompleting {
         }
     }
 
-    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull Identifier id, @NotNull String startsWith) {
+    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull ElementID id, @NotNull String startsWith) {
         Preconditions.checkNotNull(list, "list");
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(startsWith, "startsWith");
 
-        if (id.location().startsWith(startsWith)) {
+        if (id.namespace().startsWith(startsWith)) {
             list.add(id.toString());
         } else {
             if (id.toString().startsWith(startsWith)) {

@@ -9,9 +9,6 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 import java.util.List;
 
-import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
-import static com.ultreon.craft.world.World.CHUNK_SIZE;
-
 public final class BuilderChunk extends Chunk {
     private final ServerWorld world;
     private final Thread thread;

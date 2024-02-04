@@ -1,9 +1,9 @@
 package com.ultreon.craft.client.resources;
 
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(Identifier id) {
+    public ResourceNotFoundException(ElementID id) {
         super(id.toString());
     }
 }

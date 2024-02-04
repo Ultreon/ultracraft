@@ -65,7 +65,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     private boolean hasColor = false;
     /** The current primitiveType */
     private int primitiveType;
-    /** The UV range used when building */
+    /** The UV chance used when building */
     private float uOffset = 0f, uScale = 1f, vOffset = 0f, vScale = 1f;
     private boolean hasUVTransform = false;
     private float[] vertex;
@@ -75,7 +75,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     private final Matrix3 normalTransform = new Matrix3();
     private final BoundingBox bounds = new BoundingBox();
 
-    /** @param usage bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal and
+    /** @param usage bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal and
      *           TextureCoordinates is supported. */
     public static VertexAttributes createAttributes (long usage) {
         final Array<VertexAttribute> attrs = new Array<>();
@@ -95,7 +95,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     }
 
     /** Begin building a mesh. Call {@link #part(String, int)} to start a {@link MeshPart}.
-     * @param attributes bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal
+     * @param attributes bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal
      *           and TextureCoordinates is supported. */
     @Override
     public void begin (final long attributes) {
@@ -109,7 +109,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     }
 
     /** Begin building a mesh.
-     * @param attributes bitwise mask of the {@link com.badlogic.gdx.graphics.VertexAttributes.Usage}, only Position, Color, Normal
+     * @param attributes bitwise mask of the {@link VertexAttributes.Usage}, only Position, Color, Normal
      *           and TextureCoordinates is supported. */
     @Override
     public void begin (final long attributes, int primitiveType) {
@@ -265,7 +265,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     public void getVertices (float[] out, int destOffset) {
         if (attributes == null) throw new GdxRuntimeException("Must be called in between #begin and #end");
         if ((destOffset < 0) || (destOffset > out.length - vertices.size))
-            throw new GdxRuntimeException("Array too small or offset out of range");
+            throw new GdxRuntimeException("Array too small or offset out of chance");
         System.arraycopy(vertices.items, 0, out, destOffset, vertices.size);
     }
 
@@ -291,7 +291,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
     public void getIndices (short[] out, int destOffset) {
         if (attributes == null) throw new GdxRuntimeException("Must be called in between #begin and #end");
         if ((destOffset < 0) || (destOffset > out.length - indices.size))
-            throw new GdxRuntimeException("Array too small or offset out of range");
+            throw new GdxRuntimeException("Array too small or offset out of chance");
         System.arraycopy(indices.items, 0, out, destOffset, indices.size);
     }
 

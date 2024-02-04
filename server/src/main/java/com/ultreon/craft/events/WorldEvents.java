@@ -1,12 +1,12 @@
 package com.ultreon.craft.events;
 
+import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.events.v1.Event;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.ultreon.craft.registry.event;
 
-import com.ultreon.libs.events.v1.Event;
+import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.registry.Registry;
 
 public class RegistryEvents {

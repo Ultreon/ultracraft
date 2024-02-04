@@ -12,8 +12,8 @@ import com.ultreon.craft.recipe.RecipeManager;
 import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.PagedList;
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class InventoryScreen extends ContainerScreen {
     private static final int CONTAINER_SIZE = 40;
-    private static final Identifier BACKGROUND = UltracraftClient.id("textures/gui/container/inventory.png");
+    private static final ElementID BACKGROUND = UltracraftClient.id("textures/gui/container/inventory.png");
     private final Inventory inventory;
     private final PagedList<Recipe> recipes;
     private List<Recipe> currentPage;
@@ -58,6 +58,11 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     private void rebuildSlots() {
+        if (!UltracraftClient.isOnMainThread()) {
+            UltracraftClient.invoke(this::rebuildSlots);
+            return;
+        }
+
         this.recipeSlots.clear();
         List<ItemSlot> list = new ArrayList<>();
         int x = 0;
@@ -97,7 +102,7 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     @Override
-    public Identifier getBackground() {
+    public ElementID getBackground() {
         return InventoryScreen.BACKGROUND;
     }
 
@@ -105,7 +110,7 @@ public class InventoryScreen extends ContainerScreen {
     protected void renderBackground(Renderer renderer) {
         super.renderBackground(renderer);
 
-        Identifier background = this.getBackground();
+        ElementID background = this.getBackground();
         renderer.blit(background, this.left() + this.backgroundWidth() + 1, this.getHeight() / 2f - 64, 104, 128, 0, 127);
     }
 

@@ -4,11 +4,11 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.TypeRegistry;
 import com.ultreon.data.types.IType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.util.EnumUtils;
 import com.ultreon.libs.commons.v0.vector.*;
@@ -71,14 +71,14 @@ public class PacketBuffer extends ByteBuf {
         this.buf.writeBytes(array);
     }
 
-    public Identifier readId() {
+    public ElementID readId() {
         var location = this.readUTF(100);
         var path = this.readUTF(200);
-        return new Identifier(location, path);
+        return new ElementID(location, path);
     }
 
-    public void writeId(Identifier id) {
-        this.writeUTF(id.location(), 100);
+    public void writeId(ElementID id) {
+        this.writeUTF(id.namespace(), 100);
         this.writeUTF(id.path(), 200);
     }
 

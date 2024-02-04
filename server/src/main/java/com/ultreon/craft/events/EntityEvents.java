@@ -3,10 +3,10 @@ package com.ultreon.craft.events;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.LivingEntity;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.events.api.Event;
+import com.ultreon.craft.events.api.EventResult;
+import com.ultreon.craft.events.api.ValueEventResult;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
-import com.ultreon.libs.events.v1.Event;
-import com.ultreon.libs.events.v1.EventResult;
-import com.ultreon.libs.events.v1.ValueEventResult;
 
 public class EntityEvents {
     public static final Event<Damage> DAMAGE = Event.withValue();

@@ -8,7 +8,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.debug.ValueTracker;
@@ -135,7 +134,7 @@ public class ChunkMeshBuilder {
     }
 
     private static boolean shouldRenderTransparentFace(Block b) {
-        return b == null || b == Blocks.AIR && !b.isTransparent() || !b.doesRender();
+        return b == null || b.isAir() && !b.isTransparent() || !b.doesRender();
     }
 
     private void buildBlock(ClientChunk chunk, FloatArray vertices, int x, int y, int z) {
@@ -176,7 +175,7 @@ public class ChunkMeshBuilder {
     }
 
     private static boolean shouldRenderFace(Block side) {
-        return side == null || side == Blocks.AIR || side.isTransparent() || !side.doesRender();
+        return side == null || side.isAir() || side.isTransparent() || !side.doesRender();
     }
 
     public static float[] backUv = {

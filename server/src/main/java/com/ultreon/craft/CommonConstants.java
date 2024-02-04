@@ -1,5 +1,6 @@
 package com.ultreon.craft;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,7 @@ public class CommonConstants {
     public static final String EX_INVALID_DATA = "Invalid data";
     public static final String EX_ARRAY_TOO_LARGE = "Array too large, max = %d, actual = %d";
     public static final String NAMESPACE = "ultracraft";
+    public static final Gson GSON = new Gson();
 
     private CommonConstants() {
 

@@ -24,7 +24,7 @@ import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class ItemRenderer {
     private final UltracraftClient client;
@@ -63,7 +63,7 @@ public class ItemRenderer {
             return;
         }
 
-        Identifier curKey = Registries.ITEM.getKey(item);
+        ElementID curKey = Registries.ITEM.getKey(item);
         if (curKey == null) {
             renderer.blitColor(Color.WHITE);
             renderer.blit((TextureRegion) null, x, y, 16, 16);
@@ -75,7 +75,7 @@ public class ItemRenderer {
     }
 
     private void renderBlockItem(Block block, Renderer renderer, int x, int y) {
-        renderer.model(() -> {
+        renderer.external(() -> {
             float guiScale = this.client.getGuiScale();
             this.itemCam.zoom = 4.0f / guiScale;
             this.itemCam.far = 100000;

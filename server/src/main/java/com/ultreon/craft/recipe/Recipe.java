@@ -2,7 +2,7 @@ package com.ultreon.craft.recipe;
 
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.Inventory;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface Recipe {
 
     ItemStack result();
 
-    default Identifier getId() {
+    default ElementID getId() {
         return RecipeManager.get().getKey(this.getType(), this);
     }
 

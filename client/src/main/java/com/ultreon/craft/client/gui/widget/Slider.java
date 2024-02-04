@@ -9,7 +9,7 @@ import com.ultreon.craft.client.gui.widget.components.CallbackComponent;
 import com.ultreon.craft.client.gui.widget.components.RangedValueComponent;
 import com.ultreon.craft.client.gui.widget.components.TextComponent;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 import org.checkerframework.common.value.qual.IntRange;
 
 import java.util.function.Supplier;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import static com.ultreon.craft.client.UltracraftClient.id;
 
 public class Slider extends Widget {
-    private static final Identifier TEXTURE = id("textures/gui/slider.png");
+    private static final ElementID TEXTURE = id("textures/gui/slider.png");
     private final CallbackComponent<Slider> callback;
     private final RangedValueComponent value;
     private final TextComponent text;

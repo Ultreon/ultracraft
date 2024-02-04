@@ -1,4 +1,4 @@
-package com.ultreon.craft.world.gen.layer;
+package com.ultreon.craft.world.gen.feature;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.block.Block;

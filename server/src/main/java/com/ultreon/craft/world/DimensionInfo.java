@@ -1,19 +1,19 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.libs.commons.v0.Identifier;
-import com.ultreon.libs.translations.v1.Language;
+import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ElementID;
 
 import java.util.Objects;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class DimensionInfo {
-    private final Identifier id;
+    private final ElementID id;
 
-    public DimensionInfo(Identifier id) {
+    public DimensionInfo(ElementID id) {
         this.id = id;
     }
 
-    public Identifier getId() {
+    public ElementID getId() {
         return this.id;
     }
 
@@ -30,7 +30,7 @@ public class DimensionInfo {
         return Objects.hash(this.id);
     }
 
-    public String getName() {
-        return Language.translate(this.id.location() + ".dimension." + this.id.path().replace('/', '.'));
+    public TextObject getName() {
+        return TextObject.translation(this.id.namespace() + ".dimension." + this.id.path().replace('/', '.'));
     }
 }

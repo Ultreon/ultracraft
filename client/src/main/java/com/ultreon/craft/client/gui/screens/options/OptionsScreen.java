@@ -15,6 +15,7 @@ public class OptionsScreen extends Screen {
     private static final TextObject TITLE = TextObject.literal("ultracraft.screen.options.title");
     private Label titleLabel;
     private Slider fovSlider;
+    private Slider scaleSlider;
     private TextButton languageButton;
     private TextButton okButton;
 
@@ -40,6 +41,19 @@ public class OptionsScreen extends Screen {
                     int fov = caller.value().get();
                     this.client.config.get().fov = fov;
                     this.client.camera.fieldOfView = fov;
+                }));
+
+        this.fovSlider = builder.add(Slider.of(200, 30, 160)
+                .text(TextObject.translation("ultracraft.screen.options.guiScale"))
+                .value(this.client.config.get().guiScale)
+                .position(() -> new Position(this.getWidth() / 2 - 200, this.getHeight() / 2 - 25))
+                .callback(caller -> {
+                    if (caller.value().get() == 0) {
+                        this.client.setAutomaticScale(true);
+                    } else {
+                        this.client.setAutomaticScale(false);
+                        this.client.setGuiScale(caller.value().get());
+                    }
                 }));
 
         this.languageButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.options.language"))

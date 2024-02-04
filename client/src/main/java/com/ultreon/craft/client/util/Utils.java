@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.util;
 
-import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.badlogic.gdx.math.Vector3;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

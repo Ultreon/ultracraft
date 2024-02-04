@@ -1,13 +1,15 @@
 package com.ultreon.craft.network.packets.s2c;
 
-import com.ultreon.craft.network.*;
+import com.ultreon.craft.network.NetworkChannel;
+import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public class S2CModPacket extends Packet<InGameClientPacketHandler> {
-    private final Identifier channelId;
+    private final ElementID channelId;
     private final ModPacket<?> packet;
     private final NetworkChannel channel;
 

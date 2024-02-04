@@ -3,13 +3,17 @@ package com.ultreon.craft.world.gen.biome;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.Biome;
+import com.ultreon.craft.world.gen.feature.PatchFeature;
 import com.ultreon.craft.world.gen.feature.RockFeature;
 import com.ultreon.craft.world.gen.feature.TreeFeature;
-import com.ultreon.craft.world.gen.layer.*;
+import com.ultreon.craft.world.gen.layer.AirTerrainLayer;
+import com.ultreon.craft.world.gen.layer.GroundTerrainLayer;
+import com.ultreon.craft.world.gen.layer.SurfaceTerrainLayer;
+import com.ultreon.craft.world.gen.layer.UndergroundTerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
-import com.ultreon.libs.commons.v0.Identifier;
 
 public class Biomes {
     public static final Biome VOID = Biomes.register("void", Biome.builder()
@@ -72,7 +76,7 @@ public class Biomes {
             .build());
 
     private static Biome register(String name, Biome biome) {
-        Registries.BIOME.register(new Identifier(name), biome);
+        Registries.BIOME.register(new ElementID(name), biome);
         return biome;
     }
 

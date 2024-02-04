@@ -1,10 +1,10 @@
 package com.ultreon.craft.api.commands.error;
 
-import com.ultreon.craft.api.commands.MessageCode;
+import com.ultreon.craft.api.commands.CommandData;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.api.commands.CommandSpec;
+import com.ultreon.craft.api.commands.MessageCode;
 import com.ultreon.craft.api.commands.output.CommandOutput;
-import com.ultreon.craft.api.commands.CommandData;
 import com.ultreon.craft.server.chat.Chat;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;

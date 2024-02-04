@@ -3,8 +3,8 @@ package com.ultreon.craft.client.audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.world.SoundEvent;
-import com.ultreon.libs.commons.v0.Identifier;
 
 public final class ClientSound {
     private final SoundEvent event;
@@ -15,10 +15,10 @@ public final class ClientSound {
     }
 
     public void register() {
-        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().location(), this.getId().path().replace(".", "/"))));
+        this.sound = Gdx.audio.newSound(Gdx.files.internal(String.format("assets/%s/sounds/%s.mp3", this.getId().namespace(), this.getId().path().replace(".", "/"))));
     }
 
-    public Identifier getId() {
+    public ElementID getId() {
         return Registries.SOUND_EVENT.getKey(this.event);
     }
 

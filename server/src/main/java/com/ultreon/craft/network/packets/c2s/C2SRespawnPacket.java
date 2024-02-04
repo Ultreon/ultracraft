@@ -1,7 +1,7 @@
 package com.ultreon.craft.network.packets.c2s;
 
-import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 

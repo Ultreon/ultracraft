@@ -1,27 +1,26 @@
 package com.ultreon.craft.util;
 
-import com.ultreon.libs.commons.v0.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 public class Task <T> implements Runnable {
-    private final Identifier id;
+    private final ElementID id;
     private Supplier<@Nullable T> block = () -> null;
     @Nullable
     CompletableFuture<T> future;
 
-    public Task(Identifier id) {
+    public Task(ElementID id) {
         this.id = id;
     }
 
-    public Task(Identifier id, Supplier<T> block) {
+    public Task(ElementID id, Supplier<T> block) {
         this.id = id;
         this.block = block;
     }
 
-    public Task(Identifier id, Runnable block) {
+    public Task(ElementID id, Runnable block) {
         this.id = id;
         this.block = () -> {
             block.run();
@@ -29,7 +28,7 @@ public class Task <T> implements Runnable {
         };
     }
 
-    public Identifier id() {
+    public ElementID id() {
         return this.id;
     }
 

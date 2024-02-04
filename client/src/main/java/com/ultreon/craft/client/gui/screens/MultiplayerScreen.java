@@ -5,9 +5,9 @@ import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.client.gui.widget.TextEntry;
+import com.ultreon.craft.client.text.Language;
 import com.ultreon.craft.client.text.UITranslations;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.libs.translations.v1.Language;
 import org.jetbrains.annotations.Nullable;
 
 public class MultiplayerScreen extends Screen {

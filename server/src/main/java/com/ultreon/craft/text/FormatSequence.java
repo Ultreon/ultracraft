@@ -1,7 +1,7 @@
 package com.ultreon.craft.text;
 
 import com.ultreon.craft.util.Color;
-import com.ultreon.libs.commons.v0.Identifier;
+import com.ultreon.craft.util.ElementID;
 
 public interface FormatSequence extends Iterable<TextElement> {
     boolean isBoldAt(int index);
@@ -11,6 +11,6 @@ public interface FormatSequence extends Iterable<TextElement> {
     Color getColorAt(int index);
     HoverEvent<?> getHoverEventAt(int index);
     ClickEvent getClickEventAt(int index);
-    Identifier getFontAt(int index);
+    ElementID getFontAt(int index);
     TextObject getTextAt(int index);
 }

@@ -1,5 +1,6 @@
 package com.ultreon.craft.block;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
@@ -8,18 +9,17 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.BoundingBox;
+import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.world.loot.ConstantLoot;
+import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
-import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
@@ -29,8 +29,12 @@ public class Block implements DataWriter<MapType> {
     private final float hardness;
     @Nullable
     private final ToolType effectiveTool;
-    private final List<ItemStack> itemDrops;
+    private final LootGenerator lootGen;
     private final boolean disableRendering;
+    private final boolean hasCustomRender;
+    private final boolean replaceable;
+    private final boolean occlude;
+    private final boolean greedyMerge;
 
     public Block() {
         this(new Properties());
@@ -44,12 +48,16 @@ public class Block implements DataWriter<MapType> {
         this.hardness = properties.hardness;
         this.effectiveTool = properties.effectiveTool;
         this.toolRequired = properties.requiresTool;
-        this.itemDrops = Collections.unmodifiableList(properties.itemDrops);
+        this.lootGen = properties.loot;
+        this.replaceable = properties.replaceable;
+        this.hasCustomRender = properties.hasCustomRender;
+        this.occlude = properties.occlude;
+        this.greedyMerge = properties.greedyMerge;
     }
 
-    public Identifier getId() {
-        Identifier key = Registries.BLOCK.getKey(this);
-        return key == null ? new Identifier(Identifier.getDefaultNamespace(), "air") : key;
+    public ElementID getId() {
+        ElementID key = Registries.BLOCK.getKey(this);
+        return key == null ? new ElementID(CommonConstants.NAMESPACE, "air") : key;
     }
 
     public boolean isAir() {
@@ -88,7 +96,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public static Block load(MapType data) {
-        Identifier id = Identifier.tryParse(data.getString("id"));
+        ElementID id = ElementID.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
         Block block = Registries.BLOCK.getValue(id);
         return block == null ? Blocks.AIR : block;
@@ -104,8 +112,8 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        Identifier key = Registries.BLOCK.getKey(this);
-        return key == null ? "ultracraft.block.air.name" : key.location() + ".block." + key.path() + ".name";
+        ElementID key = Registries.BLOCK.getKey(this);
+        return key == null ? "ultracraft.block.air.name" : key.namespace() + ".block." + key.path() + ".name";
     }
 
     public float getHardness() {
@@ -125,8 +133,8 @@ public class Block implements DataWriter<MapType> {
         return this.toolRequired;
     }
 
-    public List<ItemStack> getItemDrops() {
-        return this.itemDrops;
+    public LootGenerator getLootGen() {
+        return this.lootGen;
     }
 
     @Override
@@ -136,23 +144,30 @@ public class Block implements DataWriter<MapType> {
                 '}';
     }
 
-    public boolean hasOcclusion() {
-        return true;
+    public boolean doesOcclude() {
+        return this.occlude;
     }
 
     public boolean shouldGreedyMerge() {
-        return true;
+        return greedyMerge;
     }
 
     public boolean hasCustomRender() {
-        return false;
+        return this.hasCustomRender;
     }
 
-    public int getRegIdx() {
-        return Registries.BLOCK.values().indexOf(this);
+    public int getRawId() {
+        return Registries.BLOCK.getId(this);
+    }
+
+    public boolean isReplaceable() {
+        return this.replaceable;
     }
 
     public static class Properties {
+        private boolean greedyMerge = true;
+        private boolean replaceable;
+        private boolean hasCustomRender;
         @Nullable
         private ToolType effectiveTool = null;
         private float hardness = 0.0F;
@@ -160,8 +175,9 @@ public class Block implements DataWriter<MapType> {
         private boolean solid = true;
         private boolean fluid = false;
         private boolean requiresTool = false;
-        private final List<ItemStack> itemDrops = new ArrayList<>();
+        private LootGenerator loot = ConstantLoot.EMPTY;
         private boolean disableRendering;
+        private boolean occlude;
 
         public @This Properties transparent() {
             this.transparent = true;
@@ -194,12 +210,17 @@ public class Block implements DataWriter<MapType> {
         }
 
         public @This Properties dropsItems(ItemStack...  drops) {
-            this.itemDrops.addAll(List.of(drops));
+            this.loot = new ConstantLoot(drops);
             return this;
         }
 
         public @This Properties dropsItems(Item...  drops) {
-            this.itemDrops.addAll(Arrays.stream(drops).map(Item::defaultStack).toList());
+            this.loot = new ConstantLoot(Arrays.stream(drops).map(Item::defaultStack).toList());
+            return this;
+        }
+
+        public @This Properties dropsItems(LootGenerator drops) {
+            this.loot = drops;
             return this;
         }
 
@@ -208,8 +229,33 @@ public class Block implements DataWriter<MapType> {
             return this;
         }
 
-        public Properties unbreakable() {
+        public @This Properties usesCustomRender() {
+            this.hasCustomRender = true;
+            return this;
+        }
+
+        public @This Properties instaBreak() {
+            this.hardness = 0;
+            return this;
+        }
+
+        public @This Properties unbreakable() {
             this.hardness = Float.POSITIVE_INFINITY;
+            return this;
+        }
+
+        public @This Properties replaceable() {
+            this.replaceable = true;
+            return this;
+        }
+
+        public @This Properties noOcclude() {
+            this.occlude = false;
+            return this;
+        }
+
+        public @This Properties noGreedyMerge() {
+            this.greedyMerge = false;
             return this;
         }
     }

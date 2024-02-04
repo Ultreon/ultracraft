@@ -1,7 +1,9 @@
 package com.ultreon.craft.client.gui.screens;
 
-import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.widget.Label;
+import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.Position;
+import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.SelectionList;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.text.TextObject;
