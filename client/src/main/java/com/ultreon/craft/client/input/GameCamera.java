@@ -22,7 +22,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3f;
  */
 public class GameCamera extends PerspectiveCamera {
     public final UltracraftClient client = UltracraftClient.get();
-    private final InspectionNode<GameCamera> node;
+    private InspectionNode<GameCamera> node;
     private Vector3 hitPosition;
     private Vec3d camPos;
     private HitResult hitResult;
@@ -34,7 +34,7 @@ public class GameCamera extends PerspectiveCamera {
     public GameCamera(float fieldOfViewY, float viewportWidth, float viewportHeight) {
         super(fieldOfViewY, viewportWidth, viewportHeight);
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = this.client.inspection.createNode("camera", () -> this);
             this.node.create("position", () -> this.position);
             this.node.create("direction", () -> this.direction);
@@ -65,9 +65,11 @@ public class GameCamera extends PerspectiveCamera {
             this.updateThirdPerson(lookVec);
         } else {
 //            this.updateThirdPerson(lookVec);
-            this.node.remove("hitPosition");
-            this.node.remove("eyePosition");
-            this.node.remove("playerPosition");
+            if (DebugFlags.INSPECTION_ENABLED.enabled()) {
+                this.node.remove("hitPosition");
+                this.node.remove("eyePosition");
+                this.node.remove("playerPosition");
+            }
             // Set the camera's position to zero, and set the camera's direction to the player's look vector.
             this.position.set(new Vector3());
             this.direction.set((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);

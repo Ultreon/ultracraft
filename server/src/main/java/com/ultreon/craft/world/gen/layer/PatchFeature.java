@@ -2,7 +2,7 @@ package com.ultreon.craft.world.gen.layer;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.WorldGenFeature;
@@ -55,7 +55,7 @@ public class PatchFeature extends WorldGenFeature {
     }
 
     @Override
-    public boolean handle(World world, Chunk chunk, int x, int z, int height) {
+    public boolean handle(World world, ChunkAccess chunk, int x, int z, int height) {
         if (this.baseNoise == null) return false;
 
         for (int y = height; y > height - this.depth; y--) {

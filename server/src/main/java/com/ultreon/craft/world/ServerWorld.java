@@ -8,6 +8,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
+import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
@@ -33,6 +34,7 @@ import com.ultreon.libs.commons.v0.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +72,7 @@ public final class ServerWorld extends World {
     private final Lock chunkLock = new ReentrantLock();
 
     private int playTime;
-    private final List<RecordedChange> recordedChanges = new ArrayList<>();
+    private final Set<RecordedChange> recordedChanges = new CopyOnWriteArraySet<>();
 
     public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
         super((LongType) worldData.get("seed"));
@@ -853,9 +855,14 @@ public final class ServerWorld extends World {
 
         Chunk chunkAt = this.getChunkAt(x, y, z);
         if (chunkAt == null) {
+            if (WorldGenDebugContext.isActive())
+                System.out.println("[DEBUG] Recorded out of bounds block at " + x + " " + y + " " + z + " " + block);
             this.recordedChanges.add(new RecordedChange(x, y, z, block));
             return;
         }
+
+        if (WorldGenDebugContext.isActive())
+            System.out.println("[DEBUG] Chunk is available, setting block at " + x + " " + y + " " + z + " " + block);
 
         chunkAt.setFast(World.toLocalBlockPos(x, y, z).vec(), block);
     }
@@ -1165,7 +1172,7 @@ public final class ServerWorld extends World {
             var chunk = new BuilderChunk(this.world, Thread.currentThread(), World.CHUNK_SIZE, World.CHUNK_HEIGHT, globalPos);
 
             // Generate terrain using the terrain generator.
-            this.world.terrainGen.generate(chunk, world.recordedChanges);
+            this.world.terrainGen.generate(chunk, List.copyOf(world.recordedChanges));
 
             WorldEvents.CHUNK_BUILT.factory().onChunkGenerated(this.world, this, chunk);
 
@@ -1398,6 +1405,29 @@ public final class ServerWorld extends World {
             mapType.putInt("z", this.z);
             mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getKey(this.block)).toString());
             return mapType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RecordedChange that = (RecordedChange) o;
+            return x == that.x && y == that.y && z == that.z;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y, z);
+        }
+
+        @Override
+        public String toString() {
+            return "RecordedChange{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    ", z=" + z +
+                    ", block=" + block.getId() +
+                    '}';
         }
     }
 }

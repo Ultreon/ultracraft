@@ -1,18 +1,17 @@
 package com.ultreon.craft.world.gen.biome;
 
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.world.*;
-import com.ultreon.craft.world.gen.Carver;
-import com.ultreon.craft.world.gen.TreeData;
-import com.ultreon.craft.world.gen.TreeGenerator;
-import com.ultreon.craft.world.gen.WorldGenFeature;
+import com.ultreon.craft.world.gen.*;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
@@ -37,14 +36,15 @@ public class BiomeGenerator implements ServerDisposable {
         this.features = features;
     }
 
-    public BuilderChunk processColumn(BuilderChunk chunk, int x, int z, List<ServerWorld.RecordedChange> recordedChanges) {
+    public BuilderChunk processColumn(BuilderChunk chunk, int x, int z, Collection<ServerWorld.RecordedChange> recordedChanges) {
         int groundPos = this.carver.carve(chunk, x, z);
         LightMap lightMap = chunk.getLightMap();
 
-        BiomeGenerator.setRecordedChanges(chunk, recordedChanges);
-
         this.generateTerrainLayers(chunk, x, z, groundPos);
-        this.generateTerrainFeatures(chunk, x, z, groundPos);
+
+        WorldGenDebugContext.withinContext(() -> {
+            BiomeGenerator.setRecordedChanges(chunk, x, z, recordedChanges);
+        });
 
         BiomeGenerator.updateLightMap(chunk, x, z, lightMap);
         chunk.set(x, chunk.getOffset().y, z, Blocks.VOIDGUARD);
@@ -59,7 +59,7 @@ public class BiomeGenerator implements ServerDisposable {
         }
     }
 
-    private void generateTerrainFeatures(BuilderChunk chunk, int x, int z, int groundPos) {
+    public void generateTerrainFeatures(RecordingChunk chunk, int x, int z, int groundPos) {
         for (var feature : this.features) {
             feature.handle(this.world, chunk, x, z, groundPos);
         }
@@ -77,11 +77,16 @@ public class BiomeGenerator implements ServerDisposable {
         }
     }
 
-    private static void setRecordedChanges(BuilderChunk chunk, List<ServerWorld.RecordedChange> recordedChanges) {
+    private static void setRecordedChanges(BuilderChunk chunk, int x, int z, Collection<ServerWorld.RecordedChange> recordedChanges) {
         for (ServerWorld.RecordedChange recordedChange : recordedChanges) {
-            if (recordedChange.x() >= chunk.getOffset().x && recordedChange.x() < chunk.getOffset().x + World.CHUNK_SIZE
-                    && recordedChange.z() >= chunk.getOffset().z && recordedChange.z() < chunk.getOffset().z + World.CHUNK_SIZE) {
+            boolean isWithinChunkBounds = recordedChange.x() >= chunk.getOffset().x && recordedChange.x() < chunk.getOffset().x + World.CHUNK_SIZE
+                    && recordedChange.z() >= chunk.getOffset().z && recordedChange.z() < chunk.getOffset().z + World.CHUNK_SIZE;
+            BlockPos localBlockPos = World.toLocalBlockPos(recordedChange.x(), recordedChange.y(), recordedChange.z());
+            if (isWithinChunkBounds && localBlockPos.x() == x && localBlockPos.z() == z) {
                 chunk.set(World.toLocalBlockPos(recordedChange.x(), recordedChange.y(), recordedChange.z()).vec(), recordedChange.block());
+                if (WorldGenDebugContext.isActive()) {
+                    System.out.println("[DEBUG CHUNK-HASH " + System.identityHashCode(chunk) + "] Setting recorded change in chunk at " + recordedChange.x() + ", " + recordedChange.y() + ", " + recordedChange.z() + " of type " + recordedChange.block());
+                }
             }
         }
     }

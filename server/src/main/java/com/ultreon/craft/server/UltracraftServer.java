@@ -75,8 +75,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
-    protected final InspectionNode<UltracraftServer> node;
-    private final InspectionNode<Object> playersNode;
+    protected InspectionNode<UltracraftServer> node;
+    private InspectionNode<Object> playersNode;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 16;
@@ -127,7 +127,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 new Identifier("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = parentNode.createNode("server", () -> this);
             this.playersNode = this.node.createNode("players", this.players::values);
             this.node.createNode("world", () -> this.world);
@@ -597,7 +597,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.players.put(player.getUuid(), player);
         this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.playersNode.createNode(player.getName(), () -> player);
         }
 

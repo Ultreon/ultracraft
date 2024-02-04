@@ -1,6 +1,8 @@
 package com.ultreon.craft.world.gen;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.biome.BiomeData;
@@ -16,10 +18,9 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
@@ -51,16 +52,27 @@ public class TerrainGenerator {
     }
 
     @CanIgnoreReturnValue
-    public BuilderChunk generate(BuilderChunk chunk, List<ServerWorld.RecordedChange> recordedChanges) {
+    public BuilderChunk generate(BuilderChunk chunk, Collection<ServerWorld.RecordedChange> recordedChanges) {
 //        this.buildBiomeCenters(chunk);
+
+        RecordingChunk recordingChunk = new RecordingChunk(chunk);
 
         for (var x = 0; x < CHUNK_SIZE; x++) {
             for (var z = 0; z < CHUNK_SIZE; z++) {
                 var index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
                 chunk.setBiomeGenerator(x, z, index.biomeGenerator);
                 chunk = index.biomeGenerator.processColumn(chunk, x, z, recordedChanges);
+                chunk.getBiomeGenerator(x, z).generateTerrainFeatures(recordingChunk, x, z, chunk.getHighest(x, z));
             }
         }
+
+        for (ServerWorld.RecordedChange change : recordingChunk.getRecordedChanges()) {
+            if (WorldGenDebugContext.isActive()) {
+                CommonConstants.LOGGER.info("Recorded change: " + change);
+            }
+            chunk.set(change.x(), change.y(), change.z(), change.block());
+        }
+
         return chunk;
     }
 

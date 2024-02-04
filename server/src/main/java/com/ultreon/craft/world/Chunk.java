@@ -37,7 +37,7 @@ import static com.ultreon.libs.commons.v0.Mth.lerp;
  */
 @NotThreadSafe
 @ApiStatus.NonExtendable
-public abstract class Chunk implements ServerDisposable {
+public abstract class Chunk implements ServerDisposable, ChunkAccess {
     public static final int VERTEX_SIZE = 6;
     private final ChunkPos pos;
     final Map<BlockPos, Float> breaking = new HashMap<>();
