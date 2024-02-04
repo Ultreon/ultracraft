@@ -27,6 +27,7 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SCommandPacket::new);
         this.addServerBound(C2SRequestTabComplete::new);
         this.addServerBound(C2SAbilitiesPacket::new);
+        this.addServerBound(C2SCraftRecipePacket::new);
 
         this.addClientBound(S2CKeepAlivePacket::new);
         this.addClientBound(S2CPingPacket::new);

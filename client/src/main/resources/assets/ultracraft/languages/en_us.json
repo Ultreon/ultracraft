@@ -4,11 +4,18 @@
   "ultracraft.block.grass_block.name": "Grass",
   "ultracraft.block.dirt.name": "Dirt",
   "ultracraft.block.stone.name": "Stone",
+  "ultracraft.block.gravel.name": "Gravel",
+  "ultracraft.block.log.name": "Log",
+  "ultracraft.block.leaves.name": "Leaves",
+  "ultracraft.block.planks.name": "Block of Planks",
   "ultracraft.block.cobblestone.name": "Cobblestone",
   "ultracraft.block.water.name": "Water",
   "ultracraft.block.air.name": "Air",
   "ultracraft.item.wooden_pickaxe.name": "Wooden Pickaxe",
   "ultracraft.item.wooden_shovel.name": "Wooden Shovel",
+  "ultracraft.item.wooden_axe.name": "Wooden Axe",
+  "ultracraft.item.plank.name": "Plank",
+  "ultracraft.item.stick.name": "Stick",
   "ultracraft.item.air.name": "Air",
   "ultracraft.ui.backToTitle": "Go back to the title",
   "ultracraft.ui.backToGame": "Go back to the game",
@@ -64,5 +71,9 @@
   "ultracraft.screen.multiplayer.join": "Join",
   "ultracraft.screen.out_of_memory": "Out of Memory",
   "ultracraft.screen.out_of_memory.message": "Ultracraft ran out of memory.\nTry restarting the game.\nYou can also return to the title screen to free up memory.",
-  "ultracraft.dimension.overworld": "Planet Earth"
+  "ultracraft.dimension.overworld": "Planet Earth",
+
+  "ultracraft.recipe.craftable": "Craftable",
+  "ultracraft.recipe.uncraftable": "Uncraftable",
+  "ultracraft.recipe.ingredients": "Ingredients:"
 }

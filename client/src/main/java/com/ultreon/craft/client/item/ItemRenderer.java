@@ -105,8 +105,8 @@ public class ItemRenderer {
     }
 
     public void resize(int width, int height) {
-        this.itemCam.viewportWidth = this.client.getScaledWidth();
-        this.itemCam.viewportHeight = this.client.getScaledHeight();
+        this.itemCam.viewportWidth = width / this.client.getGuiScale();
+        this.itemCam.viewportHeight = height / this.client.getGuiScale();
         this.itemCam.update(true);
     }
 }

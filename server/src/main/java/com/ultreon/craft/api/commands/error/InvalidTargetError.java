@@ -21,6 +21,7 @@ public class InvalidTargetError extends InvalidValueError {
         super(InvalidTargetError.WHAT, got, index);
     }
 
+    @Override
     public @NotNull String getName() {
         return "Invalid";
     }

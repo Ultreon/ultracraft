@@ -15,11 +15,9 @@ import com.ultreon.craft.client.render.BlockRenderer;
 import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
-import com.ultreon.craft.debug.Debugger;
-import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.World;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
@@ -297,6 +295,14 @@ public class GreedyMesher implements Mesher {
     }
 
     private float calcLightLevel(BlockFace side, int x, int y, int z) throws PosOutOfBoundsException {
+        LightLevelData result = this.calcLightLevels(side, x, y, z);
+        if (result == null) return 1;
+
+        return Math.min(1, result.sunBrightness() + result.blockBrightness());
+    }
+
+    @Nullable
+    private LightLevelData calcLightLevels(BlockFace side, int x, int y, int z) {
         switch (side) {
             case TOP:
                 y += 1;
@@ -335,9 +341,11 @@ public class GreedyMesher implements Mesher {
             x -= chunkSize;
         }
 
-        if (sChunk == null) return 1;
-
-        return Math.min(1, sChunk.getBrightness(this.sunlight(sChunk, x, y, z)) + sChunk.getBrightness(this.blockLight(sChunk, x, y, z)));
+        if (sChunk == null) return null;
+        float sunBrightness = sChunk.getBrightness(this.sunlight(sChunk, x, y, z));
+        float blockBrightness = sChunk.getBrightness(this.blockLight(sChunk, x, y, z));
+        LightLevelData result = new LightLevelData(sunBrightness, blockBrightness);
+        return result;
     }
 
     public List<Face> getFaces(UseCondition condition) {
@@ -450,7 +458,7 @@ public class GreedyMesher implements Mesher {
                             break;
                         }
                     }
-                    outputList.add(new Face(side, block, ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ));
+                    outputList.add(new Face(side, block, ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ, 1));
                 }
             }
         } catch (PosOutOfBoundsException ex) {
@@ -562,18 +570,27 @@ public class GreedyMesher implements Mesher {
         return lightSum / count;
     }
 
+    public record LightLevelData(float sunBrightness, float blockBrightness) {
+
+        public float lightLevel() {
+            return Mth.clamp(this.sunBrightness + this.blockBrightness, 0, 1);
+        }
+    }
     public static class Face {
+
         private final BlockFace side;
         private final int x1, y1, x2, y2, z;
         private final float lightLevel;
         private final PerCornerLightData lightData;
         private final BlockRenderer renderer;
         private final BakedCubeModel bakedBlockModel;
+        private final float sunlightLevel;
 
         /**
-         * @param lightData Per corner light data. Pass null if per corner lighting is disabled.
+         * @param lightData     Per corner light data. Pass null if per corner lighting is disabled.
+         * @param sunlightLevel
          */
-        public Face(BlockFace side, Block block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z) {
+        public Face(BlockFace side, Block block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z, float sunlightLevel) {
             this.lightLevel = lightLevel;
             this.x1 = startX;
             this.y1 = startY;
@@ -581,6 +598,7 @@ public class GreedyMesher implements Mesher {
             this.y2 = endY;
             this.z = z;
             this.side = side;
+            this.sunlightLevel = sunlightLevel;
             this.lightData = null;
 
             UltracraftClient client = UltracraftClient.get();
@@ -589,19 +607,20 @@ public class GreedyMesher implements Mesher {
         }
 
         public void render(MeshBuilder builder) {
+            LightLevelData lld = new LightLevelData(this.lightLevel, this.sunlightLevel);
             switch (this.side) {
                 case TOP ->
-                        this.renderer.renderTop(this.bakedBlockModel.top(), this.x1, this.y1, this.x2, this.y2, this.z + 1, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderTop(this.bakedBlockModel.top(), this.x1, this.y1, this.x2, this.y2, this.z + 1, lld, this.lightData, builder);
                 case BOTTOM ->
-                        this.renderer.renderBottom(this.bakedBlockModel.bottom(), this.x1, this.y1, this.x2, this.y2, this.z, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderBottom(this.bakedBlockModel.bottom(), this.x1, this.y1, this.x2, this.y2, this.z, lld, this.lightData, builder);
                 case NORTH ->
-                        this.renderer.renderNorth(this.bakedBlockModel.north(), this.x1, this.y1, this.x2, this.y2, this.z + 1, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderNorth(this.bakedBlockModel.north(), this.x1, this.y1, this.x2, this.y2, this.z + 1, lld, this.lightData, builder);
                 case SOUTH ->
-                        this.renderer.renderSouth(this.bakedBlockModel.south(), this.x1, this.y1, this.x2, this.y2, this.z, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderSouth(this.bakedBlockModel.south(), this.x1, this.y1, this.x2, this.y2, this.z, lld, this.lightData, builder);
                 case EAST ->
-                        this.renderer.renderEast(this.bakedBlockModel.east(), this.x1, this.y1, this.x2, this.y2, this.z + 1, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderEast(this.bakedBlockModel.east(), this.x1, this.y1, this.x2, this.y2, this.z + 1, lld, this.lightData, builder);
                 case WEST ->
-                        this.renderer.renderWest(this.bakedBlockModel.west(), this.x1, this.y1, this.x2, this.y2, this.z, this.lightLevel, this.lightData, builder);
+                        this.renderer.renderWest(this.bakedBlockModel.west(), this.x1, this.y1, this.x2, this.y2, this.z, lld, this.lightData, builder);
             }
         }
 

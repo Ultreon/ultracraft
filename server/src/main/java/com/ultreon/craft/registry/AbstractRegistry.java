@@ -12,11 +12,9 @@ import java.util.Set;
  * @param <V> The type value type for the registry.
  */
 public abstract class AbstractRegistry<K, V> {
-    public static AbstractRegistry<?, ?> INSTANCE;
-
     protected final HashMap<K, V> registry = new HashMap<>();
 
-    public AbstractRegistry() throws IllegalStateException {
+    protected AbstractRegistry() throws IllegalStateException {
 
     }
 

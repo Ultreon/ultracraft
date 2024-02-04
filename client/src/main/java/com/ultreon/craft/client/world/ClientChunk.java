@@ -15,6 +15,7 @@ import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.PosOutOfBoundsException;
+import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.libs.commons.v0.Mth;
@@ -37,8 +38,16 @@ public final class ClientChunk extends Chunk {
     ModelInstance transparentModelInst;
     private final UltracraftClient client = UltracraftClient.get();
 
-    public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, Storage<Block> storage) {
-        super(world, size, height, pos, storage);
+    /**
+     * @deprecated Use {@link #ClientChunk(ClientWorld, ChunkPos, Storage, Storage)} instead
+     */
+    @Deprecated(since = "0.1.0", forRemoval = true)
+    public ClientChunk(ClientWorld world, int size, int height, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        this(world, pos, storage, biomeStorage);
+    }
+
+    public ClientChunk(ClientWorld world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+        super(world, pos, storage, biomeStorage);
         this.clientWorld = world;
         this.active = false;
 

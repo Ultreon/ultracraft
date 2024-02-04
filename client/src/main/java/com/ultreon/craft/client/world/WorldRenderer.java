@@ -51,7 +51,7 @@ import static com.ultreon.craft.client.UltracraftClient.id;
 import static com.ultreon.craft.world.World.*;
 
 public final class WorldRenderer implements Disposable {
-    public static final float SCALE = 16;
+    public static final float SCALE = 1;
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
     private final Material material;
@@ -63,6 +63,7 @@ public final class WorldRenderer implements Disposable {
     private final Material sectionBorderMaterial;
     private final Environment environment;
     private final Cubemap cubemap;
+    private final ColorAttribute ambientLight;
     private int visibleChunks;
     private int loadedChunks;
     private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
@@ -199,8 +200,10 @@ public final class WorldRenderer implements Disposable {
 
         float v1 = 2f, v2 = 0.125f;
         this.environment = new Environment();
+        this.ambientLight = new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f);
         this.environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f));
         this.environment.set(new ColorAttribute(ColorAttribute.Fog, 0.6F, 0.7F, 1.0F, 1.0F));
+        this.environment.set(new ColorAttribute(ColorAttribute.Specular, 1, 1, 1, 1f));
         this.environment.set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, this.cubemap));
 //        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, 1.0f));
 //        this.environment.add(new DirectionalLight().set(0.75f / v1, 0.75f / v1, 0.75f / v1, 0.0f, 0, -1.0f));
@@ -385,7 +388,7 @@ public final class WorldRenderer implements Disposable {
                 renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
                 renderable.meshPart.primitiveType = GL_TRIANGLES;
                 renderable.material = this.breakingMaterial;
-                renderable.worldTransform.setToTranslationAndScaling(this.tmp, new Vector3(1.01f, 1.01f, 1.01f).scl(1 / WorldRenderer.SCALE));
+                renderable.worldTransform.setToTranslationAndScaling(this.tmp.add(-1, 1, 1), new Vector3(1.001f, 1.001f, 1.001f).scl(-1 / WorldRenderer.SCALE));
 
                 output.add(this.verifyOutput(renderable));
             }
@@ -506,6 +509,7 @@ public final class WorldRenderer implements Disposable {
         return this.world;
     }
 
+    @Override
     public void dispose() {
         this.disposed = true;
         this.pool.clear();

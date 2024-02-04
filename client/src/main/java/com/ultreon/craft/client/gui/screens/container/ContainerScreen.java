@@ -63,22 +63,27 @@ public abstract class ContainerScreen extends Screen {
         this.renderBackgroundImage(renderer);
     }
 
-    private void renderSlots(Renderer renderer, int mouseX, int mouseY) {
+    @SuppressWarnings("GDXJavaFlushInsideLoop")
+    protected void renderSlots(Renderer renderer, int mouseX, int mouseY) {
         for (var slot : this.container.slots) {
-            var x = this.left() + slot.getSlotX();
-            var y = this.top() + slot.getSlotY();
+            this.renderSlot(renderer, mouseX, mouseY, slot);
+        }
+    }
 
-            ItemStack slotItem = slot.getItem();
-            this.client.itemRenderer.render(slotItem.getItem(), renderer, x, y);
+    protected void renderSlot(Renderer renderer, int mouseX, int mouseY, ItemSlot slot) {
+        var x = this.left() + slot.getSlotX();
+        var y = this.top() + slot.getSlotY();
 
-            if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {
-                renderer.fill(x, y, 16, 16, Color.WHITE.withAlpha(0x60));
-            }
+        ItemStack slotItem = slot.getItem();
+        this.client.itemRenderer.render(slotItem.getItem(), renderer, x, y);
 
-            if (!slotItem.isEmpty() && slotItem.getCount() > 1) {
-                String text = Integer.toString(slotItem.getCount());
-                renderer.textLeft(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
-            }
+        if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {
+            renderer.fill(x, y, 16, 16, Color.WHITE.withAlpha(0x60));
+        }
+
+        if (!slotItem.isEmpty() && slotItem.getCount() > 1) {
+            String text = Integer.toString(slotItem.getCount());
+            renderer.textLeft(text, x + 18 - this.font.width(text), y + 17 - this.font.lineHeight, Color.WHITE, false);
         }
     }
 
@@ -106,7 +111,7 @@ public abstract class ContainerScreen extends Screen {
         }
     }
 
-    private void renderTooltip(Renderer renderer, int x, int y, TextObject title, List<TextObject> description, @Nullable String subTitle) {
+    protected void renderTooltip(Renderer renderer, int x, int y, TextObject title, List<TextObject> description, @Nullable String subTitle) {
         var all = Lists.newArrayList(description);
         all.add(0, title);
         if (subTitle != null) all.add(TextObject.literal(subTitle));
@@ -175,5 +180,9 @@ public abstract class ContainerScreen extends Screen {
         super.onClosed();
 
         this.client.connection.send(new C2SCloseContainerMenuPacket());
+    }
+
+    public void emitUpdate() {
+        // Impl purposes
     }
 }

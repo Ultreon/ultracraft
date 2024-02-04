@@ -15,6 +15,7 @@ public class InspectorDebugPage implements DebugPage {
     private String inspectCurrentPath = "/";
     private String inspectIdxInput = "";
 
+    @Override
     public void render(DebugRenderContext context) {
         String path = this.inspectCurrentPath;
 

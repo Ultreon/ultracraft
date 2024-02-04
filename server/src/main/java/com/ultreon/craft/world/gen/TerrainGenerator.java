@@ -1,11 +1,10 @@
 package com.ultreon.craft.world.gen;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.util.MathHelper;
-import com.ultreon.craft.world.Biome;
-import com.ultreon.craft.world.BuilderChunk;
-import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.biome.BiomeData;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.biome.BiomeIndex;
@@ -19,10 +18,11 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public class TerrainGenerator {
     private final DomainWarping biomeDomain;
@@ -44,27 +44,35 @@ public class TerrainGenerator {
     }
 
     @CanIgnoreReturnValue
-    public BiomeData registerBiome(ServerWorld world, long seed, Biome biome, float temperatureStart, float temperatureEnd) {
+    public BiomeData registerBiome(ServerWorld world, long seed, Biome biome, float temperatureStart, float temperatureEnd, boolean isOcean) {
         var generator = biome.create(world, seed);
-        var biomeData = new BiomeData(temperatureStart, temperatureEnd, generator);
+        var biomeData = new BiomeData(temperatureStart, temperatureEnd, isOcean, generator);
         this.biomeGenData.add(biomeData);
         return biomeData;
     }
 
     @CanIgnoreReturnValue
-    public BuilderChunk generate(BuilderChunk chunk) {
-        this.buildBiomeCenters(chunk);
+    public BuilderChunk generate(BuilderChunk chunk, Collection<ServerWorld.RecordedChange> recordedChanges) {
+//        this.buildBiomeCenters(chunk);
 
-        var index = this.findGenerator(chunk, chunk.getOffset(), false);
-        chunk.setTreeData(index.biomeGenerator.createTreeData(chunk));
+        RecordingChunk recordingChunk = new RecordingChunk(chunk);
 
-        for (var x = 0; x < chunk.size; x++) {
-            for (var z = 0; z < chunk.size; z++) {
-                index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
+        for (var x = 0; x < CHUNK_SIZE; x++) {
+            for (var z = 0; z < CHUNK_SIZE; z++) {
+                var index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
                 chunk.setBiomeGenerator(x, z, index.biomeGenerator);
-                chunk = index.biomeGenerator.processColumn(chunk, x, z);
+                chunk = index.biomeGenerator.processColumn(chunk, x, z, recordedChanges);
+                chunk.getBiomeGenerator(x, z).generateTerrainFeatures(recordingChunk, x, z, chunk.getHighest(x, z));
             }
         }
+
+        for (ServerWorld.RecordedChange change : recordingChunk.getRecordedChanges()) {
+            if (WorldGenDebugContext.isActive()) {
+                CommonConstants.LOGGER.info("Recorded change: " + change);
+            }
+            chunk.set(change.x(), change.y(), change.z(), change.block());
+        }
+
         return chunk;
     }
 
@@ -80,9 +88,9 @@ public class TerrainGenerator {
     }
 
     private List<Vec3i> evalBiomeCenters(Vec3i pos) {
-        int len = World.CHUNK_SIZE;
+        int len = CHUNK_SIZE;
 
-        Vec3i origin = new Vec3i(Math.round((float) pos.x / len) * len, 0, Math.round((float) pos.z / len));
+        Vec3i origin = new Vec3i(Math.round((float) pos.x) / len, 0, Math.round((float) pos.z));
         var centers = new ListOrderedSet<Vec3i>();
 
         centers.add(origin);
@@ -90,10 +98,10 @@ public class TerrainGenerator {
         for (var dir : Neighbour8Direction.values()) {
             var offXZ = dir.vec();
 
-            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * len));
-            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * 2 * len));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * len));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * 2 * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
+            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
         }
 
         return centers.asList();
@@ -113,25 +121,26 @@ public class TerrainGenerator {
             offset.add(domainOffset.x, 0, domainOffset.y);
         }
 
-        var biomeIndices = this.getBiomeIndexAt(chunk, offset);
+        var localOffset = World.toLocalBlockPos(offset.x, offset.y, offset.z);
+        var temp = this.noise.eval(offset.x * this.noise.noiseZoom(), offset.z * this.noise.noiseZoom());
+        var height = chunk.getHighest(localOffset.x(), localOffset.z());
+        BiomeGenerator biomeGen = this.biomeGenData.get(0).biomeGen();
 
-        var firstGenerator = this.selectBiome(biomeIndices.get(0).index());
-        var secondGenerator = this.selectBiome(biomeIndices.get(1).index());
+        for (var data : this.biomeGenData) {
+//            var currentlyOcean = height < World.SEA_LEVEL - 4;
+            if (temp >= data.temperatureStartThreshold() && temp < data.temperatureEndThreshold() && !data.isOcean())
+                biomeGen = data.biomeGen();
+        }
 
-        var biomeCenters = chunk.getBiomeCenters();
-        double distance = biomeCenters.get(biomeIndices.get(0).index()).dst(biomeCenters.get(biomeIndices.get(1).index()));
-        double firstWeight = biomeIndices.get(0).distance() / distance;
-        double secondWeight = 1 - firstWeight;
-        int firstNoise = firstGenerator.getCarver().getSurfaceHeightNoise(offset.x, offset.z);
-        int secondNoise = secondGenerator.getCarver().getSurfaceHeightNoise(offset.x, offset.z);
-        return new BiomeGenerator.Index(firstGenerator, (int) Math.round(firstNoise * firstWeight + secondNoise * secondWeight));
+        return new BiomeGenerator.Index(biomeGen);
 
     }
 
-    private BiomeGenerator selectBiome(int index) {
+    private BiomeGenerator selectBiome(int index, float height) {
         var temp = this.biomeNoise.getFloat(index);
         for (var data : this.biomeGenData) {
-            if (temp >= data.temperatureStartThreshold() && temp < data.temperatureEndThreshold())
+            var currentlyOcean = height < World.SEA_LEVEL - 4;
+            if (temp >= data.temperatureStartThreshold() && temp < data.temperatureEndThreshold() && currentlyOcean == data.isOcean())
                 return data.biomeGen();
         }
         return this.biomeGenData.get(0).biomeGen();

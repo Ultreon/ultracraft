@@ -174,6 +174,7 @@ public class ServerConnections {
     }
 
     private class TcpChannelInitializer extends ChannelInitializer<Channel> {
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 
@@ -193,6 +194,7 @@ public class ServerConnections {
     }
 
     private class MemoryChannelInitializer extends ChannelInitializer<Channel> {
+        @Override
         protected void initChannel(@NotNull Channel channel) {
             Connection.setInitAttributes(channel);
 

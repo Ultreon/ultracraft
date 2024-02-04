@@ -3,6 +3,8 @@ package com.ultreon.craft.client.render;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
+import com.ultreon.craft.client.render.meshing.GreedyMesher;
+import com.ultreon.craft.client.render.meshing.GreedyMesher.LightLevelData;
 import com.ultreon.craft.client.render.meshing.PerCornerLightData;
 import com.ultreon.craft.util.Color;
 
@@ -16,7 +18,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     private final VertexInfo c11 = new VertexInfo();
 
     @Override
-    public void renderNorth(TextureRegion region, float x1, float y1, float x2, float y2, float z, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderNorth(TextureRegion region, float x1, float y1, float x2, float y2, float z, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // POSITIVE Z
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -42,7 +46,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     }
 
     @Override
-    public void renderSouth(TextureRegion region, float x1, float y1, float x2, float y2, float z, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderSouth(TextureRegion region, float x1, float y1, float x2, float y2, float z, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // NEGATIVE Z
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -68,7 +74,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     }
 
     @Override
-    public void renderWest(TextureRegion region, float z1, float y1, float z2, float y2, float x, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderWest(TextureRegion region, float z1, float y1, float z2, float y2, float x, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // NEGATIVE X
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -94,7 +102,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     }
 
     @Override
-    public void renderEast(TextureRegion region, float z1, float y1, float z2, float y2, float x, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderEast(TextureRegion region, float z1, float y1, float z2, float y2, float x, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // POSITIVE X
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -120,7 +130,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     }
 
     @Override
-    public void renderTop(TextureRegion region, float x1, float z1, float x2, float z2, float y, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderTop(TextureRegion region, float x1, float z1, float x2, float z2, float y, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // POSITIVE Y
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 
@@ -146,7 +158,9 @@ public class NormalBlockRenderer implements BlockRenderer {
     }
 
     @Override
-    public void renderBottom(TextureRegion region, float x1, float z1, float x2, float z2, float y, float lightLevel, PerCornerLightData lightData, MeshBuilder builder) {
+    public void renderBottom(TextureRegion region, float x1, float z1, float x2, float z2, float y, LightLevelData lld, PerCornerLightData lightData, MeshBuilder builder) {
+        var lightLevel = lld.lightLevel();
+
         // NEGATIVE Y
         builder.setUVRange(NormalBlockRenderer.getU(region), NormalBlockRenderer.getV(region), NormalBlockRenderer.getU2(region), NormalBlockRenderer.getV2(region));
 

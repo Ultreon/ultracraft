@@ -70,13 +70,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private static final WatchManager WATCH_MANAGER = new WatchManager(new ConfigurationScheduler("Ultracraft"));
     private static UltracraftServer instance;
     private final List<ServerDisposable> disposables = new ArrayList<>();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Queue<Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>>> chunkNetworkQueue = new ArrayDeque<>();
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
-    protected final InspectionNode<UltracraftServer> node;
-    private final InspectionNode<Object> playersNode;
+    protected InspectionNode<UltracraftServer> node;
+    private InspectionNode<Object> playersNode;
     protected ServerWorld world;
     protected int port;
     protected int renderDistance = 16;
@@ -127,7 +127,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 new Identifier("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = parentNode.createNode("server", () -> this);
             this.playersNode = this.node.createNode("players", this.players::values);
             this.node.createNode("world", () -> this.world);
@@ -245,6 +245,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * The server main loop.
      * Note: Internal API.
      */
+    @Override
     @ApiStatus.Internal
     public final void run() {
         // Send server starting event to mods.
@@ -342,6 +343,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      * Stops the server thread in a clean state.
      * Note: this method is blocking.
      */
+    @Override
     @Blocking
     public void shutdown() {
         // Send event for server stopping.
@@ -480,6 +482,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.scheduler.schedule(runnable, time, unit);
     }
 
+    @Override
     public void close() {
         for (ServerDisposable disposable : this.disposables) {
             disposable.dispose();
@@ -487,10 +490,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.world.dispose();
 
-        this.scheduler.shutdownNow();
+        this.scheduler.shutdown();
 
         try {
-            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
                 this.onTerminationFailed();
             }
         } catch (InterruptedException | CrashException exc) {
@@ -594,7 +597,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.players.put(player.getUuid(), player);
         this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.playersNode.createNode(player.getName(), () -> player);
         }
 

@@ -126,6 +126,7 @@ public record Bounds(Position pos, Size size) implements Copyable<Bounds> {
         return this.size.height;
     }
 
+    @Override
     @CheckReturnValue
     public Bounds cpy() {
         return new Bounds(this.pos.cpy(), this.size.cpy());

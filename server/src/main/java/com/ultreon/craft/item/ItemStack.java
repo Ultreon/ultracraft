@@ -189,14 +189,32 @@ public class ItemStack {
         return new ItemStack(this.item, this.count, this.tag.copy());
     }
 
+    /**
+     * Gets the description of the item.
+     *
+     * @return the description
+     */
     public List<TextObject> getDescription() {
         return this.item.getDescription(this);
     }
 
-    public boolean isSameItemSameTag(ItemStack other) {
+    /**
+     * Determines if this ItemStack is similar to another ItemStack.
+     * Checks the item and the data tag.
+     *
+     * @param  other   the ItemStack to compare with
+     * @return         true if the ItemStacks are similar, false otherwise
+     */
+    public boolean isSimilar(ItemStack other) {
         return this.item == other.item && this.tag.equals(other.tag);
     }
 
+    /**
+     * Checks if the current item is the same as the given item.
+     *
+     * @param  other  the item to compare with
+     * @return        true if the items are the same, false otherwise
+     */
     public boolean isSameItem(ItemStack other) {
         return this.item == other.item;
     }

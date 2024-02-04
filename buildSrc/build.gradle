@@ -1,6 +1,6 @@
 plugins {
     id 'java-gradle-plugin' // so we can assign and ID to our plugin
-    id 'org.jetbrains.kotlin.jvm' version "1.9.0"
+    id 'org.jetbrains.kotlin.jvm' version "1.9.21"
     id 'java'
     id 'java-library'
 }
@@ -12,12 +12,12 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = "17"
-    targetCompatibility = "17"
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 kotlin {
-    jvmToolchain 17
+    jvmToolchain 21
 }
 
 repositories {
