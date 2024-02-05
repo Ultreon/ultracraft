@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.DisposableContainer;
@@ -29,7 +30,6 @@ import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.RendererRegistry;
-import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
@@ -62,6 +62,7 @@ public final class WorldRenderer implements DisposableContainer {
     public static final float SCALE = 1;
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
+    public static final String OUTLINE_CURSOR_ID = CommonConstants.strId("outline_cursor");
     private final Material material;
     private final Material transparentMaterial;
     private final Texture breakingTex;
@@ -85,6 +86,7 @@ public final class WorldRenderer implements DisposableContainer {
     private final Renderable cursor;
     private boolean disposed;
     private final Vector3 tmp = new Vector3();
+    private final Vector3 tmp1 = new Vector3();
     private final Material breakingMaterial;
     private final Array<Mesh> breakingMeshes;
     private final Int2ObjectMap<ModelInstance> modelInstances = new Int2ObjectOpenHashMap<>();
@@ -105,9 +107,9 @@ public final class WorldRenderer implements DisposableContainer {
         this.transparentMaterial = new Material();
         this.transparentMaterial.set(TextureAttribute.createDiffuse(blockTex));
         this.transparentMaterial.set(TextureAttribute.createEmissive(emissiveBlockTex));
-        this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+//        this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
-        this.transparentMaterial.set(FloatAttribute.createAlphaTest(0.25f));
+//        this.transparentMaterial.set(FloatAttribute.createAlphaTest(0.02f));
 
         // Chunk border outline
         MeshMaterial result = createChunkOutline();
@@ -232,8 +234,6 @@ public final class WorldRenderer implements DisposableContainer {
     }
 
     public void collect(final Array<Renderable> output, final Pool<Renderable> renderablePool) {
-        var export = new RenderableArray();
-//        export.setDefaultEnvironment(this.environment);
         var player = this.client.player;
         if (player == null) return;
 
@@ -241,7 +241,11 @@ public final class WorldRenderer implements DisposableContainer {
             this.pool.flush();
         }
 
-        export.clear();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) { // TODO: DEBUG
+            renderablePool.clear();
+        }
+
+        output.clear();
 
         var chunks = WorldRenderer.chunksInViewSorted(this.world.getLoadedChunks(), player);
         this.loadedChunks = chunks.size();
@@ -250,19 +254,17 @@ public final class WorldRenderer implements DisposableContainer {
         var ref = new ChunkRenderRef();
 
         Array<ChunkPos> positions = new Array<>();
-        UltracraftClient.PROFILER.section("chunks", () -> this.collectChunks(export, renderablePool, chunks, positions, player, ref));
+        UltracraftClient.PROFILER.section("chunks", () -> this.collectChunks(output, renderablePool, chunks, positions, player, ref));
 
         HitResult gameCursor = this.client.cursor;
-        if (gameCursor != null && gameCursor.isCollide()) {
+        if (gameCursor != null && gameCursor.isCollide() && !this.client.hideHud && !player.isSpectator()) {
             UltracraftClient.PROFILER.section("cursor", () -> {
                 Vec3i pos = gameCursor.getPos();
                 Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
-                Vector3 renderOffset = new Vector3(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
 
-                this.cursor.meshPart.id = "ultracraft:outline_cursor";
-
-                this.cursor.worldTransform.setToTranslation(renderOffset);
-                export.add(verifyOutput(this.cursor));
+                this.cursor.meshPart.id = OUTLINE_CURSOR_ID;
+                this.cursor.worldTransform.setToTranslation(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
+                output.add(verifyOutput(this.cursor));
             });
         }
 
@@ -270,7 +272,7 @@ public final class WorldRenderer implements DisposableContainer {
             LocalPlayer localPlayer = this.client.player;
             if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.config.get().accessibility.hideFirstPersonPlayer)) return;
 
-            this.collectEntity(localPlayer, export, renderablePool);
+            this.collectEntity(localPlayer, output, renderablePool);
         });
 
         UltracraftClient.PROFILER.section("players", () -> {
@@ -280,12 +282,9 @@ public final class WorldRenderer implements DisposableContainer {
                 });
             }
         });
-
-        output.addAll(export);
     }
 
     private void collectChunks(Array<Renderable> output, Pool<Renderable> renderablePool, List<ClientChunk> chunks, Array<ChunkPos> positions, LocalPlayer player, ChunkRenderRef ref) {
-        var lambdaContext = new ChunkBuildContext();
         for (var chunk : chunks) {
             if (positions.contains(chunk.getPos(), false)) {
                 UltracraftClient.LOGGER.warn("Duplicate chunk: " + chunk.getPos());
@@ -325,26 +324,22 @@ public final class WorldRenderer implements DisposableContainer {
                 chunk.whileLocked(() -> {
                     if (chunk.solidMesh == null) {
                         chunk.solidMesh = this.pool.obtain();
-                        var mesh = chunk.solidMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && !block.isTransparent());
+                        var mesh = chunk.solidMesh.meshPart.mesh = chunk.mesher.meshVoxels(meshBuilder, block -> block.doesRender() && !block.isTransparent());
                         chunk.solidMesh.meshPart.size = mesh.getNumIndices();
                         chunk.solidMesh.meshPart.offset = 0;
                         chunk.solidMesh.meshPart.primitiveType = GL_TRIANGLES;
                         chunk.solidMesh.renderable.material = this.material;
                         chunk.solidMesh.renderable.userData = chunk;
-
-                        lambdaContext.hasRenderedChunk = true;
                     }
 
                     if (chunk.transparentMesh == null) {
                         chunk.transparentMesh = this.pool.obtain();
-                        var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(new MeshBuilder(), block -> block.doesRender() && block.isTransparent());
+                        var mesh = chunk.transparentMesh.meshPart.mesh = chunk.mesher.meshVoxels(meshBuilder, block -> block.doesRender() && block.isTransparent());
                         chunk.transparentMesh.meshPart.size = mesh.getNumIndices();
                         chunk.transparentMesh.meshPart.offset = 0;
                         chunk.transparentMesh.meshPart.primitiveType = GL_TRIANGLES;
                         chunk.transparentMesh.renderable.material = this.transparentMaterial;
                         chunk.transparentMesh.renderable.userData = chunk;
-
-                        lambdaContext.hasRenderedChunk = true;
                     }
                     chunk.loadCustomRendered();
 
@@ -373,7 +368,7 @@ public final class WorldRenderer implements DisposableContainer {
                 int numIndices = breakingMesh.getMaxIndices();
                 int numVertices = breakingMesh.getMaxVertices();
 
-                Renderable renderable = renderablePool.obtain();
+                Renderable renderable = new Renderable();
                 renderable.meshPart.mesh = breakingMesh;
                 renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
                 renderable.meshPart.primitiveType = GL_TRIANGLES;
@@ -395,7 +390,7 @@ public final class WorldRenderer implements DisposableContainer {
                 }
             }
 
-            chunk.renderModels(output, renderablePool);
+            chunk.renderModels(output);
 
             if (ImGuiOverlay.isChunkSectionBordersShown()) {
                 this.tmp.set(chunk.renderOffset);
@@ -403,14 +398,14 @@ public final class WorldRenderer implements DisposableContainer {
 
                 int numIndices = mesh.getNumIndices();
                 int numVertices = mesh.getNumVertices();
-                Renderable renderable = renderablePool.obtain();
+                Renderable renderable = new Renderable();
                 renderable.meshPart.mesh = mesh;
                 renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
                 renderable.meshPart.offset = 0;
                 renderable.meshPart.primitiveType = GL_TRIANGLES;
                 renderable.material = this.sectionBorderMaterial;
                 Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
-                renderable.worldTransform.setToTranslationAndScaling(add, new Vector3(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+                renderable.worldTransform.setToTranslationAndScaling(add, this.tmp1.set(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
 
                 output.add(verifyOutput(renderable));
             }
@@ -579,9 +574,5 @@ public final class WorldRenderer implements DisposableContainer {
 
     private static class ChunkRenderRef {
         boolean chunkRendered = false;
-    }
-
-    private static class ChunkBuildContext {
-        boolean hasRenderedChunk = false;
     }
 }

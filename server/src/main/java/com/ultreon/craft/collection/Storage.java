@@ -17,7 +17,7 @@ public interface Storage<D> {
 
     void read(PacketBuffer buffer, Function<PacketBuffer, D> decoder);
 
-    void set(int idx, D value);
+    boolean set(int idx, D value);
 
     D get(int idx);
 

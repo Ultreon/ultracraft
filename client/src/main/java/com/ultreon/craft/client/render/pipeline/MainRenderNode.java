@@ -34,21 +34,21 @@ public class MainRenderNode extends RenderNode {
         diffuseTexture.bind(0);
 
         modelBatch.end();
-        this.client.spriteBatch.begin();
+        this.client.renderer.begin();
         this.client.spriteBatch.setShader(this.program);
         this.program.setUniformf("u_resolution", new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         this.client.spriteBatch.draw(diffuseTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        this.client.spriteBatch.end();
+        this.client.renderer.end();
         this.client.spriteBatch.setShader(null);
 
         gl.glActiveTexture(GL_TEXTURE0);
 
         if (ImGuiOverlay.SHOW_RENDER_PIPELINE.get()) {
-            this.client.spriteBatch.begin();
+            this.client.renderer.begin();
             this.client.spriteBatch.draw(depthMap, (float) (3 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
             this.client.spriteBatch.flush();
             this.client.spriteBatch.draw(diffuseTexture, (float) (2 * Gdx.graphics.getWidth()) / 4, 0, (float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 4);
-            this.client.spriteBatch.end();
+            this.client.renderer.end();
         }
 
         return input;

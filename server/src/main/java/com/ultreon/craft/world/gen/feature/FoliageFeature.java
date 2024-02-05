@@ -1,7 +1,6 @@
 package com.ultreon.craft.world.gen.feature;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
@@ -11,13 +10,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class GrassFeature extends WorldGenFeature {
+public class FoliageFeature extends WorldGenFeature {
     private final NoiseConfig noiseConfig;
     private final Block material;
     private final float threshold;
     private final Random random = new Random();
 
-    public GrassFeature(NoiseConfig trees, Block material, float threshold) {
+    public FoliageFeature(NoiseConfig trees, Block material, float threshold) {
         super();
 
         this.noiseConfig = trees;

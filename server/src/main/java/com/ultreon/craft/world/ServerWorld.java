@@ -6,6 +6,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.config.UltracraftServerConfig;
@@ -1336,16 +1337,17 @@ public class ServerWorld extends World {
             stream.writeInt(World.REGION_SIZE);
 
             // Write chunks to the region file.
-            var chunks = region.getChunks();
+            var chunks = region.getChunks().stream().filter(ServerChunk::shouldSave).toList();
             stream.writeShort(chunks.size());
             var idx = 0;
+            CommonConstants.LOGGER.info("Saving " + chunks.size() + " chunks in region " + pos);
             for (var chunk : chunks) {
                 if (idx >= World.REGION_SIZE * World.REGION_SIZE)
                     throw new IllegalArgumentException("Too many chunks in region!");
+                CommonConstants.LOGGER.info("Saving chunk " + chunk.getPos() + " in region " + pos);
                 var localChunkPos = World.toLocalChunkPos(chunk.getPos());
                 stream.writeByte(localChunkPos.x());
                 stream.writeByte(localChunkPos.z());
-
                 chunk.save().write(stream);
                 stream.flush();
                 idx++;

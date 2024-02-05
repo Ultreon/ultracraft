@@ -1,11 +1,15 @@
 package com.ultreon.craft.client.util;
 
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+
+import java.util.function.Consumer;
 
 public class RenderableArray extends Array<Renderable> {
-    private Environment defaultEnvironment;
+    private Vector3 translation;
+    private static int globalSize = 0;
 
     public RenderableArray() {
     }
@@ -38,97 +42,125 @@ public class RenderableArray extends Array<Renderable> {
         super(ordered, array, start, count);
     }
 
-    public void setDefaultEnvironment(Environment environment) {
-        this.defaultEnvironment = environment;
-    }
-
-    public Environment getDefaultEnvironment() {
-        return defaultEnvironment;
+    public static int getGlobalSize() {
+        return globalSize;
     }
 
     @Override
     public void add(Renderable value) {
-        if (defaultEnvironment != null) {
-            value.environment = defaultEnvironment;
+        if (translation != null) {
+            value.worldTransform.setToTranslation(translation);
         }
+        globalSize++;
         super.add(value);
     }
 
     @Override
     public void add(Renderable value1, Renderable value2) {
-        if (defaultEnvironment != null) {
-            value1.environment = defaultEnvironment;
-            value2.environment = defaultEnvironment;
+        if (translation != null) {
+            value1.worldTransform.setToTranslation(translation);
+            value2.worldTransform.setToTranslation(translation);
         }
+        globalSize += 2;
         super.add(value1, value2);
     }
 
     @Override
     public void add(Renderable value1, Renderable value2, Renderable value3) {
-        if (defaultEnvironment != null) {
-            value1.environment = defaultEnvironment;
-            value2.environment = defaultEnvironment;
-            value3.environment = defaultEnvironment;
+        if (translation != null) {
+            value1.worldTransform.setToTranslation(translation);
+            value2.worldTransform.setToTranslation(translation);
+            value3.worldTransform.setToTranslation(translation);
         }
+        globalSize += 3;
         super.add(value1, value2, value3);
     }
 
     @Override
     public void add(Renderable value1, Renderable value2, Renderable value3, Renderable value4) {
-        if (defaultEnvironment != null) {
-            value1.environment = defaultEnvironment;
-            value2.environment = defaultEnvironment;
-            value3.environment = defaultEnvironment;
-            value4.environment = defaultEnvironment;
+        if (translation != null) {
+            value1.worldTransform.setToTranslation(translation);
+            value2.worldTransform.setToTranslation(translation);
+            value3.worldTransform.setToTranslation(translation);
+            value4.worldTransform.setToTranslation(translation);
         }
+        globalSize += 4;
         super.add(value1, value2, value3, value4);
     }
 
     @Override
     public void addAll(Array<? extends Renderable> array) {
-        if (defaultEnvironment != null) {
+        if (translation != null) {
             for (Renderable renderable : array.items) {
-                renderable.environment = defaultEnvironment;
+                renderable.worldTransform.setToTranslation(translation);
             }
         }
+        globalSize += array.size;
         super.addAll(array);
     }
 
     @Override
     public void addAll(Array<? extends Renderable> array, int start, int count) {
-        if (defaultEnvironment != null) {
+        if (translation != null) {
             for (Renderable renderable : array.items) {
-                renderable.environment = defaultEnvironment;
+                renderable.worldTransform.setToTranslation(translation);
             }
         }
+        globalSize += count;
         super.addAll(array, start, count);
     }
 
     @Override
     public void addAll(Renderable... array) {
-        if (defaultEnvironment != null) {
+        if (translation != null) {
             for (Renderable renderable : array) {
-                renderable.environment = defaultEnvironment;
+                renderable.worldTransform.setToTranslation(translation);
             }
         }
+        globalSize += array.length;
         super.addAll(array);
     }
 
     @Override
     public void addAll(Renderable[] array, int start, int count) {
-        if (defaultEnvironment != null) {
+        if (translation != null) {
             for (Renderable renderable : array) {
-                renderable.environment = defaultEnvironment;
+                renderable.worldTransform.setToTranslation(translation);
             }
         }
+        globalSize += count;
         super.addAll(array, start, count);
     }
 
     @Override
     public void set(int index, Renderable value) {
-        if (defaultEnvironment != null) {
-            value.environment = defaultEnvironment;
+        if (translation != null) {
+            value.worldTransform.setToTranslation(translation);
+        }
+
+        if (index == size) {
+            globalSize++;
         }
         super.set(index, value);
+    }
+
+    public void setTranslation(Vector3 translation) {
+        this.translation = translation;
+
+        for (Renderable renderable : this) {
+            renderable.worldTransform.setToTranslation(translation);
+        }
+    }
+
+    @Override
+    public void clear() {
+        globalSize -= size;
+        super.clear();
+    }
+
+    public void transform(Consumer<Matrix4> value) {
+        for (Renderable renderable : this) {
+            value.accept(renderable.worldTransform);
+        }
     }
 }

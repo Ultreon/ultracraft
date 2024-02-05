@@ -476,24 +476,27 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void execute(String input) {
+        var commandline = input.trim();
+
         String command;
         String[] argv;
-        if (!input.contains(" ")) {
+        if (!commandline.contains(" ")) {
             argv = new String[0];
-            command = input;
+            command = commandline;
         } else {
-            argv = input.split(" ");
+            argv = commandline.split(" ");
             command = argv[0];
             argv = ArrayUtils.remove(argv, 0);
         }
 
-        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + input);
+        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + commandline);
 
         Command baseCommand = CommandRegistry.get(command);
         if (baseCommand == null) {
             Chat.sendError(this, "Unknown command&: " + command);
             return;
         }
+
         baseCommand.onCommand(this, new CommandContext(command), command, argv);
     }
 

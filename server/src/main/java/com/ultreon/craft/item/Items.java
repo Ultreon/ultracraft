@@ -33,6 +33,7 @@ public class Items {
     public static final Item STICK = Items.register("stick", new Item(new Properties()));
     public static final Item ROCK = Items.register("rock", new Item(new Properties()));
     public static final Item GRASS_FIBRE = Items.register("grass_fibre", new Item(new Properties()));
+    public static final BlockItem CACTUS = Items.register("cactus", new BlockItem(new Properties(), () -> Blocks.CACTUS));
 
     private static <T extends Item> T register(String name, T block) {
         Registries.ITEM.register(new ElementID(name), block);

@@ -26,10 +26,11 @@ public final class Blocks {
     public static final Block WATER = Blocks.register("water", new Block(new Properties().noCollision().transparent().fluid().hardness(120.0F)));
     public static final Block LOG = Blocks.register("log", new Block(new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).dropsItems(Items.LOG)));
     public static final Block PLANKS = Blocks.register("planks", new Block(new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).dropsItems(Items.PLANKS)));
-    public static final Block LEAVES = Blocks.register("leaves", new Block(new Properties().hardness(0.2F)));
+    public static final Block LEAVES = Blocks.register("leaves", new Block(new Properties().transparent().hardness(0.2F)));
     public static final Block CRATE = Blocks.register("crate", EntityBlock.simple(BlockEntityTypes.CRATE, new Properties().hardness(2.0F).effectiveTool(ToolType.AXE).usesCustomRender().dropsItems(Items.CRATE)));
     public static final Block CRAFTING_BENCH = Blocks.register("crafting_bench", new Block(new Properties().hardness(3.0F).effectiveTool(ToolType.AXE).dropsItems(Items.CRAFTING_BENCH)));
     public static final Block TALL_GRASS = Blocks.register("tall_grass", new Block(new Properties().noOcclude().replaceable().transparent().noCollision().usesCustomRender().dropsItems(new RandomLoot(new RandomLoot.ChanceLootEntry(0.4f, Items.GRASS_FIBRE)))));
+    public static final Block CACTUS = Blocks.register("cactus", new Block(new Properties().noOcclude().replaceable().usesCustomRender().dropsItems(Items.CACTUS)));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new ElementID(name), block);

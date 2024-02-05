@@ -92,12 +92,15 @@ public class FlatStorage<D> implements Storage<D> {
     }
 
     @Override
-    public void set(int idx, D value) {
+    public boolean set(int idx, D value) {
         if (idx < 0 || idx >= this.data.length) {
             throw new ArrayIndexOutOfBoundsException(idx);
         }
 
+        D datum = data[idx];
+        if (datum == value) return false;
         this.data[idx] = value;
+        return true;
     }
 
     @Override

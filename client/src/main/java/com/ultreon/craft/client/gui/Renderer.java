@@ -1741,4 +1741,27 @@ public class Renderer {
                 .blit(handle, x + w - uvW, y + h - uvH, uvW, uvH, endU, endV, uvW, uvH, texWidth, texHeight);
 
     }
+
+    public void begin() {
+        if (this.batch.isDrawing()) {
+            UltracraftClient.LOGGER.warn("Batch still drawing", new Exception());
+            this.batch.end();
+        }
+        this.batch.begin();
+    }
+
+    public void end() {
+        if (!this.batch.isDrawing()) {
+            UltracraftClient.LOGGER.warn("Batch not drawin!", new Exception());
+            return;
+        }
+        this.batch.end();
+    }
+
+    public void actuallyEnd() {
+        if (this.batch.isDrawing()) {
+            UltracraftClient.LOGGER.warn("Batch still drawing");
+            this.batch.end();
+        }
+    }
 }

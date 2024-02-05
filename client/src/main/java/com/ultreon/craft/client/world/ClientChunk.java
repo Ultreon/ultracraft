@@ -2,21 +2,20 @@ package com.ultreon.craft.client.world;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
-import com.ultreon.craft.client.ShaderContext;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.registry.BlockEntityModelRegistry;
+import com.ultreon.craft.client.render.ModelObject;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
+import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.PosOutOfBoundsException;
@@ -33,7 +32,7 @@ import java.util.Map;
 public final class ClientChunk extends Chunk {
     final GreedyMesher mesher;
     private final ClientWorld clientWorld;
-    public Vector3 renderOffset = new Vector3();
+    public final Vector3 renderOffset = new Vector3();
     public ChunkMesh solidMesh;
     public ChunkMesh transparentMesh;
     public volatile boolean dirty;
@@ -42,8 +41,8 @@ public final class ClientChunk extends Chunk {
     private final Map<BlockPos, Block> customRendered = new HashMap<>();
     private final Map<BlockPos, ModelInstance> models = new HashMap<>();
     public boolean immediateRebuild = false;
-    private Vector3 tmp = new Vector3();
-    private Vector3 tmp1 = new Vector3();
+    private final Vector3 tmp = new Vector3();
+    private final Vector3 tmp1 = new Vector3();
 
     /**
      * @deprecated Use {@link #ClientChunk(ClientWorld, ChunkPos, Storage, Storage, Map)} instead
@@ -85,6 +84,7 @@ public final class ClientChunk extends Chunk {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
 
+
         synchronized (this) {
             super.dispose();
 
@@ -92,6 +92,8 @@ public final class ClientChunk extends Chunk {
             if ((this.solidMesh != null || this.transparentMesh != null) && worldRenderer != null) {
                 worldRenderer.free(this);
             }
+            this.tmp.setZero();
+            this.tmp1.setZero();
         }
     }
 
@@ -108,6 +110,11 @@ public final class ClientChunk extends Chunk {
     public boolean setFast(int x, int y, int z, Block block) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
+        }
+
+        ModelInstance remove = models.remove(new BlockPos(x, y, z));
+        if (remove != null && remove.userData instanceof ModelObject modelObject) {
+            modelObject.dispose();
         }
 
         boolean isBlockSet = super.setFast(x, y, z, block);
@@ -170,7 +177,7 @@ public final class ClientChunk extends Chunk {
         return this.models.put(pos, instance);
     }
 
-    public void renderModels(Array<Renderable> output, Pool<Renderable> renderablePool) {
+    public void renderModels(Array<Renderable> output) {
         for (Map.Entry<BlockPos, ModelInstance> entry : this.models.entrySet()) {
             ModelInstance value = entry.getValue();
             if (value == null) continue;
@@ -181,9 +188,16 @@ public final class ClientChunk extends Chunk {
             float z = (float) key.z() % 16;
             if (x < 0) x += 16;
             if (z < 0) z += 16;
-            value.userData = Shaders.MODEL_VIEW;
-            value.transform.setToTranslationAndScaling(this.tmp.set(this.renderOffset).add(x, (float) key.y() % 65536, z), this.tmp1.set(1 / 16f, 1 / 16f, 1 / 16f));
-            value.getRenderables(output, renderablePool);
+            ModelObject modelObject = value.userData instanceof ModelObject ? (ModelObject) value.userData : null;
+            if (modelObject == null) {
+                RenderableArray renderables = new RenderableArray();
+                value.getRenderables(renderables, new RenderablePool());
+                value.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW, renderables);
+            }
+            float finalX = x;
+            float finalZ = z;
+            modelObject.renderables().transform(transform -> transform.setToTranslationAndScaling(this.tmp.set(this.renderOffset).add(finalX, (float) key.y() % 65536, finalZ), this.tmp1.set(1 / 16f, 1 / 16f, 1 / 16f)));
+            output.addAll(modelObject.renderables());
         }
     }
 
@@ -210,4 +224,5 @@ public final class ClientChunk extends Chunk {
     public UltracraftClient getClient() {
         return client;
     }
+
 }

@@ -1,7 +1,6 @@
 package com.ultreon.craft.client.util;
 
 import com.badlogic.gdx.math.Vector3;
-import org.jetbrains.annotations.ApiStatus;
 
 public class AxisAlignedBB {
     public final float minX;
@@ -10,6 +9,10 @@ public class AxisAlignedBB {
     public final float maxX;
     public final float maxY;
     public final float maxZ;
+    private final Vector3 tmp1 = new Vector3();
+    private final Vector3 tmp2 = new Vector3();
+    private final Vector3 tmp3 = new Vector3();
+    private final Vector3 tmp4 = new Vector3();
 
     public AxisAlignedBB(float x1, float y1, float z1, float x2, float y2, float z2) {
         this.minX = Math.min(x1, x2);
@@ -30,15 +33,14 @@ public class AxisAlignedBB {
         return new AxisAlignedBB(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z);
     }
 
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Vector3 calculateIntersect(AxisAlignedBB other, Vector3 direction) {
         return calculateIntersect(other, direction, new Vector3());
     }
 
     public Vector3 calculateIntersect(AxisAlignedBB other, Vector3 direction, Vector3 output) {
-        Vector3 minDistance = other.min().sub(this.max());
-        Vector3 maxDistance = other.max().sub(this.min());
+        Vector3 minDistance = other.min(tmp1).sub(this.max(tmp2));
+        Vector3 maxDistance = other.max(tmp3).sub(this.min(tmp4));
 
         // Calculate the overlap distance along each axis
         float overlapX = direction.x == 0 ? 0 : (direction.x > 0 ? maxDistance.x : minDistance.x) / direction.x;
@@ -50,11 +52,11 @@ public class AxisAlignedBB {
         return output.set(smallestOverlap * direction.x, smallestOverlap * direction.y, smallestOverlap * direction.z);
     }
 
-    private Vector3 min() {
-        return new Vector3(minX, minY, minZ);
+    private Vector3 min(Vector3 tmp) {
+        return tmp.set(minX, minY, minZ);
     }
 
-    private Vector3 max() {
-        return new Vector3(maxX, maxY, maxZ);
+    private Vector3 max(Vector3 tmp) {
+        return tmp.set(maxX, maxY, maxZ);
     }
 }

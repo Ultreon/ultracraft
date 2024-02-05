@@ -1,13 +1,19 @@
 package com.ultreon.craft.world;
 
+import com.ultreon.data.types.IType;
+
 import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public class LightMap {
-    private final byte[] data;
+    private byte[] data;
 
     public LightMap(int size) {
         this.data = new byte[size];
+    }
+
+    public LightMap(byte[] data) {
+        this.data = data;
     }
 
     private int getIndex(int x, int y, int z) {
@@ -41,5 +47,14 @@ public class LightMap {
         byte datum = this.data[this.getIndex(x, y, z)];
         datum = (byte) ((datum & 0xF0) | value);
         this.data[this.getIndex(x, y, z)] = datum;
+    }
+
+    public byte[] save() {
+        return data;
+    }
+
+    public void load(byte[] data) {
+        if (data == null) return;
+        this.data = data;
     }
 }

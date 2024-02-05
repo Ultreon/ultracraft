@@ -1,0 +1,80 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "ultracraft:cube",
+	"textures": {
+		"0": "ultracraft:blocks/cactus",
+		"1": "ultracraft:blocks/cactus_side",
+		"2": "ultracraft:blocks/cactus_top",
+		"particle": "ultracraft:blocks/cactus"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"up": {"uv": [16, 16, 0, 0], "texture": "#2", "cullface": "up"},
+				"down": {"uv": [16, 0, 0, 16], "texture": "#0", "cullface": "down"}
+			}
+		},
+		{
+			"from": [0, 0, 1],
+			"to": [16, 16, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [1, 0, 0],
+			"to": [15, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"east": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [0, -0.1, 0],
+			"to": [16, 15.9, 16],
+			"rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"up": {"uv": [16, 16, 0, 0], "texture": "#2", "cullface": "up"},
+				"down": {"uv": [16, 0, 0, 16], "texture": "#0", "cullface": "down"}
+			}
+		},
+		{
+			"from": [0, -0.01, 1],
+			"to": [16, 15.99, 15],
+			"rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [1, -0.01, 0],
+			"to": [15, 15.99, 16],
+			"rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"east": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#1"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "cactus",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [0, 1, 2]
+		},
+		{
+			"name": "cactus",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [3, 4, 5]
+		}
+	]
+}

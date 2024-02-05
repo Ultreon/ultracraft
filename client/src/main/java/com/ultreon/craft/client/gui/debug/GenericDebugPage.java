@@ -3,6 +3,7 @@ package com.ultreon.craft.client.gui.debug;
 import com.badlogic.gdx.graphics.Mesh;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.IntegratedServer;
+import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.client.world.ChunkMesh;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.WorldRenderer;
@@ -43,6 +44,10 @@ public class GenericDebugPage implements DebugPage {
         context.left("Meshes")
                 .left("Meshes Disposed", ChunkMesh.getMeshesDisposed())
                 .left("Vertex Count", WorldRenderer.getVertexCount())
+                .left();
+
+        context.left("Renderables")
+                .left("Global Size", RenderableArray.getGlobalSize())
                 .left();
 
         if (world != null) {

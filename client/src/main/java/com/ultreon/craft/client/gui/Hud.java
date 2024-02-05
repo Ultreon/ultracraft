@@ -1,13 +1,9 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
-import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.util.GameRenderable;
-import com.ultreon.craft.world.BlockFace;
-import com.ultreon.craft.client.world.ChunkMeshBuilder;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
@@ -15,7 +11,6 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.ElementID;
-import com.ultreon.libs.commons.v0.vector.Vec3f;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -56,38 +51,6 @@ public class Hud implements GameRenderable {
         OverlayManager.render(renderer, deltaTime);
 
         this.renderCrosshair(renderer);
-    }
-
-    public void renderOutline(Renderer renderer, float deltaTime) {
-        GameCamera camera = this.client.camera;
-        Vec3f normal = this.client.hitResult.getNormal().f();
-        Vector3 relative = camera.relative(this.client.hitResult.getPosition());
-
-        BlockFace blockFace = BlockFace.ofNormal(normal);
-        float[] vertices = switch (blockFace) {
-            case UP -> ChunkMeshBuilder.topVertices;
-            case DOWN -> ChunkMeshBuilder.bottomVertices;
-            case WEST -> ChunkMeshBuilder.leftVertices;
-            case EAST -> ChunkMeshBuilder.rightVertices;
-            case NORTH -> ChunkMeshBuilder.frontVertices;
-            case SOUTH -> ChunkMeshBuilder.backVertices;
-        };;
-
-        float[] verticesOut = new float[12];
-
-        // Loop vertices and uvs and add them to the output.
-        for (int i = 0, vertex = 0; vertex < vertices.length; vertex += 3, i++) {
-            float x = relative.x + vertices[vertex];
-            float y = relative.y + vertices[vertex + 1];
-            float z = relative.z + vertices[vertex + 2];
-
-            Vector3 project = camera.project(new Vector3(x, y, z));
-            verticesOut[i] = project.x;
-            verticesOut[i + 1] = project.y;
-            verticesOut[i + 2] = project.z;
-        }
-
-        renderer.polygon(verticesOut, Color.BLACK, 3);
     }
 
     private void renderCrosshair(Renderer renderer) {

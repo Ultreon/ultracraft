@@ -21,7 +21,10 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.GLVersion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -113,6 +116,7 @@ import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.text.LanguageBootstrap;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.*;
@@ -144,10 +148,8 @@ import java.net.SocketAddress;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.zip.Deflater;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.math.MathUtils.ceil;
@@ -171,6 +173,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Cursor clickCursor;
     private final RenderPipeline pipeline;
     private final boolean devWorld;
+    public final Renderer renderer;
     public Connection connection;
     public ClientConnection clientConn;
     public ServerData serverData;
@@ -305,6 +308,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @ApiStatus.Experimental
     private static Callback<CrashLog> crashHook;
     private final List<CrashLog> crashes = new CopyOnWriteArrayList<>();
+    private long screenshotFlashTime;
+    private ClientSound screenshotSound;
+    private final Color tmpColor = new Color();
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -326,6 +332,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         UltracraftClient.LOGGER.info("Booting game!");
         UltracraftClient.instance = this;
+
+        this.unifont = deferDispose(new BitmapFont(Gdx.files.internal("assets/ultracraft/font/unifont/unifont.fnt"), true));
+        this.font = new Font(new BitmapFont(Gdx.files.internal("assets/ultracraft/font/dogica/dogicapixel.fnt"), true));
 
         LanguageBootstrap.bootstrap.set(Language::translate);
 
@@ -378,13 +387,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.spriteBatch = deferDispose(new SpriteBatch());
         this.shapes = new ShapeDrawer(this.spriteBatch, white);
+        this.renderer = new Renderer(this.shapes);
 
         DepthShader.Config shaderConfig = new DepthShader.Config();
         shaderConfig.defaultCullFace = GL_BACK;
         shaderConfig.defaultDepthFunc = GL_DEPTH_FUNC;
         this.modelBatch = deferDispose(new ModelBatch(new GameShaderProvider(shaderConfig)));
 
-        this.gameRenderer = new GameRenderer(this, this.modelBatch, this.spriteBatch, this.pipeline);
+        this.gameRenderer = new GameRenderer(this, this.modelBatch, this.pipeline);
 
         // Textures
         this.ultreonBgTex = new Texture("assets/ultracraft/textures/gui/loading_overlay_bg.png");
@@ -752,9 +762,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (resource == null) {
             throw new ApplicationCrash(new CrashLog("Where are my symbols", new ResourceNotFoundException(UltracraftClient.id("texts/unicode.txt"))));
         }
-
-        this.unifont = deferDispose(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/ultracraft/font/unifont/unifont.fnt"), true)));
-        this.font = new Font(UltracraftClient.invokeAndWait(() -> new BitmapFont(Gdx.files.internal("assets/ultracraft/font/dogica/dogicapixel.fnt"), true)));
 
         this.crashOverlay = new ManualCrashOverlay(this);
 
@@ -1368,6 +1375,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             }
 
             UltracraftClient.PROFILER.section("render", () -> this.doRender(deltaTime));
+            this.renderer.actuallyEnd();
         } catch (OutOfMemoryError e) {
             System.gc(); // try to free up some memory before handling out of memory.
             try {
@@ -1397,11 +1405,16 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (this.width == 0 || this.height == 0) return;
         if (this.triggerScreenshot) this.prepareScreenshot();
 
-        Renderer renderer = new Renderer(this.shapes);
-
         UltracraftClient.PROFILER.section("renderGame", () -> this.renderGame(renderer, deltaTime));
 
         if (this.captureScreenshot) this.handleScreenshot();
+
+        if (this.screenshotFlashTime > System.currentTimeMillis() - 200) {
+            this.renderer.begin();
+            this.shapes.filledRectangle(0, 0, this.width, this.height, this.tmpColor.set(1, 1, 1, 1 - (System.currentTimeMillis() - this.screenshotFlashTime) / 200f));
+            this.renderer.end();
+        }
+
         if (this.isCustomBorderShown()) this.drawCustomBorder(renderer);
 
         ImGuiOverlay.renderImGui(this);
@@ -1427,12 +1440,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void drawCustomBorder(Renderer renderer) {
-        this.spriteBatch.begin();
+        this.renderer.begin();
         renderer.pushMatrix();
         renderer.scale(2, 2);
         this.renderWindow(renderer, this.getWidth() / 2, this.getHeight() / 2);
         renderer.popMatrix();
-        this.spriteBatch.end();
+        this.renderer.end();
     }
 
     private void handleScreenshot() {
@@ -1511,13 +1524,12 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void renderLoadingOverlay(Renderer renderer, float deltaTime, LoadingOverlay loading) {
         UltracraftClient.PROFILER.section("loading", () -> {
-            this.spriteBatch.begin();
+            renderer.begin();
             renderer.pushMatrix();
             renderer.translate(this.getDrawOffset().x, this.getDrawOffset().y);
             renderer.scale(this.getGuiScale(), this.getGuiScale());
             loading.render(renderer, Integer.MAX_VALUE, Integer.MAX_VALUE, deltaTime);
             renderer.popMatrix();
-            this.spriteBatch.end();
         });
     }
 
@@ -1556,10 +1568,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
             ScreenUtils.clear(1, 1, 1, 1, true);
 
-            this.spriteBatch.begin();
+            this.renderer.begin();
             int size = Math.min(this.getWidth(), this.getHeight()) / 2;
             renderer.blit(this.libGDXLogoTex, (float) this.getWidth() / 2 - (float) size / 2, (float) this.getHeight() / 2 - (float) size / 2, size, size);
-            this.spriteBatch.end();
+            this.renderer.end();
 
             if (System.currentTimeMillis() - this.libGDXSplashTime > 4000f) {
                 this.showLibGDXSplash = false;
@@ -1588,10 +1600,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             float drawX = (this.getWidth() - drawWidth) / 2;
             float drawY = (this.getHeight() - drawHeight) / 2;
 
-            this.spriteBatch.begin();
+            this.renderer.begin();
             renderer.blit(this.ultreonBgTex, 0, 0, this.getWidth(), this.getHeight(), 0, 0, 1024, 1024, 1024, 1024);
             renderer.blit(this.ultreonLogoTex, (int) drawX, (int) drawY, (int) drawWidth, (int) drawHeight, 0, 0, 1920, 1080, 1920, 1080);
-            this.spriteBatch.end();
+            this.renderer.end();
 
             if (System.currentTimeMillis() - this.ultreonSplashTime > UltracraftClient.DURATION) {
                 this.startLoading();
@@ -1663,12 +1675,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (this.spriteBatch.isDrawing()) this.spriteBatch.flush();
         if (this.modelBatch.getCamera() != null) this.modelBatch.flush();
 
-        byte[] pixels = ScreenUtils.getFrameBufferPixels(0, 0, this.width, this.height, false);
-        Pixmap pixmap = new Pixmap(this.width, this.height, Pixmap.Format.RGBA8888);
-        BufferUtils.copy(pixels, 0, pixmap.getPixels(), pixels.length);
+        Screenshot grabbed = Screenshot.grab(this.width, this.height);
+        FileHandle save = grabbed.save("screenshots/%s.png".formatted(DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now())));
 
-        PixmapIO.writePNG(UltracraftClient.data(String.format("screenshots/screenshot_%s.png", DateTimeFormatter.ofPattern("MM.dd.yyyy-HH.mm.ss").format(LocalDateTime.now()))), pixmap, Deflater.DEFAULT_COMPRESSION, true);
-        pixmap.dispose();
+        this.screenshotFlashTime = System.currentTimeMillis();
+
+        this.playSound(SoundEvents.SCREENSHOT, 0.5f);
+
+        this.notifications.add("Screenshot taken.", save.name(), "screenshots");
     }
 
     private static void firstRender() {
@@ -1731,10 +1745,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         try {
             var crashLog = crash.getCrashLog();
             CrashHandler.handleCrash(crashLog);
-            System.exit(1);
+            Runtime.getRuntime().exit(1);
         } catch (Exception | OutOfMemoryError t) {
             UltracraftClient.LOGGER.error(UltracraftClient.FATAL_ERROR_MSG, t);
-            System.exit(2);
+            Runtime.getRuntime().exit(2);
         }
     }
 

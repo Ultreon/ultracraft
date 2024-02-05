@@ -23,6 +23,9 @@ public final class NoiseConfigs {
     public static final NoiseConfig TREE = NoiseConfigs.register("tree",
             new NoiseConfig(0.01f, 1, new Vec2f(946664, 61722), 497395, 0.01f, 1.2f, 4f, 1, 0));
 
+    public static final NoiseConfig CACTI = NoiseConfigs.register("cacti",
+            new NoiseConfig(0.01f, 1, new Vec2f(832630, 85618), 343406, 0.01f, 1.2f, 4f, 1, 0));
+
     public static final NoiseConfig ROCK = NoiseConfigs.register("rock",
             new NoiseConfig(0.01f, 1, new Vec2f(946664, 61722), 581404, 0.01f, 1.2f, 4f, 1, 0));
 

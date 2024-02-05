@@ -6,6 +6,7 @@ import com.ultreon.craft.ubo.DataKeys;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @NotThreadSafe
+@ApiStatus.Experimental
 public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
     private short[] palette;
     private List<D> data = new LinkedList<>();
@@ -88,10 +90,10 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
     }
 
     @Override
-    public void set(int idx, D value) {
+    public boolean set(int idx, D value) {
         if (value == null) {
             this.remove(idx);
-            return;
+            return false;
         }
 
         short old = this.palette[idx];
@@ -111,6 +113,7 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
                 this.palette[i] = (short) (oldValue - 1);
             }
         }
+        return false;
     }
 
     public short toDataIdx(int idx) {

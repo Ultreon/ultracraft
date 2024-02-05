@@ -368,24 +368,11 @@ public class GreedyMesher implements Mesher {
     }
 
     public List<Face> getFaces(UseCondition condition) {
-        return this.getFaces(condition,
-                (curBlock, blockToBlockFace) -> !(blockToBlockFace == null || (blockToBlockFace.isTransparent() && !curBlock.isTransparent())) && (curBlock.doesOcclude() && blockToBlockFace.doesOcclude()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)),
-                (id1, light1, lightData1, id2, light2, lightData2) -> {
-            if (!id1.shouldGreedyMerge()) return false;
-            boolean sameBlock = id1 == id2;
-            boolean sameLight = light1 == light2;
-            boolean tooDarkToTell = light1 < 0.1f; // Too dark to tell they're not the same block
-            if (this.perCornerLight) {
-                sameLight = lightData1.equals(lightData2);
-            }
-            // Other block renderers may alter shape in an unpredictable way
-            boolean considerAsSame = sameLight && !sameBlock && tooDarkToTell
-                    && GreedyMesher.isFullCubeRender(id1) && GreedyMesher.isFullCubeRender(id2)
-                    && !id1.isTransparent() && !id2.isTransparent();
-            if (considerAsSame)
-                sameBlock = true; // Consider them the same block
-            return sameBlock && sameLight;
-        });
+        return this.getFaces(condition, this::shouldOcclude, this::shouldMerge);
+    }
+
+    private boolean shouldNotRenderNormally(Block blockToBlockFace) {
+        return blockToBlockFace == null || !blockToBlockFace.doesRender() || blockToBlockFace.hasCustomRender();
     }
 
     private static boolean isFullCubeRender(Block id2) {
@@ -598,12 +585,39 @@ public class GreedyMesher implements Mesher {
         return lightSum / count;
     }
 
+    private boolean shouldOcclude(Block curBlock, Block blockToBlockFace) {
+        return !(shouldNotRenderNormally(blockToBlockFace) || blockToBlockFace.isTransparent() && (curBlock.doesOcclude() && blockToBlockFace.doesOcclude()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)));
+    }
+
+    private boolean shouldMerge(Block id1, float light1, PerCornerLightData lightData1, Block id2, float light2, PerCornerLightData lightData2) {
+        if (!id1.shouldGreedyMerge()) return false;
+
+        boolean sameBlock = id1 == id2;
+        boolean sameLight = light1 == light2;
+        boolean tooDarkToTell = light1 < 0.1f; // Too dark to tell they're not the same block
+
+        if (this.perCornerLight) {
+            sameLight = lightData1.equals(lightData2);
+        }
+
+        // Other block renderers may alter shape in an unpredictable way
+        boolean considerAsSame = sameLight && !sameBlock && tooDarkToTell
+                && GreedyMesher.isFullCubeRender(id1) && GreedyMesher.isFullCubeRender(id2)
+                && (!id1.isTransparent() && !id2.isTransparent());
+
+        if (considerAsSame)
+            sameBlock = true; // Consider them the same block
+
+        return sameBlock && sameLight;
+    }
+
     public record LightLevelData(float sunBrightness, float blockBrightness) {
 
         public float lightLevel() {
             return Mth.clamp(this.sunBrightness + this.blockBrightness, 0, 1);
         }
     }
+
     public static class Face {
 
         private final BlockFace side;
@@ -681,11 +695,11 @@ public class GreedyMesher implements Mesher {
 
     public interface OccludeCondition {
         /**
-         * @param curBlock         Current block being checked
-         * @param blockToBlockFace Block the the side of the current block
-         * @return True if the side of the curBlock should be occluded
+         * @param curBlock    current block being checked
+         * @param facingBlock block in the facing direction
+         * @return {@code true} if the side of the curBlock should be occluded, {@code false} otherwise
          */
-        boolean shouldOcclude(Block curBlock, Block blockToBlockFace);
+        boolean shouldOcclude(Block curBlock, Block facingBlock);
     }
 
     public interface MergeCondition {
@@ -697,7 +711,8 @@ public class GreedyMesher implements Mesher {
         ClientWorld world = chunk.getWorld();
         this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         ClientChunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
-        if (chunkAt != null) return chunkAt.get(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
+        if (chunkAt != null)
+            return chunkAt.get(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
         return Blocks.AIR;
     }
 
@@ -706,7 +721,8 @@ public class GreedyMesher implements Mesher {
         ClientWorld world = chunk.getWorld();
         this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         ClientChunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
-        if (chunkAt != null) return chunkAt.getBlockLight(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
+        if (chunkAt != null)
+            return chunkAt.getBlockLight(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
         return 0;
     }
 
@@ -715,7 +731,8 @@ public class GreedyMesher implements Mesher {
         ClientWorld world = chunk.getWorld();
         this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         ClientChunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
-        if (chunkAt != null) return chunkAt.getSunlight(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
+        if (chunkAt != null)
+            return chunkAt.getSunlight(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
         return 0;
     }
 }

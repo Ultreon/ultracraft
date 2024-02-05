@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
@@ -34,7 +33,6 @@ import static com.ultreon.craft.client.UltracraftClient.LOGGER;
 public class GameRenderer {
     private final UltracraftClient client;
     private final ModelBatch modelBatch;
-    private final SpriteBatch spriteBatch;
     private final RenderPipeline pipeline;
     private final Vector2 tmp = new Vector2();
     private final ShaderProgram worldShaderProgram;
@@ -47,9 +45,8 @@ public class GameRenderer {
     private float cameraBop = 0.0f;
     private boolean revert = true;
 
-    public GameRenderer(UltracraftClient client, ModelBatch modelBatch, SpriteBatch spriteBatch, RenderPipeline pipeline) {
+    public GameRenderer(UltracraftClient client, ModelBatch modelBatch, RenderPipeline pipeline) {
         this.client = client;
-        this.spriteBatch = spriteBatch;
         this.modelBatch = modelBatch;
         this.pipeline = pipeline;
 
@@ -68,6 +65,7 @@ public class GameRenderer {
     }
 
     public void resize(int width, int height) {
+        if (width <= 0 || height <= 0) return;
         this.depthFbo.dispose();
         this.fbo.dispose();
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
@@ -113,7 +111,7 @@ public class GameRenderer {
             UltracraftClient.PROFILER.section("world", () -> this.renderWorld(worldRenderer, world));
         }
 
-        this.spriteBatch.begin();
+        renderer.begin();
 
         var screen = this.client.screen;
 
@@ -137,7 +135,7 @@ public class GameRenderer {
 
         renderer.popMatrix();
 
-        this.spriteBatch.end();
+        renderer.end();
     }
 
     private void renderWorld(WorldRenderer worldRenderer, ClientWorld world) {
