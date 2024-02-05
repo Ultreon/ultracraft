@@ -68,7 +68,7 @@ public class PlayerInput {
         else if (this.moveY != 0 && player.xRot < player.xHeadRot)
             player.xRot = Math.min(player.xRot + (45 / (player.xHeadRot - player.xRot)), player.xHeadRot);
 
-        this.tmp.set(this.moveX, 0, moveY).nor().scl(-speed, 0, speed).rotate(player.xHeadRot, 0, 1, 0);
+        this.tmp.set(-this.moveX, 0, moveY).nor().scl(speed).rotate(player.xHeadRot, 0, 1, 0);
         this.vel.set(this.tmp);
     }
 
