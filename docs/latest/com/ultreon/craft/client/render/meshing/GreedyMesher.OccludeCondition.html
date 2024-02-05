@@ -109,7 +109,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#shouldOcclude(com.ultreon.craft.block.Block,com.ultreon.craft.block.Block)" class="member-name-link">shouldOcclude</a><wbr>(<a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;curBlock,
- <a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;blockToBlockFace)</code></div>
+ <a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;facingBlock)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 </div>
 </div>
@@ -129,13 +129,13 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="shouldOcclude(com.ultreon.craft.block.Block,com.ultreon.craft.block.Block)">
 <h3>shouldOcclude</h3>
 <div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">shouldOcclude</span><wbr><span class="parameters">(<a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;curBlock,
- <a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;blockToBlockFace)</span></div>
+ <a href="../../../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;facingBlock)</span></div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>curBlock</code> - Current block being checked</dd>
-<dd><code>blockToBlockFace</code> - Block the the side of the current block</dd>
+<dd><code>curBlock</code> - current block being checked</dd>
+<dd><code>facingBlock</code> - block in the facing direction</dd>
 <dt>Returns:</dt>
-<dd>True if the side of the curBlock should be occluded</dd>
+<dd><code>true</code> if the side of the curBlock should be occluded, <code>false</code> otherwise</dd>
 </dl>
 </section>
 </li>

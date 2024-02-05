@@ -329,7 +329,9 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;z,
  @NotNull <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the block at the specified coordinates, with the given block type.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBlockEntity(com.ultreon.craft.world.BlockPos,com.ultreon.craft.block.entity.BlockEntity)" class="member-name-link">setBlockEntity</a><wbr>(<a href="BlockPos.html" title="class in com.ultreon.craft.world">BlockPos</a>&nbsp;pos,
  <a href="../block/entity/BlockEntity.html" title="class in com.ultreon.craft.block.entity">BlockEntity</a>&nbsp;blockEntity)</code></div>
@@ -464,9 +466,18 @@ loadScripts(document, 'script');</script>
  int&nbsp;z,
  @NotNull
  @NotNull <a href="../block/Block.html" title="class in com.ultreon.craft.block">Block</a>&nbsp;block)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="World.html#set(int,int,int,com.ultreon.craft.block.Block)">World</a></code></span></div>
+<div class="block">Sets the block at the specified coordinates, with the given block type.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="World.html#set(int,int,int,com.ultreon.craft.block.Block)">set</a></code>&nbsp;in class&nbsp;<code><a href="World.html" title="class in com.ultreon.craft.world">World</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x-coordinate</dd>
+<dd><code>y</code> - the y-coordinate</dd>
+<dd><code>z</code> - the z-coordinate</dd>
+<dd><code>block</code> - the block type to set</dd>
+<dt>Returns:</dt>
+<dd>true if the block was successfully set, false otherwise</dd>
 </dl>
 </section>
 </li>

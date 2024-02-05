@@ -100,6 +100,7 @@ loadScripts(document, 'script');</script>
 </dl>
 <hr>
 <div class="type-signature"><span class="annotations">@NotThreadSafe
+@Experimental
 </span><span class="modifiers">public class </span><span class="element-name type-name-label">PaletteStorage&lt;D&gt;</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
 implements <a href="../server/ServerDisposable.html" title="interface in com.ultreon.craft.server">ServerDisposable</a>, <a href="Storage.html" title="interface in com.ultreon.craft.collection">Storage</a>&lt;D&gt;</span></div>
@@ -182,7 +183,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#save(com.ultreon.data.types.MapType,java.util.function.Function)" class="member-name-link">save</a><wbr>(<a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&nbsp;outputData,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="PaletteStorage.html" title="type parameter in PaletteStorage">D</a>,<wbr><a href="https://ultreon.github.io/ultreon-data/docs/1.2.2/com/ultreon/data/types/MapType.html" title="class or interface in com.ultreon.data.types" class="external-link">MapType</a>&gt;&nbsp;encoder)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(int,D)" class="member-name-link">set</a><wbr>(int&nbsp;idx,
  <a href="PaletteStorage.html" title="type parameter in PaletteStorage">D</a>&nbsp;value)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -282,7 +283,7 @@ implements <a href="../server/ServerDisposable.html" title="interface in com.ult
 <li>
 <section class="detail" id="set(int,D)">
 <h3 id="set(int,java.lang.Object)">set</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(int&nbsp;idx,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">set</span><wbr><span class="parameters">(int&nbsp;idx,
  <a href="PaletteStorage.html" title="type parameter in PaletteStorage">D</a>&nbsp;value)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
