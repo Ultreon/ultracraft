@@ -140,7 +140,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#create(com.ultreon.craft.world.ServerWorld)" class="member-name-link">create</a><wbr>(<a href="../../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#create(com.ultreon.craft.world.ServerWorld)" class="member-name-link">create</a><wbr>(@NotNull <a href="../../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Create the world generator feature in the given world.</div>
 </div>
@@ -150,8 +150,8 @@ loadScripts(document, 'script');</script>
 <div class="block">Dispose the feature when the world is being unloaded.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#handle(com.ultreon.craft.world.World,com.ultreon.craft.world.ChunkAccess,int,int,int)" class="member-name-link">handle</a><wbr>(<a href="../../World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
- <a href="../../ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a>&nbsp;chunk,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#handle(com.ultreon.craft.world.World,com.ultreon.craft.world.ChunkAccess,int,int,int)" class="member-name-link">handle</a><wbr>(@NotNull <a href="../../World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ @NotNull <a href="../../ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a>&nbsp;chunk,
  int&nbsp;x,
  int&nbsp;z,
  int&nbsp;height)</code></div>
@@ -223,7 +223,8 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="create(com.ultreon.craft.world.ServerWorld)">
 <h3>create</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">create</span><wbr><span class="parameters">(<a href="../../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">create</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="../../ServerWorld.html" title="class in com.ultreon.craft.world">ServerWorld</a>&nbsp;world)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from class:&nbsp;<code><a href="../WorldGenFeature.html#create(com.ultreon.craft.world.ServerWorld)">WorldGenFeature</a></code></span></div>
 <div class="block">Create the world generator feature in the given world.
  <p>NOTE: Always override <a href="../WorldGenFeature.html#dispose()"><code>WorldGenFeature.dispose()</code></a> to avoid memory leaks.</p></div>
@@ -238,8 +239,10 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="handle(com.ultreon.craft.world.World,com.ultreon.craft.world.ChunkAccess,int,int,int)">
 <h3>handle</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">handle</span><wbr><span class="parameters">(<a href="../../World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
- <a href="../../ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a>&nbsp;chunk,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">handle</span><wbr><span class="parameters">(@NotNull
+ @NotNull <a href="../../World.html" title="class in com.ultreon.craft.world">World</a>&nbsp;world,
+ @NotNull
+ @NotNull <a href="../../ChunkAccess.html" title="interface in com.ultreon.craft.world">ChunkAccess</a>&nbsp;chunk,
  int&nbsp;x,
  int&nbsp;z,
  int&nbsp;height)</span></div>
