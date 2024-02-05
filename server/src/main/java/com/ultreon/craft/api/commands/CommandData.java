@@ -561,7 +561,7 @@ public class CommandData {
     }
 
     private static List<String> completeGamemode(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
-        return TabCompleting.strings(ctx.readString(), "survival", "mini_game", "builder", "builder_plus");
+        return TabCompleting.strings(ctx.readString(), "survival", "mini_game", "builder", "builder_plus", "spectator");
     }
 
     private static List<String> completeBiome(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {

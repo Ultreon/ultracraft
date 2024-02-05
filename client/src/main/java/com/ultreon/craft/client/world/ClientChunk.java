@@ -41,6 +41,7 @@ public final class ClientChunk extends Chunk {
     private final UltracraftClient client = UltracraftClient.get();
     private final Map<BlockPos, Block> customRendered = new HashMap<>();
     private final Map<BlockPos, ModelInstance> models = new HashMap<>();
+    public boolean immediateRebuild = false;
     private Vector3 tmp = new Vector3();
     private Vector3 tmp1 = new Vector3();
 

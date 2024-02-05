@@ -312,6 +312,7 @@ public final class WorldRenderer implements DisposableContainer {
 
             if (chunk.dirty && !ref.chunkRendered && (chunk.solidMesh != null || chunk.transparentMesh != null) || (chunk.solidMesh != null || chunk.transparentMesh != null) && !ref.chunkRendered && chunk.getWorld().isChunkInvalidated(chunk)) {
                 this.free(chunk);
+                chunk.immediateRebuild = true;
                 chunk.getWorld().onChunkUpdated(chunk);
                 chunk.dirty = false;
                 ref.chunkRendered = true;
@@ -320,7 +321,7 @@ public final class WorldRenderer implements DisposableContainer {
             chunk.dirty = false;
 
             if (chunk.solidMesh == null || chunk.transparentMesh == null) {
-                if (!this.shouldBuildChunks()) continue;
+                if (!this.shouldBuildChunks() && !chunk.immediateRebuild) continue;
                 chunk.whileLocked(() -> {
                     if (chunk.solidMesh == null) {
                         chunk.solidMesh = this.pool.obtain();

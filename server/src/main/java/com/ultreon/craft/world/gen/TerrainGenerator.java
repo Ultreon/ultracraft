@@ -16,6 +16,8 @@ import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
+import de.articdive.jnoise.core.api.noisegen.NoiseGenerator;
+import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import org.apache.commons.collections4.set.ListOrderedSet;
@@ -32,7 +34,7 @@ public class TerrainGenerator {
     private final DomainWarping layerDomain;
     private final NoiseConfig noiseConfig;
     @MonotonicNonNull
-    private NoiseInstance noise;
+    private NoiseGenerator noise;
     private FloatList biomeNoise = new FloatArrayList();
     private final List<BiomeData> biomeGenData = new ArrayList<>();
 
@@ -43,7 +45,7 @@ public class TerrainGenerator {
     }
 
     public void create(ServerWorld world, long seed) {
-        this.noise = this.noiseConfig.create(seed);
+        this.noise = FastSimplexNoiseGenerator.newBuilder().setSeed(seed).build();
     }
 
     @CanIgnoreReturnValue
@@ -111,7 +113,7 @@ public class TerrainGenerator {
     }
 
     private FloatList evalBiomeNoise(List<Vec3i> centers) {
-        return centers.stream().map(center -> (float) this.noise.eval(center.x, center.y)).collect(Collectors.toCollection(FloatArrayList::new));
+        return centers.stream().map(center -> (float) this.noise.evaluateNoise(center.x, center.y)).collect(Collectors.toCollection(FloatArrayList::new));
     }
 
     private BiomeGenerator.Index findGenerator(BuilderChunk chunk, Vec3i offset) {
@@ -125,8 +127,8 @@ public class TerrainGenerator {
         }
 
         var localOffset = World.toLocalBlockPos(offset.x, offset.y, offset.z);
-        var temp = this.noise.eval(offset.x * this.noise.noiseZoom(), offset.z * this.noise.noiseZoom());
-        var height = chunk.getHighest(localOffset.x(), localOffset.z());
+        var temp = this.noise.evaluateNoise(offset.x * this.noiseConfig.noiseZoom(), offset.z * this.noiseConfig.noiseZoom()) * 2.0f;
+        chunk.getHighest(localOffset.x(), localOffset.z());
         BiomeGenerator biomeGen = this.biomeGenData.get(0).biomeGen();
 
         for (var data : this.biomeGenData) {

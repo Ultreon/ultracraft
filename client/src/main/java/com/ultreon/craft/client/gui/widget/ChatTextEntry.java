@@ -76,6 +76,7 @@ public class ChatTextEntry extends TextEntry {
             this.completeX = this.getCursorIdx();
             this.value(value.substring(0, this.completeX) + this.popup.get() + s);
         }
+        this.popup.visible = false;
         this.setCursorIdx(this.getValue().length());
         this.revalidateCursor();
     }
