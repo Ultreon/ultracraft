@@ -56,9 +56,9 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        this.actualSpeed = this.tmp.set((float) (this.x - this.ox), (float) (this.y - this.oy), (float) (this.z - this.oz)).len();
-        this.actualHorizontalSpeed = this.tmp.set((float) (this.x - this.ox), 0, (float) (this.z - this.oz)).len();
         if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01) {
+            this.actualSpeed = this.tmp.set((float) (this.x - this.ox), (float) (this.y - this.oy), (float) (this.z - this.oz)).len();
+            this.actualHorizontalSpeed = this.tmp.set((float) (this.x - this.ox), 0, (float) (this.z - this.oz)).len();
             this.handleMove();
         }
 
@@ -78,7 +78,7 @@ public class LocalPlayer extends ClientPlayer {
 
     @Override
     public boolean isWalking() {
-        return this.client.playerInput.isWalking();
+        return this.client.playerInput.isWalking() && actualHorizontalSpeed > 0.01;
     }
 
     @Override

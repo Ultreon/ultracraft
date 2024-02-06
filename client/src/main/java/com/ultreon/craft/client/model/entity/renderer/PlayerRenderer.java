@@ -34,11 +34,13 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
         instance.getNode("LeftLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (-clientPlayer.walkAnim * 2000)));
         instance.getNode("RightLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (clientPlayer.walkAnim * 2000)));
 
-        float swingAmount = 0.15f;
         var walkAnim = clientPlayer.walkAnim;
         float delta = Gdx.graphics.getDeltaTime();
 
-        PlayerRenderer.updateWalkAnim(clientPlayer, walkAnim, delta * Mth.clamp(localPlayer.getActualHorizontalSpeed() * 50f, 5f, 30f), 30f);
+        float speed = localPlayer.getActualHorizontalSpeed() * 50f;
+        if (speed > 0.1) {
+            PlayerRenderer.updateWalkAnim(clientPlayer, walkAnim, delta * Mth.clamp(speed, 5f, 30f));
+        }
 
         float bopDuration = 3.4f;
         var bop = clientPlayer.bop;
@@ -88,9 +90,8 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
         instance.calculateTransforms();
     }
 
-    private static void updateWalkAnim(ClientPlayer player, float walkAnim, float swingSpeed, float swingAmount) {
+    private static void updateWalkAnim(ClientPlayer player, float walkAnim, float swingSpeed) {
         player.walking = player.isWalking();
-        float old = player.walkAnim0;
 
         // We here do a swing animation, based on the delta. Use sin() to make it smooth
         if (!player.walking) {
@@ -100,7 +101,7 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
                 player.walkDir = player.walkSignum;
             }
             if (player.walkSignum == 0) return;
-            walkAnim = (float) Math.sin(((player.walkAnim0 += swingSpeed * player.walkDir) * swingAmount) * MathUtils.degRad) / swingAmount;
+            walkAnim = (float) Math.sin(((player.walkAnim0 += swingSpeed * player.walkDir) * (float) 30.0) * MathUtils.degRad) / (float) 30.0;
             int curSignum = walkAnim > 0 ? 1 : -1;
             if (player.walkSignum != curSignum) {
                 player.walkAnim0 = 0;
@@ -108,7 +109,7 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
             }
         } else {
             player.walkSignum = player.walkAnim > 0 ? 1 : -1;
-            float walkAnim1 = (float) Math.sin(((player.walkAnim0 += swingSpeed) * swingAmount) * MathUtils.degRad) / swingAmount;
+            float walkAnim1 = (float) Math.sin(((player.walkAnim0 += swingSpeed) * (float) 30.0) * MathUtils.degRad) / (float) 30.0;
             float v = walkAnim1 - walkAnim;
             player.walkDir = v > 0 ? 1 : v < 0 ? -1 : player.walkDir;
             walkAnim = walkAnim1;
