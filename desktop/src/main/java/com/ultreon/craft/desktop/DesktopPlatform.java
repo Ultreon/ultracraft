@@ -14,6 +14,7 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import javax.swing.*;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
@@ -88,7 +89,7 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public Collection<? extends Mod> getMods() {
         var list = new ArrayList<Mod>();
-        list.addAll(FabricLoader.getInstance().getAllMods().stream().map(container -> this.mods.computeIfAbsent(container.getMetadata().getId(), v -> new FabricMod(container))).collect(Collectors.toList()));
+        list.addAll(FabricLoader.getInstance().getAllMods().stream().map(container -> this.mods.computeIfAbsent(container.getMetadata().getId(), v -> new FabricMod(container))).collect(Collectors.toList());
         list.addAll(super.getMods());
         return list;
     }
@@ -140,5 +141,13 @@ public class DesktopPlatform extends GamePlatform {
     @Override
     public boolean isDesktop() {
         return true;
+    }
+
+    @Override
+    public boolean detectDebug() {
+        List<String> args = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        boolean debugFlagPresent = args.contains("-Xdebug");
+        boolean jdwpPresent = args.toString().contains("jdwp");
+        return debugFlagPresent || jdwpPresent;
     }
 }

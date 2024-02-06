@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import com.ultreon.craft.network.server.LoginServerPacketHandler;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ElementID;
@@ -124,9 +123,6 @@ public class ServerConnections {
 
                 if (connection.isConnected()) {
                     try {
-                        if (connection.tickKeepAlive()) {
-                            connection.send(new S2CKeepAlivePacket());
-                        }
                         connection.tick();
                     } catch (Exception e) {
                         if (connection.isMemoryConnection()) {

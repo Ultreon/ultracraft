@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class AttributeMap {
     private final Reference2DoubleMap<Attribute> bases = new Reference2DoubleArrayMap<>();
@@ -31,7 +32,7 @@ public class AttributeMap {
 
     public double get(Attribute attribute) {
         double value = this.bases.getDouble(attribute);
-        for (AttributeModifier modifier : this.modifiers.get(attribute).values().stream().sorted(Comparator.comparing(modifier -> modifier.operation().ordinal())).toList()) {
+        for (AttributeModifier modifier : this.modifiers.get(attribute).values().stream().sorted(Comparator.comparing(modifier -> modifier.operation().ordinal())).collect(Collectors.toList())) {
             AttributeModifier.Operation operation = modifier.operation();
             value = operation.calculate(value, modifier.value());
         }

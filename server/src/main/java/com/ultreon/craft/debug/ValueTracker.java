@@ -11,6 +11,12 @@ public class ValueTracker {
     private static long poolFree;
     private static int poolPeak;
     private static int poolMax;
+    private static int obtainedRenderables;
+    private static int renderableFlushes;
+    private static int flushAttempts;
+    private static int obtainRequests;
+    private static int freeRequests;
+    private static int flushRequests;
 
     public static long getMeshDisposes() {
         return ValueTracker.meshDisposes;
@@ -90,5 +96,69 @@ public class ValueTracker {
 
     public static void setPoolMax(int poolMax) {
         ValueTracker.poolMax = poolMax;
+    }
+
+    public static int getObtainedRenderables() {
+        return obtainedRenderables;
+    }
+
+    public static void setObtainedRenderables(int size) {
+        ValueTracker.obtainedRenderables = size;
+    }
+
+    public static int getRenderableFlushes() {
+        return renderableFlushes;
+    }
+
+    public static void trackFlushes(int flushes) {
+        renderableFlushes += flushes;
+    }
+
+    public static void resetFlushed() {
+        renderableFlushes = 0;
+    }
+
+    public static int getFlushAttempts() {
+        return flushAttempts;
+    }
+
+    public static void trackFlushAttempt() {
+        flushAttempts++;
+    }
+
+    public static void resetFlushAttempts() {
+        flushAttempts = 0;
+    }
+
+    public static void trackObtainRequest() {
+        obtainRequests++;
+    }
+
+    public static int getObtainRequests() {
+        return obtainRequests;
+    }
+
+    public static void resetObtainRequests() {
+//        obtainRequests = 0;
+    }
+
+    public static void trackFreeRequest() {
+        freeRequests++;
+    }
+
+    public static void trackFreeRequests(int size) {
+        freeRequests += size;
+    }
+
+    public static int getFreeRequests() {
+        return freeRequests;
+    }
+
+    public static void trackFlushRequest() {
+        flushRequests++;
+    }
+
+    public static int getFlushRequests() {
+        return flushRequests;
     }
 }

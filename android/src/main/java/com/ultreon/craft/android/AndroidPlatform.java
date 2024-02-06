@@ -5,6 +5,7 @@ import android.hardware.SensorEvent;
 import android.os.Looper;
 import android.util.Log;
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.BuildConfig;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.Mod;
@@ -33,7 +34,7 @@ public class AndroidPlatform extends GamePlatform {
         super();
         this.launcher = launcher;
 
-        this.mods.put(CommonConstants.NAMESPACE, new BuiltinAndroidMod(CommonConstants.NAMESPACE, "Ultracraft", "0.1.0", "The game you are now playing", List.of("Ultreon Team")));
+        this.mods.put(CommonConstants.NAMESPACE, new BuiltinAndroidMod(CommonConstants.NAMESPACE, "Ultracraft", BuildConfig.VERSION_NAME, "The game you are now playing", List.of("Ultreon Team")));
     }
 
     @Override
@@ -138,8 +139,13 @@ public class AndroidPlatform extends GamePlatform {
     }
 
     @Override
+    public boolean detectDebug() {
+        return BuildConfig.DEBUG;
+    }
+
+    @Override
     public boolean isDevEnvironment() {
-        return false;
+        return BuildConfig.DEBUG                        ;
     }
 
     public void handleSensorChange(SensorEvent event) {

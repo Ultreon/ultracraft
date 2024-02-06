@@ -11,6 +11,7 @@ import com.ultreon.craft.Mod;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.crash.ApplicationCrash;
+import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.debug.inspect.InspectionNode;
@@ -41,10 +42,10 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.apache.logging.log4j.core.config.ConfigurationScheduler;
 import org.apache.logging.log4j.core.util.WatchManager;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +142,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 new ElementID("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = parentNode.createNode("server", () -> this);
             this.playersNode = this.node.createNode("players", this.players::values);
             this.node.createNode("world", () -> this.world);
@@ -345,6 +346,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         // Send event for server stopping to mods.
         ServerLifecycleEvents.SERVER_STOPPED.factory().onServerStopped(this);
+
+        UltracraftServer.LOGGER.info("Server stopped.");
     }
 
     /**
@@ -352,7 +355,13 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      *
      * @param t the throwable that caused the crash.
      */
-    public abstract void crash(Throwable t);
+    public void crash(Throwable t) {
+        // Create crash log.
+        CrashLog crashLog = new CrashLog("Server crashed! :(", t);
+        this.world.fillCrashInfo(crashLog);
+
+        this.crash(crashLog);
+    }
 
     /**
      * Stops the server thread in a clean state.
@@ -372,8 +381,21 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Set running flag to make server stop.
         this.running = false;
 
+        long startTime = System.currentTimeMillis();
         try {
-            this.thread.join(60000);
+            if (!this.scheduler.awaitTermination(60, TimeUnit.SECONDS) && !this.scheduler.isTerminated()) {
+                this.onTerminationFailed();
+            }
+        } catch (ApplicationCrash crash) {
+            this.crash(crash.getCrashLog());
+            throw new Error();
+        } catch (Exception exc) {
+            this.crash(exc);
+            throw new Error();
+        }
+
+        try {
+            this.thread.join(6000 - (System.currentTimeMillis() - startTime));
         } catch (InterruptedException e) {
             this.crash(new RuntimeException("Safe shutdown got interrupted."));
             Runtime.getRuntime().halt(1);
@@ -382,6 +404,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Shut down the parent executor service.
         super.shutdownNow();
     }
+
+    public abstract void crash(CrashLog crashLog);
 
     @OverridingMethodsMustInvokeSuper
     protected void runTick() {
@@ -617,7 +641,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.players.put(player.getUuid(), player);
         this.cachedPlayers.put(player.getName(), new CachedPlayer(player.getUuid(), player.getName()));
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.playersNode.createNode(player.getName(), () -> player);
         }
 
@@ -747,9 +771,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public ServerPlayer loadPlayer(String name, UUID uuid, Connection connection) {
         ServerPlayer player = new ServerPlayer(EntityTypes.PLAYER, this.world, uuid, name, connection);
         try {
-            if (this.storage.exists("players/%s.ubo".formatted(name))) {
+            if (this.storage.exists(String.format("players/%s.ubo", name))) {
                 UltracraftServer.LOGGER.info("Loading player '{}'...", name);
-                MapType read = this.storage.read("players/%s.ubo".formatted(name));
+                MapType read = this.storage.read(String.format("players/%s.ubo", name));
                 player.load(read);
                 player.markSpawned();
                 player.markPlayedBefore();

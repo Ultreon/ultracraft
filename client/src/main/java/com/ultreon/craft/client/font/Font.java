@@ -4,14 +4,14 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
-import com.ultreon.craft.client.Constants;
+import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 
-public class Font {
+public class Font implements Disposable {
     @SuppressWarnings("GDXJavaStaticResource")
     final BitmapFont bitmapFont;
     private final UltracraftClient client = UltracraftClient.get();
@@ -27,6 +27,7 @@ public class Font {
         this.bitmapFont = bitmapFont;
         this.lineHeight = MathUtils.ceil(bitmapFont.getLineHeight());
         this.special = special;
+        UltracraftClient.get().deferDispose(this);
     }
 
     public void drawText(Renderer renderer, String text, float x, float y, Color color, boolean shadow) {
@@ -74,7 +75,7 @@ public class Font {
         renderer.scale(scale, scale);
         if (shadow) {
             float shadowX = x;
-            if (Constants.SHADOW_OFFSET) shadowX += 1;
+            if (this.client.config.get().personalisation.diagonalFontShadow) shadowX += 1;
             this.draw(renderer, font, color.darker().darker(), batch, text, shadowX, y / scale + 1, bold, italic, underlined, strikethrough, scale);
         }
 

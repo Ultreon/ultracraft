@@ -198,7 +198,7 @@ public class DebugGui {
             rText = TextObject.literal("< 0.01").setColor(Color.LIGHT_GRAY)
                     .append(TextObject.literal(" ms").setColor(Color.rgb(0xa0a0a0)));
         else
-            rText = TextObject.literal("%.2f".formatted(nanos / 1000000.0)).setColor(Color.LIGHT_GRAY)
+            rText = TextObject.literal(String.format("%.2f", nanos / 1000000.0)).setColor(Color.LIGHT_GRAY)
                     .append(TextObject.literal(" ms").setColor(Color.rgb(0xa0a0a0)));
         int lWidth = renderer.getFont().width(lText);
         int rWidth = renderer.getFont().width(rText);

@@ -4,15 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.GamePlatform;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.GuiEvents;
-import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
+import com.ultreon.craft.client.input.key.KeyBind;
+import com.ultreon.craft.client.input.key.KeyBinds;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -53,9 +54,6 @@ public class DesktopInput extends GameInput {
         if (Gdx.input.isCursorCatched() == caught) return;
 
         Gdx.input.setCursorCatched(caught);
-        if (!caught) {
-            Gdx.input.setCursorPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
-        }
     }
 
     @Override
@@ -118,9 +116,9 @@ public class DesktopInput extends GameInput {
             this.client.setFullScreen(!this.client.isFullScreen());
         } else if (DesktopInput.THIRD_PERSON_KEY.isJustPressed()) {
             this.client.setInThirdPerson(!this.client.isInThirdPerson());
-        } else if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
+        } else if (this.client.world != null && DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
             this.client.showScreen(new PauseScreen());
-        } else if (DesktopInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched()) {
+        } else if (DesktopInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched() && this.client.screen instanceof PauseScreen) {
             this.client.showScreen(null);
         }
     }
@@ -135,7 +133,7 @@ public class DesktopInput extends GameInput {
     }
 
     private void handleInspectKey() {
-        if (UltracraftClient.get().config.get().debugUtils && DebugFlags.INSPECTION_ENABLED) {
+        if (UltracraftClient.get().config.get().debugUtils && DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.client.inspection.setInspecting(!this.client.inspection.isInspecting());
         }
     }
@@ -218,7 +216,6 @@ public class DesktopInput extends GameInput {
             return false;
 
         if (!Gdx.input.isCursorCatched() && !UltracraftClient.get().isShowingImGui()) {
-            DesktopInput.setCursorCaught(true);
             return true;
         }
 

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InspectorDebugPage implements DebugPage {
     private String inspectCurrentPath = "/";
@@ -66,7 +67,7 @@ public class InspectorDebugPage implements DebugPage {
                 this.inspectCurrentPath = "/";
                 return;
             }
-            List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).toList();
+            List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).collect(Collectors.toList());
 
             if (nodes.isEmpty()) return;
 
@@ -87,13 +88,13 @@ public class InspectorDebugPage implements DebugPage {
             return true;
         }
 
-        List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).toList();
+        List<InspectionNode<?>> nodes = node.getNodes().values().stream().sorted(comparator).collect(Collectors.toList());
         for (int i = 0, nodeSize = nodes.size(); i < nodeSize; i++) {
             InspectionNode<?> curNode = nodes.get(i);
             context.entryLine(i, curNode.getName());
         }
 
-        List<Pair<String, String>> elements = node.getElements().entrySet().stream().map(t -> new Pair<>(t.getKey(), t.getValue().get())).sorted(Comparator.comparing(Pair::getFirst)).toList();
+        List<Pair<String, String>> elements = node.getElements().entrySet().stream().map(t -> new Pair<>(t.getKey(), t.getValue().get())).sorted(Comparator.comparing(Pair::getFirst)).collect(Collectors.toList());
         for (Pair<String, String> element : elements) {
             context.entryLine(element.getFirst(), element.getSecond());
         }

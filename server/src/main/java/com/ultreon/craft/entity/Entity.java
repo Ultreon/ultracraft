@@ -75,7 +75,7 @@ public class Entity implements CommandSender {
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
         ElementID typeId = ElementID.parse(data.getString("type"));
-        EntityType<?> type = Registries.ENTITY_TYPE.getValue(typeId);
+        EntityType<?> type = Registries.ENTITY_TYPE.getElement(typeId);
         Entity entity = type.create(world);
 
         entity.id = data.getInt("id");
@@ -130,7 +130,7 @@ public class Entity implements CommandSender {
         data.put("Velocity", velocity);
 
         data.putInt("id", this.id);
-        data.putString("type", Objects.requireNonNull(Registries.ENTITY_TYPE.getKey(this.type)).toString());
+        data.putString("type", Objects.requireNonNull(Registries.ENTITY_TYPE.getId(this.type)).toString());
 
         data.putDouble("fallDistance", this.fallDistance);
         data.putFloat("gravity", this.gravity);
@@ -501,7 +501,7 @@ public class Entity implements CommandSender {
         if (this.customName != null) return this.customName;
         ElementID id1 = this.getType().getId();
         if (id1 == null) return Translations.NULL_OBJECT;
-        return TextObject.translation("%s.entity.%s.name".formatted(
+        return TextObject.translation(String.format("%s.entity.%s.name", 
                 id1.namespace(),
                 id1.path().replace('/', '.')
         ));

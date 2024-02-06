@@ -2,6 +2,7 @@ package com.ultreon.craft.client;
 
 import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
+import com.ultreon.craft.client.gui.screens.TitleScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
@@ -55,7 +56,7 @@ public class IntegratedServer extends UltracraftServer {
             this.host = player;
         }
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node.createNode("host", () -> this.host);
         }
     }
@@ -76,8 +77,8 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
-    public void crash(Throwable t) {
-        UltracraftClient.crash(t);
+    public void crash(CrashLog crashLog) {
+        UltracraftClient.crash(crashLog);
     }
 
     @Override
@@ -131,6 +132,14 @@ public class IntegratedServer extends UltracraftServer {
         return "IntegratedServer{" +
                 "openToLan=" + this.openToLan +
                 '}';
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+
+        this.client.integratedServer = null;
+        this.client.showScreen(new TitleScreen());
     }
 
     @Override

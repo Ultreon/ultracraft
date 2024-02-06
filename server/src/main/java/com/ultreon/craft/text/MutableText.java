@@ -7,6 +7,7 @@ import org.checkerframework.common.reflection.qual.NewInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class MutableText extends TextObject {
@@ -123,7 +124,7 @@ public abstract class MutableText extends TextObject {
         var builder = new ArrayList<TextObject>();
         builder.add(this);
         for (var extra : this.extras) {
-            builder.addAll(extra.stream().toList());
+            builder.addAll(extra.stream().collect(Collectors.toList()));
         }
         return builder.stream();
     }

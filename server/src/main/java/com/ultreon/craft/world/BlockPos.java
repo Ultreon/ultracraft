@@ -63,7 +63,7 @@ public record BlockPos(int x, int y, int z) {
 
     @Override
     public String toString() {
-        return "%d,%d,%d".formatted(this.x, this.y, this.z);
+        return String.format("%d,%d,%d", this.x, this.y, this.z);
     }
 
     /**
@@ -78,5 +78,9 @@ public record BlockPos(int x, int y, int z) {
      */
     public BlockPos above() {
         return this.offset(0, -1, 0);
+    }
+
+    public BlockPos offset(ChunkPos pos) {
+        return this.offset(pos.x() * World.CHUNK_SIZE, 0, pos.z() * World.CHUNK_SIZE);
     }
 }

@@ -124,4 +124,12 @@ public abstract class GamePlatform {
         context.setLanguageVersion(Context.VERSION_ES6);
         return context;
     }
+
+    public ApplicationFrame createFrame() {
+        return new DummyApplicationFrame();
+    }
+
+    public boolean detectDebug() {
+        return false;
+    }
 }

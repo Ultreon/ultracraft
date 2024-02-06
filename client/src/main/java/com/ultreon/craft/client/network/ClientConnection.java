@@ -2,7 +2,6 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.c2s.C2SKeepAlivePacket;
 import com.ultreon.craft.network.packets.c2s.C2SPingPacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -62,7 +61,6 @@ public class ClientConnection implements Runnable {
 
     public void tick(Connection connection) {
         if (connection.tickKeepAlive()) {
-            connection.send(new C2SKeepAlivePacket());
             connection.send(new C2SPingPacket());
         }
     }

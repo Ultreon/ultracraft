@@ -11,8 +11,8 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.util.MathHelper;
+import com.ultreon.craft.world.BlockFace;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.common.returnsreceiver.qual.This;
 
@@ -59,8 +59,8 @@ public class BoxBuilder {
 
     private void face(Vec3i pos, BlockFace face, TextureRegion region, FloatArray output) {
         float[] vertices = switch (face) {
-            case TOP -> BoxBuilder.topVertices;
-            case BOTTOM -> BoxBuilder.bottomVertices;
+            case UP -> BoxBuilder.topVertices;
+            case DOWN -> BoxBuilder.bottomVertices;
             case WEST -> BoxBuilder.leftVertices;
             case EAST -> BoxBuilder.rightVertices;
             case NORTH -> BoxBuilder.frontVertices;
@@ -68,8 +68,8 @@ public class BoxBuilder {
         };
 
         float[] uvs = switch (face) {
-            case TOP -> BoxBuilder.topUv;
-            case BOTTOM -> BoxBuilder.bottomUv;
+            case UP -> BoxBuilder.topUv;
+            case DOWN -> BoxBuilder.bottomUv;
             case WEST -> BoxBuilder.leftUv;
             case EAST -> BoxBuilder.rightUv;
             case NORTH -> BoxBuilder.frontUv;
@@ -122,8 +122,8 @@ public class BoxBuilder {
         int id = (int) this.depth;
         int iu = this.u;
         int iv = this.v;
-        this.face(new Vec3i(ix, iy2, iz), BlockFace.TOP, new TextureRegion(texture, iu + id, iv, iw, id), output);
-        this.face(new Vec3i(ix, iy, iz), BlockFace.BOTTOM, new TextureRegion(texture, iu + id, iv + id + ih, iw, id), output);
+        this.face(new Vec3i(ix, iy2, iz), BlockFace.UP, new TextureRegion(texture, iu + id, iv, iw, id), output);
+        this.face(new Vec3i(ix, iy, iz), BlockFace.DOWN, new TextureRegion(texture, iu + id, iv + id + ih, iw, id), output);
 
         this.face(new Vec3i(ix, iy, iz), BlockFace.WEST, new TextureRegion(texture, iu, iv + id, id, ih), output);
         this.face(new Vec3i(ix2, iy, iz), BlockFace.EAST, new TextureRegion(texture, iu + id + iw, iv + id + ih, id, ih), output);

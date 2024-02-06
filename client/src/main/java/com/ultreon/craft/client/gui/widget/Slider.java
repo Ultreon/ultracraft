@@ -77,7 +77,12 @@ public class Slider extends Widget {
         renderer.blit(Slider.TEXTURE, thumbX, this.pos.y, 18, 15, 21, 0, 18, 15);
 
         // Text
-        renderer.textCenter(this.text.get().copy().append(": ").append(this.value.get()), this.pos.x + this.size.width / 2, this.pos.y + 5, true);
+        TextObject textObject = this.text.get();
+        if (textObject != null) {
+            renderer.textCenter(textObject.copy().append(": ").append(this.value.get()), this.pos.x + this.size.width / 2, this.pos.y + 5, true);
+        } else {
+            renderer.textCenter(String.valueOf(this.value.get()), this.pos.x + this.size.width / 2, this.pos.y + 5, true);
+        }
     }
 
     @Override

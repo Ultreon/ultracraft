@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.events;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Pixmap;
+import com.ultreon.craft.client.Screenshot;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.events.api.EventResult;
@@ -91,6 +91,6 @@ public class GuiEvents {
 
     @FunctionalInterface
     public interface ScreenshotTaken {
-        ValueEventResult<FileHandle> onScreenshotTaken(Pixmap pixmap, FileHandle defaultPath);
+        EventResult onScreenshotTaken(Screenshot pixmap, FileHandle defaultPath);
     }
 }

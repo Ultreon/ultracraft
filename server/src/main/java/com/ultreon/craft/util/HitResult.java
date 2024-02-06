@@ -39,7 +39,7 @@ public class HitResult {
         this.normal.set(buffer.readVec3d());
         this.pos.set(buffer.readVec3i());
         this.next.set(buffer.readVec3i());
-        this.block = Registries.BLOCK.getValue(buffer.readId());
+        this.block = Registries.BLOCK.getElement(buffer.readId());
         this.collide = buffer.readBoolean();
         this.distance = buffer.readDouble();
     }

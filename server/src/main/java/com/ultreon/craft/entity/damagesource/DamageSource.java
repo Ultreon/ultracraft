@@ -30,7 +30,7 @@ public class DamageSource {
     }
 
     public @Nullable ElementID getType() {
-        return Registries.DAMAGE_SOURCE.getKey(this);
+        return Registries.DAMAGE_SOURCE.getId(this);
     }
 
     public TextObject getDescription() {

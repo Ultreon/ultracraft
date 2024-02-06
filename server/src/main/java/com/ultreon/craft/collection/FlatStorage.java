@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class FlatStorage<D> implements Storage<D> {
     private D[] data;
@@ -92,12 +93,15 @@ public class FlatStorage<D> implements Storage<D> {
     }
 
     @Override
-    public void set(int idx, D value) {
+    public boolean set(int idx, D value) {
         if (idx < 0 || idx >= this.data.length) {
             throw new ArrayIndexOutOfBoundsException(idx);
         }
 
+        D datum = data[idx];
+        if (datum == value) return false;
         this.data[idx] = value;
+        return true;
     }
 
     @Override
@@ -123,7 +127,7 @@ public class FlatStorage<D> implements Storage<D> {
 
     @Override
     public <R> Storage<R> map(Function<D, R> o, Class<R> clazz) {
-        var data = Arrays.stream(this.data).map(o).toList();
+        var data = Arrays.stream(this.data).map(o).collect(Collectors.toList());
         return new FlatStorage<>(data, clazz);
     }
 }

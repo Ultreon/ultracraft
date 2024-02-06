@@ -12,7 +12,7 @@ public class SoundEvent {
     }
 
     public ElementID getId() {
-        return Registries.SOUND_EVENT.getKey(this);
+        return Registries.SOUND_EVENT.getId(this);
     }
 
     public float getRange() {

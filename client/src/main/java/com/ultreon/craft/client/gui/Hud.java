@@ -1,13 +1,10 @@
 package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
-import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.TouchPoint;
 import com.ultreon.craft.client.util.GameRenderable;
-import com.ultreon.craft.client.world.BlockFace;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ItemSlot;
@@ -16,7 +13,6 @@ import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec3f;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -48,7 +44,10 @@ public class Hud implements GameRenderable {
         Player player = this.client.player;
         if (player == null) return;
 
-        this.renderHotbar(renderer, player);
+        if (!this.client.isInThirdPerson() || !this.client.config.get().accessibility.hideHotbarWhenThirdPerson) {
+            this.renderHotbar(renderer, player);
+        }
+
         if (!player.isInvincible()) {
             this.renderHealth(renderer, player);
         }
@@ -56,31 +55,6 @@ public class Hud implements GameRenderable {
         OverlayManager.render(renderer, deltaTime);
 
         this.renderCrosshair(renderer);
-    }
-
-    public void renderOutline(Renderer renderer, float deltaTime) {
-        GameCamera camera = this.client.camera;
-        Vec3f normal = this.client.hitResult.getNormal().f();
-        Vector3 relative = camera.relative(this.client.hitResult.getPosition());
-
-        BlockFace blockFace = BlockFace.ofNormal(normal);
-        float[] vertices = blockFace.getFaceVertices();
-
-        float[] verticesOut = new float[12];
-
-        // Loop vertices and uvs and add them to the output.
-        for (int i = 0, vertex = 0; vertex < vertices.length; vertex += 3, i++) {
-            float x = relative.x + vertices[vertex];
-            float y = relative.y + vertices[vertex + 1];
-            float z = relative.z + vertices[vertex + 2];
-
-            Vector3 project = camera.project(new Vector3(x, y, z));
-            verticesOut[i] = project.x;
-            verticesOut[i + 1] = project.y;
-            verticesOut[i + 2] = project.z;
-        }
-
-        renderer.polygon(verticesOut, Color.BLACK, 3);
     }
 
     private void renderCrosshair(Renderer renderer) {
@@ -106,7 +80,7 @@ public class Hud implements GameRenderable {
 
         int x = player.selected * 20;
         ItemStack selectedItem = player.getSelectedItem();
-        ElementID key = Registries.ITEM.getKey(selectedItem.getItem());
+        ElementID key = Registries.ITEM.getId(selectedItem.getItem());
 
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
         renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);

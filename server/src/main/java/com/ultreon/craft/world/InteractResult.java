@@ -13,6 +13,11 @@ public enum InteractResult {
     ALLOW,
 
     /**
+     * Indicates that the interaction was skipped.
+     */
+    SKIP,
+
+    /**
      * Indicates that the interaction was denied.
      */
     DENY

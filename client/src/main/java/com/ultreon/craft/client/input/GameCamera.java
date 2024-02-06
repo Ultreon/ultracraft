@@ -30,11 +30,13 @@ public class GameCamera extends PerspectiveCamera {
     private float cameraBop;
     private boolean inverseBop;
     private boolean walking;
+    private static final Vector3 TMP_1 = new Vector3();
+    private static final Vector3 TMP_2 = new Vector3();
 
     public GameCamera(float fieldOfViewY, float viewportWidth, float viewportHeight) {
         super(fieldOfViewY, viewportWidth, viewportHeight);
 
-        if (DebugFlags.INSPECTION_ENABLED) {
+        if (DebugFlags.INSPECTION_ENABLED.enabled()) {
             this.node = this.client.inspection.createNode("camera", () -> this);
             this.node.create("position", () -> this.position);
             this.node.create("direction", () -> this.direction);
@@ -65,13 +67,13 @@ public class GameCamera extends PerspectiveCamera {
             this.updateThirdPerson(lookVec);
         } else {
 //            this.updateThirdPerson(lookVec);
-            if (this.node != null) {
+            if (DebugFlags.INSPECTION_ENABLED.enabled()) {
                 this.node.remove("hitPosition");
                 this.node.remove("eyePosition");
                 this.node.remove("playerPosition");
             }
             // Set the camera's position to zero, and set the camera's direction to the player's look vector.
-            this.position.set(new Vector3());
+            this.position.set(0, 0, 0);
             this.direction.set((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
         }
 
@@ -114,19 +116,18 @@ public class GameCamera extends PerspectiveCamera {
         var world = this.client.world;
         if (world != null) {
             this.hitResult = world.rayCast(ray, 5.1f);
-            Vector3 lookVector = new Vector3((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
+            this.direction.set((float) lookVec.x, (float) lookVec.y, (float) lookVec.z);
             if (this.hitResult.isCollide()) {
                 Vec3f normal = this.hitResult.getNormal().f();
-                Vector3 gdxNormal = new Vector3(normal.x, normal.y, normal.z);
-                Vector3 hitOffset = lookVector.cpy().nor()
+                Vector3 gdxNormal = TMP_1.set(normal.x, normal.y, normal.z);
+                Vector3 hitOffset = TMP_2.set(this.direction).nor()
                         .scl((float) -this.hitResult.distance)
-                        .sub(gdxNormal.scl(-0.1f).rotate(lookVector, 360));
-                this.hitPosition = new Vector3(0, 0, 0).add(hitOffset);
+                        .sub(gdxNormal.scl(-0.1f).rotate(this.direction, 360));
+                this.hitPosition = TMP_1.set(0, 0, 0).add(hitOffset);
             } else {
-                this.hitPosition = new Vector3(0, 0, 0).add(lookVector.cpy().nor().scl(-5));
+                this.hitPosition = TMP_1.set(this.direction).nor().scl(-5);
             }
             this.position.set(this.hitPosition.x, this.hitPosition.y, this.hitPosition.z);
-            this.direction.set(lookVector);
         }
     }
 
@@ -137,10 +138,10 @@ public class GameCamera extends PerspectiveCamera {
         return this.camPos;
     }
 
-    public Vector3 relative(Vec3d position) {
+    public Vector3 relative(Vec3d position, Vector3 tmp) {
         LocalPlayer localPlayer = this.client.player;
         if (localPlayer == null) return null;
         Vec3f sub = position.sub(this.player.getPosition().add(0, this.player.getEyeHeight(), 0)).f();
-        return new Vector3(sub.x, sub.y, sub.z);
+        return tmp.set(sub.x, sub.y, sub.z);
     }
 }

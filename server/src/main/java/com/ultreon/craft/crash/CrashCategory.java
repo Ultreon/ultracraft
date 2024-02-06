@@ -6,9 +6,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="https://github.com/XyperCodee">XyperCode</a>
@@ -25,13 +28,38 @@ public class CrashCategory {
     public CrashCategory(String details, Throwable throwable) {
         if (throwable instanceof ApplicationCrash crash) {
             CrashLog crashLog = crash.getCrashLog();
-            this.throwable = crashLog.getThrowable();
-            this.details = crashLog.details;
+            this.details = this.detectThrowable(crashLog.details, crashLog.throwable);
             this.entries.addAll(crashLog.entries);
-        } else {
-            this.throwable = throwable;
-            this.details = details;
+            return;
         }
+
+        this.details = this.detectThrowable(details, throwable);
+    }
+
+    private String detectThrowable(String details, Throwable throwable) {
+        var current = throwable;
+        if (current != null) {
+            do {
+                if (current instanceof ApplicationCrash crash) {
+                    CrashLog crashLog = crash.getCrashLog();
+                    this.entries.addAll(crashLog.entries);
+                    return this.detectThrowable(crashLog.details, crashLog.throwable);
+                }
+
+                if (!(current instanceof InvocationTargetException) && !(current instanceof CompletionException)) {
+                    break;
+                }
+
+                current = current.getCause();
+            } while (current.getCause() != null);
+        }
+
+        if (current instanceof ApplicationCrash crash) {
+            return this.detectThrowable(crash.getCrashLog().details, crash.getCrashLog().throwable);
+        } else {
+            this.throwable = current;
+        }
+        return details;
     }
 
     public void add(String key, @Nullable Object value) {
@@ -92,7 +120,7 @@ public class CrashCategory {
             }
 
             String output = outputBuf.toString();
-            List<String> lines = output.lines().toList();
+            List<String> lines = output.lines().collect(Collectors.toList());
             String finalResult = "   " + String.join(System.lineSeparator() + "   ", lines);
 
             sb.append(finalResult);

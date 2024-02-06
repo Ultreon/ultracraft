@@ -7,7 +7,7 @@ import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
-import com.ultreon.craft.debug.Debugger;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -190,8 +190,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         // Send the new position to the client.
         if (this.world.getChunk(this.getChunkPos()) == null) {
-            this.setPosition(this.ox, this.oy, this.oz);
-            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
+//            this.setPosition(this.ox, this.oy, this.oz);
+//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
         }
 
         // Set old position.
@@ -251,6 +251,9 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
         this.setPosition(this.ox, this.oy, this.oz);
+        if (DebugFlags.LOG_POSITION_RESET_ON_CHUNK_LOAD.enabled()) {
+            Chat.sendInfo(this, "Position reset on chunk load.");
+        }
         return this.activeChunks.add(pos);
     }
 
@@ -298,7 +301,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             Vec2d cPos2 = new Vec2d(o2.x(), o2.z());
 
             return Double.compare(cPos1.dst(playerPos), cPos2.dst(playerPos));
-        }).toList();
+        }).collect(Collectors.toList());
 
         for (ChunkPos loadingChunk : load) {
             ServerChunk chunk = world.getChunk(loadingChunk);
@@ -342,7 +345,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         if (this.sendingChunk) return;
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage), PacketResult.onEither(() -> this.sendingChunk = false));
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage, chunk.getBlockEntities()), PacketResult.onEither(() -> this.sendingChunk = false));
     }
 
     @Override
@@ -442,6 +445,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         this.inventory.addItem(Items.WOODEN_PICKAXE.defaultStack());
         this.inventory.addItem(Items.WOODEN_SHOVEL.defaultStack());
+        this.inventory.addItem(new ItemStack(Items.CRATE, 32));
     }
 
     public void handlePlayerMove(double x, double y, double z) {
@@ -452,7 +456,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 //        if (dst > this.getSpeed() * this.runModifier * TPS) {
 //            this.setPosition(this.x, this.y, this.z);
 //            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
-//            UltracraftServer.LOGGER.warn("Player moved too quickly: %s (distance: %s, max xz: %s)".formatted(this.getName(), dst, this.getSpeed() * this.runModifier * 1.5));
+//            UltracraftServer.LOGGER.warn(String.format("Player moved too quickly: %s (distance: %s, max xz: %s)", this.getName(), dst, this.getSpeed() * this.runModifier * 1.5));
 //            return;
 //        }
         this.setPosition(x, y, z);
@@ -471,24 +475,27 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void execute(String input) {
+        var commandline = input.trim();
+
         String command;
         String[] argv;
-        if (!input.contains(" ")) {
+        if (!commandline.contains(" ")) {
             argv = new String[0];
-            command = input;
+            command = commandline;
         } else {
-            argv = input.split(" ");
+            argv = commandline.split(" ");
             command = argv[0];
             argv = ArrayUtils.remove(argv, 0);
         }
 
-        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + input);
+        UltracraftServer.LOGGER.info(this.getName() + " ran command: " + commandline);
 
         Command baseCommand = CommandRegistry.get(command);
         if (baseCommand == null) {
             Chat.sendError(this, "Unknown command&: " + command);
             return;
         }
+
         baseCommand.onCommand(this, new CommandContext(command), command, argv);
     }
 
@@ -516,7 +523,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             }
 
             List<String> options = baseCommand.onTabComplete(this, new CommandContext(command), command, argv);
-            System.out.println("options = " + options);
             if (options == null) options = Collections.emptyList();
             this.connection.send(new S2CTabCompletePacket(options));
         }
@@ -530,8 +536,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     public void sendMessage(@NotNull TextObject textObj) {
-        String text = textObj.getText();
-        Debugger.log("MESSAGE_SENT: " + text);
         this.connection.send(new S2CChatPacket(textObj));
     }
 
@@ -556,6 +560,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     private void resendCommands() {
-        this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().toList()));
+        this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().collect(Collectors.toList())));
     }
 }

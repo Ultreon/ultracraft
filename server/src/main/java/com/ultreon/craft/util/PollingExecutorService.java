@@ -149,7 +149,7 @@ public class PollingExecutorService implements ExecutorService {
     public <T> @NotNull List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) {
         List<CompletableFuture<T>> futures = tasks.stream()
                 .map(this::submit)
-                .toList();
+                .collect(Collectors.toList());
         return futures.stream()
                 .map(CompletableFuture::join)
                 .map(CompletableFuture::completedFuture)
@@ -161,7 +161,7 @@ public class PollingExecutorService implements ExecutorService {
         long endTime = System.currentTimeMillis() + unit.toMillis(timeout);
         List<CompletableFuture<T>> futures = tasks.stream()
                 .map(this::submit)
-                .toList();
+                .collect(Collectors.toList());
         List<Future<T>> resultList = new ArrayList<>();
 
         for (CompletableFuture<T> future : futures) {
@@ -180,7 +180,7 @@ public class PollingExecutorService implements ExecutorService {
     public <T> @NotNull T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
         var futures = tasks.stream()
                 .map(this::submit)
-                .toList();
+                .collect(Collectors.toList());
 
         try {
             return CompletableFuture.anyOf(futures.toArray(new CompletableFuture[0]))
@@ -198,7 +198,7 @@ public class PollingExecutorService implements ExecutorService {
         var endTime = System.currentTimeMillis() + unit.toMillis(timeout);
         var futures = tasks.stream()
                 .map(this::submit)
-                .toList();
+                .collect(Collectors.toList());
 
         try {
             var result = CompletableFuture.anyOf(futures.toArray(new CompletableFuture[0]))

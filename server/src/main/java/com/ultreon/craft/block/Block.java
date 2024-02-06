@@ -1,6 +1,7 @@
 package com.ultreon.craft.block;
 
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolType;
@@ -10,6 +11,7 @@ import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.loot.ConstantLoot;
 import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
@@ -56,7 +59,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public ElementID getId() {
-        ElementID key = Registries.BLOCK.getKey(this);
+        ElementID key = Registries.BLOCK.getId(this);
         return key == null ? new ElementID(CommonConstants.NAMESPACE, "air") : key;
     }
 
@@ -98,8 +101,12 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         ElementID id = ElementID.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCK.getValue(id);
+        Block block = Registries.BLOCK.getElement(id);
         return block == null ? Blocks.AIR : block;
+    }
+
+    public InteractResult use(@NotNull World world, @NotNull Player player, @NotNull BlockPos pos) {
+        return InteractResult.SKIP;
     }
 
     public void write(PacketBuffer buffer) {
@@ -112,7 +119,7 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        ElementID key = Registries.BLOCK.getKey(this);
+        ElementID key = Registries.BLOCK.getId(this);
         return key == null ? "ultracraft.block.air.name" : key.namespace() + ".block." + key.path() + ".name";
     }
 
@@ -145,7 +152,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public boolean doesOcclude() {
-        return this.occlude;
+        return this.occlude && !this.hasCustomRender;
     }
 
     public boolean shouldGreedyMerge() {
@@ -157,17 +164,26 @@ public class Block implements DataWriter<MapType> {
     }
 
     public int getRawId() {
-        return Registries.BLOCK.getId(this);
+        return Registries.BLOCK.getRawId(this);
     }
 
     public boolean isReplaceable() {
         return this.replaceable;
     }
 
+    public boolean shouldOcclude(BlockFace face, Chunk chunk, int x, int y, int z) {
+        return this.occlude;
+    }
+
+    public void onPlace(World world, BlockPos pos) {
+        // Used in implementations
+    }
+
     public static class Properties {
         private boolean greedyMerge = true;
-        private boolean replaceable;
-        private boolean hasCustomRender;
+        private boolean occlude = true;
+        private boolean replaceable = false;
+        private boolean hasCustomRender = false;
         @Nullable
         private ToolType effectiveTool = null;
         private float hardness = 0.0F;
@@ -176,8 +192,7 @@ public class Block implements DataWriter<MapType> {
         private boolean fluid = false;
         private boolean requiresTool = false;
         private LootGenerator loot = ConstantLoot.EMPTY;
-        private boolean disableRendering;
-        private boolean occlude;
+        private boolean disableRendering = false;
 
         public @This Properties transparent() {
             this.transparent = true;
@@ -215,7 +230,7 @@ public class Block implements DataWriter<MapType> {
         }
 
         public @This Properties dropsItems(Item...  drops) {
-            this.loot = new ConstantLoot(Arrays.stream(drops).map(Item::defaultStack).toList());
+            this.loot = new ConstantLoot(Arrays.stream(drops).map(Item::defaultStack).collect(Collectors.toList()));
             return this;
         }
 
@@ -234,6 +249,10 @@ public class Block implements DataWriter<MapType> {
             return this;
         }
 
+        /**
+         * @deprecated Blocks are now instantly broken by default
+         */
+        @Deprecated(since = "0.1.0")
         public @This Properties instaBreak() {
             this.hardness = 0;
             return this;

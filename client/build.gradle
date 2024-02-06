@@ -71,6 +71,9 @@ dependencies {
     implementation api("com.badlogicgames.box2dlights:box2dlights:$box_2d_lights_version")
     implementation api("com.badlogicgames.gdx-video:gdx-video:$gdx_video_version")
 
+    // GDX GLTF Models
+    implementation api("com.github.mgsx-dev.gdx-gltf:gltf:$gltf_version")
+
     implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
     implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")

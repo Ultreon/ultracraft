@@ -253,8 +253,9 @@ public abstract class Player extends LivingEntity {
     }
 
     public void openMenu(ContainerMenu menu) {
+        if (this.openMenu != null) this.closeMenu();
+
         this.openMenu = menu;
-        menu.addWatcher(this);
     }
 
     public void closeMenu() {
@@ -369,5 +370,9 @@ public abstract class Player extends LivingEntity {
 
     public boolean isSurvival() {
         return this.gamemode == Gamemode.SURVIVAL || this.gamemode == Gamemode.MINI_GAME;
+    }
+
+    public void drop(ItemStack itemStack) {
+        this.world.drop(itemStack, this.getPosition());
     }
 }

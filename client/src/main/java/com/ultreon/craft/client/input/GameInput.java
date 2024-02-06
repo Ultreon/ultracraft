@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class GameInput implements InputProcessor, ControllerListener, Disposable {
     protected static final float DEG_PER_PIXEL = 0.6384300433839F;
@@ -66,13 +67,19 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     private final Vec3d vel = new Vec3d();
     @Nullable
     protected HitResult hitResult;
+    private static final Set<ControllerButton> BUTTONS_DOWN = new HashSet<>();
+    private static final Set<ControllerButton> BUTTONS_JUST_PRESSED = new HashSet<>();
 
     protected GameInput(UltracraftClient client, Camera camera) {
         this.client = client;
         this.camera = camera;
 
         Controllers.addListener(this);
-        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).toList());
+        this.controllers.addAll(Arrays.stream((Object[]) Controllers.getControllers().items).map(o -> (Controller) o).collect(Collectors.toList()));
+    }
+
+    public static boolean isControllerButtonJustPressed(ControllerButton button) {
+        return BUTTONS_JUST_PRESSED.contains(button);
     }
 
     @Override
@@ -165,6 +172,17 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
                 this.updateController(deltaTime, player);
             }
         }
+
+        for (ControllerButton button : ControllerButton.values()) {
+            if (isControllerButtonDown(button)) {
+                this.BUTTONS_JUST_PRESSED.remove(button);
+                if (!this.BUTTONS_DOWN.contains(button))
+                    this.BUTTONS_JUST_PRESSED.add(button);
+                this.BUTTONS_DOWN.add(button);
+            } else {
+                this.BUTTONS_DOWN.remove(button);
+            }
+        }
     }
 
     private void updateController(float deltaTime, Player player) {
@@ -190,7 +208,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         if (player.isCrouching()) speed *= player.crouchModifier;
         else if (player.isRunning()) speed *= player.runModifier;
 
-        this.client.playerInput.tick(speed);
+        this.client.playerInput.tick(player, speed);
         this.updateControllerMove(deltaTime, player, speed);
     }
 
@@ -293,6 +311,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
 
     @CanIgnoreReturnValue
     public static boolean startVibration(int duration, float strength) {
+        if (!UltracraftClient.get().config.get().accessibility.vibration) return false;
+
         Controller current = Controllers.getCurrent();
         if (current == null) return false;
         current.startVibration(duration, Mth.clamp(strength, 0.0F, 1.0F));

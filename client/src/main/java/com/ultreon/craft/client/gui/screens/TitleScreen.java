@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
+import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.Panel;
 import com.ultreon.craft.client.gui.widget.TextButton;
@@ -13,10 +13,6 @@ import com.ultreon.craft.client.util.Resizer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
-import com.ultreon.xeox.loader.XeoxLoader;
-import org.mozilla.javascript.RhinoException;
-
-import java.util.List;
 
 public class TitleScreen extends Screen {
     private Label titleLabel;
@@ -81,7 +77,7 @@ public class TitleScreen extends Screen {
     }
 
     private void showOptions(TextButton caller) {
-        this.client.showScreen(new OptionsScreen());
+        this.client.showScreen(new SettingsScreen());
     }
 
     private void showModList(TextButton caller) {

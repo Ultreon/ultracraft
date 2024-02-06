@@ -2,7 +2,6 @@ package com.ultreon.craft.desktop;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Array;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.widget.UIContainer;
@@ -11,11 +10,12 @@ import com.ultreon.craft.client.gui.widget.components.UIComponent;
 import com.ultreon.craft.util.ElementID;
 import imgui.ImGui;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * GUI Editor for Ultracraft screens.
- * 
+ *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  * @see Screen
@@ -23,7 +23,7 @@ import java.util.Map;
 public class GuiEditor {
     /**
      * Renders the GUI editor.
-     * 
+     *
      * @param client the ultracraft client
      */
     public void render(UltracraftClient client) {
@@ -64,7 +64,7 @@ public class GuiEditor {
             ImGui.treePush();
 
             var children = screen.children();
-            for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
+            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
                 var component = children.get(i);
                 if (component == null) continue;
 
@@ -74,7 +74,7 @@ public class GuiEditor {
             ImGui.treePop();
         }
     }
-    
+
     /**
      * Renders the widget tools for a given index and widget.
      *
@@ -112,8 +112,8 @@ public class GuiEditor {
 
             if (widget instanceof UIContainer<?> container && ImGui.collapsingHeader("Children")) {
                 ImGui.treePush();
-                Array<? extends Widget> children = container.children();
-                for (int i = 0, childrenSize = children.size; i < childrenSize; i++) {
+                List<? extends Widget> children = container.children();
+                for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
                     var child = children.get(i);
                     if (child == null) continue;
 

@@ -18,4 +18,8 @@ public class CommonConstants {
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger("Ultracraft");
+
+    public static String strId(String outlineCursor) {
+        return NAMESPACE + ":" + outlineCursor;
+    }
 }

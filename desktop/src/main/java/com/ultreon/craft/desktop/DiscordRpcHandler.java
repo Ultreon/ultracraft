@@ -17,6 +17,10 @@ public class DiscordRpcHandler implements RpcHandler {
     private static IPCClient client;
     private static OffsetDateTime start;
     private static boolean failed;
+    private boolean enabled;
+    private boolean ready;
+    private boolean shuttingDown;
+    private final Thread HOOK = new Thread(this::close);
 
     public DiscordRpcHandler() {
         failed = false;
@@ -28,6 +32,7 @@ public class DiscordRpcHandler implements RpcHandler {
     public void start() {
         try {
             client = new IPCClient(1179421663503323318L);
+            Runtime.getRuntime().addShutdownHook(HOOK);
             client.setListener(new IPCListener() {
                 @Override
                 public void onReady(IPCClient client) {
@@ -39,14 +44,15 @@ public class DiscordRpcHandler implements RpcHandler {
                             .setLargeImage("icon")
                             .setStartTimestamp(start);
                     client.sendRichPresence(builder.build());
+
+                    ready = true;
                 }
 
                 @Override
                 public void onDisconnect(IPCClient client, Throwable t) {
+                    ready = false;
                     LOGGER.warn("Discord RPC over IPC disconnected!", t);
                 }
-
-
             });
 
             client.connect();
@@ -66,7 +72,7 @@ public class DiscordRpcHandler implements RpcHandler {
         try {
             description = newActivity.getDescription();
         } catch (Exception e) {
-            description = "(╯°□°)╯︵ ┻━┻";
+            description = "(\u256F\u00B0\u25A1\u00B0)\u256F\uFE35 \u253B\u2501\u253B";
         }
         if (description == null) {
 
@@ -82,5 +88,34 @@ public class DiscordRpcHandler implements RpcHandler {
         }
 
         client.sendRichPresence(builder.build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void setEnabled(boolean b) {
+        enabled = b;
+    }
+
+    @Override
+    public boolean isReady() {
+        return ready;
+    }
+
+    @Override
+    public boolean isShuttingDown() {
+        return shuttingDown;
+    }
+
+    @Override
+    public void close() {
+        if (!shuttingDown) {
+            shuttingDown = true;
+            Runtime.getRuntime().removeShutdownHook(HOOK);
+            client.close();
+        }
     }
 }

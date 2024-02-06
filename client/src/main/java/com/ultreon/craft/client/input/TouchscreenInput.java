@@ -8,9 +8,9 @@ import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.events.GuiEvents;
-import com.ultreon.craft.client.events.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
+import com.ultreon.craft.client.input.key.KeyBind;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.util.HitResult;
@@ -35,6 +35,7 @@ public class TouchscreenInput extends GameInput {
     public static final KeyBind COMMAND_KEY = KeyBinds.commandKey;
     public static final KeyBind FULL_SCREEN_KEY = KeyBinds.fullScreenKey;
     public static final KeyBind THIRD_PERSON_KEY = KeyBinds.thirdPersonKey;
+    private final Vec2i[] startPositions = new Vec2i[Gdx.input.getMaxPointers()];
 
     public TouchscreenInput(UltracraftClient client, Camera camera) {
         super(client, camera);
@@ -146,12 +147,29 @@ public class TouchscreenInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
-        if (!Gdx.input.isCursorCatched()) {
+        if (this.client.screen != null) {
             Screen currentScreen = this.client.screen;
-            if (currentScreen != null) currentScreen.mouseDrag(
+            currentScreen.mouseDrag(
                     (int) (screenX / this.client.getGuiScale()), (int) (screenY / this.client.getGuiScale()),
                     (int) (Gdx.input.getDeltaX(pointer) / this.client.getGuiScale()), (int) (Gdx.input.getDeltaY(pointer) / this.client.getGuiScale()), pointer);
+        } else{
+            int deltaX = Gdx.input.getDeltaX(pointer);
+            int deltaY = Gdx.input.getDeltaY(pointer);
+
+            Vec2i startPosition = this.startPositions[pointer];
+
+            if(deltaX != 0 || deltaY != 0 && startPosition != null && startPosition.x > Gdx.graphics.getWidth() / 2) {
+                this.client.player.rotate(deltaX, deltaY);
+            } else if (deltaY != 0 && startPosition != null && startPosition.x <= Gdx.graphics.getWidth() / 2) {
+                this.client.playerInput.moveX = deltaX;
+                this.client.playerInput.moveY = deltaY;
+            } else {
+                this.client.playerInput.moveX = 0;
+                this.client.playerInput.moveY = 0;
+            }
         }
+
+
         return true;
     }
 
@@ -159,6 +177,8 @@ public class TouchscreenInput extends GameInput {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
+
+        startPositions[pointer] = new Vec2i(screenX, screenY);
 
         Screen currentScreen = this.client.screen;
         World world = this.client.world;
@@ -213,6 +233,8 @@ public class TouchscreenInput extends GameInput {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
+
+        startPositions[pointer] = null;
 
         this.client.stopBreaking();
 

@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.client.UltracraftClient;
@@ -187,6 +188,11 @@ public abstract class Screen extends UIContainer<Screen> {
         return super.add(widget);
     }
 
+    @Override
+    protected <C extends Widget> C defineRoot(C widget) {
+        return super.defineRoot(widget);
+    }
+
     public boolean isHoveringClickable() {
         Widget hovered = this.directHovered;
         return hovered != null && hovered.isClickable();
@@ -218,7 +224,7 @@ public abstract class Screen extends UIContainer<Screen> {
     @Override
     public boolean keyRelease(int keyCode) {
         if ((keyCode == Input.Keys.ESCAPE || keyCode == Input.Keys.BACK) && this.canCloseWithEsc()) {
-            this.back();
+            Gdx.app.postRunnable(this::back);
             return true;
         }
 

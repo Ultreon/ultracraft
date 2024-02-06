@@ -5,11 +5,14 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
+import com.ultreon.craft.entity.DroppedItem;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -26,10 +29,9 @@ import com.ultreon.xeox.loader.JSEvents;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.ApiStatus.Experimental;
-import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -38,6 +40,7 @@ import org.slf4j.MarkerFactory;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Base class for client/server worlds.
@@ -162,7 +165,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Gets all the chunks around the given position within the render distance.
-     * 
+     *
      * @param pos the position
      * @return    the list of chunks
      */
@@ -192,7 +195,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Check if a chunk is always loaded
-     * 
+     *
      * @param pos the chunk position
      * @return    true if the chunk is always loaded false otherwise
      */
@@ -202,7 +205,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Unloads a chunk from the world asynchronously.
-     * 
+     *
      * @param chunkPos the position of the chunk
      * @return         the future that completes when the chunk is unloaded
      * @deprecated     use {@link #unloadChunk(Chunk)} instead
@@ -214,7 +217,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Unloads a chunk from the world asynchronously.
-     * 
+     *
      * @param chunk the chunk
      * @return      the future that completes when the chunk is unloaded
      * @deprecated use {@link #unloadChunk(Chunk)} instead
@@ -232,7 +235,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Logs an error and crashes the server if the throwable is an {@link Error} or a {@link CompletionException} with an {@link Error}.
-     * 
+     *
      * @param throwable the throwable
      * @param msg       the message
      */
@@ -247,7 +250,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Unloads a chunk from the world.
-     * 
+     *
      * @param chunkPos the position of the chunk
      * @return         true if the chunk was successfully unloaded false otherwise
      */
@@ -263,21 +266,22 @@ public abstract class World implements ServerDisposable {
     protected abstract boolean unloadChunk(@NotNull Chunk chunk, @NotNull ChunkPos pos);
 
     /**
-     * Ray casts a given ray and returns the hit result.
-     * 
-     * @param ray the ray to be casted
-     * @return    the hit result of the ray cast
+     * Casts a ray in the world and returns the result.
+     * This uses the default of {@code 5} blocks.
+     *
+     * @param ray the ray to cast
+     * @return the result
      */
     public HitResult rayCast(Ray ray) {
         return WorldRayCaster.rayCast(new HitResult(ray), this);
     }
 
     /**
-     * Ray casts a given ray for a specified distance and returns the hit result.
+     * Casts a ray in the world and returns the result.
      *
-     * @param  ray       the ray to be casted
-     * @param  distance  the distance to cast the ray
-     * @return           the hit result of the ray cast
+     * @param ray      the ray to cast
+     * @param distance the maximum distance that the ray can travel
+     * @return the result
      */
     public HitResult rayCast(Ray ray, float distance) {
         HitResult hitResult = new HitResult(ray, distance);
@@ -285,25 +289,26 @@ public abstract class World implements ServerDisposable {
     }
 
     /**
-     * Sets a block at the specified coordinates.
-     * 
-     * @param blockPos the coordinates of the block
-     * @param block    the block to set
+     * Sets the block at the specified coordinates, with the given block type.
+     *
+     * @param blockPos the position
+     * @param block    the block type to set
+     * @return true if the block was successfully set, false otherwise
      */
-    public void set(BlockPos blockPos, Block block) {
+    public boolean set(BlockPos blockPos, Block block) {
         this.checkThread();
 
-        this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
+        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
     }
 
     /**
-     * Sets a block at the specified coordinates.
+     * Sets the block at the specified coordinates, with the given block type.
      *
-     * @param  x     the x-coordinate of the block
-     * @param  y     the y-coordinate of the block
-     * @param  z     the z-coordinate of the block
-     * @param  block the block to set
-     * @return       true if the block was successfully set, false otherwise
+     * @param x     the x-coordinate
+     * @param y     the y-coordinate
+     * @param z     the z-coordinate
+     * @param block the block type to set
+     * @return true if the block was successfully set, false otherwise
      */
     public boolean set(int x, int y, int z, Block block) {
         this.checkThread();
@@ -323,10 +328,10 @@ public abstract class World implements ServerDisposable {
     }
 
     /**
-     * Retrieves the block at the specified coordinates.
+     * Gets a block at the specified coordinates.
      *
-     * @param  pos  the position of the block to retrieve
-     * @return      the block at the specified position
+     * @param pos the position
+     * @return the block at the specified coordinates
      */
     public Block get(BlockPos pos) {
         this.checkThread();
@@ -335,12 +340,12 @@ public abstract class World implements ServerDisposable {
     }
 
     /**
-     * Retrieves the block at the specified coordinates.
-     * 
-     * @param  x    the x-coordinate of the block
-     * @param  y    the y-coordinate of the block
-     * @param  z    the z-coordinate of the block
-     * @return      the block at the specified position
+     * Gets a block at the specified coordinates.
+     *
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     * @param z the z-coordinate
+     * @return the block at the specified coordinates
      */
     public Block get(int x, int y, int z) {
         this.checkThread();
@@ -355,10 +360,24 @@ public abstract class World implements ServerDisposable {
 
     protected abstract void checkThread();
 
+    /**
+     * Converts a block position to a chunk space block position.
+     *
+     * @param pos the world space block position
+     * @return the block position in chunk space
+     */
     public static BlockPos toLocalBlockPos(BlockPos pos) {
         return World.toLocalBlockPos(pos.x(), pos.y(), pos.z());
     }
 
+    /**
+     * Converts a block position to a chunk space block position.
+     *
+     * @param x the x coordinate in world space
+     * @param y the y coordinate in world space
+     * @param z the z coordinate in world space
+     * @return the block position in chunk space
+     */
     public static BlockPos toLocalBlockPos(int x, int y, int z) {
         int cx = x % World.CHUNK_SIZE;
         int cy = y % (World.CHUNK_HEIGHT + 1);
@@ -370,6 +389,15 @@ public abstract class World implements ServerDisposable {
         return new BlockPos(cx, cy, cz);
     }
 
+    /**
+     * Converts a block position to a chunk space block position.
+     *
+     * @param x   the x coordinate in world space
+     * @param y   the y coordinate in world space
+     * @param z   the z coordinate in world space
+     * @param tmp a temporary vector to store the result
+     * @return the block position in chunk space
+     */
     public static Vec3i toLocalBlockPos(int x, int y, int z, Vec3i tmp) {
         tmp.x = x % World.CHUNK_SIZE;
         tmp.y = y % (World.CHUNK_HEIGHT + 1);
@@ -381,6 +409,13 @@ public abstract class World implements ServerDisposable {
         return tmp;
     }
 
+    /**
+     * Converts a world space chunk position to a region space chunk
+     *
+     * @param x the x coordinate in world space
+     * @param z the z coordinate in world space
+     * @return the chunk position in region space
+     */
     public static ChunkPos toLocalChunkPos(int x, int z) {
         int cx = x % World.REGION_SIZE;
         int cz = z % World.REGION_SIZE;
@@ -391,13 +426,19 @@ public abstract class World implements ServerDisposable {
         return new ChunkPos(cx, cz);
     }
 
+    /**
+     * Converts a world space chunk position to a region space chunk
+     *
+     * @param pos the chunk position in world space
+     * @return the chunk position in region space
+     */
     public static ChunkPos toLocalChunkPos(ChunkPos pos) {
         return World.toLocalChunkPos(pos.x(), pos.z());
     }
 
     /**
      * Gets a chunk at the specified chunk coordinates in the world.
-     * 
+     *
      * @param pos the chunk position of the chunk
      * @return    the chunk at the specified coordinates
      */
@@ -417,7 +458,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Gets a chunk at the specified block coordinates in the world.
-     * 
+     *
      * @param x the block x-coordinate
      * @param y the block y-coordinate
      * @param z the block z-coordinate
@@ -436,7 +477,7 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Get the chunk at the specified block position in the world.
-     * 
+     *
      * @param pos the block position
      * @return    the chunk at the specified position
      */
@@ -449,7 +490,7 @@ public abstract class World implements ServerDisposable {
      * Check if the block position is out of the world bounds.
      * This is between x,z = -30000000 and 30000000.
      * And between y = {@link World#WORLD_DEPTH} and {@link World#WORLD_HEIGHT} - 1
-     * 
+     *
      * @param pos the block position
      * @return    true if the block position is out of the world bounds, false otherwise
      */
@@ -463,7 +504,7 @@ public abstract class World implements ServerDisposable {
      * Check if the coordinates are out of the world bounds.
      * This is between x,z = -30000000 and 30000000.
      * And between y = {@link World#WORLD_DEPTH} and {@link World#WORLD_HEIGHT} - 1
-     * 
+     *
      * @param x the block x-coordinate
      * @param y the block y-coordinate
      * @param z the block z-coordinate
@@ -471,8 +512,8 @@ public abstract class World implements ServerDisposable {
      */
     public boolean isOutOfWorldBounds(int x, int y, int z) {
         return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
-               || x < -30000000 || x > 30000000
-               || z < -30000000 || z > 30000000;
+                || x < -30000000 || x > 30000000
+                || z < -30000000 || z > 30000000;
     }
 
     /**
@@ -508,25 +549,46 @@ public abstract class World implements ServerDisposable {
     }
 
     /**
-     * Sets an area of blocks in the world.
-     * Note: this method is still experimental.
-     * 
-     * @param x      the chunk x-coordinate of the area
-     * @param y      the chunk y-coordinate of the area
-     * @param z      the chunk z-coordinate of the area
-     * @param width  the width of the area
-     * @param height the height of the area
-     * @param depth  the depth of the area
-     * @param block  the block to set
+     * Sets the specified block in a 3D area defined by the given coordinates and dimensions.
+     *
+     * @param x      the x-coordinate of the starting point
+     * @param y      the y-coordinate of the starting point
+     * @param z      the z-coordinate of the starting point
+     * @param width  the width of the 3D area
+     * @param height the height of the 3D area
+     * @param depth  the depth of the 3D area
+     * @param block  the block to be set in the specified area
+     * @return a {@link CompletableFuture} representing the asynchronous operation
+     * @see #set(int, int, int, Block)
+     * @see #setColumn(int, int, Block)
      */
-    @ApiStatus.Experimental
-    public void set(int x, int y, int z, int width, int height, int depth, Block block) {
-        throw new UnsupportedOperationException("Unimplemented");
+    public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, Block block) {
+        return CompletableFuture.runAsync(() -> {
+            int curX = x, curY = y, curZ = z;
+            int startX = Math.max(curX, 0);
+            int startY = Math.max(curY, 0);
+            int startZ = Math.max(curZ, 0);
+            int endX = Math.min(width, curX + width);
+            int endY = Math.min(height, curY + height);
+            int endZ = Math.min(depth, curZ + depth);
+
+            // FIXME optimize
+            for (curY = startY; curY < endY; curY++) {
+                for (curZ = startZ; curZ < endZ; curZ++) {
+                    for (curX = startX; curX < endX; curX++) {
+                        int blkX = curX;
+                        int blkY = curY;
+                        int blkZ = curZ;
+                        UltracraftServer.invoke(() -> this.set(blkX, blkY, blkZ, block));
+                    }
+                }
+            }
+        });
     }
 
     /**
      * Sets a block in the world, but synchronously.
-     * 
+     *
      * @param x     the block x-coordinate
      * @param y     the block y-coordinate
      * @param z     the block x-coordinate
@@ -536,14 +598,14 @@ public abstract class World implements ServerDisposable {
 
     /**
      * Get all the currently loaded chunks.
-     * 
+     *
      * @return the loaded chunks.
      */
     public abstract Collection<? extends Chunk> getLoadedChunks();
 
     /**
      * Check if a chunk is invalidated.
-     * 
+     *
      * @param chunk the chunk
      * @return      true if the chunk is invalidated, false otherwise
      */
@@ -711,7 +773,7 @@ public abstract class World implements ServerDisposable {
      * Start breaking a block at the given position.
      *
      * @param breaking the position of the block.
-     * @param breaker the player breaking the block.
+     * @param breaker  the player breaking the block.
      */
     public void startBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
@@ -724,8 +786,8 @@ public abstract class World implements ServerDisposable {
      * Continue breaking a block at the given position.
      *
      * @param breaking the position of the block.
-     * @param amount the amount of breaking progress to make.
-     * @param breaker the player breaking the block.
+     * @param amount   the amount of breaking progress to make.
+     * @param breaker  the player breaking the block.
      * @return A {@link BreakResult} which indicates the current status of the block breaking.
      */
     public BreakResult continueBreaking(BlockPos breaking, float amount, Player breaker) {
@@ -743,7 +805,7 @@ public abstract class World implements ServerDisposable {
      * Stop breaking a block at the given position.
      *
      * @param breaking the position of the block.
-     * @param breaker the player breaking the block.
+     * @param breaker  the player breaking the block.
      */
     public void stopBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
@@ -772,10 +834,22 @@ public abstract class World implements ServerDisposable {
         return this.seed;
     }
 
+    /**
+     * Set the spawn point of the world.
+     *
+     * @param spawnX the x position of the spawn point
+     * @param spawnZ the z position of the spawn point
+     */
     public void setSpawnPoint(int spawnX, int spawnZ) {
         this.spawnPoint.set(spawnX, this.getHighest(spawnX, spawnZ), spawnZ);
     }
 
+    /**
+     * Check if the given chunk is a spawn chunk.
+     *
+     * @param pos the chunk position
+     * @return {@code true} if the chunk is a spawn chunk, {@code false} otherwise
+     */
     public boolean isSpawnChunk(ChunkPos pos) {
         int x = pos.x();
         int z = pos.z();
@@ -784,6 +858,11 @@ public abstract class World implements ServerDisposable {
                 this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
     }
 
+    /**
+     * Get the spawn point of the world.
+     *
+     * @return the spawn point
+     */
     public BlockPos getSpawnPoint() {
         int highest = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
         if (highest != World.WORLD_DEPTH)
@@ -844,7 +923,7 @@ public abstract class World implements ServerDisposable {
         BlockPos localPos = World.toLocalBlockPos(pos);
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return null;
-        return chunk.getBiome(localPos.x(), localPos.y(), localPos.z());
+        return chunk.getBiome(localPos.x(), localPos.z());
     }
 
     public DimensionInfo getDimension() {
@@ -856,10 +935,35 @@ public abstract class World implements ServerDisposable {
     }
 
     public <T extends Entity> Collection<Entity> getEntitiesByClass(Class<T> clazz) {
-        return this.entities.values().stream().filter(clazz::isInstance).toList();
+        return this.entities.values().stream().filter(clazz::isInstance).collect(Collectors.toList());
     }
 
     public UUID getUID() {
         return this.uid;
+    }
+
+    public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
+        Chunk chunk = this.getChunkAt(pos);
+        if (chunk == null) return;
+
+        chunk.setBlockEntity(World.toLocalBlockPos(pos), blockEntity);
+    }
+
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        Chunk chunk = this.getChunkAt(pos);
+        if (chunk == null) return null;
+
+        BlockPos localPos = World.toLocalBlockPos(pos);
+        return chunk.getBlockEntity(localPos.x(), localPos.y(), localPos.z());
+    }
+
+    public void drop(ItemStack itemStack, Vec3d position) {
+        drop(itemStack, position, new Vec3d());
+    }
+
+    public void drop(ItemStack itemStack, Vec3d position, Vec3d velocity) {
+        if (this.isClientSide()) return;
+
+        this.spawn(new DroppedItem(this, itemStack, position, velocity));
     }
 }

@@ -1,13 +1,11 @@
 package com.ultreon.craft.client.gui.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
+import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.ServerWorld;
 
@@ -27,21 +25,17 @@ public class PauseScreen extends Screen {
         if (world != null)
             this.client.addFuture(world.saveAsync(false));
 
-        this.backToGameButton = builder.add(TextButton.of("ultracraft.ui.backToGame")
+        this.backToGameButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.backToGame"))
                         .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3 - 25)))
                 .callback(this::resumeGame);
 
         this.optionsButton = builder.add(TextButton.of(TextObject.translation("ultracraft.screen.options"), 95)
                         .position(() -> new Position(this.size.width / 2 - 100, this.size.height / 3)))
-                .callback(caller -> UltracraftClient.get().showScreen(new OptionsScreen()));
+                .callback(caller -> UltracraftClient.get().showScreen(new SettingsScreen()));
 
-        this.exitWorldButton = builder.add(TextButton.of("ultracraft.screen.pause.exit_world", 95)
+        this.exitWorldButton = builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 95)
                         .position(() -> new Position(this.size.width / 2 + 5, this.size.height / 3)))
                 .callback(this::exitWorld);
-
-        if (DesktopInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
-            this.client.showScreen(null);
-        }
     }
 
     @Override

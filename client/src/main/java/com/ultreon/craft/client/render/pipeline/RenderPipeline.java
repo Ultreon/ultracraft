@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.*;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.debug.ValueTracker;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -50,6 +51,10 @@ public class RenderPipeline implements Disposable {
             ScreenUtils.clear(0F, 0F, 0F, 1F, true);
         }
 
+        ValueTracker.resetObtainRequests();
+        ValueTracker.resetFlushed();
+        ValueTracker.resetFlushAttempts();
+
         var input = new Array<Renderable>();
         var textures = new ObjectMap<String, Texture>();
         for (var node : this.nodes) {
@@ -58,14 +63,16 @@ public class RenderPipeline implements Disposable {
             } else {
                 input = this.plainRender(modelBatch, node, input, textures);
             }
+            modelBatch.flush();
         }
 
         this.main.render(textures, modelBatch, this.camera, input);
+        modelBatch.flush();
 
         for (var node : this.nodes) {
             node.flush();
         }
-
+        main.flush();
         textures.clear();
     }
 
@@ -139,24 +146,7 @@ public class RenderPipeline implements Disposable {
         protected static final Matrix4 IDENTITY_MATRIX = new Matrix4();
         protected final TextureBinder textureBinder = new DefaultTextureBinder(LRU);
         private float time = 0;
-        private final FlushablePool<Renderable> pool = new FlushablePool<>() {
-            @Override
-            protected Renderable newObject() {
-                return new Renderable();
-            }
-
-            @Override
-            public Renderable obtain() {
-                Renderable obtain = super.obtain();
-                obtain.shader = null;
-                obtain.bones = null;
-                obtain.material = null;
-                obtain.userData = null;
-                obtain.worldTransform.idt();
-
-                return obtain;
-            }
-        };
+        private final RenderableFlushablePool pool = new RenderableFlushablePool();
 
         private FrameBuffer fbo = new FrameBuffer(this.getFormat(), Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         protected final UltracraftClient client = UltracraftClient.get();
@@ -172,7 +162,7 @@ public class RenderPipeline implements Disposable {
             this.fbo = new FrameBuffer(this.getFormat(), width, height, true);
         }
 
-        protected Pool<Renderable> pool() {
+        protected RenderableFlushablePool pool() {
             return this.pool;
         }
 
@@ -207,6 +197,29 @@ public class RenderPipeline implements Disposable {
 
         public boolean requiresModel() {
             return false;
+        }
+
+        public static class RenderableFlushablePool extends FlushablePool<Renderable> {
+            @Override
+            protected Renderable newObject () {
+                return new Renderable();
+            }
+
+            @Override
+            public Renderable obtain () {
+                Thread.dumpStack();
+                Renderable renderable = super.obtain();
+                renderable.environment = null;
+                renderable.material = null;
+                renderable.meshPart.set("", null, 0, 0, 0);
+                renderable.shader = null;
+                renderable.userData = null;
+                return renderable;
+            }
+
+            public int getObtained() {
+                return this.obtained.size;
+            }
         }
     }
 }

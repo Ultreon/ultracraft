@@ -175,7 +175,7 @@ public abstract class ContainerMenu {
         ItemStack cursor = player.getCursor();
         ItemStack slotItem = slot.getItem();
 
-        if (!cursor.isEmpty() && cursor.isSimilar(slotItem)) {
+        if (!cursor.isEmpty() && cursor.sameItemSameData(slotItem)) {
             // Take item from cursor and put it in the slot, remaining items are left in the cursor.
             cursor.transferTo(slotItem, cursor.getCount());
             player.setCursor(player.getCursor());

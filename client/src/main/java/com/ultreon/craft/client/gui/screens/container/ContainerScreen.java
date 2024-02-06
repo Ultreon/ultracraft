@@ -23,16 +23,16 @@ import java.util.List;
 
 public abstract class ContainerScreen extends Screen {
     private final int maxSlots;
-    private final ContainerMenu container;
+    private final ContainerMenu menu;
     private final LocalPlayer player;
 
-    protected ContainerScreen(ContainerMenu container, TextObject title, int maxSlots) {
-        this(container, UltracraftClient.get().screen, title, maxSlots);
+    protected ContainerScreen(ContainerMenu menu, TextObject title, int maxSlots) {
+        this(menu, UltracraftClient.get().screen, title, maxSlots);
     }
 
-    protected ContainerScreen(ContainerMenu container, @Nullable Screen back, TextObject title, int maxSlots) {
+    protected ContainerScreen(ContainerMenu menu, @Nullable Screen back, TextObject title, int maxSlots) {
         super(title, back);
-        this.container = container;
+        this.menu = menu;
         this.maxSlots = maxSlots;
 
         this.player = this.client.player;
@@ -65,7 +65,7 @@ public abstract class ContainerScreen extends Screen {
 
     @SuppressWarnings("GDXJavaFlushInsideLoop")
     protected void renderSlots(Renderer renderer, int mouseX, int mouseY) {
-        for (var slot : this.container.slots) {
+        for (var slot : this.menu.slots) {
             this.renderSlot(renderer, mouseX, mouseY, slot);
         }
     }
@@ -143,7 +143,7 @@ public abstract class ContainerScreen extends Screen {
     }
 
     protected @Nullable ItemSlot getSlotAt(int mouseX, int mouseY) {
-        for (ItemSlot slot : this.container.slots) {
+        for (ItemSlot slot : this.menu.slots) {
             if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {
                 return slot;
             }
@@ -172,7 +172,7 @@ public abstract class ContainerScreen extends Screen {
     }
 
     public ItemSlot get(int index) {
-        return this.container.get(index);
+        return this.menu.get(index);
     }
 
     @Override
@@ -184,5 +184,9 @@ public abstract class ContainerScreen extends Screen {
 
     public void emitUpdate() {
         // Impl purposes
+    }
+
+    public void onItemChanged(int slot, ItemStack newStack) {
+        this.menu.slots[slot].setItem(newStack, false);
     }
 }

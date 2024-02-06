@@ -1537,7 +1537,7 @@ public class PacketBuffer extends ByteBuf {
     public <T> List<T> readList(Function<PacketBuffer, T> decoder, int max) {
         int size = this.readInt();
         if (size > max) {
-            throw new PacketException("List too large, max = %d, actual = %d".formatted(max, size));
+            throw new PacketException(String.format("List too large, max = %d, actual = %d", max, size));
         }
 
         var list = new ArrayList<T>();
@@ -1573,7 +1573,7 @@ public class PacketBuffer extends ByteBuf {
     public <K, V> Map<K, V> readMap(Function<PacketBuffer, K> keyDecoder, Function<PacketBuffer, V> valueDecoder, int max) {
         int size = this.readInt();
         if (size > max) {
-            throw new PacketException("Map too large, max = %d, actual = %d".formatted(max, size));
+            throw new PacketException(String.format("Map too large, max = %d, actual = %d", max, size));
         }
 
         var map = new HashMap<K, V>();

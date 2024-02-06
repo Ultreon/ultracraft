@@ -14,7 +14,7 @@ public class Debugger {
      * @see GamePlatform#isDevEnvironment()
      */
     public static void log(String message) {
-        if (GamePlatform.get().isDevEnvironment()) {
+        if (GamePlatform.get().isDevEnvironment() || DebugFlags.IS_RUNNING_IN_DEBUG) {
             Debugger.LOGGER.debug(message);
         }
     }
@@ -26,7 +26,7 @@ public class Debugger {
      * @param t       the exception.
      */
     public static void log(String message, Throwable t) {
-        if (GamePlatform.get().isDevEnvironment()) {
+        if (GamePlatform.get().isDevEnvironment() || DebugFlags.IS_RUNNING_IN_DEBUG) {
             Debugger.LOGGER.debug(message, t);
         }
     }

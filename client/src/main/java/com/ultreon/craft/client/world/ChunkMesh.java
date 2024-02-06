@@ -6,14 +6,14 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Pool;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.debug.ValueTracker;
-import com.ultreon.craft.world.Chunk;
 
 public class ChunkMesh implements Pool.Poolable {
     public final Renderable renderable;
     public final MeshPart meshPart;
     public final Matrix4 transform;
-    public Chunk chunk;
+    public ClientChunk chunk;
 
     public static long getMeshesDisposed() {
         return ValueTracker.getMeshDisposes();
@@ -45,9 +45,15 @@ public class ChunkMesh implements Pool.Poolable {
         ValueTracker.setMeshDisposes(ValueTracker.getMeshDisposes() + 1);
         if (this.meshPart.mesh != null) {
             ValueTracker.setVertexCount(ValueTracker.getVertexCount() - this.meshPart.mesh.getMaxVertices());
-            this.meshPart.mesh.dispose();
+            try {
+                this.meshPart.mesh.dispose();
+                this.meshPart.mesh = null;
+            } catch (NullPointerException ignored) {
 
-//            this.meshPart.mesh = null;
+            } catch (Exception e) {
+                UltracraftClient.crash(e);
+                throw new Error("Unreachable");
+            }
         }
         this.meshPart.id = null;
         this.meshPart.center.setZero();
@@ -62,5 +68,12 @@ public class ChunkMesh implements Pool.Poolable {
         this.renderable.bones = null;
 //        this.renderable.shader = null;
         this.renderable.userData = null;
+
+        if (chunk.solidMesh == this) {
+            chunk.solidMesh = null;
+        }
+        if (chunk.transparentMesh == this) {
+            chunk.transparentMesh = null;
+        }
     }
 }

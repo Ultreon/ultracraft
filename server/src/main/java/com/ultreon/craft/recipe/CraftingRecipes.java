@@ -45,6 +45,10 @@ public class CraftingRecipes {
                 List.of(new ItemStack(Items.ROCK, 3), new ItemStack(Items.STICK, 1)),
                 new ItemStack(Items.STONE_PICKAXE)));
 
+        rm.register(new ElementID("crate"), new CraftingRecipe(
+                List.of(new ItemStack(Items.PLANK, 8), new ItemStack(Items.STICK, 2)),
+                new ItemStack(Items.CRATE)));
+
         rm.register(new ElementID("stone_shovel"), new CraftingRecipe(
                 List.of(new ItemStack(Items.ROCK, 1), new ItemStack(Items.STICK, 1)),
                 new ItemStack(Items.STONE_SHOVEL)));

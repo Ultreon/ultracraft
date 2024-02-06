@@ -22,18 +22,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.stream.IntStream;
 
 public class GyroscopeInput extends GameInput {
-    public static final KeyBind PAUSE_KEY = KeyBinds.pauseKey;
-    public static final KeyBind IM_GUI_KEY = KeyBinds.imGuiKey;
-    public static final KeyBind IM_GUI_FOCUS_KEY = KeyBinds.imGuiFocusKey;
-    public static final KeyBind DEBUG_KEY = KeyBinds.debugKey;
-    public static final KeyBind INSPECT_KEY = KeyBinds.inspectKey;
-    public static final KeyBind HIDE_HUD_KEY = KeyBinds.hideHudKey;
-    public static final KeyBind SCREENSHOT_KEY = KeyBinds.screenshotKey;
-    public static final KeyBind INVENTORY_KEY = KeyBinds.inventoryKey;
-    public static final KeyBind CHAT_KEY = KeyBinds.chatKey;
-    public static final KeyBind COMMAND_KEY = KeyBinds.commandKey;
-    public static final KeyBind FULL_SCREEN_KEY = KeyBinds.fullScreenKey;
-    public static final KeyBind THIRD_PERSON_KEY = KeyBinds.thirdPersonKey;
 
     public GyroscopeInput(UltracraftClient client, Camera camera) {
         super(client, camera);
@@ -89,9 +77,9 @@ public class GyroscopeInput extends GameInput {
     public void update(float deltaTime) {
         super.update(deltaTime);
 
-        if (GyroscopeInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
+        if (TouchscreenInput.PAUSE_KEY.isJustPressed() && Gdx.input.isCursorCatched()) {
             this.client.showScreen(new PauseScreen());
-        } else if (GyroscopeInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched()) {
+        } else if (TouchscreenInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched()) {
             this.client.showScreen(null);
         }
 

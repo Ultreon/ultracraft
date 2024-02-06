@@ -186,7 +186,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         if (this.channel == null || !this.channel.isOpen()) return;
 
         @NotNull String msg = "Disconnected: ";
-        Connection.LOGGER.info("%s%s (%s)".formatted(msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
+        Connection.LOGGER.info(String.format("%s%s (%s)", msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
 
         if (this.direction.getSourceEnv() == Env.SERVER) {
             this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
@@ -262,11 +262,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             }
             if (!this.channel.isOpen()) return;
 
+            ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
+
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
             sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-
-            ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
 
             if (stateListener != null) {
                 sent.addListener(future -> this.handleListener(packet, stateListener, future));

@@ -21,6 +21,6 @@ public class GamemodeCommand extends Command {
 
         player.setGamemode(gamemode);
 
-        return this.successMessage("Gamemode set to %s".formatted(gamemode.name().toLowerCase(Locale.ROOT)));
+        return this.successMessage(String.format("Gamemode set to %s", gamemode.name().toLowerCase(Locale.ROOT)));
     }
 }

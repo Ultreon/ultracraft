@@ -5,25 +5,29 @@ import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 /**
  * Represents the light map of a chunk.
- * 
+ *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  * @since 0.1.0
  */
 public class LightMap {
-    private final byte[] data;
+    private byte[] data;
 
     /**
      * Creates a new light map.
-     * 
+     *
      * @param size the size of the light map
      */
     public LightMap(int size) {
         this.data = new byte[size];
     }
 
+    public LightMap(byte[] data) {
+        this.data = data;
+    }
+
     /**
      * Gets the index of the given position.
-     * 
+     *
      * @param x the x-coordinate
      * @param y the y-coordinate
      * @param z the z-coordinate
@@ -38,7 +42,7 @@ public class LightMap {
 
     /**
      * Gets the raw light data for saving.
-     * 
+     *
      * @return the raw light data
      */
     public byte[] getData() {
@@ -47,7 +51,7 @@ public class LightMap {
 
     /**
      * Gets the sunlight level at the given position.
-     * 
+     *
      * @param x the x-coordinate
      * @param y the y-coordinate
      * @param z the z-coordinate
@@ -60,7 +64,7 @@ public class LightMap {
 
     /**
      * Gets the block light level at the given position.
-     * 
+     *
      * @param x the x-coordinate
      * @param y the y-coordinate
      * @param z the z-coordinate
@@ -73,7 +77,7 @@ public class LightMap {
 
     /**
      * Sets the sunlight level at the given position.
-     * 
+     *
      * @param x     the x-coordinate
      * @param y     the y-coordinate
      * @param z     the z-coordinate
@@ -87,7 +91,7 @@ public class LightMap {
 
     /**
      * Sets the block light level at the given position.
-     * 
+     *
      * @param x     the x-coordinate
      * @param y     the y-coordinate
      * @param z     the z-coordinate
@@ -97,5 +101,14 @@ public class LightMap {
         byte datum = this.data[this.getIndex(x, y, z)];
         datum = (byte) ((datum & 0xF0) | value);
         this.data[this.getIndex(x, y, z)] = datum;
+    }
+
+    public byte[] save() {
+        return data;
+    }
+
+    public void load(byte[] data) {
+        if (data == null) return;
+        this.data = data;
     }
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.ultreon.craft.client.init.Shaders;
+import com.ultreon.craft.client.render.ModelObject;
 import com.ultreon.craft.client.render.shader.OpenShaderProvider;
 import com.ultreon.craft.client.shaders.WorldShader;
 import com.ultreon.craft.client.world.ClientChunk;
@@ -31,11 +32,25 @@ public class WorldShaderProvider extends DefaultShaderProvider implements OpenSh
     public Shader createShader(Renderable renderable) {
         if (renderable != null && renderable.userData instanceof ClientChunk) {
             WorldShader worldShader = new WorldShader(renderable, this.config);
-            Shaders.checkShaderCompilation(worldShader.program);
+            Shaders.checkShaderCompilation(worldShader.program, "WorldShader");
             return worldShader;
         }
 
-        assert renderable != null;
+        if (renderable != null) {
+            return getShaderFromUserData(renderable, renderable.userData);
+        }
+
+        throw new NullPointerException("Renderable cannot be null");
+    }
+
+    private static Shader getShaderFromUserData(Renderable renderable, Object userData) {
+        if (userData instanceof OpenShaderProvider provider) {
+            return provider.createShader(renderable);
+        } else if (userData instanceof Shader shader) {
+            return shader;
+        } else if (userData instanceof ModelObject modelObject) {
+            return modelObject.shaderProvider().createShader(renderable);
+        }
         return new DefaultShader(renderable, new DefaultShader.Config());
     }
 

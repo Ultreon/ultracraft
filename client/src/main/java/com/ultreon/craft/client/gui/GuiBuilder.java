@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 @ApiStatus.Experimental
-public final class GuiBuilder {
+public class GuiBuilder {
     private final Screen screen;
 
     public GuiBuilder(Screen screen) {

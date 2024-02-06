@@ -2,12 +2,13 @@ package com.ultreon.craft.world.gen.feature;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.world.Chunk;
+import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PatchFeature extends WorldGenFeature {
@@ -48,14 +49,14 @@ public class PatchFeature extends WorldGenFeature {
     }
 
     @Override
-    public void create(ServerWorld world) {
+    public void create(@NotNull ServerWorld world) {
         super.create(world);
 
         this.baseNoise = this.settingsBase.create(world.getSeed());
     }
 
     @Override
-    public boolean handle(World world, Chunk chunk, int x, int z, int height) {
+    public boolean handle(@NotNull World world, @NotNull ChunkAccess chunk, int x, int z, int height) {
         if (this.baseNoise == null) return false;
 
         for (int y = height; y > height - this.depth; y--) {

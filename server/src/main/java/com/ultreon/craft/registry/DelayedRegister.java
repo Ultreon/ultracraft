@@ -36,17 +36,13 @@ public class DelayedRegister<T> {
 
     public void register() {
         RegistryEvents.AUTO_REGISTER.listen((modId, registry) -> {
-            if (!registry.getType().equals(this.registry.getType()) || !this.modId.equals(modId)) {
+            if (!registry.key().equals(this.registry.key()) || !this.modId.equals(modId)) {
                 return;
             }
 
             for (HashMap.Entry<ElementID, Supplier<T>> entry : this.objects) {
                 T object = entry.getValue().get();
                 ElementID id = entry.getKey();
-
-                if (!registry.getType().isAssignableFrom(object.getClass())) {
-                    throw new IllegalArgumentException("Got invalid type in deferred register: " + object.getClass() + " expected assignable to " + registry.getType());
-                }
 
                 this.registry.register(id, object);
             }

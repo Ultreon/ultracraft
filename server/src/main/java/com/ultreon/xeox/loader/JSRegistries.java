@@ -13,10 +13,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class JSRegistries {
     public Registry<?> registry(ElementID id) {
-        return Registries.REGISTRY.getValue(id);
+        return Registries.REGISTRY.getElement(id);
     }
     public Registry<?> registry(String name) {
-        return Registries.REGISTRY.getValue(ElementID.parse(name));
+        return Registries.REGISTRY.getElement(ElementID.parse(name));
     }
     public @Nullable ElementID id(String name) {
         return ElementID.tryParse(name);

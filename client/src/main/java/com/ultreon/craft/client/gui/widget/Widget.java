@@ -84,8 +84,13 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
     public final void render(@NotNull Renderer renderer, int mouseX, int mouseY, @IntRange(from = 0) float deltaTime) {
         if (!this.visible) return;
 
-        if (this.root.directHovered != null && this.isWithinBounds(mouseX, mouseY))
+
+        if (this.isWithinBounds(mouseX, mouseY)) {
             this.root.directHovered = this;
+            this.hovered = true;
+        } else {
+            this.hovered = false;
+        }
 
         this.renderBackground(renderer, deltaTime);
         this.renderWidget(renderer, mouseX, mouseY, deltaTime);
@@ -250,7 +255,7 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
      * @return path to the widget.
      */
     public Path path() {
-        return this.parent.path().resolve("%s[%d]".formatted(this.getName(), this.createTime));
+        return this.parent.path().resolve(String.format("%s[%d]", this.getName(), this.createTime));
     }
 
     public Bounds getBounds() {
@@ -265,7 +270,7 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
         return this.preferredSize;
     }
 
-    protected final boolean isWithinBounds(int x, int y) {
+    public final boolean isWithinBounds(int x, int y) {
         return this.getBounds().contains(x, y) || this.ignoreBounds;
     }
 

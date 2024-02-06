@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class TranslationText extends MutableText {
     private final @NotNull String path;
@@ -74,7 +75,7 @@ public class TranslationText extends MutableText {
 
     @Override
     public MutableText copy() {
-        var copy = this.extras.stream().map(TextObject::copy).toList();
+        var copy = this.extras.stream().map(TextObject::copy).collect(Collectors.toList());
         var translationText = new TranslationText(this.path, this.args);
         translationText.extras.addAll(copy);
         return translationText;

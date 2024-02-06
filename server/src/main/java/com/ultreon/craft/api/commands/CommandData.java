@@ -38,6 +38,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class CommandData {
@@ -164,7 +165,7 @@ public class CommandData {
     }
 
     final List<Method> getMethods() {
-        return this.methodMap.values().stream().toList();
+        return this.methodMap.values().stream().collect(Collectors.toList());
     }
 
     public @Nullable String mapToPerm(@Nullable CommandSpec spec) {
@@ -561,7 +562,7 @@ public class CommandData {
     }
 
     private static List<String> completeGamemode(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
-        return TabCompleting.strings(ctx.readString(), "survival", "mini_game", "builder", "builder_plus");
+        return TabCompleting.strings(ctx.readString(), "survival", "mini_game", "builder", "builder_plus", "spectator");
     }
 
     private static List<String> completeBiome(CommandSender sender, CommandContext commandCtx, CommandReader ctx, String[] args) throws CommandParseException {
@@ -591,7 +592,7 @@ public class CommandData {
     static <T> List<String> complete(CommandReader ctx, Registry<T> registry) throws CommandParseException {
         var currentArgument = ctx.readString();
         List<String> list = new ArrayList<>();
-        for (var id : registry.keys()) {
+        for (var id : registry.ids()) {
             try {
                 TabCompleting.addIfStartsWith(list, id, currentArgument);
             } catch (Exception ignored) {

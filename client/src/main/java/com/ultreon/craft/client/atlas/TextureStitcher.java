@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.util.TextureOffset;
@@ -102,9 +101,9 @@ public class TextureStitcher {
         }
         spriteBatch.end();
 
-        if (DebugFlags.DUMP_TEXTURE_ATLAS) {
-            Pixmap frameBufferPixmap = ScreenUtils.getFrameBufferPixmap(0, 0, width, height);
-            PixmapIO.writePNG(Gdx.files.local("%s.%s.atlas-png".formatted(this.atlasId.toString().replace(':', '.').replace('/', '_'), type.name().toLowerCase(Locale.ROOT))), frameBufferPixmap);
+        if (DebugFlags.DUMP_TEXTURE_ATLAS.enabled()) {
+            Pixmap frameBufferPixmap = Pixmap.createFromFrameBuffer(0, 0, width, height);
+            PixmapIO.writePNG(Gdx.files.local(String.format("%s.%s.atlas-png", this.atlasId.toString().replace(':', '.').replace('/', '_'), type.name().toLowerCase(Locale.ROOT))), frameBufferPixmap);
         }
 
         this.fbo.end();

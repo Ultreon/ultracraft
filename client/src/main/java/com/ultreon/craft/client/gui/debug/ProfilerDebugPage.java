@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProfilerDebugPage implements DebugPage {
     ProfileData profile;
@@ -92,7 +93,7 @@ public class ProfilerDebugPage implements DebugPage {
         List<Section.FinishedSection> data;
 
         if (path.equals("/")) {
-            data = threadSection.getData().values().stream().sorted(comparator).toList();
+            data = threadSection.getData().values().stream().sorted(comparator).collect(Collectors.toList());
         } else {
             Section.FinishedSection section = this.profile.getSection(threadSection, path);
             if (section == null) {
@@ -100,7 +101,7 @@ public class ProfilerDebugPage implements DebugPage {
                 this.currentPath = "/";
                 return true;
             }
-            data = section.getData().values().stream().sorted(comparator).toList();
+            data = section.getData().values().stream().sorted(comparator).collect(Collectors.toList());
         }
 
         if (data.isEmpty()) return true;
@@ -114,7 +115,7 @@ public class ProfilerDebugPage implements DebugPage {
 
     private void navThreadView(int idx) {
         Thread thread;
-        List<Thread> threads = this.profile.getThreads().stream().sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())).toList();
+        List<Thread> threads = this.profile.getThreads().stream().sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())).collect(Collectors.toList());
         if (idx >= 0 && idx < threads.size()) {
             thread = threads.get(idx);
             this.currentThread = thread;
@@ -130,7 +131,7 @@ public class ProfilerDebugPage implements DebugPage {
                 .entryLine();
 
         if (path.equals("/")) {
-            data = threadSection.getData().values().stream().sorted(comparator).toList();
+            data = threadSection.getData().values().stream().sorted(comparator).collect(Collectors.toList());
         } else {
             Section.FinishedSection section = this.profile.getSection(threadSection, path);
             if (section == null) {
@@ -139,7 +140,7 @@ public class ProfilerDebugPage implements DebugPage {
                 return true;
             }
 
-            data = section.getData().values().stream().sorted(comparator).toList();
+            data = section.getData().values().stream().sorted(comparator).collect(Collectors.toList());
         }
         for (int i = 0, sectionsSize = data.size(); i < sectionsSize; i++) {
             Section.FinishedSection s = data.get(i);
@@ -152,7 +153,7 @@ public class ProfilerDebugPage implements DebugPage {
         context.entryLine(TextObject.literal("Thread View").setColor(Color.GREEN).setBold(true).setUnderlined(true))
                 .entryLine();
 
-        List<Thread> threads = this.profile.getThreads().stream().sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())).toList();
+        List<Thread> threads = this.profile.getThreads().stream().sorted((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName())).collect(Collectors.toList());
         if (threads.isEmpty()) return true;
 
         for (int i = 0, threadsSize = threads.size(); i < threadsSize; i++) {

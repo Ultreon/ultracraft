@@ -3,6 +3,7 @@ package com.ultreon.craft.client;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.GamePlatform;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
@@ -26,11 +27,12 @@ public class GameLibGDXWrapper implements ApplicationListener {
             try {
                 CrashLog crashLog = e.getCrashLog();
                 UltracraftClient.get().delayCrash(crashLog);
+                return;
             } catch (Throwable t) {
-                this.exceptionHandler.uncaughtException(thread, t);
+                CommonConstants.LOGGER.error("Failed to handle uncaught exception", t);
             }
         }
-        this.exceptionHandler.uncaughtException(thread, throwable);
+        CommonConstants.LOGGER.error("Uncaught exception", throwable);
     }
 
     @Override

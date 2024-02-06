@@ -76,6 +76,7 @@ public class ChatTextBox extends TextBox {
             this.completeX = this.getCursorIdx();
             this.value(value.substring(0, this.completeX) + this.popup.get() + s);
         }
+        this.popup.visible = false;
         this.setCursorIdx(this.getValue().length());
         this.revalidateCursor();
     }
@@ -133,5 +134,6 @@ public class ChatTextBox extends TextBox {
         this.completeX = s.length();
         this.popup.x = (int) this.font.width(this.getValue().substring(0, s.length()));
         this.popup.setValues(options);
+        this.popup.visible = true;
     }
 }

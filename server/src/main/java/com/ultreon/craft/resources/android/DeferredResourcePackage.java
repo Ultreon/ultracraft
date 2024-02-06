@@ -1,7 +1,7 @@
 package com.ultreon.craft.resources.android;
 
-import com.ultreon.craft.resources.Resource;
 import com.ultreon.craft.resources.ResourcePackage;
+import com.ultreon.craft.resources.StaticResource;
 import com.ultreon.craft.util.ElementID;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +33,11 @@ public class DeferredResourcePackage extends ResourcePackage {
     }
 
     @Override
-    public Resource get(ElementID entry) {
+    public StaticResource get(ElementID entry) {
         if (!this.has(entry)) return null;
         if (this.resources.containsKey(entry)) return this.resources.get(entry);
 
-        Resource resource = new Resource(() -> this.ref.getResourceAsStream(this.getPath(entry)));
+        StaticResource resource = new StaticResource(() -> this.ref.getResourceAsStream(this.getPath(entry)));
         this.resources.put(entry, resource);
         return resource;
     }

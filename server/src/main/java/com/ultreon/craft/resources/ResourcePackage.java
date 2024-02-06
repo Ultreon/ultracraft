@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class ResourcePackage {
-    protected final Map<ElementID, com.ultreon.craft.resources.Resource> resources;
+    protected final Map<ElementID, StaticResource> resources;
 
-    public ResourcePackage(Map<ElementID, com.ultreon.craft.resources.Resource> resources) {
+    public ResourcePackage(Map<ElementID, StaticResource> resources) {
         this.resources = resources;
     }
 
@@ -26,11 +26,11 @@ public class ResourcePackage {
         return this.resources.keySet();
     }
 
-    public com.ultreon.craft.resources.Resource get(ElementID entry) {
+    public StaticResource get(ElementID entry) {
         return this.resources.get(entry);
     }
 
-    public Map<ElementID, Resource> mapEntries() {
+    public Map<ElementID, StaticResource> mapEntries() {
         return Collections.unmodifiableMap(this.resources);
     }
 }

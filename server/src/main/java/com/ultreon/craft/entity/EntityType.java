@@ -35,7 +35,7 @@ public abstract class EntityType<T extends Entity> {
     }
 
     public @Nullable ElementID getId() {
-        return Registries.ENTITY_TYPE.getKey(this);
+        return Registries.ENTITY_TYPE.getId(this);
     }
 
     public static class Builder<T extends Entity> {

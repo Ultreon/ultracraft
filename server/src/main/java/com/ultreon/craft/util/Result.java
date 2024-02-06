@@ -1,5 +1,7 @@
 package com.ultreon.craft.util;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -75,22 +77,23 @@ public class Result<T> {
         return this.failure.throwable;
     }
 
-    public T getValueOrNullOr(T other) {
+    @Contract("!null -> !null")
+    public T getValueOr(T other) {
         T value = this.ok.value;
         return value == null ? other : value;
     }
 
-    public Throwable getFailureOrNullOr(Throwable other) {
+    public Throwable getFailureOr(Throwable other) {
         Throwable value = this.failure.throwable;
         return value == null ? other : value;
     }
 
-    public T getValueOrNullOrGet(Supplier<? extends T> other) {
+    public T getValueOrGet(Supplier<? extends T> other) {
         T value = this.ok.value;
         return value == null ? other.get() : value;
     }
 
-    public Throwable getFailureOrNullOr(Supplier<? extends Throwable> other) {
+    public Throwable getFailureOrGet(Supplier<? extends Throwable> other) {
         Throwable value = this.failure.throwable;
         return value == null ? other.get() : value;
     }

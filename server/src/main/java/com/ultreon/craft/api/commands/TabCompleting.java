@@ -90,7 +90,7 @@ public class TabCompleting {
     }
 
     public static List<String> biomes(List<String> list, String currentArgument) {
-        for (var biome : Registries.BIOME.keys()) {
+        for (var biome : Registries.BIOME.ids()) {
             var key = biome.toString();
             TabCompleting.addIfStartsWith(list, key, currentArgument);
         }
@@ -129,14 +129,14 @@ public class TabCompleting {
     }
 
     public static List<String> blocks(List<String> list, String currentArgument) {
-        for (ElementID id : Registries.BLOCK.keys()) {
+        for (ElementID id : Registries.BLOCK.ids()) {
             TabCompleting.addIfStartsWith(list, id, currentArgument);
         }
         return list;
     }
 
     public static List<String> items(List<String> list, String currentArgument) {
-        for (ElementID id : Registries.ITEM.keys()) {
+        for (ElementID id : Registries.ITEM.ids()) {
             TabCompleting.addIfStartsWith(list, id, currentArgument);
         }
         return list;

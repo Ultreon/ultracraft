@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
@@ -34,7 +33,6 @@ import static com.ultreon.craft.client.UltracraftClient.LOGGER;
 public class GameRenderer {
     private final UltracraftClient client;
     private final ModelBatch modelBatch;
-    private final SpriteBatch spriteBatch;
     private final RenderPipeline pipeline;
     private final Vector2 tmp = new Vector2();
     private final ShaderProgram worldShaderProgram;
@@ -43,10 +41,12 @@ public class GameRenderer {
     private final RenderContext context;
     private final Mesh quad;
     private final Matrix4 identityMatrix = new Matrix4();
+    private Quaternion tmpQ = new Quaternion();
+    private float cameraBop = 0.0f;
+    private boolean revert = true;
 
-    public GameRenderer(UltracraftClient client, ModelBatch modelBatch, SpriteBatch spriteBatch, RenderPipeline pipeline) {
+    public GameRenderer(UltracraftClient client, ModelBatch modelBatch, RenderPipeline pipeline) {
         this.client = client;
-        this.spriteBatch = spriteBatch;
         this.modelBatch = modelBatch;
         this.pipeline = pipeline;
 
@@ -65,6 +65,7 @@ public class GameRenderer {
     }
 
     public void resize(int width, int height) {
+        if (width <= 0 || height <= 0) return;
         this.depthFbo.dispose();
         this.fbo.dispose();
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
@@ -81,17 +82,28 @@ public class GameRenderer {
         if (player != null) {
             UltracraftClient.PROFILER.section("camera", () -> {
                 if (this.client.screen == null && !GamePlatform.get().isShowingImGui() && GamePlatform.get().isDesktop()) {
-                    player.rotateHead(-Gdx.input.getDeltaX() / 2f * Gdx.graphics.getDeltaTime() * 100, -Gdx.input.getDeltaY() / 2f * Gdx.graphics.getDeltaTime() * 100);
+                    player.rotateHead(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
                 }
 
                 this.client.camera.update(player);
-                this.client.camera.far = (this.client.settings.renderDistance.get() - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
+                this.client.camera.far = (this.client.config.get().renderDistance - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
 
                 var rotation = this.tmp.set(player.xHeadRot, player.yRot);
                 var quaternion = new Quaternion();
                 quaternion.setFromAxis(Vector3.Y, rotation.x);
                 quaternion.mul(new Quaternion(Vector3.X, rotation.y));
                 quaternion.conjugate();
+
+//                float genSpeed = 35.0f;
+//                float speed = (genSpeed / (17.5f - (cameraBop * 2.0f))) * (1 - (Math.max(Math.abs(rotation.y) - 45, 0)) / 45);
+//                cameraBop += Gdx.graphics.getDeltaTime() * (revert ? -speed : speed);
+//                if (cameraBop > 4.0f) revert = true;
+//                else if (cameraBop < -4.0f) revert = false;
+
+                this.client.camera.up.set(0, 1, 0);
+                this.client.camera.up.rotate(Vector3.Y, rotation.x);
+                this.client.camera.up.rotate(Vector3.Z, cameraBop);
+                this.client.camera.up.rotate(Vector3.Y, -rotation.x);
             });
         }
 
@@ -99,7 +111,7 @@ public class GameRenderer {
             UltracraftClient.PROFILER.section("world", () -> this.renderWorld(worldRenderer, world));
         }
 
-        this.spriteBatch.begin();
+        renderer.begin();
 
         var screen = this.client.screen;
 
@@ -123,7 +135,7 @@ public class GameRenderer {
 
         renderer.popMatrix();
 
-        this.spriteBatch.end();
+        renderer.end();
     }
 
     private void renderWorld(WorldRenderer worldRenderer, ClientWorld world) {

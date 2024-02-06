@@ -12,10 +12,10 @@ public class RecipeType {
     }
 
     public ElementID getKey() {
-        return Registries.RECIPE_TYPE.getKey(this);
+        return Registries.RECIPE_TYPE.getId(this);
     }
 
     public int getId() {
-        return Registries.RECIPE_TYPE.getId(this);
+        return Registries.RECIPE_TYPE.getRawId(this);
     }
 }

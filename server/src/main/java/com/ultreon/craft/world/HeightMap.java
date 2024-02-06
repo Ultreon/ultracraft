@@ -1,7 +1,7 @@
 package com.ultreon.craft.world;
 
 public class HeightMap {
-    private final short[] map;
+    private short[] map;
     private final int width;
 
     public HeightMap(int width) {
@@ -24,5 +24,14 @@ public class HeightMap {
 
     public int getWidth() {
         return this.width;
+    }
+
+    public void load(short[] data) {
+        if (data == null) return;
+        this.map = data;
+    }
+
+    public short[] save() {
+        return this.map;
     }
 }

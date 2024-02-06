@@ -411,7 +411,7 @@ class CommandSpecParser {
             char cur;
             while ((cur = Objects.requireNonNull(this.io).readChar()) != ' ') {
                 if (!letters.contains(cur)) {
-                    throw new SpecSyntaxException(this.line, Objects.requireNonNull(this.io).getOffset(), "Illegal character in command name: %s".formatted(reprChar(cur)));
+                    throw new SpecSyntaxException(this.line, Objects.requireNonNull(this.io).getOffset(), String.format("Illegal character in command name: %s", reprChar(cur)));
                 } else {
                     commandNameChars.add(cur);
                 }

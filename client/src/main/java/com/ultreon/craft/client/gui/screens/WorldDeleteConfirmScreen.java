@@ -52,7 +52,7 @@ public class WorldDeleteConfirmScreen extends Screen {
         try {
             Path name = this.storage.getDirectory().getFileName();
             this.storage.delete();
-            this.client.notifications.add(Notification.builder("World Deleted", "'%s'".formatted(name)).subText("World Manager").icon(MessageIcon.DANGER).build());
+            this.client.notifications.add(Notification.builder("World Deleted", String.format("'%s'", name)).subText("World Manager").icon(MessageIcon.DANGER).build());
         } catch (IOException e) {
             UltracraftClient.crash(e);
         }

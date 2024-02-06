@@ -14,11 +14,10 @@ import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.types.MapType;
-
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.checkerframework.common.returnsreceiver.qual.This;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +157,7 @@ public abstract class Biome {
      * @return the element id
      */
     private ElementID getId() {
-        return Registries.BIOME.getKey(this);
+        return Registries.BIOME.getId(this);
     }
 
     /**
@@ -168,7 +167,7 @@ public abstract class Biome {
      * @return the loaded biome
      */
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getValue(ElementID.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.getElement(ElementID.tryParse(mapType.getString("id", "plains")));
     }
 
     /**

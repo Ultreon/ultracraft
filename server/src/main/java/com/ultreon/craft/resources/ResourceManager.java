@@ -42,13 +42,13 @@ public class ResourceManager {
         return true;
     }
 
-    public InputStream openResourceStream(ElementID entry) {
-        @Nullable com.ultreon.craft.resources.Resource resource = this.getResource(entry);
+    public InputStream openResourceStream(ElementID entry) throws IOException {
+        @Nullable Resource resource = this.getResource(entry);
         return resource == null ? null : resource.openStream();
     }
 
     @Nullable
-    public com.ultreon.craft.resources.Resource getResource(ElementID entry) {
+    public Resource getResource(ElementID entry) {
         for (ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(entry)) {
                 return resourcePackage.get(entry);
@@ -106,7 +106,7 @@ public class ResourceManager {
 
         try {
             // Prepare (entry -> resource) mappings/
-            Map<ElementID, com.ultreon.craft.resources.Resource> map = new HashMap<>();
+            Map<ElementID, StaticResource> map = new HashMap<>();
 
             // Get assets directory.
             File assets = new File(file, this.root + "/");
@@ -134,7 +134,7 @@ public class ResourceManager {
 
                             // Create resource with file input stream.
                             ThrowingSupplier<InputStream, IOException> sup = () -> Files.newInputStream(asset.toPath());
-                            com.ultreon.craft.resources.Resource resource = new com.ultreon.craft.resources.Resource(sup);
+                            StaticResource resource = new StaticResource(sup);
 
                             // Continue to next file / folder if asset path is the same path as the assets package.
                             if (assetPath.toFile().equals(assetsPackage)) {
@@ -170,7 +170,7 @@ public class ResourceManager {
     private void importFilePackage(ZipInputStream file) throws IOException {
         // Check for .jar files.
         // Prepare (entry -> resource) mappings.
-        Map<ElementID, com.ultreon.craft.resources.Resource> map = new HashMap<>();
+        Map<ElementID, StaticResource> map = new HashMap<>();
 
         // Create jar file instance from file.
         try {
@@ -197,7 +197,7 @@ public class ResourceManager {
         file.close();
     }
 
-    private void addEntry(Map<ElementID, com.ultreon.craft.resources.Resource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
+    private void addEntry(Map<ElementID, StaticResource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
         String[] splitPath = name.split("/", 3);
 
         if (splitPath.length >= 3) {
@@ -207,7 +207,7 @@ public class ResourceManager {
                 String path = splitPath[2];
 
                 // Resource
-                com.ultreon.craft.resources.Resource resource = new com.ultreon.craft.resources.Resource(sup);
+                StaticResource resource = new StaticResource(sup);
 
                 try {
                     // Entry
@@ -226,8 +226,8 @@ public class ResourceManager {
     public List<byte[]> getAllDataByPath(@NotNull String path) {
         List<byte[]> data = new ArrayList<>();
         for (ResourcePackage resourcePackage : this.resourcePackages) {
-            Map<ElementID, com.ultreon.craft.resources.Resource> identifierResourceMap = resourcePackage.mapEntries();
-            for (Map.Entry<ElementID, com.ultreon.craft.resources.Resource> entry : identifierResourceMap.entrySet()) {
+            Map<ElementID, StaticResource> identifierResourceMap = resourcePackage.mapEntries();
+            for (Map.Entry<ElementID, StaticResource> entry : identifierResourceMap.entrySet()) {
                 if (entry.getKey().path().equals(path)) {
                     byte[] bytes = entry.getValue().loadOrGet();
                     if (bytes == null) continue;
@@ -245,7 +245,7 @@ public class ResourceManager {
         List<byte[]> data = new ArrayList<>();
         for (ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(id)) {
-                Resource resource = resourcePackage.get(id);
+                StaticResource resource = resourcePackage.get(id);
                 if (resource == null) continue;
                 byte[] bytes = resource.loadOrGet();
                 if (bytes == null) continue;

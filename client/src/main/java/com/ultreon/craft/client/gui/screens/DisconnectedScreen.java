@@ -6,7 +6,10 @@ import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.TextButton;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
+import com.ultreon.craft.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.stream.Collectors;
 
 public class DisconnectedScreen extends Screen {
     private final String message;
@@ -18,7 +21,7 @@ public class DisconnectedScreen extends Screen {
 
     @Override
     public void build(GuiBuilder builder) {
-        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.backToTitle"), 150)
+        builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 150)
                 .position(() -> new Position(this.size.width / 2 - 75, this.size.height / 2 - 10))
                 .callback(caller -> new TitleScreen()));
     }
@@ -29,7 +32,7 @@ public class DisconnectedScreen extends Screen {
         renderer.textCenter(this.title, 2, this.size.width / 2, this.size.height / 3, Color.WHITE);
 
         int lineY = 0;
-        for (String line : this.message.lines().toList()) {
+        for (String line : StringUtils.lines(this.message).collect(Collectors.toList())) {
             renderer.textCenter(line, this.size.width / 2, this.size.height / 3 + 30 + lineY * (this.font.lineHeight + 1) - 1, Color.WHITE, false);
             lineY++;
         }
