@@ -2,6 +2,7 @@ package com.ultreon.craft.client.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
@@ -32,6 +33,9 @@ public class LocalPlayer extends ClientPlayer {
     public @Nullable ContainerMenu openMenu;
     private int oldSelected;
     private final ClientPermissionMap permissions = new ClientPermissionMap();
+    private Vector3 tmp = new Vector3();
+    private float actualSpeed;
+    private float actualHorizontalSpeed;
 
     public LocalPlayer(EntityType<? extends Player> entityType, ClientWorld world, UUID uuid) {
         super(entityType, world);
@@ -52,8 +56,12 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
+        this.actualSpeed = this.tmp.set((float) (this.x - this.ox), (float) (this.y - this.oy), (float) (this.z - this.oz)).len();
+        this.actualHorizontalSpeed = this.tmp.set((float) (this.x - this.ox), 0, (float) (this.z - this.oz)).len();
+        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01) {
             this.handleMove();
+        }
+
     }
 
     private void handleMove() {
@@ -115,6 +123,14 @@ public class LocalPlayer extends ClientPlayer {
     @Override
     public float getWalkingSpeed() {
         return this.isRunning() ? super.getWalkingSpeed() * this.runModifier : super.getWalkingSpeed();
+    }
+
+    public float getActualSpeed() {
+        return this.actualSpeed;
+    }
+
+    public float getActualHorizontalSpeed() {
+        return actualHorizontalSpeed;
     }
 
     @Override

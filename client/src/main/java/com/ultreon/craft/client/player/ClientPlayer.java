@@ -18,6 +18,9 @@ public abstract class ClientPlayer extends Player {
     public float bopZ;
     public boolean inverseBopZ;
     public boolean walking;
+    public float walkAnim0;
+    public int walkSignum;
+    public int walkDir;
     private float xRot0;
     private float yRot0;
     private float xHeadRot0;

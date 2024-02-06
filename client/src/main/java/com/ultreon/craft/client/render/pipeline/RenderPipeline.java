@@ -208,7 +208,6 @@ public class RenderPipeline implements Disposable {
 
             @Override
             public Renderable obtain () {
-                Thread.dumpStack();
                 Renderable renderable = super.obtain();
                 renderable.environment = null;
                 renderable.material = null;
