@@ -15,6 +15,8 @@ public class ValueTracker {
     private static int renderableFlushes;
     private static int flushAttempts;
     private static int obtainRequests;
+    private static int freeRequests;
+    private static int flushRequests;
 
     public static long getMeshDisposes() {
         return ValueTracker.meshDisposes;
@@ -138,5 +140,25 @@ public class ValueTracker {
 
     public static void resetObtainRequests() {
 //        obtainRequests = 0;
+    }
+
+    public static void trackFreeRequest() {
+        freeRequests++;
+    }
+
+    public static void trackFreeRequests(int size) {
+        freeRequests += size;
+    }
+
+    public static int getFreeRequests() {
+        return freeRequests;
+    }
+
+    public static void trackFlushRequest() {
+        flushRequests++;
+    }
+
+    public static int getFlushRequests() {
+        return flushRequests;
     }
 }

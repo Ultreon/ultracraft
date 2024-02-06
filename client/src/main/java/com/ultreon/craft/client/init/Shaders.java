@@ -19,11 +19,11 @@ public class Shaders {
     public static final DepthShaderProvider DEPTH = Shaders.registerDepth("depth");
 
     public static final DefaultShaderProvider DEFAULT = Shaders.register("default", new MyDefaultShaderProvider());
-    public static final DefaultShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
+    public static final WorldShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
             new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
     ));
-    public static final DefaultShaderProvider MODEL_VIEW = Shaders.register("model_view", new ModelViewShaderProvider(
+    public static final ModelViewShaderProvider MODEL_VIEW = Shaders.register("model_view", new ModelViewShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/model_view.vert")),
             new ResourceFileHandle(UltracraftClient.id("shaders/model_view.frag"))
     ));

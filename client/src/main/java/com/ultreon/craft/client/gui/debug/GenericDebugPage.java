@@ -48,6 +48,10 @@ public class GenericDebugPage implements DebugPage {
 
         context.left("Renderables")
                 .left("Global Size", RenderableArray.getGlobalSize())
+                .left("Obtained Renderables", ValueTracker.getObtainedRenderables())
+                .left("Obtain Requests", ValueTracker.getObtainRequests())
+                .left("Free Requests", ValueTracker.getFreeRequests())
+                .left("Flush Requests", ValueTracker.getFlushRequests())
                 .left();
 
         if (world != null) {

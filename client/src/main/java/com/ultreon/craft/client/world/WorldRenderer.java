@@ -414,6 +414,8 @@ public final class WorldRenderer implements DisposableContainer {
 
             this.doPoolStatistics();
         }
+
+        ClientChunk.flushPool();
     }
 
     private boolean shouldBuildChunks() {

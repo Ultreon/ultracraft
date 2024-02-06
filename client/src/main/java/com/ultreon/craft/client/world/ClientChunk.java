@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ClientChunk extends Chunk {
+    public static final RenderablePool RENDERABLE_POOL = new RenderablePool();
     final GreedyMesher mesher;
     private final ClientWorld clientWorld;
     public final Vector3 renderOffset = new Vector3();
@@ -179,8 +180,8 @@ public final class ClientChunk extends Chunk {
 
     public void renderModels(Array<Renderable> output) {
         for (Map.Entry<BlockPos, ModelInstance> entry : this.models.entrySet()) {
-            ModelInstance value = entry.getValue();
-            if (value == null) continue;
+            ModelInstance model = entry.getValue();
+            if (model == null) continue;
 
             BlockPos key = entry.getKey();
 
@@ -188,17 +189,21 @@ public final class ClientChunk extends Chunk {
             float z = (float) key.z() % 16;
             if (x < 0) x += 16;
             if (z < 0) z += 16;
-            ModelObject modelObject = value.userData instanceof ModelObject ? (ModelObject) value.userData : null;
+            ModelObject modelObject = model.userData instanceof ModelObject ? (ModelObject) model.userData : null;
             if (modelObject == null) {
                 RenderableArray renderables = new RenderableArray();
-                value.getRenderables(renderables, new RenderablePool());
-                value.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW, renderables);
+                model.getRenderables(renderables, RENDERABLE_POOL);
+                model.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW, model, renderables);
             }
-            float finalX = x;
-            float finalZ = z;
-            modelObject.renderables().transform(transform -> transform.setToTranslationAndScaling(this.tmp.set(this.renderOffset).add(finalX, (float) key.y() % 65536, finalZ), this.tmp1.set(1 / 16f, 1 / 16f, 1 / 16f)));
+            modelObject.renderables().clear();
+            model.transform.setToTranslationAndScaling(this.renderOffset.x + x, this.renderOffset.y + (float) key.y() % 65536, this.renderOffset.z + z, 1 / 16f, 1 / 16f, 1 / 16f);
+            model.getRenderables(modelObject.renderables(), RENDERABLE_POOL);
             output.addAll(modelObject.renderables());
         }
+    }
+
+    public static void flushPool() {
+        RENDERABLE_POOL.flush();
     }
 
     public void loadCustomRendered() {
