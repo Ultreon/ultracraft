@@ -93,7 +93,7 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="class-description" id="class-description">
 <hr>
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ModelObject</span>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a>&nbsp;modelView, <a href="../util/RenderableArray.html" title="class in com.ultreon.craft.client.util">RenderableArray</a>&nbsp;renderables)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ModelObject</span>(<a href="shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a>&nbsp;shaderProvider, <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;model, <a href="../util/RenderableArray.html" title="class in com.ultreon.craft.client.util">RenderableArray</a>&nbsp;renderables)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 </section>
 <section class="summary">
@@ -106,7 +106,8 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.badlogic.gdx.graphics.g3d.utils.ShaderProvider,com.ultreon.craft.client.util.RenderableArray)" class="member-name-link">ModelObject</a><wbr>(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a>&nbsp;modelView,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(com.ultreon.craft.client.render.shader.OpenShaderProvider,com.badlogic.gdx.graphics.g3d.ModelInstance,com.ultreon.craft.client.util.RenderableArray)" class="member-name-link">ModelObject</a><wbr>(<a href="shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a>&nbsp;shaderProvider,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;model,
  <a href="../util/RenderableArray.html" title="class in com.ultreon.craft.client.util">RenderableArray</a>&nbsp;renderables)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>ModelObject</code> record class.</div>
@@ -138,19 +139,24 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a hash code value for this object.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#modelView()" class="member-name-link">modelView</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#model()" class="member-name-link">model</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>modelView</code> record component.</div>
+<div class="block">Returns the value of the <code>model</code> record component.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../util/RenderableArray.html" title="class in com.ultreon.craft.client.util">RenderableArray</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderables()" class="member-name-link">renderables</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>renderables</code> record component.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#shaderProvider()" class="member-name-link">shaderProvider</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <code>shaderProvider</code> record component.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 </div>
@@ -171,14 +177,16 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(com.badlogic.gdx.graphics.g3d.utils.ShaderProvider,com.ultreon.craft.client.util.RenderableArray)">
+<section class="detail" id="&lt;init&gt;(com.ultreon.craft.client.render.shader.OpenShaderProvider,com.badlogic.gdx.graphics.g3d.ModelInstance,com.ultreon.craft.client.util.RenderableArray)">
 <h3>ModelObject</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelObject</span><wbr><span class="parameters">(<a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a>&nbsp;modelView,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelObject</span><wbr><span class="parameters">(<a href="shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a>&nbsp;shaderProvider,
+ <a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a>&nbsp;model,
  <a href="../util/RenderableArray.html" title="class in com.ultreon.craft.client.util">RenderableArray</a>&nbsp;renderables)</span></div>
 <div class="block">Creates an instance of a <code>ModelObject</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>modelView</code> - the value for the <code>modelView</code> record component</dd>
+<dd><code>shaderProvider</code> - the value for the <code>shaderProvider</code> record component</dd>
+<dd><code>model</code> - the value for the <code>model</code> record component</dd>
 <dd><code>renderables</code> - the value for the <code>renderables</code> record component</dd>
 </dl>
 </section>
@@ -200,7 +208,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="toString()">
 <h3>toString</h3>
-<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">toString</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">toString</span>()</div>
 <div class="block">Returns a string representation of this record class. The representation contains the name of the class, followed by the name and value of each of the record components.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
@@ -239,13 +247,24 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="modelView()">
-<h3>modelView</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/utils/ShaderProvider.html" title="class or interface in com.badlogic.gdx.graphics.g3d.utils" class="external-link">ShaderProvider</a></span>&nbsp;<span class="element-name">modelView</span>()</div>
-<div class="block">Returns the value of the <code>modelView</code> record component.</div>
+<section class="detail" id="shaderProvider()">
+<h3>shaderProvider</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="shader/OpenShaderProvider.html" title="interface in com.ultreon.craft.client.render.shader">OpenShaderProvider</a></span>&nbsp;<span class="element-name">shaderProvider</span>()</div>
+<div class="block">Returns the value of the <code>shaderProvider</code> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>modelView</code> record component</dd>
+<dd>the value of the <code>shaderProvider</code> record component</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="model()">
+<h3>model</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.12.1/com/badlogic/gdx/graphics/g3d/ModelInstance.html" title="class or interface in com.badlogic.gdx.graphics.g3d" class="external-link">ModelInstance</a></span>&nbsp;<span class="element-name">model</span>()</div>
+<div class="block">Returns the value of the <code>model</code> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <code>model</code> record component</dd>
 </dl>
 </section>
 </li>
