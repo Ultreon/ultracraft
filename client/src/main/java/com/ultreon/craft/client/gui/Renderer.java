@@ -18,6 +18,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.text.ChatColor;
+import com.ultreon.craft.text.FormattedText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.ElementID;
@@ -32,6 +33,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -744,6 +746,126 @@ public class Renderer {
     }
 
     @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y, ChatColor color) {
+        this.textLeft(String.valueOf(text), x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, float x, float y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, float x, float y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, float x, float y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull FormattedText text, float x, float y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y, ChatColor color) {
+        this.textLeft(String.valueOf(text), x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, int x, int y, ChatColor color, boolean shadow) {
+        this.font.drawText(this, text, x, y, Color.of(color), shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, float x, float y) {
+        this.textLeft(text, x, y, Color.WHITE);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, float x, float y, Color color) {
+        this.textLeft(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, float x, float y, boolean shadow) {
+        this.textLeft(text, x, y, Color.WHITE, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textLeft(@NotNull List<FormattedText> text, float x, float y, Color color, boolean shadow) {
+        this.font.drawText(this, text, x, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
     public Renderer textCenter(@NotNull String text, int x, int y) {
         this.textLeft(text, x - this.font.width(text) / 2, y);
         return this;
@@ -883,6 +1005,198 @@ public class Renderer {
 
     @CanIgnoreReturnValue
     public Renderer textRight(@NotNull TextObject text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, int x, int y) {
+        this.textLeft(text, x - this.font.width(text) / 2, y);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, int x, int y, Color color) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, float x, float y) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, float x, float y, Color color) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull FormattedText text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, float x, float y) {
+        this.textRight(text, x, y, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, float x, float y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, int x, int y) {
+        this.textRight(text, x, y, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, int x, int y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull FormattedText text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, int x, int y) {
+        this.textLeft(text, x - this.font.width(text) / 2, y);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, int x, int y, Color color) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, int x, int y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text) / 2, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, float x, float y) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, float x, float y, Color color) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textCenter(@NotNull List<FormattedText> text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - (float) this.font.width(text) / 2, y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, float x, float y) {
+        this.textRight(text, x, y, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, float x, float y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, float x, float y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, float x, float y, Color color, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, color, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, int x, int y) {
+        this.textRight(text, x, y, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, int x, int y, boolean shadow) {
+        this.textLeft(text, x - this.font.width(text), y, shadow);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, int x, int y, Color color) {
+        this.textRight(text, x, y, color, true);
+        return this;
+    }
+
+    @CanIgnoreReturnValue
+    public Renderer textRight(@NotNull List<FormattedText> text, int x, int y, Color color, boolean shadow) {
         this.textLeft(text, x - this.font.width(text), y, color, shadow);
         return this;
     }

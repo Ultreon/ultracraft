@@ -424,17 +424,29 @@ public final class WorldRenderer implements DisposableContainer {
 
     public void collectEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
         try {
+            UltracraftClient.LOGGER.debug("Collecting entity " + entity.getId());
             ModelInstance instance = this.modelInstances.get(entity.getId());
             //noinspection unchecked
             var renderer = (EntityRenderer<@NotNull Entity>) RendererRegistry.get(entity.getType());
             if (instance == null) {
+                if (renderer == null) {
+                    UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's renderer is null");
+                    return;
+                }
                 instance = renderer.createInstance(entity);
                 if (instance == null) {
+                    UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's model instance is still null");
                     return;
                 }
                 this.modelInstances.put(entity.getId(), instance);
             }
+            LocalPlayer player = this.client.player;
+            if (player == null) return;
+            Vec3f vec3f = entity.getPosition().sub(player.getPosition()).f();
+//            instance.transform.setToTranslationAndScaling(vec3f.x, vec3f.y, vec3f.z, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE);
             renderer.animate(instance, entity);
+
+            UltracraftClient.LOGGER.debug("Rendering entity " + entity.getId() + " at " + vec3f);
             renderer.render(instance, output, renderablePool);
         } catch (Exception e) {
             UltracraftClient.LOGGER.error("Failed to render entity " + entity.getId(), e);

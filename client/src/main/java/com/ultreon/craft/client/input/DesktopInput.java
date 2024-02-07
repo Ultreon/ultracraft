@@ -14,6 +14,7 @@ import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.input.key.KeyBind;
 import com.ultreon.craft.client.input.key.KeyBinds;
+import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -26,6 +27,7 @@ import java.util.stream.IntStream;
 
 public class DesktopInput extends GameInput {
     public static final KeyBind PAUSE_KEY = KeyBinds.pauseKey;
+    public static final KeyBind DROP_ITEM_KEY = KeyBinds.dropItemKey;
     public static final KeyBind IM_GUI_KEY = KeyBinds.imGuiKey;
     public static final KeyBind IM_GUI_FOCUS_KEY = KeyBinds.imGuiFocusKey;
     public static final KeyBind DEBUG_KEY = KeyBinds.debugKey;
@@ -99,7 +101,7 @@ public class DesktopInput extends GameInput {
         } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen == null && player != null) {
             player.openInventory();
         } else if (DesktopInput.INVENTORY_KEY.isJustPressed() && currentScreen instanceof InventoryScreen && player != null) {
-            player.closeMenu();
+            this.client.showScreen(null);
         } else if (DesktopInput.CHAT_KEY.isJustPressed() && currentScreen == null) {
             this.client.showScreen(new ChatScreen());
         } else if (DesktopInput.COMMAND_KEY.isJustPressed() && currentScreen == null) {
@@ -120,6 +122,8 @@ public class DesktopInput extends GameInput {
             this.client.showScreen(new PauseScreen());
         } else if (DesktopInput.PAUSE_KEY.isJustPressed() && !Gdx.input.isCursorCatched() && this.client.screen instanceof PauseScreen) {
             this.client.showScreen(null);
+        } else if (DesktopInput.DROP_ITEM_KEY.isJustPressed()) {
+            player.dropItem();
         }
     }
 

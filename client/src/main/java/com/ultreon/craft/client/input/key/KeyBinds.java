@@ -10,6 +10,7 @@ public class KeyBinds {
 
     public static final KeyBind quickMove = KeyBindRegistry.register(new KeyBind("quickMove", Input.Keys.SHIFT_LEFT, KeyBind.Type.KEY));
     public static final KeyBind pauseKey = KeyBindRegistry.register(new KeyBind("pause", Input.Keys.ESCAPE, KeyBind.Type.KEY));
+    public static final KeyBind dropItemKey = KeyBindRegistry.register(new KeyBind("dropItem", Input.Keys.Q, KeyBind.Type.KEY));
     public static final KeyBind imGuiKey = KeyBindRegistry.register(new KeyBind("imGui", Input.Keys.F9, KeyBind.Type.KEY));
     public static final KeyBind imGuiFocusKey = KeyBindRegistry.register(new KeyBind("imGuiFocus", Input.Keys.F10, KeyBind.Type.KEY));
     public static final KeyBind inspectKey = KeyBindRegistry.register(new KeyBind("inspect", Input.Keys.F4, KeyBind.Type.KEY));

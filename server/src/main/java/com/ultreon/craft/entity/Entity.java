@@ -61,6 +61,8 @@ public class Entity implements CommandSender {
     private UUID uuid = Utils.ZEROED_UUID;
     protected AttributeMap attributes = new AttributeMap();
     private final RandomSource random = new JavaRandomSource();
+    private MapType pipeline = new MapType();
+    private boolean markedForRemoval;
 
     public Entity(EntityType<? extends Entity> entityType, World world) {
         this.type = entityType;
@@ -143,6 +145,14 @@ public class Entity implements CommandSender {
 
     public EntitySize getSize() {
         return this.type.getSize();
+    }
+
+    public void markRemoved() {
+        this.markedForRemoval = true;
+    }
+
+    public boolean isMarkedForRemoval() {
+        return this.markedForRemoval;
     }
 
     public void tick() {
@@ -542,5 +552,15 @@ public class Entity implements CommandSender {
 
     public RandomSource getRng() {
         return this.random;
+    }
+
+    public MapType getPipeline() {
+        MapType copy = this.pipeline;
+        this.pipeline = new MapType();
+        return copy;
+    }
+
+    public void onPipeline(MapType pipeline) {
+
     }
 }

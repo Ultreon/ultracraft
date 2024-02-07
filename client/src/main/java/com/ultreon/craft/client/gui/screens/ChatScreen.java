@@ -4,6 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Renderer;
@@ -65,6 +66,9 @@ public class ChatScreen extends Screen {
     @Override
     public void build(GuiBuilder builder) {
         this.entry = (ChatTextEntry) builder.add(new ChatTextEntry(this).bounds(() -> new Bounds(-1, this.getHeight() - 21, this.getWidth() + 2, 21)));
+        if (this.input != null) {
+            this.entry.value(this.input);
+        }
     }
 
     public ChatTextEntry getEntry() {

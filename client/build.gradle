@@ -62,7 +62,7 @@ dependencies {
     implementation api("io.github.ultreon.corelibs:resources-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:text-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:translations-v1:$corelibs_version")
-    implementation api("io.github.ultreon:ubo:$ultreon_data_version")
+    implementation api("com.github.Ultreon:ultreon-data:$ultreon_data_version")
 
     // LibGDX
     implementation api("com.badlogicgames.gdx:gdx:$gdx_version")

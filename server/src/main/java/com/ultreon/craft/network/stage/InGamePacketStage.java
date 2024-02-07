@@ -1,5 +1,6 @@
 package com.ultreon.craft.network.stage;
 
+import com.ultreon.craft.entity.S2CEntityPipeline;
 import com.ultreon.craft.network.packets.c2s.*;
 import com.ultreon.craft.network.packets.s2c.*;
 
@@ -28,6 +29,7 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SRequestTabComplete::new);
         this.addServerBound(C2SAbilitiesPacket::new);
         this.addServerBound(C2SCraftRecipePacket::new);
+        this.addServerBound(C2SDropItemPacket::new);
 
         this.addClientBound(S2CKeepAlivePacket::new);
         this.addClientBound(S2CPingPacket::new);
@@ -55,5 +57,7 @@ public class InGamePacketStage extends PacketStage {
         this.addClientBound(S2CPlayerHurtPacket::new);
         this.addClientBound(S2CGamemodePacket::new);
         this.addClientBound(S2CTimePacket::new);
+        this.addClientBound(S2CAddEntityPacket::new);
+        this.addClientBound(S2CEntityPipeline::new);
     }
 }

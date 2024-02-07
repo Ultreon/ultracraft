@@ -17,12 +17,20 @@ public class CollectNode extends RenderPipeline.RenderNode {
     @NewInstance
     @Override
     public Array<Renderable> render(ObjectMap<String, Texture> textures, ModelBatch modelBatch, GameCamera camera, Array<Renderable> input) {
-        LocalPlayer localPlayer = this.client.player;
-        WorldRenderer worldRenderer = this.client.worldRenderer;
-        if (localPlayer == null || worldRenderer == null) {
+        var localPlayer = this.client.player;
+        var worldRenderer = this.client.worldRenderer;
+        var world = this.client.world;
+        if (localPlayer == null || worldRenderer == null || world == null) {
             LOGGER.warn("worldRenderer or localPlayer is null");
             return input;
         }
+        var position = localPlayer.getPosition();
+        world.getAllEntities().stream().sorted((e1, e2) -> {
+            var d1 = e1.getPosition().dst(position);
+            var d2 = e2.getPosition().dst(position);
+            return Double.compare(d1, d2);
+        }).forEachOrdered(entity -> worldRenderer.collectEntity(entity, input, this.pool()));
+
         worldRenderer.collect(input, this.pool());
         ValueTracker.setObtainedRenderables(this.pool().getObtained());
         return input;

@@ -371,4 +371,13 @@ public abstract class Player extends LivingEntity {
     public void drop(ItemStack itemStack) {
         this.world.drop(itemStack, this.getPosition());
     }
+
+    public void dropItem() {
+        ItemStack itemStack = this.getSelectedItem();
+        if (itemStack.shrink(1) == 0) return;
+
+        ItemStack copy = itemStack.copy();
+        copy.setCount(1);
+        this.drop(copy);
+    }
 }

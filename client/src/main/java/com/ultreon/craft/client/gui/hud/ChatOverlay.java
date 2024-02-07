@@ -5,6 +5,7 @@ import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.crash.CrashLog;
+import com.ultreon.craft.text.FormattedText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -29,6 +30,10 @@ public class ChatOverlay extends HudOverlay {
         try {
             for (int i = 0, messagesSize = messages.size(); i < messagesSize; i++) {
                 TextObject text = messages.get(i);
+                if (text == null) continue;
+                long lineCount = text.getText().lines().count();
+                if (lineCount == 0) continue;
+                if (lineCount > 1) y -= (int) ((font.lineHeight + 2) * (lineCount - 1));
                 long messageTimestamp = messageTimestamps.getLong(i);
                 long millisAgo = System.currentTimeMillis() - messageTimestamp;
                 if (millisAgo <= 4000 || showAnyways) {

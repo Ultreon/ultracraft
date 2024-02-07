@@ -19,6 +19,7 @@ import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CBlockEntitySetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
+import com.ultreon.craft.network.packets.s2c.S2CAddEntityPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -308,7 +309,16 @@ public class ServerWorld extends World {
     public void tick() {
         this.playTime++;
 
-        for (var entity : this.entities.values()) {
+        this.entities.removeIf(entity -> {
+            if (entity.isMarkedForRemoval()) {
+                this.entitiesById.remove(entity.getId());
+                return true;
+            }
+
+            return false;
+        });
+
+        for (var entity : this.entitiesById.values()) {
             entity.tick();
         }
 
@@ -615,7 +625,7 @@ public class ServerWorld extends World {
             ListType<MapType> entityListData = this.storage.read("entities.ubo");
             for (var entityData : entityListData) {
                 var entity = Entity.loadFrom(this, entityData);
-                this.entities.put(entity.getId(), entity);
+                this.entitiesById.put(entity.getId(), entity);
             }
         }
         //</editor-fold>
@@ -658,7 +668,7 @@ public class ServerWorld extends World {
 
         //<editor-fold defaultstate="collapsed" desc="<<Saving: entities.ubo>>">
         var entitiesData = new ListType<MapType>();
-        for (var entity : this.entities.values()) {
+        for (var entity : this.entitiesById.values()) {
             if (entity instanceof Player) continue;
 
             var entityData = entity.save(new MapType());
@@ -803,7 +813,9 @@ public class ServerWorld extends World {
         if (!(entity instanceof ServerPlayer) && entity instanceof Player)
             throw new IllegalStateException("Tried to spawn a non-server player in a server world.");
 
-        return super.spawn(entity);
+        T spawn = super.spawn(entity);
+        sendAllTracking(spawn.getBlockPos().x(), spawn.getBlockPos().y(), spawn.getBlockPos().z(), new S2CAddEntityPacket(spawn));
+        return spawn;
     }
 
     /**

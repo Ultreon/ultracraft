@@ -6,6 +6,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.entity.Entity;
+import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
@@ -13,16 +14,14 @@ import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
+import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.*;
 
 import static com.badlogic.gdx.math.MathUtils.lerp;
 
@@ -209,8 +208,8 @@ public final class ClientWorld extends World implements Disposable {
         }
     }
 
-    public Stream<Entity> getAllEntities() {
-        return this.entities.values().stream();
+    public List<Entity> getAllEntities() {
+        return this.entities;
     }
 
     public float getGlobalSunlight() {
@@ -285,5 +284,16 @@ public final class ClientWorld extends World implements Disposable {
 
     public void setDaytime(int daytime) {
         this.time = daytime;
+    }
+
+    public void addEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline) {
+        UltracraftClient.LOGGER.debug("Adding entity with id " + id + " of type " + type.getId() + " at " + position);
+
+        Entity entity = type.create(this);
+        entity.setId(id);
+        entity.setPosition(position);
+        entity.onPipeline(pipeline);
+        this.entitiesById.put(id, entity);
+        this.entities.add(entity);
     }
 }
