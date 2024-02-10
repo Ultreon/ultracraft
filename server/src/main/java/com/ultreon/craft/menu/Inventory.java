@@ -30,7 +30,6 @@ public class Inventory extends ContainerMenu {
         }
 
         this.holder = player;
-        this.addWatcher(this.holder);
     }
 
     @Override

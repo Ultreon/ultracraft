@@ -232,7 +232,14 @@ public class CommandReader {
         }
         char cur;
         StringBuilder sb = new StringBuilder();
+        boolean first = true;
         while ((cur = this.read()) != CommandReader.EOA) {
+            if (first && cur == '-') {
+                first = false;
+                sb.append(cur);
+                continue;
+            }
+            first = false;
             if (!Character.isDigit(cur) && cur != '.') {
                 throw new NotADigit(cur, this.totalOff);
             }

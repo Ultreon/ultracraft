@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.model;
+package com.ultreon.craft.client.api.model;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;

@@ -2,16 +2,14 @@ package com.ultreon.craft.client.model.entity.renderer;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.init.Shaders;
+import com.ultreon.craft.client.model.EntityModelInstance;
+import com.ultreon.craft.client.model.WorldRenderContext;
 import com.ultreon.craft.client.model.entity.EntityModel;
-import com.ultreon.craft.client.model.entity.PlayerModel;
 import com.ultreon.craft.client.render.EntityTextures;
 import com.ultreon.craft.entity.DroppedItem;
-import com.ultreon.craft.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -22,33 +20,28 @@ public class DroppedItemRenderer extends EntityRenderer<@NotNull DroppedItem> {
     }
 
     @Override
-    public void animate(ModelInstance instance, DroppedItem entity) {
+    public void animate(EntityModelInstance<@NotNull DroppedItem> instance, WorldRenderContext<@NotNull DroppedItem> context) {
+        DroppedItem entity = instance.getEntity();
         int age = entity.getAge();
-        int rotation = age * 10 % 360;
-        float translation = age * 0.125f % 0.25f;
-        if (translation > 0.125f) {
-            translation = 0.25f - translation;
-        }
+        float rotation = age * 5f % 360;
+        float translation = MathUtils.sinDeg(age % 180 * 2) / 8f;
 
-        UltracraftClient.LOGGER.debug("Age: " + age + ", rotation: " + rotation + ", translation: " + translation);
-
-//        instance.transform.translate(0, translation, 0).scale(16, 16, 16).rotate(Vector3.Y, rotation);
-        instance.transform.setToTranslationAndScaling(10, 10, 10, 64, 64, 64);
+        instance.rotateY(rotation);
+        instance.translate(0, translation, 0);
+        instance.scale(-0.15f, -0.15f, -0.15f);
+        instance.translate(0.5, 0, -0.5);
     }
 
     @Override
-    public void render(ModelInstance instance, Array<Renderable> output, Pool<Renderable> renderablePool) {
-        super.render(instance, output, renderablePool);
-    }
-
-    @Override
-    public ModelInstance createInstance(@NotNull DroppedItem entity) {
+    public ModelInstance createModel(@NotNull DroppedItem entity) {
         if (entity.getStack().isEmpty()) {
             UltracraftClient.LOGGER.warn("Tried to render empty item stack");
             return null;
         }
 
-        return Objects.requireNonNull(client.itemRenderer.createModelInstance(entity.getStack()));
+        ModelInstance modelInstance = Objects.requireNonNull(client.itemRenderer.createModelInstance(entity.getStack()));
+        modelInstance.userData = Shaders.MODEL_VIEW;
+        return modelInstance;
     }
 
     @Override

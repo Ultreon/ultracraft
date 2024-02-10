@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.model.JsonModel;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;

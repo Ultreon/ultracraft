@@ -58,7 +58,7 @@ import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
-import com.ultreon.craft.client.model.JsonModelLoader;
+import com.ultreon.craft.client.api.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.*;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.DroppedItemRenderer;
@@ -69,6 +69,7 @@ import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.player.SkinManager;
 import com.ultreon.craft.client.registry.*;
 import com.ultreon.craft.client.render.RenderType;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
@@ -312,6 +313,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private long screenshotFlashTime;
     private ClientSound screenshotSound;
     private final Color tmpColor = new Color();
+    private SkinManager skinManager = new SkinManager();
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -2329,6 +2331,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public GameWindow getWindow() {
         return window;
+    }
+
+    public SkinManager getSkinManager() {
+        return skinManager;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

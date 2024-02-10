@@ -12,9 +12,12 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.render.shader.OpenShaderProvider;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.Gdx.gl;
 import static com.badlogic.gdx.graphics.GL20.GL_NONE;
@@ -74,16 +77,18 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
     private void renderWorldOnce(WorldRenderer worldRenderer, ClientWorld world, Vec3d position, ModelBatch batch) {
         worldRenderer.renderEntities();
 
-        world.getAllEntities().stream().sorted((e1, e2) -> {
+        List<Entity> toSort = new ArrayList<>(world.getAllEntities());
+        toSort.sort((e1, e2) -> {
             var d1 = e1.getPosition().dst(position);
             var d2 = e2.getPosition().dst(position);
             return Double.compare(d1, d2);
-        }).forEachOrdered(entity -> {
+        });
+        System.out.println("toSort = " + toSort);
+        for (Entity entity : toSort) {
             UltracraftClient.PROFILER.section("(Entity #" + entity.getId() + ")", () -> {
-                UltracraftClient.LOGGER.debug("Rendering entity #" + entity.getId() + " at " + entity.getPosition());
                 batch.render((output, pool) -> worldRenderer.collectEntity(entity, output, pool));
             });
-        });
+        }
 
         batch.render(worldRenderer::collect, worldRenderer.getEnvironment());
 

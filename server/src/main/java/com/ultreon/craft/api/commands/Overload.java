@@ -73,7 +73,6 @@ public class Overload {
                 try {
                     local.add(t.getParser().parse(context));
                 } catch (CommandParseException e) {
-                    UltracraftServer.LOGGER.error("Failed to parse command: ", e);
                     if (e instanceof CommandParseException.EndOfCommand || e instanceof CommandParseException.NotAtStartOfArg) {
                         return false;
                     } else {

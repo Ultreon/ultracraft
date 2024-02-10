@@ -20,6 +20,26 @@ public class SummonCommand extends Command {
         this.data().aliases("summon", "spawn");
     }
 
+    @SubCommand("<entity-type>")
+    public @Nullable CommandOutput execute(CommandSender sender, CommandContext commandContext, String alias, EntityType<?> entityType) {
+        if (!(sender instanceof Entity senderEntity)) {
+            return needEntity();
+        }
+
+        Vec3d position = senderEntity.getPosition();
+        World world = senderEntity.getWorld();
+
+        Entity entity = entityType.create(world);
+        entity.setPosition(position);
+
+        Entity spawn = world.spawn(entity);
+        if (spawn == null) {
+            return errorMessage("Failed to spawn " + entity.getName() + " at " + position);
+        }
+
+        return successMessage("Spawned " + entity.getName() + " at " + position);
+    }
+
     @SubCommand("<entity-type> <position> <world>")
     public @Nullable CommandOutput execute(CommandSender sender, CommandContext commandContext, String alias, EntityType<?> entityType, Vec3d position, World world) {
         Entity entity = entityType.create(world);

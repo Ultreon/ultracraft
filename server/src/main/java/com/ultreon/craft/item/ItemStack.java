@@ -290,6 +290,7 @@ public class ItemStack {
      */
     @CanIgnoreReturnValue
     public boolean transferTo(ItemStack target) {
+        if (target.getItem() != this.item) return false;
         if (target.grow(1) == 1) return false;
 
         this.shrink(1);

@@ -16,8 +16,8 @@ import com.google.common.base.Suppliers;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.model.JsonModel;
-import com.ultreon.craft.client.model.JsonModelLoader;
+import com.ultreon.craft.client.api.model.JsonModel;
+import com.ultreon.craft.client.api.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.item.BlockItemModel;
@@ -144,7 +144,12 @@ public class ItemRenderer {
     }
 
     public ModelInstance createModelInstance(ItemStack stack) {
-        return new ModelInstance(models.get(stack.getItem()).getModel());
+        ItemModel itemModel = models.computeIfAbsent(stack.getItem(), item -> {
+            FlatItemModel flatItemModel = new FlatItemModel(item);
+            flatItemModel.load(this.client);
+            return flatItemModel;
+        });
+        return new ModelInstance(itemModel.getModel());
     }
 
     public void registerModel(Item item, ItemModel model) {

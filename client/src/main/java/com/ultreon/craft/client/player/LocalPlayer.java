@@ -30,7 +30,6 @@ import java.util.UUID;
 public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
-    public @Nullable ContainerMenu openMenu;
     private int oldSelected;
     private final ClientPermissionMap permissions = new ClientPermissionMap();
 

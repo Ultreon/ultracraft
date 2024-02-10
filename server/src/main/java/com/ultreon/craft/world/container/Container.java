@@ -4,6 +4,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -118,6 +119,7 @@ public abstract class Container implements ContainerView {
     @Override
     public void onItemChanged(int slot, ItemStack newStack) {
         for (var player : this.watching.keySet()) {
+            if (player.isSpectator()) continue;
             player.connection.send(new S2CMenuItemChanged(slot, newStack));
         }
     }

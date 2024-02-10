@@ -4,8 +4,10 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.init.Shaders;
+import com.ultreon.craft.client.model.EntityModelInstance;
+import com.ultreon.craft.client.model.WorldRenderContext;
 import com.ultreon.craft.client.render.EntityTextures;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -27,14 +29,24 @@ public abstract class EntityRenderer<E extends Entity> {
 
     }
 
-    public void render(ModelInstance instance, Array<Renderable> output, Pool<Renderable> renderablePool) {
-        instance.getRenderables(output, renderablePool);
+    public void render(EntityModelInstance<E> instance, WorldRenderContext<E> context) {
+        if (instance.getModel() == null)
+            throw new IllegalStateException("Cannot render entity " + instance.getEntity().getType().getId() + " without model");
+
+        if (instance.getModel().nodes.size == 0)
+            throw new IllegalStateException("Cannot render entity " + instance.getEntity().getType().getId() + " without nodes");
+
+        if (instance.getModel().materials.size == 0)
+            throw new IllegalStateException("Cannot render entity " + instance.getEntity().getType().getId() + " without materials");
+
+        instance.getModel().userData = Shaders.MODEL_VIEW;
+        instance.render(context);
     }
 
-    public abstract void animate(ModelInstance instance, E entity);
+    public abstract void animate(EntityModelInstance<E> instance, WorldRenderContext<E> context);
 
     @Nullable
-    public abstract ModelInstance createInstance(E entity);
+    public abstract ModelInstance createModel(E entity);
 
     public abstract EntityTextures getTextures();
 }

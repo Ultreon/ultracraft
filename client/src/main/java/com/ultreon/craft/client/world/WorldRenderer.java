@@ -24,6 +24,8 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.DisposableContainer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
+import com.ultreon.craft.client.model.EntityModelInstance;
+import com.ultreon.craft.client.model.WorldRenderContextImpl;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
@@ -390,7 +392,7 @@ public final class WorldRenderer implements DisposableContainer {
                 }
             }
 
-            chunk.renderModels(output);
+            chunk.renderModels(output, renderablePool);
 
             if (ImGuiOverlay.isChunkSectionBordersShown()) {
                 this.tmp.set(chunk.renderOffset);
@@ -414,8 +416,6 @@ public final class WorldRenderer implements DisposableContainer {
 
             this.doPoolStatistics();
         }
-
-        ClientChunk.flushPool();
     }
 
     private boolean shouldBuildChunks() {
@@ -424,30 +424,32 @@ public final class WorldRenderer implements DisposableContainer {
 
     public void collectEntity(Entity entity, Array<Renderable> output, Pool<Renderable> renderablePool) {
         try {
-            UltracraftClient.LOGGER.debug("Collecting entity " + entity.getId());
-            ModelInstance instance = this.modelInstances.get(entity.getId());
+            ModelInstance model = this.modelInstances.get(entity.getId());
+            LocalPlayer player = UltracraftClient.get().player;
+            if (player == null) return;
+            if (player.getPosition().dst(entity.getPosition()) > 64) return;
+
+            if (entity instanceof Player playerEntity && playerEntity.isSpectator()) return;
+
             //noinspection unchecked
             var renderer = (EntityRenderer<@NotNull Entity>) RendererRegistry.get(entity.getType());
-            if (instance == null) {
+            if (model == null) {
                 if (renderer == null) {
                     UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's renderer is null");
                     return;
                 }
-                instance = renderer.createInstance(entity);
-                if (instance == null) {
+                model = renderer.createModel(entity);
+                if (model == null) {
                     UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's model instance is still null");
                     return;
                 }
-                this.modelInstances.put(entity.getId(), instance);
+                this.modelInstances.put(entity.getId(), model);
             }
-            LocalPlayer player = this.client.player;
-            if (player == null) return;
-            Vec3f vec3f = entity.getPosition().sub(player.getPosition()).f();
-//            instance.transform.setToTranslationAndScaling(vec3f.x, vec3f.y, vec3f.z, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE);
-            renderer.animate(instance, entity);
 
-            UltracraftClient.LOGGER.debug("Rendering entity " + entity.getId() + " at " + vec3f);
-            renderer.render(instance, output, renderablePool);
+            EntityModelInstance<@NotNull Entity> instance = new EntityModelInstance<>(model, entity);
+            WorldRenderContextImpl<Entity> context = new WorldRenderContextImpl<>(output, renderablePool, entity, entity.getWorld(), WorldRenderer.SCALE, player.getPosition());
+            renderer.animate(instance, context);
+            renderer.render(instance, context);
         } catch (Exception e) {
             UltracraftClient.LOGGER.error("Failed to render entity " + entity.getId(), e);
             CrashLog crashLog = new CrashLog("Error rendering entity " + entity.getId(), new Exception());

@@ -5,11 +5,16 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.debug.ValueTracker;
+import com.ultreon.craft.entity.Entity;
 import org.checkerframework.common.reflection.qual.NewInstance;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.ultreon.craft.client.UltracraftClient.LOGGER;
 
@@ -25,18 +30,18 @@ public class CollectNode extends RenderPipeline.RenderNode {
             return input;
         }
         var position = localPlayer.getPosition();
-        world.getAllEntities().stream().sorted((e1, e2) -> {
+        List<Entity> toSort = new ArrayList<>(world.getAllEntities());
+        worldRenderer.collect(input, this.pool());
+        toSort.sort((e1, e2) -> {
             var d1 = e1.getPosition().dst(position);
             var d2 = e2.getPosition().dst(position);
             return Double.compare(d1, d2);
-        }).forEachOrdered(entity -> worldRenderer.collectEntity(entity, input, this.pool()));
+        });
+        for (Entity entity : toSort) {
+            worldRenderer.collectEntity(entity, input, this.pool());
+        }
 
-        worldRenderer.collect(input, this.pool());
         ValueTracker.setObtainedRenderables(this.pool().getObtained());
         return input;
-    }
-
-    @Override
-    public void flush() {
     }
 }

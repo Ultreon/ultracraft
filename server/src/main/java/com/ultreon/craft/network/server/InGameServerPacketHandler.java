@@ -1,5 +1,6 @@
 package com.ultreon.craft.network.server;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Attribute;
@@ -140,6 +141,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
             ContainerMenu openMenu = this.player.getOpenMenu();
             if (openMenu != null) {
                 openMenu.onTakeItem(this.player, index, rightClick);
+            } else {
+                UltracraftServer.LOGGER.warn("Player {} attempted to take item without a menu open.", this.player.getName());
             }
         });
     }

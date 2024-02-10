@@ -15,6 +15,9 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public class LivingEntity extends Entity {
+    public boolean walking;
+    public boolean inverseAnim;
+    public float walkAnim;
     protected float health;
     private float maxHeath = 20;
     protected boolean isDead = false;
@@ -228,5 +231,9 @@ public class LivingEntity extends Entity {
         this.isDead = true;
 
         this.onDeath();
+    }
+
+    public boolean isWalking() {
+        return this.walking;
     }
 }

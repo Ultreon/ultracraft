@@ -450,8 +450,15 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void handlePlayerMove(double x, double y, double z) {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-        if (!this.isChunkActive(this.getChunkPos())) return;
+        ChunkPos chunkPos = World.toChunkPos((int) x, (int) y, (int) z);
+        if (this.world.getChunk(chunkPos) == null) {
+            UltracraftServer.LOGGER.warn("Player moved into a null chunk: %s".formatted(this.getName()));
+            return;
+        }
+        if (!this.isChunkActive(chunkPos)) {
+            UltracraftServer.LOGGER.warn("Player moved into an inactive chunk: %s".formatted(this.getName()));
+            return;
+        }
 
 //        double dst = this.getPosition().dst(x, this.y, z);
 //        if (dst > this.getSpeed() * this.runModifier * TPS) {

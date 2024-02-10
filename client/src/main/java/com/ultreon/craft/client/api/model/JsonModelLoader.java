@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.model;
+package com.ultreon.craft.client.api.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -7,14 +7,12 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
@@ -22,7 +20,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.RegistryKey;
@@ -260,7 +257,11 @@ public class JsonModelLoader {
                 else if (texRef.startsWith("#")) texture = textureElements.get(texRef.substring(1));
                 else texture = ElementID.parse(texRef).mapPath(path -> "textures/" + path + ".png");
 
-                meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+                meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.ColorPacked(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+                v00.setCol(Color.WHITE);
+                v01.setCol(Color.WHITE);
+                v10.setCol(Color.WHITE);
+                v11.setCol(Color.WHITE);
 
                 v00.setNor(blockFace.getNormal());
                 v01.setNor(blockFace.getNormal());

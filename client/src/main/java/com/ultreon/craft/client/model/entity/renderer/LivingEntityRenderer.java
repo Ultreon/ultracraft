@@ -20,8 +20,31 @@ public abstract class LivingEntityRenderer<E extends LivingEntity> extends Entit
         this.model = model;
     }
 
+    public static void updateWalkAnim(LivingEntity player, float walkAnim, float delta, float duration) {
+        player.walking = true;
+        float old = walkAnim;
+        walkAnim -= player.inverseAnim ? delta : -delta;
+
+        if (walkAnim > duration) {
+            float overflow = duration - walkAnim;
+            walkAnim = duration - overflow;
+
+            player.inverseAnim = true;
+        } else if (walkAnim < -duration) {
+            float overflow = duration + walkAnim;
+            walkAnim = -duration - overflow;
+            player.inverseAnim = false;
+        }
+
+        if (!player.isWalking() && (old >= 0 && walkAnim < 0 || old <= 0 && walkAnim > 0)) {
+            player.walking = false;
+        }
+
+        player.walkAnim = walkAnim;
+    }
+
     @Override
-    public @Nullable ModelInstance createInstance(E entity) {
+    public @Nullable ModelInstance createModel(E entity) {
         return new ModelInstance(model);
     }
 

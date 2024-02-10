@@ -65,7 +65,7 @@ public abstract class World implements ServerDisposable {
     private int renderedChunks;
 
     protected final Int2ReferenceMap<Entity> entitiesById = new Int2ReferenceArrayMap<>();
-    protected final List<Entity> entities = new ArrayList<>();
+    protected final List<Entity> entities = new CopyOnWriteArrayList<>();
     private int curId;
     private int totalChunks;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")

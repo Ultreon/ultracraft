@@ -1,9 +1,6 @@
 package com.ultreon.craft.client.model.block;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -104,7 +101,8 @@ public final class BakedCubeModel implements BlockModel {
         BakedCubeModel model = this;
 
         MeshBuilder builder = new MeshBuilder();
-        builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+        builder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.ColorPacked(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
+        builder.setColor(Color.WHITE);
         
         this.createTop(-1, 0, 0, model.top(), builder);
         this.createBottom(-1, 0, 0, model.bottom(), builder);

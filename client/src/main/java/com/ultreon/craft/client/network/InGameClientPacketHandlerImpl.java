@@ -252,7 +252,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         var player = this.client.player;
 
         if (player != null) {
-            ContainerMenu openMenu = player.openMenu;
+            ContainerMenu openMenu = player.getOpenMenu();
             if (openMenu != null) {
                 openMenu.setItem(index, stack);
             }
@@ -398,6 +398,9 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     public void onAddEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline) {
         if (this.client.world != null) {
             this.client.world.addEntity(id, type, position, pipeline);
+            UltracraftClient.get().notifications.add("Added entity: " + id, "Element ID: " + type.getId());
+        } else {
+            UltracraftClient.get().notifications.add("Failed to add entity: " + id, "Element ID: " + type.getId());
         }
     }
 

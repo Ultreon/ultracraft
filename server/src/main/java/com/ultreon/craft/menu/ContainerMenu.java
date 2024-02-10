@@ -9,6 +9,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.ElementID;
@@ -161,11 +162,17 @@ public abstract class ContainerMenu {
             // Right click transfer
             if (player.getCursor().isEmpty()) {
                 // Split item from slot and put it in the cursor
-                ItemStack item = slot.getItem().split();
+                ItemStack item = slot.split();
                 player.setCursor(item);
             } else {
                 // Transfer one item from cursor to slot
-                player.getCursor().transferTo(slot.getItem());
+                if (!player.getCursor().transferTo(slot.getItem())) {
+                    ItemStack copy = player.getCursor().copy();
+                    copy.setCount(1);
+                    slot.setItem(copy);
+                    player.getCursor().shrink(1);
+                }
+                slot.update();
                 player.setCursor(player.getCursor());
             }
             return;
@@ -178,19 +185,19 @@ public abstract class ContainerMenu {
         if (!cursor.isEmpty() && cursor.sameItemSameData(slotItem)) {
             // Take item from cursor and put it in the slot, remaining items are left in the cursor.
             cursor.transferTo(slotItem, cursor.getCount());
+            slot.update();
             player.setCursor(player.getCursor());
             return;
         }
 
         if (cursor.isEmpty()) {
             // Take item from slot and put it in the cursor
-            player.setCursor(slot.takeItem());
+            ItemStack toSet = slot.takeItem();
+            player.setCursor(toSet);
         } else {
             // Swap items between cursor and slot
             slot.setItem(cursor);
-            cursor = slotItem;
-
-            player.setCursor(cursor);
+            player.setCursor(slotItem);
         }
     }
 
