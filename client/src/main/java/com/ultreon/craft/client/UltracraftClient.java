@@ -45,6 +45,7 @@ import com.ultreon.craft.client.events.WindowEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.debug.*;
+import com.ultreon.craft.client.gui.hud.GamepadHud;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
@@ -57,6 +58,12 @@ import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
+import com.ultreon.craft.client.input.gamepad.GamepadContext;
+import com.ultreon.craft.client.input.gamepad.GamepadInput;
+import com.ultreon.craft.client.input.gamepad.InputType;
+import com.ultreon.craft.client.input.gamepad.VirtualKeyboard;
+import com.ultreon.craft.client.input.keyboard.KeyboardLayout;
+import com.ultreon.craft.client.input.keyboard.KeyboardLayouts;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.*;
@@ -132,6 +139,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -183,6 +191,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public final InspectionRoot<UltracraftClient> inspection;
     public UcConfiguration<UltracraftClientConfig> config;
     public boolean hideHud = false;
+    @MonotonicNonNull
+    public GamepadInput gamepadInput;
+    public VirtualKeyboard virtualKeyboard;
+    public int useItemCooldown = 0;
 
     private Duration bootTime;
     private GarbageCollector garbageCollector;
@@ -234,6 +246,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private float guiScale = this.calcMaxGuiScale();
 
     public Hud hud;
+    public GamepadHud gamepadHud;
     public HitResult hitResult;
     private Vec3i breaking;
     @Nullable
@@ -312,6 +325,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private long screenshotFlashTime;
     private ClientSound screenshotSound;
     private final Color tmpColor = new Color();
+    private InputType inputType = InputType.KEYBOARD_AND_MOUSE;
+    private int inputCooldown;
+    private KeyboardLayout keyboardLayout;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -882,6 +898,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.booted = true;
 
         this.loadingOverlay.setProgress(1.0F);
+
+        this.gamepadInput = deferDispose(new GamepadInput(this));
+        this.gamepadHud = new GamepadHud();
+        this.keyboardLayout = KeyboardLayouts.QWERTY;
+        this.gamepadInput.setLayout(this.keyboardLayout);
+        this.virtualKeyboard = new VirtualKeyboard();
+
+        GamepadContext.freeze();
 
         this.bootTime = Duration.ofMilliseconds(System.currentTimeMillis() - UltracraftClient.BOOT_TIMESTAMP);
         UltracraftClient.LOGGER.info("Game booted in {}.", this.bootTime.toSimpleString());
@@ -1834,6 +1858,17 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (player != null) {
             this.camera.update(player);
         }
+
+        if (this.inputCooldown-- < 0) {
+            this.inputCooldown = 0;
+        }
+
+        if (this.gamepadInput != null) {
+            this.gamepadInput.update();
+
+            if (this.screen != null) this.gamepadInput.updateScreen(this.screen);
+            else this.gamepadInput.update();
+        }
     }
 
     private void handleBlockBreaking(BlockPos breaking, HitResult hitResult) {
@@ -1940,6 +1975,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 UltracraftClient.cleanUp(this.world);
                 UltracraftClient.cleanUp(this.worldRenderer);
                 UltracraftClient.cleanUp(this.profiler);
+                GamepadInput gamepadInput = this.gamepadInput;
+                if (gamepadInput != null) {
+                    gamepadInput.dispose();
+                }
 
                 ImGuiOverlay.dispose();
 
@@ -2329,6 +2368,24 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public GameWindow getWindow() {
         return window;
+    }
+
+    public void setInputType(InputType inputType) {
+        if (this.inputCooldown > 0) {
+            return;
+        }
+
+        this.inputType = inputType;
+        this.inputCooldown = 10;
+    }
+
+    public InputType getInputType() {
+        return this.inputType;
+    }
+
+    public void forceSetInputType(InputType inputType, int cooldown) {
+        this.inputType = inputType;
+        this.inputCooldown = cooldown;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

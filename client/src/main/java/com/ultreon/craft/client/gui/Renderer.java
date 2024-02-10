@@ -2058,7 +2058,6 @@ public class Renderer {
 
     public void begin() {
         if (this.batch.isDrawing()) {
-            UltracraftClient.LOGGER.warn("Batch still drawing", new Exception());
             this.batch.end();
         }
         this.batch.begin();
@@ -2066,7 +2065,6 @@ public class Renderer {
 
     public void end() {
         if (!this.batch.isDrawing()) {
-            UltracraftClient.LOGGER.warn("Batch not drawin!", new Exception());
             return;
         }
         this.batch.end();

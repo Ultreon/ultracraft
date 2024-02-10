@@ -1,6 +1,7 @@
 package com.ultreon.craft.util;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.libs.commons.v0.vector.*;
 
@@ -134,6 +135,10 @@ public final class MathHelper {
             vertices[i] = xTranslated * cosTheta - yTranslated * sinTheta + origin.x;
             vertices[i + 1] = xTranslated * sinTheta + yTranslated * cosTheta + origin.y;
         }
+    }
+
+    public static float angleToVector(Vector2 vec, Vector2 cur) {
+        return (float) Math.toDegrees(Math.atan2(vec.y - cur.y, vec.x - cur.x));
     }
 
     public enum FaceRotation {

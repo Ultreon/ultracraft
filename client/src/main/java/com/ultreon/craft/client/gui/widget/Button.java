@@ -21,7 +21,7 @@ public abstract class Button<T extends Button<T>> extends Widget {
 
     protected Button(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(width, height);
-
+        
         this.callback = this.register(id("callback"), new CallbackComponent<>(it -> {
 
         }));
@@ -29,7 +29,7 @@ public abstract class Button<T extends Button<T>> extends Widget {
 
     protected void renderButton(Renderer renderer, int mouseX, int mouseY, Texture texture, int x, int y) {
         int u;
-        if (this.enabled) u = this.isWithinBounds(mouseX, mouseY) ? 21 : 0;
+        if (this.enabled) u = this.isWithinBounds(mouseX, mouseY) || focused ? 21 : 0;
         else u = 42;
         int v = this.isPressed() ? 21 : 0;
 
@@ -45,6 +45,7 @@ public abstract class Button<T extends Button<T>> extends Widget {
                 .blit(texture, x + this.size.width - 7, y + this.size.height - 7, 7, 7, 14 + u, 14 + v, 7, 7);
     }
 
+    @Override
     @ApiStatus.OverrideOnly
     public boolean click() {
         if (!this.enabled) return false;

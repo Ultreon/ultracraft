@@ -12,9 +12,9 @@ import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
+import com.ultreon.craft.client.input.gamepad.InputType;
 import com.ultreon.craft.client.input.key.KeyBind;
 import com.ultreon.craft.client.input.key.KeyBinds;
-import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -60,6 +60,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean keyDown(int keyCode) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         super.keyDown(keyCode);
 
         Screen currentScreen = this.client.screen;
@@ -78,6 +83,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean keyUp(int keyCode) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         super.keyUp(keyCode);
 
         Screen currentScreen = this.client.screen;
@@ -93,6 +103,10 @@ public class DesktopInput extends GameInput {
 
         Player player = this.client.player;
         Screen currentScreen = this.client.screen;
+
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE) {
+            return;
+        }
 
         if (DesktopInput.IM_GUI_KEY.isJustPressed()) {
             this.handleImGuiKey();
@@ -160,6 +174,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean keyTyped(char character) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         Screen currentScreen = this.client.screen;
         if (currentScreen != null)
             return currentScreen.charType(character);
@@ -169,6 +188,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
@@ -186,6 +210,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
@@ -200,6 +229,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
@@ -257,6 +291,11 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
@@ -281,11 +320,21 @@ public class DesktopInput extends GameInput {
 
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         return false;
     }
 
     @Override
     public boolean scrolled(float amountX, float amountY) {
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            this.client.setInputType(InputType.KEYBOARD_AND_MOUSE);
+        if (this.client.getInputType() != InputType.KEYBOARD_AND_MOUSE)
+            return false;
+
         Screen currentScreen = this.client.screen;
 
         if (ImGuiOverlay.isShown()) return false;

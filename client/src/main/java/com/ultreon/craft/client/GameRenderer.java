@@ -250,6 +250,12 @@ public class GameRenderer {
             });
         }
 
+        if (this.client.gamepadInput.isVirtualKeyboardOpen()) {
+            this.client.virtualKeyboard.render(renderer, (int) (Gdx.input.getX() / this.client.getGuiScale()), (int) (Gdx.input.getY() / this.client.getGuiScale()), deltaTime);
+        }
+
+        this.client.gamepadHud.render(renderer, deltaTime);
+
         UltracraftClient.PROFILER.section("debug", () -> {
             if (this.client.hideHud) return;
             this.client.debugGui.render(renderer);

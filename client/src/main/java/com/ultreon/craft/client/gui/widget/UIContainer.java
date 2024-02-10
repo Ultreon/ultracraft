@@ -1,10 +1,14 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.client.gui.Bounds;
+import com.ultreon.craft.client.gui.NavDirection;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.layout.Layout;
 import com.ultreon.craft.client.gui.widget.layout.StandardLayout;
+import com.ultreon.craft.util.MathHelper;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +39,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     protected final List<Widget> widgets = new CopyOnWriteArrayList<>();
 
     private Layout layout = new StandardLayout();
-    protected Widget focused;
+    public Widget focused;
 
     public UIContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(width, height);
@@ -241,6 +245,11 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     public boolean keyPress(int keyCode) {
         var widget = this.focused;
 
+        if (widget != null && keyCode == Input.Keys.ENTER) {
+            widget.mousePress(widget.getX(), widget.getY(), 0);
+            widget.mouseRelease(widget.getX(), widget.getY(), 0);
+            widget.mouseClick(widget.getX(), widget.getY(), 0, 0);
+        }
         if (widget != null && widget.keyPress(keyCode)) return true;
 
         return super.keyPress(keyCode);
@@ -269,5 +278,93 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
             widget.root = root;
         }
         return widget;
+    }
+
+    protected void focusUp() {
+        if (children().isEmpty()) return;
+
+        if (focused == null) {
+            focused = this.widgets.getFirst();
+        }
+        int x = focused.getX() + focused.getWidth() / 2;
+        int y = focused.getY() + focused.getHeight() / 2;
+
+        findNextFocus(new Vector2(x, y), 270, NavDirection.UP);
+    }
+
+    protected void focusDown() {
+        if (children().isEmpty()) return;
+
+        if (focused == null) {
+            focused = this.widgets.getFirst();
+        }
+        int x = focused.getX() + focused.getWidth() / 2;
+        int y = focused.getY() + focused.getHeight() / 2;
+
+        findNextFocus(new Vector2(x, y), 90, NavDirection.DOWN);
+    }
+
+    protected void focusLeft() {
+        if (children().isEmpty()) return;
+
+        if (focused == null) {
+            focused = this.widgets.getFirst();
+        }
+        int x = focused.getX() + focused.getWidth() / 2;
+        int y = focused.getY() + focused.getHeight() / 2;
+
+        findNextFocus(new Vector2(x, y), 0, NavDirection.LEFT);
+    }
+
+    protected void focusRight() {
+        if (children().isEmpty()) return;
+
+        if (focused == null) {
+            focused = this.widgets.getFirst();
+        }
+        int x = focused.getX() + focused.getWidth() / 2;
+        int y = focused.getY() + focused.getHeight() / 2;
+
+        findNextFocus(new Vector2(x, y), 180, NavDirection.RIGHT);
+    }
+
+    private void findNextFocus(Vector2 vec, float angle, NavDirection direction) {
+        Vector2 cur = new Vector2();
+        Vector2 closestVec = new Vector2();
+        float closest = Float.MAX_VALUE;
+
+        Widget toFocus = null;
+        for (Widget child : children()) {
+            if (!child.focusable) continue;
+            if (child == focused) continue;
+            cur.set(child.getX() + child.getWidth() / 2f, child.getY() + child.getHeight() / 2f);
+            float v = (MathHelper.angleToVector(cur, vec) + 180) % 360;
+            if (switch (direction) {
+                case UP -> v > 45 && v <= 135;
+                case RIGHT -> v > 135 && v <= 225;
+                case DOWN -> v > 225 && v <= 315;
+                case LEFT -> v > 315 || v <= 45;
+            }) {
+                v += 360;
+                if (Math.abs(v - angle) < closest) {
+                    if (cur.dst(vec) < closestVec.dst(vec) * 1.5f) {
+                        closest = Math.abs(v - angle);
+                        closestVec.set(cur);
+                        toFocus = child;
+                    }
+                }
+            }
+        }
+
+        if (toFocus != null) {
+            changeFocus(toFocus);
+        }
+    }
+
+    protected void changeFocus(Widget toFocus) {
+        if (!toFocus.focusable) return;
+        if (focused != null) focused.onFocusLost();
+        focused = toFocus;
+        toFocus.onFocusGained();
     }
 }

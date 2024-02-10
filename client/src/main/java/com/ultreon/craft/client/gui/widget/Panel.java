@@ -18,6 +18,7 @@ public class Panel extends Widget {
         super(width, height);
 
         this.backgroundColor = this.register(id("background_color"), new ColorComponent(Color.BLACK.withAlpha(0x80)));
+        this.focusable = false;
     }
 
     public Panel() {

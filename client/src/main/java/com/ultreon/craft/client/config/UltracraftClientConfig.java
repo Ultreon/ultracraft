@@ -16,6 +16,7 @@ public class UltracraftClientConfig {
     public @UnknownNullability AccessibilityConfig accessibility = new AccessibilityConfig();
     public @UnknownNullability PrivacyConfig privacy = new PrivacyConfig();
     public @UnknownNullability VideoConfig video = new VideoConfig();
+    public float axisDeadZone = 0.05f;
 
     public static class PersonalisationConfig {
         public boolean diagonalFontShadow = false;
@@ -30,6 +31,7 @@ public class UltracraftClientConfig {
         public boolean hideFirstPersonPlayer = true;
         public boolean hideHotbarWhenThirdPerson = false;
         public boolean vibration = true;
+        public float sensitivity = 100f;
     }
 
     public static class PrivacyConfig {

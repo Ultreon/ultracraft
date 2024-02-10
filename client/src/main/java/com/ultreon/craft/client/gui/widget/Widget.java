@@ -33,6 +33,7 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
     public boolean enabled = true;
     public boolean hovered = false;
     public boolean focused = false;
+    public boolean focusable = true;
 
     @ApiStatus.Internal
     protected Screen root;
@@ -272,6 +273,12 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
 
     public final boolean isWithinBounds(int x, int y) {
         return this.getBounds().contains(x, y) || this.ignoreBounds;
+    }
+
+    @ApiStatus.OverrideOnly
+    public boolean click() {
+        this.parent.changeFocus(this);
+        return true;
     }
 
     @CanIgnoreReturnValue

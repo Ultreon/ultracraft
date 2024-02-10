@@ -5,13 +5,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
+import com.ultreon.craft.client.gui.NavDirection;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.widget.UIContainer;
 import com.ultreon.craft.client.gui.widget.Widget;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -21,7 +21,6 @@ public abstract class Screen extends UIContainer<Screen> {
     protected TextObject title;
     public Screen parentScreen;
     public Widget directHovered;
-    public @Nullable Widget focused;
 
     protected Screen(String title) {
         this(TextObject.literal(title));
@@ -214,6 +213,14 @@ public abstract class Screen extends UIContainer<Screen> {
 
     @Override
     public boolean keyPress(int keyCode) {
+        if (switch (keyCode) {
+            case Input.Keys.LEFT -> this.navigate(NavDirection.LEFT);
+            case Input.Keys.RIGHT -> this.navigate(NavDirection.RIGHT);
+            case Input.Keys.UP -> this.navigate(NavDirection.UP);
+            case Input.Keys.DOWN -> this.navigate(NavDirection.DOWN);
+            default -> false;
+        }) return true;
+
         if (this.focused != null) {
             if (this.focused.keyPress(keyCode)) return true;
         }
@@ -246,5 +253,28 @@ public abstract class Screen extends UIContainer<Screen> {
 
     protected final void close() {
         this.client.showScreen(null);
+    }
+
+    public final boolean navigate(NavDirection direction) {
+        if (children().isEmpty()) return false;
+        if (focused == null) {
+            focused = getFirstFocus();
+            if (focused == null) return false;
+        }
+
+        switch (direction) {
+            case UP -> this.focusUp();
+            case DOWN -> this.focusDown();
+            case LEFT -> this.focusLeft();
+            case RIGHT -> this.focusRight();
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Widget getFirstFocus() {
+        return this.children().stream().filter(widget -> widget.focusable).findFirst().orElse(null);
     }
 }

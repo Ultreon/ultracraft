@@ -41,6 +41,8 @@ public class Label extends Widget {
         this.textColor = this.register(id("text_color"), new ColorComponent(textColor));
         this.text = this.register(id("text"), new TextComponent(null));
         this.scale = this.register(id("scale"), new ScaleComponent(1));
+
+        this.focusable = false;
     }
 
     public static Label of(TextObject text) {

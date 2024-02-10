@@ -13,4 +13,12 @@ public class KeyBindRegistry {
         KeyBindRegistry.KEY_BINDS.add(keyBind);
         return keyBind;
     }
+
+    public static void unregister(KeyBind keyBind) {
+        KEY_BINDS.removeValue(keyBind, true);
+    }
+
+    public static KeyBind[] getKeyBinds() {
+        return KEY_BINDS.items;
+    }
 }

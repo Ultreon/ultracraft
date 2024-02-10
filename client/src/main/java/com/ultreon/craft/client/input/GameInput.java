@@ -277,12 +277,16 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     }
 
     public void useItem(Player player, World world, HitResult hitResult) {
+        if (client.useItemCooldown > 0 && player.isBuilder()) return;
+
         ItemStack stack = player.getSelectedItem();
         UseItemContext context = new UseItemContext(world, player, hitResult, stack);
         Item item = stack.getItem();
         ItemEvents.USE.factory().onUseItem(item, context);
         this.client.connection.send(new C2SItemUsePacket(hitResult));
         item.use(context);
+
+        client.useItemCooldown = 5;
     }
 
     public boolean isControllerConnected() {
@@ -321,5 +325,9 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     @Override
     public void dispose() {
         Controllers.removeListener(this);
+    }
+
+    public boolean attack() {
+        return false;
     }
 }
