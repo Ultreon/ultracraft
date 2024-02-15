@@ -37,8 +37,8 @@ public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<ElementID
     }
 
     @Override
-    public Set<ElementID> keys() {
-        return Set.copyOf(this.keyMap.keyList());
+    public List<ElementID> keys() {
+        return this.keyMap.keyList();
     }
 
     @Override

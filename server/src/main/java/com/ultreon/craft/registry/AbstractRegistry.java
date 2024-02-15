@@ -1,9 +1,6 @@
 package com.ultreon.craft.registry;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base registry.
@@ -22,9 +19,9 @@ public abstract class AbstractRegistry<K, V> {
 
     public abstract void register(K key, V val);
 
-    public abstract Collection<V> values();
+    public abstract List<V> values();
 
-    public abstract Set<K> keys();
+    public abstract List<K> keys();
 
     public abstract Set<Map.Entry<K, V>> entries() throws IllegalAccessException;
 }

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "kotlin_testmod",
+  "name": "Groovy Test Mod",
+  "description": "Test mod for Groovy",
+  "version": "1.0.0",
+
+  "entrypoints": {
+    "init": [
+      "com.ultreon.craft.kotlin.testmod.KotlinTestMod"
+    ]
+  }
+}

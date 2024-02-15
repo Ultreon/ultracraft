@@ -35,7 +35,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     private final int gap = 0;
 
     public SelectionList(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
-        super(x, y, width, height);
+        super(width, height);
 
     }
 
@@ -44,7 +44,7 @@ public class SelectionList<T> extends UIContainer<SelectionList<T>> {
     }
 
     public SelectionList() {
-        super(0, 0, 400, 500);
+        super(400, 500);
     }
 
     public SelectionList(int itemHeight) {

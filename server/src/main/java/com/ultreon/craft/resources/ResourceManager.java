@@ -1,5 +1,6 @@
 package com.ultreon.craft.resources;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.resources.android.DeferredResourcePackage;
 import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.Logger;
@@ -13,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -21,14 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ResourceManager {
-    private final Map<ElementID, byte[]> assets = new ConcurrentHashMap<>();
     protected final List<com.ultreon.craft.resources.ResourcePackage> resourcePackages = new ArrayList<>();
     public static Logger logger = (level, msg, t) -> {};
     private final String root;
@@ -64,22 +64,23 @@ public class ResourceManager {
         this.resourcePackages.add(new DeferredResourcePackage(ref, this.root));
     }
 
-    public void importPackage(URL url) throws IOException {
+    public void importPackage(URI uri) throws IOException {
+        URL url = uri.toURL();
         if (url.getProtocol().equals("file")) {
-            try {
-                this.importPackage(new File(url.toURI()));
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
+            this.importPackage(new File(uri));
         } else if (url.getProtocol().equals("jar")) {
-            this.importFilePackage(new ZipInputStream(new URL(url.getPath().split("!/", 2)[0]).openStream()));
+            try {
+                this.importFilePackage(new ZipInputStream(new URI(uri.toURL().getPath().split("!/", 2)[0]).toURL().openStream()), uri.toASCIIString());
+            } catch (URISyntaxException e) {
+                throw new IOException("Invalid URI: " + uri, e);
+            }
         } else {
-            this.importFilePackage(new ZipInputStream(url.openStream()));
+            this.importFilePackage(new ZipInputStream(uri.toURL().openStream()), uri.toASCIIString());
         }
     }
 
     public void importPackage(Path path) throws IOException {
-        this.importPackage(path.toUri().toURL());
+        this.importPackage(path.toUri());
     }
 
     public void importPackage(File file) throws IOException {
@@ -89,7 +90,7 @@ public class ResourceManager {
 
         if (file.isFile()) {
             if (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")) {
-                this.importFilePackage(new ZipInputStream(Files.newInputStream(file.toPath())));
+                this.importFilePackage(new ZipInputStream(Files.newInputStream(file.toPath())), file.getAbsolutePath());
             } else {
                 logger.warn("Resource package isn't a .jar or .zip file: " + file.getPath());
             }
@@ -110,38 +111,37 @@ public class ResourceManager {
             // Get assets directory.
             File assets = new File(file, this.root + "/");
 
-            // Check if assets directory exists.
+            // Check if the assets directory exists.
             if (assets.exists()) {
                 // List files in assets dir.
                 File[] files = assets.listFiles();
 
                 // Loop listed files.
-                for (File assetsPackage : files != null ? files : new File[0]) {
+                for (File resPackage : files != null ? files : new File[0]) {
                     // Get assets-package namespace from the name create the listed file (that's a dir).
-                    String namespace = assetsPackage.getName();
+                    String namespace = resPackage.getName();
 
                     // Walk assets package.
-                    try (Stream<Path> walk = Files.walk(assetsPackage.toPath())) {
+                    try (Stream<Path> walk = Files.walk(resPackage.toPath())) {
                         for (Path assetPath : walk.collect(Collectors.toList())) {
-                            // Convert to file object.
+                            // Convert to a file object.
                             File asset = assetPath.toFile();
 
-                            // Check if it's a file, if not we will walk to the next file / folder in the Files.walk(...) list.
+                            // Check if it's a file, if not,
+                            // we will walk to the next file / folder in the Files.walk(...)
+                            // list.
                             if (!asset.isFile()) {
                                 continue;
                             }
 
-                            // Create resource with file input stream.
-                            ThrowingSupplier<InputStream, IOException> sup = () -> Files.newInputStream(asset.toPath());
-                            StaticResource resource = new StaticResource(sup);
-
-                            // Continue to next file / folder if asset path is the same path as the assets package.
-                            if (assetPath.toFile().equals(assetsPackage)) {
+                            // Continue to the next file / folder
+                            // if the asset path is the same path as the resource package.
+                            if (assetPath.toFile().equals(resPackage)) {
                                 continue;
                             }
 
                             // Calculate resource path.
-                            Path relative = assetsPackage.toPath().relativize(assetPath);
+                            Path relative = resPackage.toPath().relativize(assetPath);
                             String s = relative.toString().replaceAll("\\\\", "/");
 
                             // Create resource entry/
@@ -153,6 +153,10 @@ public class ResourceManager {
                                 continue;
                             }
 
+                            // Create resource with file input stream.
+                            ThrowingSupplier<InputStream, IOException> sup = () -> Files.newInputStream(asset.toPath());
+                            StaticResource resource = new StaticResource(entry, sup);
+
                             // Add resource mapping for (entry -> resource).
                             map.put(entry, resource);
                         }
@@ -162,11 +166,11 @@ public class ResourceManager {
                 this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to load resource package: " + file.getAbsolutePath(), e);
         }
     }
 
-    private void importFilePackage(ZipInputStream file) throws IOException {
+    private void importFilePackage(ZipInputStream stream, String filePath) throws IOException {
         // Check for .jar files.
         // Prepare (entry -> resource) mappings.
         Map<ElementID, StaticResource> map = new HashMap<>();
@@ -175,25 +179,25 @@ public class ResourceManager {
         try {
             // Loop jar entries.
             ZipEntry entry;
-            while ((entry = file.getNextEntry()) != null) {
-                // Get name create the jar entry.
+            while ((entry = stream.getNextEntry()) != null) {
+                // Get name to create the jar entry.
                 String name = entry.getName();
-                byte[] bytes = IOUtils.readAllBytes(file);
+                byte[] bytes = IOUtils.readAllBytes(stream);
                 ThrowingSupplier<InputStream, IOException> sup = () -> new ByteArrayInputStream(bytes);
 
                 // Check if it isn't a directory, because we want a file.
                 if (!entry.isDirectory()) {
                     this.addEntry(map, name, sup);
                 }
-                file.closeEntry();
+                stream.closeEntry();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to load resource package: " + filePath, e);
         }
 
         this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
 
-        file.close();
+        stream.close();
     }
 
     private void addEntry(Map<ElementID, StaticResource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
@@ -201,16 +205,17 @@ public class ResourceManager {
 
         if (splitPath.length >= 3) {
             if (name.startsWith(this.root + "/")) {
-                // Get namespace and path from split path
+                // Get namespace and path from the split path
                 String namespace = splitPath[1];
                 String path = splitPath[2];
 
+                // Entry
+                ElementID entry = new ElementID(namespace, path);
+
                 // Resource
-                StaticResource resource = new StaticResource(sup);
+                StaticResource resource = new StaticResource(entry, sup);
 
                 try {
-                    // Entry
-                    ElementID entry = new ElementID(namespace, path);
 
                     // Add (entry -> resource) mapping.
                     map.put(entry, resource);

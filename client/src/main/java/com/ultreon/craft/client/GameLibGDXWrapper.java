@@ -6,13 +6,16 @@ import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
+import kotlin.OptIn;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Internal
+@OptIn(markerClass = InternalApi.class)
 public class GameLibGDXWrapper implements ApplicationListener {
     private final String[] argv;
     @Nullable
     private UltracraftClient client;
-    private Thread.UncaughtExceptionHandler exceptionHandler;
 
     public GameLibGDXWrapper(String[] argv) {
         this.argv = argv;
@@ -37,9 +40,7 @@ public class GameLibGDXWrapper implements ApplicationListener {
             Gdx.app.setLogLevel(Application.LOG_DEBUG);
             this.client = new UltracraftClient(this.argv);
 
-            this.exceptionHandler = Thread.currentThread().getUncaughtExceptionHandler();
             Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
-
             Thread.currentThread().setUncaughtExceptionHandler(this::uncaughtException);
         } catch (ApplicationCrash t) {
             UltracraftClient.crash(t);

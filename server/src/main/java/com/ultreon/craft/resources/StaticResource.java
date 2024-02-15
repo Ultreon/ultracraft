@@ -1,5 +1,6 @@
 package com.ultreon.craft.resources;
 
+import com.ultreon.craft.util.ElementID;
 import com.ultreon.libs.commons.v0.util.IOUtils;
 import com.ultreon.libs.functions.v0.misc.ThrowingSupplier;
 
@@ -8,10 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class StaticResource implements Resource {
+    private final ElementID id;
     protected ThrowingSupplier<InputStream, IOException> opener;
     private byte[] data;
 
-    public StaticResource(ThrowingSupplier<InputStream, IOException> opener) {
+    public StaticResource(ElementID id, ThrowingSupplier<InputStream, IOException> opener) {
+        this.id = id;
         this.opener = opener;
     }
 
@@ -30,7 +33,8 @@ public class StaticResource implements Resource {
     }
 
     public InputStream loadOrOpenStream() {
-        return new ByteArrayInputStream(this.loadOrGet());
+        byte[] buf = this.loadOrGet();
+        return buf == null ? null : new ByteArrayInputStream(buf);
     }
 
     @Override
@@ -40,6 +44,11 @@ public class StaticResource implements Resource {
 
     @Deprecated
     public ByteArrayInputStream openStream() {
-        return new ByteArrayInputStream(this.loadOrGet());
+        byte[] buf = this.loadOrGet();
+        return buf == null ? null : new ByteArrayInputStream(buf);
+    }
+
+    public ElementID id() {
+        return this.id;
     }
 }

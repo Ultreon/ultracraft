@@ -4,7 +4,8 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.events.ClientPlayerEvents;
+import com.ultreon.craft.client.api.events.ClientChunkEvents;
+import com.ultreon.craft.client.api.events.ClientPlayerEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
@@ -129,7 +130,9 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 return;
             }
 
-            world.loadChunk(pos, new ClientChunk(world, pos, storage, biomeStorage, blockEntities));
+            ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
+            ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
+            world.loadChunk(pos, data);
         }, this.client.chunkLoadingExecutor);
     }
 

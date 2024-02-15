@@ -40,7 +40,7 @@ public final class UcConfiguration<T> {
 
         yaml = builder.build();
 
-        ConfigEvents.LOAD.listen(loadingEnv -> this.load(name, configEnv, object, loadingEnv));
+        ConfigEvents.LOAD.subscribe(loadingEnv -> this.load(name, configEnv, object, loadingEnv));
     }
 
     @NotNull

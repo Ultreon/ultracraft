@@ -3,6 +3,7 @@ package com.ultreon.craft.util;
 import com.ultreon.craft.text.ChatColor;
 import com.ultreon.libs.commons.v0.exceptions.InvalidValueException;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
@@ -37,7 +38,7 @@ public class Color {
         this.awtColor = new java.awt.Color(red, green, blue, alpha);
     }
 
-    private Color(java.awt.Color color) {
+    private Color(@NotNull java.awt.Color color) {
         this.awtColor = color;
     }
 
@@ -45,57 +46,57 @@ public class Color {
         this.awtColor = new java.awt.Color(red, green, blue, alpha);
     }
 
-    public static Color hsb(float h, float s, float b) {
+    public static @NotNull Color hsb(float h, float s, float b) {
         return new Color(java.awt.Color.getHSBColor(h, s, b));
     }
 
-    public static Color rgb(int red, int green, int blue) {
+    public static @NotNull Color rgb(int red, int green, int blue) {
         return new Color(red, green, blue, 255);
     }
 
-    public static Color rgb(float red, float green, float blue) {
+    public static @NotNull Color rgb(float red, float green, float blue) {
         return new Color((int) (red * 255), (int) (green * 255), (int) (blue * 255), 255);
     }
 
-    public static Color rgba(int red, int green, int blue, int alpha) {
+    public static @NotNull Color rgba(int red, int green, int blue, int alpha) {
         return new Color(red, green, blue, alpha);
     }
 
-    public static Color rgba(float red, float green, float blue, float alpha) {
+    public static @NotNull Color rgba(float red, float green, float blue, float alpha) {
         return new Color((int) (red * 255), (int) (green * 255), (int) (blue * 255), (int) (alpha * 255));
     }
 
-    public static Color rgb(int color) {
+    public static @NotNull Color rgb(int color) {
         long rgb = ((long) color) % 0x100000000L;
         return new Color((rgb & 0xff0000L) >> 16, (rgb & 0x00ff00L) >> 8, rgb & 0x0000ffL, 255);
     }
 
-    public static Color rgba(int color) {
+    public static @NotNull Color rgba(int color) {
         long rgba = ((long) color) % 0x100000000L;
         return new Color((rgba & 0xff000000L) >> 24, (rgba & 0x00ff0000L) >> 16, (rgba & 0x0000ff00L) >> 8, rgba & 0x000000ffL);
     }
 
-    public static Color argb(int color) {
+    public static @NotNull Color argb(int color) {
         long argb = ((long) color) % 0x100000000L;
         return new Color((argb & 0x00ff0000L) >> 16, (argb & 0x0000ff00L) >> 8, argb & 0x000000ffL, (argb & 0xff000000L) >> 24);
     }
 
-    public static Color bgr(int color) {
+    public static @NotNull Color bgr(int color) {
         long bgr = ((long) color) % 0x100000000L;
         return new Color(bgr & 0x0000ffL, (bgr & 0x00ff00L) >> 8, (bgr & 0xff0000L) >> 16, 255);
     }
 
-    public static Color bgra(int color) {
+    public static @NotNull Color bgra(int color) {
         long bgra = ((long) color) % 0x100000000L;
         return new Color((bgra & 0x0000ff00L) >> 8, (bgra & 0x00ff0000L) >> 16, (bgra & 0xff000000L) >> 24, bgra & 0x000000ffL);
     }
 
-    public static Color abgr(int color) {
+    public static @NotNull Color abgr(int color) {
         long abgr = ((long) color) % 0x100000000L;
         return new Color(abgr & 0x000000ffL, (abgr & 0x0000ff00L) >> 8, (abgr & 0x00ff0000L) >> 16, (abgr & 0xff000000L) >> 24);
     }
 
-    public static Color hex(String hex) {
+    public static @NotNull Color hex(String hex) {
         if (Pattern.matches("#[0-9a-fA-F]{6}", hex)) {
             int rgb = Integer.valueOf(hex.substring(1), 16);
             return Color.rgb(rgb);
@@ -131,27 +132,27 @@ public class Color {
     }
 
     @ApiStatus.Internal
-    public static Color awt(java.awt.Color awt) {
+    public static @NotNull Color awt(java.awt.Color awt) {
         return new Color(awt);
     }
 
-    public static Color gdx(com.badlogic.gdx.graphics.Color color) {
+    public static @NotNull Color gdx(com.badlogic.gdx.graphics.Color color) {
         return new Color((int) (color.r * 255), (int) (color.g * 255), (int) (color.b * 255), (int) (color.a * 255));
     }
 
-    public static Color of(ChatColor chatColor) {
+    public static @NotNull Color of(ChatColor chatColor) {
         return Color.rgb(chatColor.getColor());
     }
 
-    public java.awt.Color toAwt() {
+    public @NotNull java.awt.Color toAwt() {
         return this.awtColor;
     }
 
-    public Color brighter() {
+    public @NotNull Color brighter() {
         return new Color(this.awtColor.brighter());
     }
 
-    public Color darker() {
+    public @NotNull Color darker() {
         return new Color(this.awtColor.darker());
     }
 
@@ -179,19 +180,19 @@ public class Color {
         return this.awtColor.getRGB();
     }
 
-    public Color withRed(int red) {
+    public @NotNull Color withRed(int red) {
         return new Color(red, this.getGreen(), this.getBlue(), this.getAlpha());
     }
 
-    public Color withGreen(int green) {
+    public @NotNull Color withGreen(int green) {
         return new Color(this.getRed(), green, this.getBlue(), this.getAlpha());
     }
 
-    public Color withBlue(int blue) {
+    public @NotNull Color withBlue(int blue) {
         return new Color(this.getRed(), this.getGreen(), blue, this.getAlpha());
     }
 
-    public Color withAlpha(int alpha) {
+    public @NotNull Color withAlpha(int alpha) {
         return new Color(this.getRed(), this.getGreen(), this.getBlue(), alpha);
     }
 

@@ -23,7 +23,6 @@ buildscript {
 }
 
 plugins {
-    id "groovy"
     id "eclipse"
     id "java"
     id "java-library"

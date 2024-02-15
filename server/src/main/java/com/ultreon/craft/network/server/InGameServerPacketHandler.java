@@ -3,6 +3,7 @@ package com.ultreon.craft.network.server;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.Attribute;
+import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
@@ -161,10 +162,16 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
             }
 
             Block original = world.get(pos);
-            world.set(pos, Blocks.AIR);
             ItemStack stack = this.player.getSelectedItem();
             Block block = world.get(pos);
+
+            if (BlockEvents.ATTEMPT_BLOCK_REMOVAL.factory().onAttemptBlockRemoval(this.player, original, pos, stack).isCanceled()) {
+                return;
+            }
+
             world.set(pos, Blocks.AIR);
+
+            BlockEvents.BLOCK_REMOVED.factory().onBlockRemoved(this.player, original, pos, stack);
 
             if (block.isToolRequired() && (!(stack.getItem() instanceof ToolItem toolItem) || toolItem.getToolType() != block.getEffectiveTool())) {
                 return;

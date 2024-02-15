@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.xypercode'
+version = 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    api project(':client')
+    api project(':server')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).each {
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs.add('--enable-preview')
+}

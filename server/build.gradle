@@ -23,17 +23,16 @@ buildscript {
     dependencies {
         classpath group: 'commons-io', name: 'commons-io', version: '2.13.0'
         classpath "com.google.code.gson:gson:2.10.1"
+        classpath "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.9.22"
     }
 }
 
-plugins {
-    id 'java'
-    id 'java-library'
-    id 'maven-publish'
-}
-
 apply plugin: 'java'
+apply plugin: 'scala'
+apply plugin: 'groovy'
+apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 java {
     withSourcesJar()
@@ -51,12 +50,18 @@ dependencies {
 
     annotationProcessor "com.google.errorprone:error_prone_annotations:2.18.0"
 
+    // Language adapters
+    api 'org.apache.groovy:groovy:4.0.14'
+    api "org.scala-lang:scala-library:$scala_version"
+    api 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+
     // CoreLibs
     implementation api("io.github.ultreon.corelibs:collections-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:commons-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:datetime-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:functions-v0:$corelibs_version")
     implementation api("com.github.Ultreon:ultreon-data:$ultreon_data_version")
+    implementation api("io.projectreactor:reactor-core:$reactor_version")
 
     // Apache Log4J
     runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")

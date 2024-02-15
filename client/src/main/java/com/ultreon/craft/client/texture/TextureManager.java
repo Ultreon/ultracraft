@@ -24,13 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TextureManager {
-
     private final Map<ElementID, Texture> textures = new HashMap<>();
 
     private final ResourceManager resourceManager;
 
     @Deprecated
-    public static final StaticResource DEFAULT_TEX_RESOURCE = new StaticResource(TextureManager::createDefaultTex);
+    public static final StaticResource DEFAULT_TEX_RESOURCE = new StaticResource(new ElementID("missing_no"), TextureManager::createDefaultTex);
 
     public static final Texture DEFAULT_TEX = new Texture(TextureManager.createMissingNo());
     public static final TextureRegion DEFAULT_TEX_REG = new TextureRegion(TextureManager.DEFAULT_TEX, 0.0F, 0.0F, 1.0F, 1.0F);

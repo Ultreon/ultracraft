@@ -5,6 +5,8 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.MenuEvents;
+import com.ultreon.craft.events.api.EventResult;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
@@ -156,6 +158,10 @@ public abstract class ContainerMenu {
     @ApiStatus.OverrideOnly
     public void onTakeItem(ServerPlayer player, int index, boolean rightClick) {
         ItemSlot slot = this.slots[index];
+
+        EventResult result = MenuEvents.MENU_CLICK.factory().onMenuClick(this, player, slot, rightClick);
+        if (result.isCanceled())
+            return;
 
         if (rightClick) {
             // Right click transfer

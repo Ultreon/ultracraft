@@ -10,15 +10,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.GLVersion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Disposable;
@@ -33,15 +28,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ultreon.craft.*;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.client.api.events.*;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.audio.ClientSound;
 import com.ultreon.craft.client.config.GameSettings;
 import com.ultreon.craft.client.config.UltracraftClientConfig;
-import com.ultreon.craft.client.events.ClientLifecycleEvents;
-import com.ultreon.craft.client.events.ScreenEvents;
-import com.ultreon.craft.client.events.WindowEvents;
+import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.debug.*;
@@ -60,17 +53,11 @@ import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.*;
-import com.ultreon.craft.client.model.entity.EntityModel;
-import com.ultreon.craft.client.model.entity.renderer.DroppedItemRenderer;
-import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
-import com.ultreon.craft.client.model.entity.renderer.PlayerRenderer;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
-import com.ultreon.craft.client.player.ClientPlayer;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.*;
-import com.ultreon.craft.client.render.RenderType;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
 import com.ultreon.craft.client.render.pipeline.MainRenderNode;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
@@ -95,12 +82,9 @@ import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.Debugger;
-import com.ultreon.craft.debug.inspect.DefaultInspections;
 import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.debug.profiler.Profiler;
-import com.ultreon.craft.entity.EntityType;
-import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.ConfigEvents;
 import com.ultreon.craft.item.BlockItem;
@@ -114,6 +98,7 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.Registry;
+import com.ultreon.craft.registry.RegistryKey;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.UltracraftServer;
@@ -140,7 +125,6 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MarkerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 import java.io.IOException;
@@ -310,7 +294,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static Callback<CrashLog> crashHook;
     private final List<CrashLog> crashes = new CopyOnWriteArrayList<>();
     private long screenshotFlashTime;
-    private ClientSound screenshotSound;
     private final Color tmpColor = new Color();
 
     UltracraftClient(String[] argv) {
@@ -355,9 +338,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         ResourceLoader.init(this);
 
         this.config = new UcConfiguration<>("ultracraft-client", EnvType.CLIENT, new UltracraftClientConfig());
-        this.config.event.listen(this::onReloadConfig);
+        this.config.event.subscribe(this::onReloadConfig);
 
-        this.registerAutoFillers();
+        DebugRegistration.registerAutoFillers();
 
         this.argv = argv;
 
@@ -444,8 +427,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @RestrictedApi(
             explanation = "Only use this if you know what you are doing",
             link = "https://github.com/Ultreon/ultracraft/wiki/Crash-Hooks#important",
-            allowlistAnnotations = OptIn.class
+            allowlistAnnotations = AgreeUnsafe.class
     )
+    @UnsafeApi
     public static void setCrashHook(Callback<CrashLog> crashHook) {
         UltracraftClient.crashHook = crashHook;
     }
@@ -529,72 +513,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         Gdx.graphics.setForegroundFPS(limit);
     }
 
-    private void registerAutoFillers() {
-        InspectionRoot.registerAutoFill(ClientChunk.class, node -> {
-            node.createNode("mesh", value -> value.solidMesh);
-            node.createNode("transparentMesh", value -> value.transparentMesh);
-            node.createNode("dirty", value -> value.dirty);
-            node.createNode("renderOffset", value -> value.renderOffset);
-        });
-
-        InspectionRoot.registerAutoFill(ClientWorld.class, node -> node.create("renderDistance", ClientWorld::getRenderDistance));
-        InspectionRoot.registerAutoFill(Graphics.DisplayMode.class, node -> {
-            node.create("width", n -> n.width);
-            node.create("height", n -> n.height);
-            node.create("hertz", n -> n.refreshRate);
-            node.create("bitsPerPixel", n -> n.bitsPerPixel);
-        });
-
-        InspectionRoot.registerAutoFill(Graphics.Monitor.class, node -> {
-            node.create("name", n -> n.name);
-            node.create("x", n -> n.virtualX);
-            node.create("y", n -> n.virtualY);
-        });
-
-        InspectionRoot.registerAutoFill(Graphics.BufferFormat.class, node -> {
-            node.create("red", n -> n.r);
-            node.create("green", n -> n.g);
-            node.create("blue", n -> n.b);
-            node.create("alpha", n -> n.a);
-            node.create("depth", n -> n.depth);
-            node.create("stencil", n -> n.stencil);
-            node.create("samples", n -> n.samples);
-            node.create("coverageSamples", n -> n.coverageSampling);
-        });
-
-        InspectionRoot.registerFormatter(boolean.class, element -> Boolean.toString(element));
-        InspectionRoot.registerFormatter(void.class, element -> "void");
-        InspectionRoot.registerFormatter(byte.class, element -> Byte.toString(element));
-        InspectionRoot.registerFormatter(short.class, element -> Short.toString(element));
-        InspectionRoot.registerFormatter(int.class, element -> Integer.toString(element));
-        InspectionRoot.registerFormatter(long.class, element -> Long.toString(element));
-        InspectionRoot.registerFormatter(float.class, element -> Float.toString(element));
-        InspectionRoot.registerFormatter(double.class, element -> Double.toString(element));
-        InspectionRoot.registerFormatter(char.class, element -> Character.toString(element));
-        InspectionRoot.registerFormatter(String.class, element -> "\"" + element + "\"");
-        InspectionRoot.registerFormatter(IntegratedServer.class, element -> "integratedServer");
-        InspectionRoot.registerFormatter(ClientWorld.class, element -> "clientWorld");
-        InspectionRoot.registerFormatter(ClientPlayer.class, element -> "clientPlayer[" + element.getUuid() + "]");
-        InspectionRoot.registerFormatter(ClientChunk.class, element -> "clientChunk[" + element.getPos() + "]");
-        InspectionRoot.registerFormatter(ChunkMesh.class, element -> "chunkMesh[" + element.meshPart.mesh.getVertexSize() + "]");
-        InspectionRoot.registerFormatter(Mesh.class, element -> "mesh[" + element.getVertexSize() + "]");
-        InspectionRoot.registerFormatter(MeshPart.class, element -> "meshPart[" + element.mesh.getVertexSize() + "]");
-        InspectionRoot.registerFormatter(TextureRegion.class, element -> "textureRegion[" + element.getRegionWidth() + "x" + element.getRegionHeight() + "]");
-        InspectionRoot.registerFormatter(Texture.class, element -> "texture[" + element.getWidth() + "x" + element.getHeight() + "]");
-        InspectionRoot.registerFormatter(Vector2.class, element -> "vector2(" + element.x + ", " + element.y + ")");
-        InspectionRoot.registerFormatter(Vector3.class, element -> "vector3(" + element.x + ", " + element.y + ", " + element.z + ")");
-        InspectionRoot.registerFormatter(Quaternion.class, element -> "quaternion(" + element.x + ", " + element.y + ", " + element.z + ", " + element.w + ")");
-        InspectionRoot.registerFormatter(Color.class, element -> "rgba(" + element.r + ", " + element.g + ", " + element.b + ", " + element.a + ")");
-        InspectionRoot.registerFormatter(Circle.class, element -> "circle(" + element.x + ", " + element.y + ", rad=" + element.radius + ")");
-        InspectionRoot.registerFormatter(Rectangle.class, element -> "rectangle(" + element.x + ", " + element.y + " + " + element.width + "x" + element.height + ")");
-        InspectionRoot.registerFormatter(Ellipse.class, element -> "ellipse(" + element.x + ", " + element.y + " + " + element.width + "x" + element.height + ")");
-        InspectionRoot.registerFormatter(GridPoint2.class, element -> "gridPoint2(" + element.x + ", " + element.y + ")");
-        InspectionRoot.registerFormatter(GridPoint3.class, element -> "gridPoint3(" + element.x + ", " + element.y + ", " + element.z + ")");
-        InspectionRoot.registerFormatter(GLVersion.class, glVersion -> glVersion.getType() + " " + glVersion.getMajorVersion() + "." + glVersion.getMinorVersion() + "." + glVersion.getReleaseVersion());
-
-        DefaultInspections.register();
-    }
-
     /**
      * Gets a file handle in the game directory.
      *
@@ -647,6 +565,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @param argv the arguments to pass to the game
      */
     @SuppressWarnings("unused")
+    @kotlin.OptIn(markerClass = InternalApi.class)
     private static void launch(String[] argv) {
         UltracraftClient.logDebug();
 
@@ -809,7 +728,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 ShaderPrograms.nopInit();
             });
 
-            this.registerDebugPages();
+            UltracraftClient.registerDebugPages();
 
             Biomes.nopInit();
         });
@@ -831,7 +750,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         UltracraftClient.LOGGER.info("Registering models");
         this.registerMenuScreens();
-        this.registerRendering();
+        RenderingRegistration.registerRendering(this, this.modelLoader);
 
         this.loadingOverlay.setProgress(0.95F);
 
@@ -868,7 +787,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.loadingOverlay.setProgress(0.99F);
 
-        ClientLifecycleEvents.GAME_LOADED.factory().onGameLoaded(this);
+        ClientLifecycleEvents.CLIENT_STARTED.factory().onGameLoaded(this);
 
         this.loading = false;
 
@@ -889,7 +808,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         UltracraftClient.invokeAndWait(new Task<>(UltracraftClient.id("main/show_title_screen"), () -> {
             if (this.devWorld) {
                 this.startDevWorld();
-                return;
             }
         }));
         this.loadingOverlay = null;
@@ -901,7 +819,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.resize(this.width, this.height);
     }
 
-    private void registerDebugPages() {
+    private static void registerDebugPages() {
         ClientRegistries.DEBUG_PAGE.register(UltracraftClient.id("simple"), new SimpleDebugPage());
         ClientRegistries.DEBUG_PAGE.register(UltracraftClient.id("generic"), new GenericDebugPage());
         ClientRegistries.DEBUG_PAGE.register(UltracraftClient.id("profiler"), new ProfilerDebugPage());
@@ -1156,106 +1074,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.blocksTextureAtlas = deferDispose(BlockModelRegistry.stitch(this.textureManager));
 
         TextureStitcher itemTextures = new TextureStitcher(UltracraftClient.id("item"));
-        for (Map.Entry<ElementID, Item> e : Registries.ITEM.entries()) {
+        for (Map.Entry<RegistryKey<Item>, Item> e : Registries.ITEM.entries()) {
             if (e.getValue() == Items.AIR || e.getValue() instanceof BlockItem) continue;
 
-            ElementID texId = e.getKey().mapPath(path -> "textures/items/" + path + ".png");
+            ElementID texId = e.getKey().element().mapPath(path -> "textures/items/" + path + ".png");
             Texture tex = this.textureManager.getTexture(texId);
             itemTextures.add(texId, tex);
         }
         this.itemTextureAtlas = itemTextures.stitch();
-    }
-
-    private void registerRendering() {
-        this.registerBlockModels();
-        this.registerBlockEntityModels();
-        this.registerEntityModels();
-        this.registerEntityRenderers();
-        this.registerBlockRenderers();
-        this.registerBlockRenderTypes();
-
-        for (var e : Registries.ENTITY_TYPE.entries()) {
-            EntityType<?> type = e.getValue();
-            EntityRenderer<?> renderer = RendererRegistry.get(type);
-            EntityModel<?> entityModel = ModelRegistry.get(type);
-
-            FileHandle handle = UltracraftClient.resource(e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
-            if (handle.exists()) {
-                Model model = UltracraftClient.invokeAndWait(() -> this.modelLoader.loadModel(handle, fileName -> {
-                    String filePath = fileName.substring(("assets/" + e.getKey().namespace() + "/models/entity/").length());
-                    return new Texture(UltracraftClient.resource(e.getKey().mapPath(path -> "textures/entity/" + filePath)));
-                }));
-                if (model == null)
-                    throw new RuntimeException("Failed to load entity model: " + e.getKey().mapPath(path -> "models/entity/" + path + ".g3dj"));
-                model.materials.forEach(modelModel -> {
-                    modelModel.set(new BlendingAttribute(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-                    modelModel.set(FloatAttribute.createAlphaTest(0.5f));
-                });
-                ModelRegistry.registerFinished(type, model);
-            } else {
-                if (entityModel == null) {
-                    LOGGER.warn("Model not found for entity {}", type.getId());
-                    continue;
-                }
-
-                if (renderer == null) {
-                    LOGGER.warn("Renderer not found for entity {}", type.getId());
-                    continue;
-                }
-
-                ModelRegistry.registerFinished(type, entityModel.finish(renderer.getTextures()));
-            }
-        }
-
-        RendererRegistry.load();
-    }
-
-    private void registerBlockEntityModels() {
-        ClientLifecycleEvents.REGISTER_BLOCK_ENTITY_MODELS.factory().onRegister();
-
-        BlockEntityModelRegistry.load(this);
-    }
-
-    private void registerBlockRenderTypes() {
-        BlockRenderTypeRegistry.register(Blocks.WATER, RenderType.WATER);
-
-        ClientLifecycleEvents.REGISTER_BLOCK_RENDER_TYPES.factory().onRegister();
-    }
-
-    private void registerBlockRenderers() {
-        ClientLifecycleEvents.REGISTER_BLOCK_RENDERERS.factory().onRegister();
-    }
-
-    private void registerBlockModels() {
-        BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
-        BlockModelRegistry.register(Blocks.LOG, CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
-        BlockModelRegistry.register(Blocks.CRAFTING_BENCH, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
-
-        ClientLifecycleEvents.REGISTER_BLOCK_MODELS.factory().onRegister();
-
-        BlockModelRegistry.registerDefault(Blocks.VOIDGUARD);
-        BlockModelRegistry.registerDefault(Blocks.ERROR);
-        BlockModelRegistry.registerDefault(Blocks.DIRT);
-        BlockModelRegistry.registerDefault(Blocks.SAND);
-        BlockModelRegistry.registerDefault(Blocks.SANDSTONE);
-        BlockModelRegistry.registerDefault(Blocks.GRAVEL);
-        BlockModelRegistry.registerDefault(Blocks.WATER);
-        BlockModelRegistry.registerDefault(Blocks.STONE);
-        BlockModelRegistry.registerDefault(Blocks.LEAVES);
-        BlockModelRegistry.registerDefault(Blocks.PLANKS);
-        BlockModelRegistry.registerDefault(Blocks.COBBLESTONE);
-        BlockModelRegistry.registerDefault(Blocks.TALL_GRASS);
-    }
-
-    private void registerEntityModels() {
-        ClientLifecycleEvents.REGISTER_MODELS.factory().onRegister();
-    }
-
-    private void registerEntityRenderers() {
-        RendererRegistry.register(EntityTypes.PLAYER, PlayerRenderer::new);
-        RendererRegistry.register(EntityTypes.DROPPED_ITEM, DroppedItemRenderer::new);
-
-        ClientLifecycleEvents.REGISTER_ENTITY_RENDERERS.factory().onRegister();
     }
 
     private GameInput createInput() {
@@ -1521,7 +1347,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.wasClicking = false;
         }
 
+        RenderEvents.PRE_RENDER_GAME.factory().onRenderGame(gameRenderer, renderer, deltaTime);
         this.gameRenderer.render(renderer, deltaTime);
+        RenderEvents.POST_RENDER_GAME.factory().onRenderGame(gameRenderer, renderer, deltaTime);
     }
 
     private void renderLoadingOverlay(Renderer renderer, float deltaTime, LoadingOverlay loading) {
@@ -1808,6 +1636,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void clientTick() {
+        if (ClientTickEvents.PRE_GAME_TICK.factory().onGameTick(this).isCanceled()) return;
+
         if (this.player != null && this.world != null) {
             this.cursor = this.world.rayCast(new Ray(this.player.getPosition().add(0, this.player.getEyeHeight(), 0), this.player.getLookVector()));
         }
@@ -1818,8 +1648,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.clientConn.tick(connection);
         }
 
-        if (this.player != null) this.player.tick();
-        if (this.world != null) this.world.tick();
+        if (this.player != null && !ClientTickEvents.PRE_PLAYER_TICK.factory().onPlayerTick(this.player).isCanceled()) {
+            this.player.tick();
+            ClientTickEvents.POST_PLAYER_TICK.factory().onPlayerTick(this.player);
+        }
+        if (this.world != null && !ClientTickEvents.PRE_WORLD_TICK.factory().onWorldTick(this.world).isCanceled()) {
+            this.world.tick();
+            ClientTickEvents.POST_WORLD_TICK.factory().onWorldTick(this.world);
+        }
 
         BlockPos breaking = this.breaking != null ? new BlockPos(this.breaking) : null;
         if (this.world != null && breaking != null) {
@@ -1834,6 +1670,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (player != null) {
             this.camera.update(player);
         }
+
+        ClientTickEvents.POST_GAME_TICK.factory().onGameTick(this);
     }
 
     private void handleBlockBreaking(BlockPos breaking, HitResult hitResult) {
@@ -1947,7 +1785,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 this.shutdownables.forEach(UltracraftClient::cleanUp);
                 this.closeables.forEach(UltracraftClient::cleanUp);
 
-                ClientLifecycleEvents.GAME_DISPOSED.factory().onGameDisposed();
+                ClientLifecycleEvents.CLIENT_STOPPED.factory().onGameDisposed();
             } catch (Exception t) {
                 UltracraftClient.crash(t);
                 Runtime.getRuntime().halt(2);
@@ -2102,13 +1940,15 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         return !eventResult.isCanceled();
     }
 
-    public void filesDropped(String[] files) {
+    public boolean filesDropped(String[] files) {
         var currentScreen = this.screen;
         var handles = Arrays.stream(files).map(FileHandle::new).toList();
 
         if (currentScreen != null) {
-            currentScreen.filesDropped(handles);
+            return currentScreen.filesDropped(handles);
         }
+
+        return false;
     }
 
     public void addFuture(CompletableFuture<?> future) {
@@ -2287,7 +2127,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.resize(this.width, this.height);
     }
 
-    public MultiplayerData getMultiplayerData() {
+    public @Nullable MultiplayerData getMultiplayerData() {
         return this.multiplayerData;
     }
 
@@ -2296,8 +2136,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     @Override
-    public String toString() {
-        return "UltracraftClient";
+    public @NotNull String toString() {
+        return "UltracraftClient[" + this.user + "]";
     }
 
     public void runInTick(Runnable func) {
@@ -2329,79 +2169,5 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public GameWindow getWindow() {
         return window;
-    }
-
-    private static class LibGDXLogger implements ApplicationLogger {
-        private final Logger LOGGER = LoggerFactory.getLogger("LibGDX");
-
-        @Override
-        public void log(String tag, String message) {
-            this.LOGGER.info(MarkerFactory.getMarker(tag), message);
-        }
-
-        @Override
-        public void log(String tag, String message, Throwable exception) {
-            this.LOGGER.info(MarkerFactory.getMarker(tag), message, exception);
-        }
-
-        @Override
-        public void error(String tag, String message) {
-            this.LOGGER.error(MarkerFactory.getMarker(tag), message);
-        }
-
-        @Override
-        public void error(String tag, String message, Throwable exception) {
-            this.LOGGER.error(MarkerFactory.getMarker(tag), message, exception);
-        }
-
-        @Override
-        public void debug(String tag, String message) {
-            this.LOGGER.debug(MarkerFactory.getMarker(tag), message);
-        }
-
-        @Override
-        public void debug(String tag, String message, Throwable exception) {
-            this.LOGGER.debug(MarkerFactory.getMarker(tag), message, exception);
-        }
-    }
-
-    private static class WindowAdapter extends Lwjgl3WindowAdapter {
-        private Lwjgl3Window window;
-
-        @Override
-        public void created(Lwjgl3Window window) {
-            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.NOTIFICATION, false);
-            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.LOW, false);
-            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.MEDIUM, true);
-            Lwjgl3Application.setGLDebugMessageControl(Lwjgl3Application.GLDebugMessageSeverity.HIGH, true);
-
-            WindowEvents.WINDOW_CREATED.factory().onWindowCreated(window);
-            this.window = window;
-        }
-
-        @Override
-        public void focusLost() {
-            UltracraftClient.get().pause();
-
-            WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, false);
-        }
-
-        @Override
-        public void focusGained() {
-            WindowEvents.WINDOW_FOCUS_CHANGED.factory().onWindowFocusChanged(this.window, true);
-        }
-
-        @Override
-        public boolean closeRequested() {
-            return UltracraftClient.get().tryShutdown();
-        }
-
-        @Override
-        public void filesDropped(String[] files) {
-            UltracraftClient.get().filesDropped(files);
-
-            WindowEvents.WINDOW_FILES_DROPPED.factory().onWindowFilesDropped(this.window, files);
-        }
-
     }
 }

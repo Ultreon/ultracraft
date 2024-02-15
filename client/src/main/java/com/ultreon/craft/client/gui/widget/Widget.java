@@ -370,6 +370,17 @@ public abstract class Widget implements StaticWidget, GameComponentHolder<UIComp
         this.focused = true;
     }
 
+    final <T extends UIContainer<T>> void disconnect(UIContainer<T> from) {
+        this.root = null;
+        this.parent = null;
+
+        this.onDisconnect(from);
+    }
+
+    public <T extends UIContainer<T>> void onDisconnect(UIContainer<T> from) {
+
+    }
+
     @FunctionalInterface
     public interface RevalidateListener {
         void revalidate(Widget widget);

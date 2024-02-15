@@ -37,7 +37,7 @@ public class DeferredResourcePackage extends ResourcePackage {
         if (!this.has(entry)) return null;
         if (this.resources.containsKey(entry)) return this.resources.get(entry);
 
-        StaticResource resource = new StaticResource(() -> this.ref.getResourceAsStream(this.getPath(entry)));
+        StaticResource resource = new StaticResource(entry, () -> this.ref.getResourceAsStream(this.getPath(entry)));
         this.resources.put(entry, resource);
         return resource;
     }

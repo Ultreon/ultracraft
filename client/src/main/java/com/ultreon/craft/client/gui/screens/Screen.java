@@ -36,7 +36,7 @@ public abstract class Screen extends UIContainer<Screen> {
     }
 
     protected Screen(TextObject title, Screen parent) {
-        super(0, 0, Screen.width(), Screen.height());
+        super(Screen.width(), Screen.height());
         this.parentScreen = parent;
         this.root = this;
         this.title = title;
@@ -125,10 +125,11 @@ public abstract class Screen extends UIContainer<Screen> {
      * Handles files being dropped into this screen.
      *
      * @param files list of files being dropped.
+     * @return true if the dropped files were handled, false otherwise.
      */
     @ApiStatus.OverrideOnly
-    public void filesDropped(List<FileHandle> files) {
-
+    public boolean filesDropped(List<FileHandle> files) {
+        return false;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.ultreon.craft.client.registry;
 
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.client.InternalApi;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.util.ElementID;
@@ -24,6 +25,7 @@ public class BlockEntityModelRegistry {
         REGISTRY.put(type, modelFactory);
     }
 
+    @InternalApi
     public static void load(UltracraftClient client) {
         for (var entry : REGISTRY.entrySet()) {
             BlockModel model = entry.getValue().apply(Objects.requireNonNull(entry.getKey().getId()).mapPath(path -> "blocks/" + path + ".g3dj"));
