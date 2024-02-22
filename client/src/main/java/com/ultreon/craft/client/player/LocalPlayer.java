@@ -14,6 +14,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
+import com.ultreon.craft.network.packets.c2s.C2SDropItemPacket;
 import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
 import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
 import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
@@ -173,6 +174,11 @@ public class LocalPlayer extends ClientPlayer {
     @Override
     public boolean hasExplicitPermission(@NotNull Permission permission) {
         return this.permissions.has(permission);
+    }
+
+    @Override
+    public void dropItem() {
+        this.client.connection.send(new C2SDropItemPacket());
     }
 
     public ClientPermissionMap getPermissions() {

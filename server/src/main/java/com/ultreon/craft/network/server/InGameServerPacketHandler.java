@@ -220,6 +220,10 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.player.inventory.addItem(crafted);
     }
 
+    public void onDropItem() {
+        this.player.dropItem();
+    }
+
 //    public void handleContainerClick(int slot, ContainerInteraction interaction) {
 //        ContainerMenu openMenu = player.getOpenMenu();
 //

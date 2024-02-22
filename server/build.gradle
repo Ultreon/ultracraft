@@ -56,7 +56,7 @@ dependencies {
     implementation api("io.github.ultreon.corelibs:commons-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:datetime-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:functions-v0:$corelibs_version")
-    implementation api("io.github.ultreon:ubo:$ultreon_data_version")
+    implementation api("com.github.Ultreon:ultreon-data:$ultreon_data_version")
 
     // Apache Log4J
     runtimeOnly api("org.apache.logging.log4j:log4j:$log4j_version")

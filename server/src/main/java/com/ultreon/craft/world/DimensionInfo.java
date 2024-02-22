@@ -7,6 +7,7 @@ import java.util.Objects;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class DimensionInfo {
+    public static final DimensionInfo OVERWORLD = new DimensionInfo(new ElementID("overworld"));
     private final ElementID id;
 
     public DimensionInfo(ElementID id) {

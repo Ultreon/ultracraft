@@ -61,6 +61,7 @@ import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.*;
 import com.ultreon.craft.client.model.entity.EntityModel;
+import com.ultreon.craft.client.model.entity.renderer.DroppedItemRenderer;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.model.entity.renderer.PlayerRenderer;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
@@ -890,8 +891,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 this.startDevWorld();
                 return;
             }
-
-            this.showScreen(new TitleScreen());
         }));
         this.loadingOverlay = null;
     }
@@ -1254,6 +1253,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void registerEntityRenderers() {
         RendererRegistry.register(EntityTypes.PLAYER, PlayerRenderer::new);
+        RendererRegistry.register(EntityTypes.DROPPED_ITEM, DroppedItemRenderer::new);
 
         ClientLifecycleEvents.REGISTER_ENTITY_RENDERERS.factory().onRegister();
     }
@@ -1379,8 +1379,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         } catch (OutOfMemoryError e) {
             System.gc(); // try to free up some memory before handling out of memory.
             try {
-                this.integratedServer.shutdownNow();
-                this.integratedServer = null;
+                if (this.integratedServer != null) {
+                    this.integratedServer.shutdownNow();
+                    this.integratedServer = null;
+                }
 
                 if (this.worldRenderer != null) {
                     this.worldRenderer.dispose();
@@ -1547,16 +1549,27 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             this.crashes.add(new CrashLog("Failed to load", throwable));
 
             // Show the crash screen
-            this.screen = new CrashScreen(this.crashes);
-            this.loadingOverlay = null;
+            UltracraftClient.invoke(() -> {
+                this.screen = new CrashScreen(this.crashes);
+                this.screen.init(this.getScaledWidth(), this.getScaledHeight());
+                this.loadingOverlay = null;
+            }).exceptionally(throwable1 -> {
+                crash(throwable1);
+                return null;
+            });
             return null;
         }).thenRun(() -> {
             // Clear the crash handling
             UltracraftClient.crashHook = null;
 
-            this.screen = this.crashes.isEmpty() ? new DevScreen() : new CrashScreen(this.crashes);
-            this.screen.init(this.width, this.height);
-            this.loadingOverlay = null;
+            UltracraftClient.invoke(() -> {
+                this.screen = this.crashes.isEmpty() ? new DevScreen() : new CrashScreen(this.crashes);
+                this.screen.init(this.getScaledWidth(), this.getScaledHeight());
+                this.loadingOverlay = null;
+            }).exceptionally(throwable -> {
+                crash(throwable);
+                return null;
+            });
         });
     }
 

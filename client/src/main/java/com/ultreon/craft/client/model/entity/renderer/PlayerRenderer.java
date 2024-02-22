@@ -78,11 +78,7 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
         float generalScale = 1 / 128f;
         instance.transform.idt()
                 .setToTranslationAndScaling(0, -1.6f, 0, generalScale, generalScale, generalScale)
-//                .scale(1, 1, -1)
                 .scale(1.15f, 1.15f, 1.15f)
-//                .setToTranslationAndScaling(
-//                        (float) EntityRenderer.tmp0.x, (float) EntityRenderer.tmp0.y, (float) EntityRenderer.tmp0.z,
-//                        1, 1, 1)
                 .rotate(Vector3.Y, clientPlayer.xRot - 180);
 
         instance.calculateTransforms();

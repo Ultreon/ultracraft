@@ -1,6 +1,7 @@
 package com.ultreon.craft.api.commands;
 
 import com.google.common.collect.Lists;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.error.CommandError;
 import com.ultreon.craft.api.commands.error.InvalidError;
 import com.ultreon.craft.api.commands.output.BasicCommandOutput;
@@ -24,6 +25,8 @@ import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.craft.world.World;
+import com.ultreon.data.UsoParser;
+import com.ultreon.data.types.IType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.datetime.v0.Duration;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
@@ -31,6 +34,7 @@ import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -227,6 +231,7 @@ public class CommandData {
         CommandData.registerArgument("sound", CommandData::readSound, CommandData::completeSounds);
         CommandData.registerArgument("string", CommandData::readString, CommandData::completeVoidArg);
         CommandData.registerArgument("time", CommandData::readTime, CommandData::completeTime);
+        CommandData.registerArgument("ubo", CommandData::readUbo, CommandData::completeVoid);
         CommandData.registerArgument("uuid", CommandData::readUuid, CommandData::completeVoidArg);
         CommandData.registerArgument("weather", CommandData::readWeather, CommandData::completeWeather);
         CommandData.registerArgument("world", CommandData::readDimension, CommandData::completeDimensions);
@@ -303,6 +308,17 @@ public class CommandData {
             return UUID.fromString(ctx.readString());
         } catch (IllegalArgumentException e) {
             throw new CommandParseException.NotFound("dimension", ctx.getOffset());
+        }
+    }
+
+    private static IType<?> readUbo(CommandReader ctx) throws CommandParseException {
+        String s = ctx.readMessage();
+        if (s == null) throw new CommandParseException.Invalid("ubo data", ctx.getOffset());
+
+        try {
+            return new UsoParser(s).parse();
+        } catch (IOException e) {
+            throw new CommandParseException.Invalid("ubo data", ctx.getOffset());
         }
     }
 
@@ -406,7 +422,7 @@ public class CommandData {
 
     private static Item getItem(@Nullable ElementID id) {
         for (var value : Registries.ITEM.entries()) {
-            if (value.getKey() == id) {
+            if (Objects.equals(value.getKey(), id)) {
                 return value.getValue();
             }
         }
@@ -440,7 +456,7 @@ public class CommandData {
         var id = ctx.readId();
         for (var entry : Registries.BLOCK.entries()) {
             try {
-                if (entry.getKey() == id) {
+                if (Objects.equals(entry.getKey(), id)) {
                     return entry.getValue();
                 }
             } catch (Exception ignored) {
@@ -454,7 +470,7 @@ public class CommandData {
         var id = ctx.readId();
         for (var value : Registries.ENTITY_TYPE.values()) {
             try {
-                if (value != EntityTypes.PLAYER && value.getId() == id) {
+                if (value != EntityTypes.PLAYER && Objects.equals(value.getId(), id)) {
                     return value;
                 }
             } catch (Exception ignored) {
@@ -479,7 +495,7 @@ public class CommandData {
         try {
             return ctx.readString();
         } catch (Exception e) {
-            e.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to read string in command " + ctx.getCommand(), e);
             throw new CommandParseException(e.getMessage(), ctx.getOffset());
         }
     }
@@ -491,7 +507,7 @@ public class CommandData {
     public static <T> T readFromRegistry(CommandReader ctx, String type, Registry<T> registry) throws CommandParseException {
         var id = ctx.readId();
         for (var value : registry.entries()) {
-            if (value.getKey() == id) {
+            if (Objects.equals(value.getKey(), id)) {
                 return value.getValue();
             }
         }
@@ -634,12 +650,12 @@ public class CommandData {
             return List.of();
         }
         if (parts.size() > 1) {
-            if (parts.get(parts.size() - 1).length() > 2) {
+            if (parts.getLast().length() > 2) {
                 return List.of("$currentArgument:");
-            } else if (!parts.get(parts.size() - 1).isEmpty()) {
+            } else if (!parts.getLast().isEmpty()) {
                 list.add(":");
             }
-        } else if (!parts.get(parts.size() - 1).isEmpty()) {
+        } else if (!parts.getLast().isEmpty()) {
             list.add(":");
         }
         for (var i : new Range(0, 9)) {
@@ -656,9 +672,9 @@ public class CommandData {
         if (parts.size() > 3) {
             return List.of();
         }
-        if (parts.get(parts.size() - 1).length() > 2) {
+        if (parts.getLast().length() > 2) {
             return List.of("$currentArgument:");
-        } else if (!parts.get(parts.size() - 1).isEmpty()) {
+        } else if (!parts.getLast().isEmpty()) {
             list.add(":");
         }
         for (var i : new Range(0, 9)) {
@@ -676,12 +692,12 @@ public class CommandData {
             return List.of();
         }
         if (parts.size() > 1) {
-            if (parts.get(parts.size() - 1).length()     > 2) {
+            if (parts.getLast().length()     > 2) {
                 return List.of("$currentArgument:");
-            } else if (!parts.get(parts.size() - 1).isEmpty()) {
+            } else if (!parts.getLast().isEmpty()) {
                 list.add("-");
             }
-        } else if (!parts.get(parts.size() - 1).isEmpty()) {
+        } else if (!parts.getLast().isEmpty()) {
             list.add("-");
         }
         for (var i : new Range(0, 9)) {
@@ -700,12 +716,12 @@ public class CommandData {
                 return List.of(" ");
             }
             if (parts.size() > 1) {
-                if (parts.get(parts.size() - 1).length() > 2) {
+                if (parts.getLast().length() > 2) {
                     return List.of("$date:");
-                } else if (!parts.get(parts.size() - 1).isEmpty()) {
+                } else if (!parts.getLast().isEmpty()) {
                     list.add("-");
                 }
-            } else if (!parts.get(parts.size() - 1).isEmpty()) {
+            } else if (!parts.getLast().isEmpty()) {
                 list.add("-");
             }
             for (var i : new Range(0, 9)) {
@@ -719,9 +735,9 @@ public class CommandData {
             if (parts.size() > 3) {
                 return List.of();
             }
-            if (parts.get(parts.size() - 1).length()     > 2) {
+            if (parts.getLast().length()     > 2) {
                 return List.of("$time:");
-            } else if (!parts.get(parts.size() - 1).isEmpty()) {
+            } else if (!parts.getLast().isEmpty()) {
                 list.add(":");
             }
             for (var i : new Range(0, 9)) {

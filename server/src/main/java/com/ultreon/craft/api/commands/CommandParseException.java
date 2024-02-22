@@ -104,4 +104,29 @@ public class CommandParseException extends Exception {
                 .replace("'", "\\'");
         }
     }
+
+	public static class Invalid extends CommandParseException {
+        private final Object value;
+
+        public Invalid(String type, int offset) {
+            super("That " + type + " is invalid", offset);
+            this.value = null;
+        }
+
+        public Invalid(String type, Object value, int offset) {
+            super("The " + type + " named '" + Invalid.repr(value) + "' is invalid", offset);
+            this.value = value;
+        }
+
+        private static String repr(Object value) {
+            return value.toString()
+                .replace("\\\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\u000c", "\\u000c")
+                .replace("'", "\\'");
+        }
+    }
 }

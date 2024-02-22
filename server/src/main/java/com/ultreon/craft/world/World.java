@@ -64,7 +64,8 @@ public abstract class World implements ServerDisposable {
     protected final long seed;
     private int renderedChunks;
 
-    protected final Int2ReferenceMap<Entity> entities = new Int2ReferenceArrayMap<>();
+    protected final Int2ReferenceMap<Entity> entitiesById = new Int2ReferenceArrayMap<>();
+    protected final List<Entity> entities = new ArrayList<>();
     private int curId;
     private int totalChunks;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -73,7 +74,7 @@ public abstract class World implements ServerDisposable {
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new LinkedHashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
-    private DimensionInfo info;
+    private DimensionInfo info = DimensionInfo.OVERWORLD;
     protected UUID uid = Utils.ZEROED_UUID;
 
     protected World() {
@@ -513,7 +514,7 @@ public abstract class World implements ServerDisposable {
     public <T extends Entity> T spawn(T entity) {
         Preconditions.checkNotNull(entity, "Cannot spawn null entity");
         this.setEntityId(entity);
-        this.entities.put(entity.getId(), entity);
+        this.entitiesById.put(entity.getId(), entity);
         return entity;
     }
 
@@ -522,14 +523,14 @@ public abstract class World implements ServerDisposable {
         Preconditions.checkNotNull(entity, "Cannot entity with nul spawn data");
         this.setEntityId(entity);
         entity.onPrepareSpawn(spawnData);
-        this.entities.put(entity.getId(), entity);
+        this.entitiesById.put(entity.getId(), entity);
         return entity;
     }
 
     private <T extends Entity> void setEntityId(T entity) {
         Preconditions.checkNotNull(entity, "Cannot set entity id for null entity");
         int oldId = entity.getId();
-        if (oldId > 0 && this.entities.containsKey(oldId)) {
+        if (oldId > 0 && this.entitiesById.containsKey(oldId)) {
             throw new IllegalStateException("Entity already spawned: " + entity);
         }
         int newId = oldId > 0 ? oldId : this.nextId();
@@ -541,15 +542,15 @@ public abstract class World implements ServerDisposable {
     }
 
     public void despawn(Entity entity) {
-        this.entities.remove(entity.getId());
+        this.entitiesById.remove(entity.getId());
     }
 
     public void despawn(int id) {
-        this.entities.remove(id);
+        this.entitiesById.remove(id);
     }
 
     public Entity getEntity(int id) {
-        return this.entities.get(id);
+        return this.entitiesById.get(id);
     }
 
     /**
@@ -631,7 +632,7 @@ public abstract class World implements ServerDisposable {
      * @return {@code true} if the bounding box intersects any entities, {@code false} otherwise.
      */
     public boolean intersectEntities(BoundingBox boundingBox) {
-        for (Entity entity : this.entities.values())
+        for (Entity entity : this.entitiesById.values())
             if (entity.getBoundingBox().intersects(boundingBox)) return true;
 
         return false;
@@ -799,11 +800,11 @@ public abstract class World implements ServerDisposable {
     }
 
     public Collection<Entity> getEntities() {
-        return this.entities.values();
+        return this.entitiesById.values();
     }
 
     public <T extends Entity> Collection<Entity> getEntitiesByClass(Class<T> clazz) {
-        return this.entities.values().stream().filter(clazz::isInstance).toList();
+        return this.entitiesById.values().stream().filter(clazz::isInstance).toList();
     }
 
     public UUID getUID() {

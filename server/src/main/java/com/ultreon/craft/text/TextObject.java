@@ -8,6 +8,10 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 public abstract class TextObject implements Iterable<TextObject> {
+    protected TextObject() {
+        super();
+    }
+
     public static TextObject deserialize(MapType data) {
         String type = data.getString("type");
         return switch (type) {
@@ -68,5 +72,9 @@ public abstract class TextObject implements Iterable<TextObject> {
 
     protected Stream<TextObject> stream() {
         return Stream.of(this);
+    }
+
+    public TextStyle getStyle() {
+        return TextStyle.defaultStyle();
     }
 }

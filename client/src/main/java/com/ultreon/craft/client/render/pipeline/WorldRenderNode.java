@@ -74,11 +74,16 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
     private void renderWorldOnce(WorldRenderer worldRenderer, ClientWorld world, Vec3d position, ModelBatch batch) {
         worldRenderer.renderEntities();
 
-        world.getAllEntities().sorted((e1, e2) -> {
+        world.getAllEntities().stream().sorted((e1, e2) -> {
             var d1 = e1.getPosition().dst(position);
             var d2 = e2.getPosition().dst(position);
             return Double.compare(d1, d2);
-        }).forEachOrdered(entity -> batch.render((output, pool) -> worldRenderer.collectEntity(entity, output, pool)));
+        }).forEachOrdered(entity -> {
+            UltracraftClient.PROFILER.section("(Entity #" + entity.getId() + ")", () -> {
+                UltracraftClient.LOGGER.debug("Rendering entity #" + entity.getId() + " at " + entity.getPosition());
+                batch.render((output, pool) -> worldRenderer.collectEntity(entity, output, pool));
+            });
+        });
 
         batch.render(worldRenderer::collect, worldRenderer.getEnvironment());
 

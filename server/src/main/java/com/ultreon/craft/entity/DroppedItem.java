@@ -2,6 +2,7 @@ package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -24,9 +25,39 @@ public class DroppedItem extends Entity {
     }
 
     @Override
+    public void onPrepareSpawn(MapType spawnData) {
+        super.onPrepareSpawn(spawnData);
+
+        if (this.stack.isEmpty()) {
+            markRemoved();
+        }
+    }
+
+    @Override
     public void tick() {
         super.tick();
         this.age++;
+
+        if (this.world instanceof ServerWorld serverWorld) {
+            serverWorld.sendAllTracking((int) this.x, (int) this.y, (int) this.z, new S2CEntityPipeline(this.getId(), this.getPipeline()));
+        }
+    }
+
+    @Override
+    public void onPipeline(MapType pipeline) {
+        super.onPipeline(pipeline);
+
+        this.age = pipeline.getInt("age", this.age);
+        MapType item = pipeline.getMap("Item");
+        if (item != null) this.stack = ItemStack.load(item);
+    }
+
+    @Override
+    public MapType getPipeline() {
+        MapType pipeline = super.getPipeline();
+        pipeline.putInt("age", this.age);
+        pipeline.put("Item", this.stack.save());
+        return pipeline;
     }
 
     public ItemStack getStack() {

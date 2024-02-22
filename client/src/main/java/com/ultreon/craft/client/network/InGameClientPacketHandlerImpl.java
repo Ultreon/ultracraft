@@ -17,6 +17,7 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
@@ -43,6 +44,7 @@ import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
@@ -389,6 +391,20 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 case ADD -> this.client.world.setDaytime(daytime + time);
                 case SUB -> this.client.world.setDaytime(daytime - time);
             }
+        }
+    }
+
+    @Override
+    public void onAddEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline) {
+        if (this.client.world != null) {
+            this.client.world.addEntity(id, type, position, pipeline);
+        }
+    }
+
+    @Override
+    public void onEntityPipeline(int id, MapType pipeline) {
+        if (this.client.world != null) {
+            this.client.world.getEntity(id).onPipeline(pipeline);
         }
     }
 }

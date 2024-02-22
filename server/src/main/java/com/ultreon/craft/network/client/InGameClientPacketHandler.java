@@ -3,6 +3,7 @@ package com.ultreon.craft.network.client;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -19,6 +20,7 @@ import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.util.Map;
@@ -80,4 +82,8 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onBlockEntitySet(BlockPos pos, BlockEntityType<?> blockEntity);
 
     void onTimeChange(PacketContext ctx, S2CTimePacket.Operation operation, int time);
+
+    void onAddEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline);
+
+    void onEntityPipeline(int id, MapType pipeline);
 }

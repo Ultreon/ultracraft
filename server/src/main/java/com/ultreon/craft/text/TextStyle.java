@@ -116,4 +116,12 @@ public class TextStyle {
         this.font = font;
         return this;
     }
+
+    public TextStyle copy() {
+        return new TextStyle().color(this.color).bold(this.bold).italic(this.italic).underline(this.underline).strikethrough(this.strikethrough).hoverEvent(this.hoverEvent).clickEvent(this.clickEvent);
+    }
+
+    public static TextStyle defaultStyle() {
+        return new TextStyle().color(Color.WHITE).bold(false).italic(false).underline(false).strikethrough(false);
+    }
 }

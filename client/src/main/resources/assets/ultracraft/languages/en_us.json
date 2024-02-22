@@ -107,5 +107,7 @@
 
   "ultracraft.recipe.craftable": "Craftable",
   "ultracraft.recipe.uncraftable": "Uncraftable",
-  "ultracraft.recipe.ingredients": "Ingredients:"
+  "ultracraft.recipe.ingredients": "Ingredients:",
+
+  "ultracraft.commands.player.dumpData.success": "Dumped player data: "
 }

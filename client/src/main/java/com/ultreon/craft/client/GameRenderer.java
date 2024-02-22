@@ -217,7 +217,7 @@ public class GameRenderer {
 
         batch.begin(this.client.camera);
 
-        world.getAllEntities().sorted((e1, e2) -> {
+        world.getAllEntities().stream().sorted((e1, e2) -> {
             var d1 = e1.getPosition().dst(position);
             var d2 = e2.getPosition().dst(position);
             return Double.compare(d1, d2);

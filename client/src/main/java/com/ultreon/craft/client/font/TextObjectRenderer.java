@@ -2,11 +2,19 @@ package com.ultreon.craft.client.font;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.ultreon.craft.client.ClientRegistries;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
+import com.ultreon.craft.text.FormattedText;
 import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.text.TextStyle;
 import com.ultreon.craft.util.Color;
+import com.ultreon.craft.util.ElementID;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TextObjectRenderer {
     private final GlyphLayout layout = new GlyphLayout();
@@ -75,7 +83,7 @@ public class TextObjectRenderer {
 
             if (c == '\n') {
                 this.currentX = this.startX;
-                this.currentY += this.lineHeight * scale + 1;
+                this.currentY += this.lineHeight * scale + 2;
                 this.lineHeight = this.font.lineHeight;
                 this.nextPart(renderer, shadow, color, bold, italic, underlined, strikethrough, scale);
                 continue;

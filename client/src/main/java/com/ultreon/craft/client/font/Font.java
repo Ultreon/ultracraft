@@ -5,12 +5,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
-import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.text.MutableText;
-import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.text.*;
 import com.ultreon.craft.util.Color;
+
+import java.util.*;
 
 public class Font implements Disposable {
     @SuppressWarnings("GDXJavaStaticResource")
@@ -58,6 +58,16 @@ public class Font implements Disposable {
     public void drawText(Renderer renderer, TextObject text, float x, float y, Color color, boolean shadow) {
         TextObjectRenderer textRenderer = new TextObjectRenderer(text);
         textRenderer.render(renderer, color, x, y, shadow);
+    }
+
+    public void drawText(Renderer renderer, FormattedText text, float x, float y, Color color, boolean shadow) {
+//        TextObjectRenderer textRenderer = new TextObjectRenderer(Collections.singletonList(text));
+//        textRenderer.render(renderer, color, x, y, shadow);
+    }
+
+    public void drawText(Renderer renderer, List<FormattedText> text, float x, float y, Color color, boolean shadow) {
+//        TextObjectRenderer textRenderer = new TextObjectRenderer(text);
+//        textRenderer.render(renderer, color, x, y, shadow);
     }
 
     boolean isForcingUnicode() {
@@ -110,11 +120,14 @@ public class Font implements Disposable {
             char c = text.charAt(i);
             BitmapFont currentFont = this.bitmapFont;
             float scale = 1;
+            if (c == ' ') {
+                width += currentFont.getData().spaceXadvance * scale;
+                continue;
+            }
             if (!currentFont.getData().hasGlyph(c) || this.isForcingUnicode()) {
                 currentFont = Font.UNIFONT;
                 scale = 0.5F;
             }
-            this.layout.setText(currentFont, String.valueOf(c));
 
             BitmapFont.Glyph glyph = currentFont.getData().getGlyph(c);
             if (glyph != null) {
@@ -151,5 +164,37 @@ public class Font implements Disposable {
 
     public void dispose() {
         this.bitmapFont.dispose();
+    }
+
+    public List<FormattedText> wordWrap(TextObject text, int width) {
+        FormattedText formattedText = getFormattedText(text);
+        return new WordWrapper(this.bitmapFont, this).wrap(formattedText, width);
+    }
+
+    public FormattedText getFormattedText(TextObject text) {
+        return FormattedText.from(text);
+    }
+
+    protected float width(FormattedText.TextFormatElement element) {
+        String text = element.text();
+        TextStyle style = element.style();
+
+        return this.width(text) + (style.isBold() ? 1 : 0);
+    }
+
+    public int width(List<FormattedText> text) {
+        int width = 0;
+        for (FormattedText line : text) {
+            width = Math.max(width, this.width(line));
+        }
+        return width;
+    }
+
+    public int width(FormattedText line) {
+        int width = 0;
+        for (FormattedText.TextFormatElement element : line.getElements()) {
+            width += (int) width(element);
+        }
+        return width;
     }
 }

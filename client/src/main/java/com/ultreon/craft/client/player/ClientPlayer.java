@@ -4,6 +4,7 @@ import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -64,5 +65,10 @@ public abstract class ClientPlayer extends Player {
     @Override
     public boolean hasExplicitPermission(@NotNull Permission permission) {
         return false;
+    }
+
+    @Override
+    public void dropItem() {
+        super.dropItem();
     }
 }
