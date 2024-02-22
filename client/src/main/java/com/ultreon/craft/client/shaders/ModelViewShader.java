@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 
 public class ModelViewShader extends DefaultShader {
@@ -66,7 +65,7 @@ public class ModelViewShader extends DefaultShader {
     public static String createPrefix (final Renderable renderable, final Config config) {
         final Attributes attributes = ModelViewShader.combineAttributes(renderable);
         StringBuilder prefix = new StringBuilder();
-        prefix.append("#version ").append(ModelViewShader.version).append("\n");
+//        prefix.append("#version ").append(ModelViewShader.version).append("\n");
         final long attributesMask = attributes.getMask();
         final long vertexMask = renderable.meshPart.mesh.getVertexAttributes().getMask();
         if (ModelViewShader.and(vertexMask, VertexAttributes.Usage.Position)) prefix.append("#define positionFlag\n");
