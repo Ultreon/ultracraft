@@ -1,5 +1,5 @@
 # Ultracraft
-**DO NOT REDISTRIBUTE: [THIS PROJECT FALLS UNDER FULL COPYRIGHT](LICENSE)**  
+**[THIS PROJECT IS LICENSED UNDER AGPL-v3](LICENSE)**  
 A voxel game that aims to do stuff differently.
 
 ## Build From Source
