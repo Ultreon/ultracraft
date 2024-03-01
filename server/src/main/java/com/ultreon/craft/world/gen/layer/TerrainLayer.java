@@ -1,10 +1,12 @@
 package com.ultreon.craft.world.gen.layer;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A terrain layer that handles world generation.
@@ -26,7 +28,7 @@ public abstract class TerrainLayer implements Disposable {
      * @return true to finish the column building, false to continue.
      */
     @ApiStatus.OverrideOnly
-    public abstract boolean handle(World world, Chunk chunk, int x, int y, int z, int height);
+    public abstract @Nullable Block handle(World world, Chunk chunk, int x, int y, int z, int height);
 
     public void create(ServerWorld world) {
 

@@ -29,7 +29,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Color;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.io.IOException;
 import java.util.*;
@@ -80,7 +80,7 @@ public class ItemRenderer {
             return;
         }
 
-        ElementID curKey = Registries.ITEM.getId(item);
+        Identifier curKey = Registries.ITEM.getId(item);
         if (curKey == null) {
             renderer.blitColor(Color.WHITE);
             renderer.blit((TextureRegion) null, x, y, 16, 16);
@@ -168,7 +168,7 @@ public class ItemRenderer {
     }
 
     public void registerModels(JsonModelLoader loader) {
-        Registries.ITEM.values().forEach((e) -> {
+        Registries.ITEM.getValues().forEach((e) -> {
             try {
                 JsonModel load = loader.load(e);
                 if (load == null) {

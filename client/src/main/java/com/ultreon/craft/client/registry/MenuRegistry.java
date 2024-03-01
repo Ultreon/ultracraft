@@ -4,13 +4,13 @@ import com.ultreon.craft.client.gui.screens.container.ContainerScreen;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MenuRegistry {
-    private static final Map<ElementID, ScreenBuilder<?>> REGISTRY = new HashMap<>();
+    private static final Map<Identifier, ScreenBuilder<?>> REGISTRY = new HashMap<>();
 
     public static <T extends ContainerMenu> void registerScreen(MenuType<T> menu, ScreenBuilder<T> builder) {
         MenuRegistry.REGISTRY.put(menu.getId(), builder);

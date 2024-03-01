@@ -1,16 +1,16 @@
 package com.ultreon.craft.client.config;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.UnknownNullability;
 
 public class UltracraftClientConfig {
-    public int renderDistance = 16;
+    public int renderDistance = 4;
     public int entityRenderDistance = 12;
     public boolean debugUtils = FabricLoader.getInstance().isDevelopmentEnvironment();
     public boolean enable4xScreenshot = true;
-    public @UnknownNullability ElementID language = UltracraftClient.id("en_us");
+    public @UnknownNullability Identifier language = UltracraftClient.id("en_us");
     public @UnknownNullability PersonalisationConfig personalisation = new PersonalisationConfig();
     public @UnknownNullability CraftingConfig crafting = new CraftingConfig();
     public @UnknownNullability AccessibilityConfig accessibility = new AccessibilityConfig();

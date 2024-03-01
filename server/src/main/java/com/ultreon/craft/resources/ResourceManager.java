@@ -1,7 +1,7 @@
 package com.ultreon.craft.resources;
 
 import com.ultreon.craft.resources.android.DeferredResourcePackage;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.Logger;
 import com.ultreon.libs.commons.v0.exceptions.SyntaxException;
 import com.ultreon.libs.commons.v0.util.IOUtils;
@@ -28,7 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ResourceManager {
-    private final Map<ElementID, byte[]> assets = new ConcurrentHashMap<>();
+    private final Map<Identifier, byte[]> assets = new ConcurrentHashMap<>();
     protected final List<com.ultreon.craft.resources.ResourcePackage> resourcePackages = new ArrayList<>();
     public static Logger logger = (level, msg, t) -> {};
     private final String root;
@@ -41,13 +41,13 @@ public class ResourceManager {
         return true;
     }
 
-    public InputStream openResourceStream(ElementID entry) throws IOException {
+    public InputStream openResourceStream(Identifier entry) throws IOException {
         @Nullable Resource resource = this.getResource(entry);
         return resource == null ? null : resource.openStream();
     }
 
     @Nullable
-    public Resource getResource(ElementID entry) {
+    public Resource getResource(Identifier entry) {
         for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(entry)) {
                 return resourcePackage.get(entry);
@@ -105,7 +105,7 @@ public class ResourceManager {
 
         try {
             // Prepare (entry -> resource) mappings/
-            Map<ElementID, StaticResource> map = new HashMap<>();
+            Map<Identifier, StaticResource> map = new HashMap<>();
 
             // Get assets directory.
             File assets = new File(file, this.root + "/");
@@ -145,9 +145,9 @@ public class ResourceManager {
                             String s = relative.toString().replaceAll("\\\\", "/");
 
                             // Create resource entry/
-                            ElementID entry;
+                            Identifier entry;
                             try {
-                                entry = new ElementID(namespace, s);
+                                entry = new Identifier(namespace, s);
                             } catch (SyntaxException e) {
                                 logger.error("Invalid resource identifier:", e);
                                 continue;
@@ -169,7 +169,7 @@ public class ResourceManager {
     private void importFilePackage(ZipInputStream file) throws IOException {
         // Check for .jar files.
         // Prepare (entry -> resource) mappings.
-        Map<ElementID, StaticResource> map = new HashMap<>();
+        Map<Identifier, StaticResource> map = new HashMap<>();
 
         // Create jar file instance from file.
         try {
@@ -196,7 +196,7 @@ public class ResourceManager {
         file.close();
     }
 
-    private void addEntry(Map<ElementID, StaticResource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
+    private void addEntry(Map<Identifier, StaticResource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
         String[] splitPath = name.split("/", 3);
 
         if (splitPath.length >= 3) {
@@ -210,7 +210,7 @@ public class ResourceManager {
 
                 try {
                     // Entry
-                    ElementID entry = new ElementID(namespace, path);
+                    Identifier entry = new Identifier(namespace, path);
 
                     // Add (entry -> resource) mapping.
                     map.put(entry, resource);
@@ -225,8 +225,8 @@ public class ResourceManager {
     public List<byte[]> getAllDataByPath(@NotNull String path) {
         List<byte[]> data = new ArrayList<>();
         for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
-            Map<ElementID, StaticResource> identifierResourceMap = resourcePackage.mapEntries();
-            for (Map.Entry<ElementID, StaticResource> entry : identifierResourceMap.entrySet()) {
+            Map<Identifier, StaticResource> identifierResourceMap = resourcePackage.mapEntries();
+            for (Map.Entry<Identifier, StaticResource> entry : identifierResourceMap.entrySet()) {
                 if (entry.getKey().path().equals(path)) {
                     byte[] bytes = entry.getValue().loadOrGet();
                     if (bytes == null) continue;
@@ -240,7 +240,7 @@ public class ResourceManager {
     }
 
     @NotNull
-    public List<byte[]> getAllDataById(@NotNull ElementID id) {
+    public List<byte[]> getAllDataById(@NotNull Identifier id) {
         List<byte[]> data = new ArrayList<>();
         for (ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(id)) {

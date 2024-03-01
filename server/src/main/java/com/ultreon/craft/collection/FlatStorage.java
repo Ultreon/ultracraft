@@ -1,5 +1,6 @@
 package com.ultreon.craft.collection;
 
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.ubo.DataKeys;
 import com.ultreon.data.types.ListType;
@@ -15,37 +16,46 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class FlatStorage<D> implements Storage<D> {
+    private final D defaultValue;
     private D[] data;
 
-    public FlatStorage(D[] data) {
+    public FlatStorage(D defaultValue, D[] data) {
+        this.defaultValue = defaultValue;
         this.data = data;
     }
 
     @SuppressWarnings("unchecked")
-    public FlatStorage(int size, D... typeGetter) {
-        this.data = (D[]) Array.newInstance(typeGetter.getClass().getComponentType(), size);
+    public FlatStorage(D defaultValue, int size) {
+        this.defaultValue = defaultValue;
+        this.data = (D[]) Array.newInstance(defaultValue.getClass(), size);
     }
 
     @SuppressWarnings("unchecked")
-    public FlatStorage(short[] shorts, Short2ReferenceFunction<D> decoder, D... typeGetter) {
-        this.data = (D[]) Array.newInstance(typeGetter.getClass().getComponentType(), shorts.length);
+    public FlatStorage(D defaultValue, short[] shorts, Short2ReferenceFunction<D> decoder) {
+        this.defaultValue = defaultValue;
+
+        this.data = (D[]) Array.newInstance(defaultValue.getClass(), shorts.length);
         for (int i = 0; i < shorts.length; i++) {
             this.data[i] = decoder.get(shorts[i]);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public FlatStorage(List<D> data, Class<D> type) {
-        this.data = (D[]) Array.newInstance(type, data.size());
+    public FlatStorage(D defaultValue, List<D> data) {
+        this.defaultValue = defaultValue;
+
+        this.data = (D[]) Array.newInstance(defaultValue.getClass(), data.size());
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
             this.data[i] = data.get(i);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public FlatStorage(PacketBuffer buffer, Function<PacketBuffer, D> decoder, D... typeGetter) {
+    public FlatStorage(D defaultValue, PacketBuffer buffer, Function<PacketBuffer, D> decoder) {
+        this.defaultValue = defaultValue;
+
         int size = buffer.readInt();
-        this.data = (D[]) Array.newInstance(typeGetter.getClass().getComponentType(), size);
+        this.data = (D[]) Array.newInstance(defaultValue.getClass(), size);
 
         for (int i = 0; i < size; i++) {
             this.data[i] = decoder.apply(buffer);
@@ -67,6 +77,10 @@ public class FlatStorage<D> implements Storage<D> {
         List<MapType> value = data.getValue();
         for (int i = 0, valueSize = value.size(); i < valueSize; i++) {
             MapType entryData = value.get(i);
+            if (entryData == null) {
+                this.data[i] = defaultValue;
+                continue;
+            }
             D entry = decoder.apply(entryData);
             this.data[i] = entry;
         }
@@ -77,6 +91,7 @@ public class FlatStorage<D> implements Storage<D> {
         buffer.writeInt(this.data.length);
         D[] ds = this.data;
         for (D entry : ds) {
+            if (entry == null) entry = defaultValue;
             encoder.accept(buffer, entry);
         }
     }
@@ -87,12 +102,15 @@ public class FlatStorage<D> implements Storage<D> {
         this.data = Arrays.copyOf(this.data, size);
         for (int i = 0; i < size; i++) {
             D entry = decoder.apply(buffer);
+            if (entry == null) entry = defaultValue;
             this.data[i] = entry;
         }
     }
 
     @Override
     public boolean set(int idx, D value) {
+        Preconditions.checkNotNull(value, "value");
+
         if (idx < 0 || idx >= this.data.length) {
             throw new ArrayIndexOutOfBoundsException(idx);
         }
@@ -109,7 +127,8 @@ public class FlatStorage<D> implements Storage<D> {
             throw new ArrayIndexOutOfBoundsException(idx);
         }
 
-        return this.data[idx];
+        D datum = this.data[idx];
+        return datum == null ? defaultValue : datum;
     }
 
     public short[] serialize(Reference2ShortFunction<D> encoder) {
@@ -125,8 +144,8 @@ public class FlatStorage<D> implements Storage<D> {
     }
 
     @Override
-    public <R> Storage<R> map(Function<D, R> o, Class<R> clazz) {
+    public <R> Storage<R> map(R defaultValue, Function<D, R> o) {
         var data = Arrays.stream(this.data).map(o).toList();
-        return new FlatStorage<>(data, clazz);
+        return new FlatStorage<>(defaultValue, data);
     }
 }

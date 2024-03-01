@@ -110,7 +110,7 @@ public class DebugGui {
             page = 0;
             this.client.showDebugHud = true;
         }
-        if (page >= ClientRegistries.DEBUG_PAGE.values().size()) {
+        if (page >= ClientRegistries.DEBUG_PAGE.getValues().size()) {
             this.client.showDebugHud = false;
         }
 
@@ -120,7 +120,7 @@ public class DebugGui {
     public void prevPage() {
         var page = this.page - 1;
         if (!this.client.showDebugHud) {
-            page = ClientRegistries.DEBUG_PAGE.values().size() - 1;
+            page = ClientRegistries.DEBUG_PAGE.getValues().size() - 1;
             this.client.showDebugHud = true;
         }
         if (page < 0) {
@@ -131,10 +131,10 @@ public class DebugGui {
     }
 
     private DebugPage getPage() {
-        if (ClientRegistries.DEBUG_PAGE.entries().isEmpty()) {
+        if (ClientRegistries.DEBUG_PAGE.getEntries().isEmpty()) {
             return DebugPage.EMPTY;
         }
-        return ClientRegistries.DEBUG_PAGE.byId(this.page);
+        return ClientRegistries.DEBUG_PAGE.get(this.page);
     }
 
     @CanIgnoreReturnValue

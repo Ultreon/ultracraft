@@ -481,6 +481,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (this.player != null) {
                 UltracraftServer server = this.player.getWorld().getServer();
                 server.onDisconnected(this.player, message);
+                this.player.onDisconnect();
             }
         }
     }

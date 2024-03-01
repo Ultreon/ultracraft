@@ -10,9 +10,11 @@ public class InGamePacketStage extends PacketStage {
     public void registerPackets() {
         this.addServerBound(C2SDisconnectPacket::new);
         this.addClientBound(S2CDisconnectPacket::new);
-
-        this.addServerBound(C2SKeepAlivePacket::new);
         this.addServerBound(C2SPingPacket::new);
+        this.addClientBound(S2CPingPacket::new);
+        this.addServerBound(C2SKeepAlivePacket::new);
+        this.addClientBound(S2CKeepAlivePacket::new);
+
         this.addServerBound(C2SModPacket::new);
         this.addServerBound(C2SRespawnPacket::new);
         this.addServerBound(C2SPlayerMovePacket::new);
@@ -31,8 +33,6 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SCraftRecipePacket::new);
         this.addServerBound(C2SDropItemPacket::new);
 
-        this.addClientBound(S2CKeepAlivePacket::new);
-        this.addClientBound(S2CPingPacket::new);
         this.addClientBound(S2CModPacket::new);
         this.addClientBound(S2CChunkDataPacket::new);
         this.addClientBound(S2CChunkCancelPacket::new);

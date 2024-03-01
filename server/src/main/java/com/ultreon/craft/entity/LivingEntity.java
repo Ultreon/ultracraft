@@ -80,10 +80,6 @@ public class LivingEntity extends Entity {
             this.damageImmunity--;
         }
 
-        if (this.isInVoid()) {
-            this.hurtFromVoid();
-        }
-
         if (this.health <= 0) {
             this.health = 0;
 
@@ -111,6 +107,10 @@ public class LivingEntity extends Entity {
         return direction;
     }
 
+    /**
+     * @deprecated The void doesn't exist anymore.
+     */
+    @Deprecated
     protected void hurtFromVoid() {
         this.hurt(Integer.MAX_VALUE, DamageSource.VOID);
     }

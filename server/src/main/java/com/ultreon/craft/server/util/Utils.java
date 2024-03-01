@@ -24,16 +24,16 @@ public class Utils {
     }
 
     public static ChunkPos chunkPosFromBlockCoords(Vec3d pos) {
-        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.y, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
     @Deprecated
     public static ChunkPos chunkPosFromBlockCoords(Vec3i pos) {
-        return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.y, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos toChunkPos(BlockPos pos) {
-        return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.y(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
     }
 
     public static int normalizeToInt(byte b) {

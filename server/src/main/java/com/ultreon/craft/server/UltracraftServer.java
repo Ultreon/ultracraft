@@ -3,6 +3,7 @@ package com.ultreon.craft.server;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.OverridingMethodsMustInvokeSuper;
 import com.ultreon.craft.CommonConstants;
@@ -29,13 +30,12 @@ import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.CachedPlayer;
 import com.ultreon.craft.server.player.PermissionMap;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PollingExecutorService;
 import com.ultreon.craft.util.Shutdownable;
 import com.ultreon.craft.world.*;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.tuple.Pair;
-import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -75,7 +75,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final List<ServerDisposable> disposables = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Queue<Pair<ServerPlayer, Supplier<Packet<? extends ClientPacketHandler>>>> chunkNetworkQueue = new ArrayDeque<>();
-    private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
+    private final Map<UUID, ServerPlayer> players = Collections.synchronizedMap(Maps.newHashMap());
     private final ServerConnections connections;
     private final WorldStorage storage;
     protected InspectionNode<UltracraftServer> node;
@@ -91,7 +91,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private boolean sendingChunk;
     protected int maxPlayers = 10;
     private final Cache<String, CachedPlayer> cachedPlayers = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.HOURS).build();
-    private final Map<ElementID, ? extends ServerWorld> worlds;
+    private final Map<Identifier, ? extends ServerWorld> worlds;
     private final GameRules gameRules = new GameRules();
     private final PermissionMap permissions = new PermissionMap();
     private final CommandSender consoleSender = new ConsoleCommandSender();
@@ -127,7 +127,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         // TODO: Make dimension registry.
         this.worlds = Map.of(
-                new ElementID("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
+                new Identifier("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
         if (DebugFlags.INSPECTION_ENABLED.enabled()) {
@@ -663,18 +663,21 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     /**
      * Sends a chunk to all players that are within the render distance.
      *
-     * @param globalPos the global position of the chunk.
+     * @param pos the global position of the chunk.
      * @param chunk the chunk to send.
      * @throws IOException if an I/O error occurs.
      */
-    public void sendChunk(ChunkPos globalPos, Chunk chunk) throws IOException {
+    public void sendChunk(ChunkPos pos, Chunk chunk) throws IOException {
+        // Send the chunk to all players within the render distance.
+        LOGGER.debug("Sending chunk {} to {} players", pos, this.players.size());
+
         for (ServerPlayer player : this.players.values()) {
-            Vec3d chunkPos3D = globalPos.getChunkOrigin().add(World.CHUNK_SIZE / 2f, World.CHUNK_HEIGHT / 2f, World.CHUNK_SIZE / 2f);
-            Vec2d chunkPos2D = new Vec2d(chunkPos3D.x, chunkPos3D.z);
-            Vec2d playerPos2D = new Vec2d(player.getX(), player.getZ());
-            double dst = chunkPos2D.dst(playerPos2D);
+            Vec3d chunkCenter = pos.vec().add(World.CHUNK_SIZE / 2.0, World.CHUNK_SIZE / 2.0, World.CHUNK_SIZE / 2.0);
+            double dst = chunkCenter.dst(player.getPosition().div(World.CHUNK_SIZE));
             if (dst < this.getRenderDistance() * World.CHUNK_SIZE) {
-                player.sendChunk(globalPos, chunk);
+                player.sendChunk(pos, chunk);
+            } else {
+                UltracraftServer.LOGGER.warn("Player '{}' is too far away to receive chunk '{}'!", player.getName(), pos);
             }
         }
     }
@@ -784,7 +787,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.gameRules;
     }
 
-    public ServerWorld getWorld(ElementID name) {
+    public ServerWorld getWorld(Identifier name) {
         return this.worlds.get(name);
     }
 

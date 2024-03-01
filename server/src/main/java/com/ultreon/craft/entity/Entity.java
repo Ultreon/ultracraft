@@ -12,7 +12,7 @@ import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.text.Translations;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.BoundingBoxUtils;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.World;
@@ -76,8 +76,8 @@ public class Entity implements CommandSender {
     }
 
     public static @NotNull Entity loadFrom(World world, MapType data) {
-        ElementID typeId = ElementID.parse(data.getString("type"));
-        EntityType<?> type = Registries.ENTITY_TYPE.getElement(typeId);
+        Identifier typeId = Identifier.parse(data.getString("type"));
+        EntityType<?> type = Registries.ENTITY_TYPE.get(typeId);
         Entity entity = type.create(world);
 
         entity.id = data.getInt("id");
@@ -328,9 +328,11 @@ public class Entity implements CommandSender {
 
     /**
      * @return true if the entity is in the void, false otherwise.
+     * @deprecated the void doesn't exist anymore.
      */
+    @Deprecated(forRemoval = true)
     public boolean isInVoid() {
-        return this.y < World.WORLD_DEPTH - 64;
+        return false;
     }
 
     public BoundingBox getBoundingBox() {
@@ -509,7 +511,7 @@ public class Entity implements CommandSender {
     @Override
     public TextObject getDisplayName() {
         if (this.customName != null) return this.customName;
-        ElementID id1 = this.getType().getId();
+        Identifier id1 = this.getType().getId();
         if (id1 == null) return Translations.NULL_OBJECT;
         return TextObject.translation("%s.entity.%s.name".formatted(
                 id1.namespace(),

@@ -1,6 +1,6 @@
 package com.ultreon.craft.client.text;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.Locale;
 import java.util.Map;
@@ -8,9 +8,9 @@ import java.util.Map;
 public class Language {
     private final Locale locale;
     private final Map<String, String> languageMap;
-    private final ElementID id;
+    private final Identifier id;
 
-    public Language(Locale locale, Map<String, String> languageMap, ElementID id) {
+    public Language(Locale locale, Map<String, String> languageMap, Identifier id) {
         this.locale = locale;
         this.languageMap = languageMap;
         this.id = id;
@@ -27,7 +27,7 @@ public class Language {
         return this.locale;
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return this.id;
     }
 

@@ -16,8 +16,8 @@ import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public final class ClientWorld extends World implements Disposable {
     private final UltracraftClient client;
     private final Map<ChunkPos, ClientChunk> chunks = new HashMap<>();
     private int chunkRefresh;
-    private ChunkPos oldChunkPos = new ChunkPos(0, 0);
+    private ChunkPos oldChunkPos = new ChunkPos(0, 0, 0);
     private int time = 0;
 
     public ClientWorld(@NotNull UltracraftClient client) {
@@ -68,12 +68,22 @@ public final class ClientWorld extends World implements Disposable {
     }
 
     @Override
-    public ClientChunk getChunk(int x, int z) {
-        return (ClientChunk) super.getChunk(x, z);
+    public ClientChunk getChunk(int x, int y, int z) {
+        return (ClientChunk) super.getChunk(x, y, z);
+    }
+
+    @Override
+    public ClientChunk getChunk(Vec3i pos) {
+        return (ClientChunk) super.getChunk(pos);
     }
 
     @Override
     public @Nullable ClientChunk getChunkAt(@NotNull BlockPos pos) {
+        return (ClientChunk) super.getChunkAt(pos);
+    }
+
+    @Override
+    public @Nullable ClientChunk getChunkAt(@NotNull Vec3i pos) {
         return (ClientChunk) super.getChunkAt(pos);
     }
 
@@ -157,17 +167,24 @@ public final class ClientWorld extends World implements Disposable {
 
     public void loadChunk(ChunkPos pos, ClientChunk data) {
         var chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
-        if (chunk == null) chunk = data;
-        else {
+
+
+        if (chunk == null) {
+            World.LOGGER.debug("Loading chunk at {}", pos);
+            chunk = data;
+        } else {
             World.LOGGER.warn("Duplicate chunk packet detected! Chunk {}", pos);
             return;
         }
         LocalPlayer player = this.client.player;
         if (player == null) {
+            LOGGER.debug("Skipping chunk at {} because player is null", pos);
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
             return;
         }
-        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.config.get().renderDistance) {
+        double distance = new Vec3d(pos.x(), pos.y(), pos.z()).dst(new Vec3d(player.getChunkPos().x(), player.getChunkPos().y(), player.getChunkPos().z()));
+        if (distance > this.client.config.get().renderDistance) {
+            LOGGER.debug("Skipping chunk at {} because it's too far: distance {} > render distance {}", new Object[]{pos, distance, this.client.config.get().renderDistance});
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
@@ -196,7 +213,7 @@ public final class ClientWorld extends World implements Disposable {
                     Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
                     ChunkPos chunkPos = entry.getKey();
                     ClientChunk clientChunk = entry.getValue();
-                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.config.get().renderDistance) {
+                    if (new Vec3d(chunkPos.x(), chunkPos.y(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().y(), player.getChunkPos().z()) > this.client.config.get().renderDistance) {
                         iterator.remove();
                         clientChunk.dispose();
                         this.updateNeighbours(clientChunk);

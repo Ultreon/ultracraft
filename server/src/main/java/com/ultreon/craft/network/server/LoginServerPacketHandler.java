@@ -10,7 +10,7 @@ import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CLoginAcceptedPacket;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import net.fabricmc.api.EnvType;
 
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class LoginServerPacketHandler implements ServerPacketHandler {
-    private static final Map<ElementID, NetworkChannel> CHANNELS = new HashMap<>();
+    private static final Map<Identifier, NetworkChannel> CHANNELS = new HashMap<>();
     private final UltracraftServer server;
     private final Connection connection;
     private final PacketContext context;
@@ -30,7 +30,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         this.context = new PacketContext(null, connection, EnvType.SERVER);
     }
 
-    public static NetworkChannel registerChannel(ElementID id) {
+    public static NetworkChannel registerChannel(Identifier id) {
         NetworkChannel channel = NetworkChannel.create(id);
         LoginServerPacketHandler.CHANNELS.put(id, channel);
         return channel;
@@ -66,7 +66,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         packet.handlePacket(() -> new ModPacketContext(channel, null, this.connection, EnvType.SERVER));
     }
 
-    public NetworkChannel getChannel(ElementID channelId) {
+    public NetworkChannel getChannel(Identifier channelId) {
         return LoginServerPacketHandler.CHANNELS.get(channelId);
     }
 
@@ -94,11 +94,11 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
         final var player = this.server.loadPlayer(name, uuid, this.connection);
         this.connection.setPlayer(player);
 
+        UUID finalUuid = uuid;
+        this.server.placePlayer(player);
         Connection.LOGGER.info(name + " joined the server.");
 
-        this.server.placePlayer(player);
-
-        this.connection.send(new S2CLoginAcceptedPacket(uuid), PacketResult.onEither(() -> {
+        this.connection.send(new S2CLoginAcceptedPacket(finalUuid), PacketResult.onEither(() -> {
             this.connection.moveToInGame();
             this.connection.setHandler(new InGameServerPacketHandler(this.server, player, this.connection));
 

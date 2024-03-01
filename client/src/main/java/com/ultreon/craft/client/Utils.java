@@ -1,8 +1,10 @@
 package com.ultreon.craft.client;
 
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.data.types.StringType;
+import org.mozilla.javascript.Function;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -56,5 +58,17 @@ public class Utils {
         list.add(new StringType("UltreonTeam"));
         type.put("List", list);
         return type;
+    }
+
+    public static void onServer(Function function) {
+        UltracraftServer.invoke(() -> {
+            function.call(UltracraftClient.get().jsCtx, UltracraftClient.get().jsScope, UltracraftClient.get().jsScope, new Object[]{});
+        });
+    }
+
+    public static void onClient(Function function) {
+        UltracraftClient.invoke(() -> {
+            function.call(UltracraftClient.get().jsCtx, UltracraftClient.get().jsScope, UltracraftClient.get().jsScope, new Object[]{});
+        });
     }
 }

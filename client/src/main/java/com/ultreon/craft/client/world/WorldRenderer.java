@@ -23,7 +23,6 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.DisposableContainer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
@@ -35,8 +34,8 @@ import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.ElementID;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -56,7 +55,7 @@ import java.util.List;
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 import static com.ultreon.craft.client.UltracraftClient.crash;
 import static com.ultreon.craft.client.UltracraftClient.id;
-import static com.ultreon.craft.world.World.*;
+import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public final class WorldRenderer implements DisposableContainer {
     public static final float SCALE = 1;
@@ -71,7 +70,7 @@ public final class WorldRenderer implements DisposableContainer {
     private final Environment environment;
     private int visibleChunks;
     private int loadedChunks;
-    private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE);
+    private static final Vector3 CHUNK_DIMENSIONS = new Vector3(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
     private static final Vector3 HALF_CHUNK_DIMENSIONS = WorldRenderer.CHUNK_DIMENSIONS.cpy().scl(0.5f);
 
     private final ClientWorld world;
@@ -138,7 +137,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         this.breakingMeshes = new Array<>();
         for (int i = 0; i < 6; i++) {
-            BakedCubeModel bakedCubeModel = this.deferDispose(new BakedCubeModel(new ElementID("break_stage/stub_" + i), breakingTexRegions.get(i)));
+            BakedCubeModel bakedCubeModel = this.deferDispose(new BakedCubeModel(new Identifier("break_stage/stub_" + i), breakingTexRegions.get(i)));
             this.breakingMeshes.add(bakedCubeModel.getMesh());
         }
 
@@ -165,7 +164,7 @@ public final class WorldRenderer implements DisposableContainer {
 
     @NotNull
     private MeshMaterial createChunkOutline() {
-        Mesh mesh = this.deferDispose(WorldRenderer.buildOutlineBox(1 / 16f, CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE));
+        Mesh mesh = this.deferDispose(WorldRenderer.buildOutlineBox(1 / 16f, CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE));
 
         Material material = new Material();
         material.set(ColorAttribute.createDiffuse(0, 0f, 0f, 0.25f));
@@ -392,23 +391,23 @@ public final class WorldRenderer implements DisposableContainer {
 
             chunk.renderModels(output);
 
-            if (ImGuiOverlay.isChunkSectionBordersShown()) {
-                this.tmp.set(chunk.renderOffset);
-                Mesh mesh = this.sectionBorder;
-
-                int numIndices = mesh.getNumIndices();
-                int numVertices = mesh.getNumVertices();
-                Renderable renderable = new Renderable();
-                renderable.meshPart.mesh = mesh;
-                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
-                renderable.meshPart.offset = 0;
-                renderable.meshPart.primitiveType = GL_TRIANGLES;
-                renderable.material = this.sectionBorderMaterial;
-                Vector3 add = this.tmp.add(0, -WORLD_DEPTH, 0);
-                renderable.worldTransform.setToTranslationAndScaling(add, this.tmp1.set(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
-
-                output.add(verifyOutput(renderable));
-            }
+//            if (ExperimentalFeatures.CHUNK_SECTION_BORDERS.isEnabled() && ImGuiOverlay.isChunkSectionBordersShown()) {
+//                this.tmp.set(chunk.renderOffset);
+//                Mesh mesh = this.sectionBorder;
+//
+//                int numIndices = mesh.getNumIndices();
+//                int numVertices = mesh.getNumVertices();
+//                Renderable renderable = new Renderable();
+//                renderable.meshPart.mesh = mesh;
+//                renderable.meshPart.size = numIndices > 0 ? numIndices : numVertices;
+//                renderable.meshPart.offset = 0;
+//                renderable.meshPart.primitiveType = GL_TRIANGLES;
+//                renderable.material = this.sectionBorderMaterial;
+//                Vector3 add = this.tmp.add(0, 0, 0);
+//                renderable.worldTransform.setToTranslationAndScaling(add, this.tmp1.set(1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE, 1 / WorldRenderer.SCALE));
+//
+//                output.add(verifyOutput(renderable));
+//            }
 
             this.visibleChunks++;
 
@@ -508,8 +507,8 @@ public final class WorldRenderer implements DisposableContainer {
     private static List<ClientChunk> chunksInViewSorted(Collection<ClientChunk> chunks, Player player) {
         List<ClientChunk> list = new ArrayList<>(chunks);
         list = list.stream().sorted((o1, o2) -> {
-            Vec3d mid1 = WorldRenderer.TMP_3D_A.set(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_HEIGHT, o1.getOffset().z + (float) CHUNK_SIZE);
-            Vec3d mid2 = WorldRenderer.TMp_3D_B.set(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_HEIGHT, o2.getOffset().z + (float) CHUNK_SIZE);
+            Vec3d mid1 = WorldRenderer.TMP_3D_A.set(o1.getOffset().x + (float) CHUNK_SIZE, o1.getOffset().y + (float) CHUNK_SIZE, o1.getOffset().z + (float) CHUNK_SIZE);
+            Vec3d mid2 = WorldRenderer.TMp_3D_B.set(o2.getOffset().x + (float) CHUNK_SIZE, o2.getOffset().y + (float) CHUNK_SIZE, o2.getOffset().z + (float) CHUNK_SIZE);
             return Double.compare(mid1.dst(player.getPosition()), mid2.dst(player.getPosition()));
         }).toList();
         return list;

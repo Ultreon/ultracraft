@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.resources.ResourceManager;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.Logger;
 import java.io.Reader;
 import java.io.StringReader;
@@ -14,13 +14,13 @@ import java.util.*;
 
 public class LanguageManager {
     public static final LanguageManager INSTANCE = new LanguageManager();
-    public static final Registry<Language> REGISTRY = Registry.<Language>builder(new ElementID("languages")).build();
+    public static final Registry<Language> REGISTRY = Registry.<Language>builder(new Identifier("languages")).build();
     private static Locale currentLanguage;
     private final Map<Locale, Language> languages = new HashMap<>();
     private final Set<Locale> locales = new HashSet<>();
-    private final Set<ElementID> ids = new HashSet<>();
-    private final Map<Locale, ElementID> locale2id = new HashMap<>();
-    private final Map<ElementID, Locale> id2locale = new HashMap<>();
+    private final Set<Identifier> ids = new HashSet<>();
+    private final Map<Locale, Identifier> locale2id = new HashMap<>();
+    private final Map<Identifier, Locale> id2locale = new HashMap<>();
     private Logger logger = (level, message, t) -> {};
 
     private LanguageManager() {
@@ -35,7 +35,7 @@ public class LanguageManager {
         LanguageManager.currentLanguage = currentLanguage;
     }
 
-    public Language load(Locale locale, ElementID id, ResourceManager resourceManager) {
+    public Language load(Locale locale, Identifier id, ResourceManager resourceManager) {
         Gson gson = new Gson();
         String newPath = "languages/" + id.path() + ".json";
         List<byte[]> assets = resourceManager.getAllDataById(id.withPath(newPath));
@@ -51,7 +51,7 @@ public class LanguageManager {
         return language;
     }
 
-    public Language load(Locale locale, ElementID id, Reader reader) {
+    public Language load(Locale locale, Identifier id, Reader reader) {
         Gson gson = new Gson();
         Map<String, String> languageMap = new HashMap<>();
         this.loadFile(languageMap, gson.fromJson(reader, JsonObject.class));
@@ -65,7 +65,7 @@ public class LanguageManager {
         return this.languages.get(locale);
     }
 
-    public void register(Locale locale, ElementID id) {
+    public void register(Locale locale, Identifier id) {
         if (this.locales.contains(locale)) {
             this.getLogger().warn("Locale overridden: " + locale.getLanguage());
         }
@@ -79,11 +79,11 @@ public class LanguageManager {
         this.id2locale.put(id, locale);
     }
 
-    public Locale getLocale(ElementID id) {
+    public Locale getLocale(Identifier id) {
         return this.id2locale.get(id);
     }
 
-    public ElementID getLanguageID(Locale locale) {
+    public Identifier getLanguageID(Locale locale) {
         return this.locale2id.get(locale);
     }
 
@@ -101,7 +101,7 @@ public class LanguageManager {
         return new HashSet<>(this.locales);
     }
 
-    public Set<ElementID> getLanguageIDs() {
+    public Set<Identifier> getLanguageIDs() {
         return new HashSet<>(this.ids);
     }
 

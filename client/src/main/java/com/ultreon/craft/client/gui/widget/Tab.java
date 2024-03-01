@@ -8,14 +8,14 @@ import com.ultreon.craft.client.gui.screens.tabs.TabBuilder;
 import com.ultreon.craft.client.gui.screens.tabs.TabContent;
 import com.ultreon.craft.client.gui.screens.tabs.TabbedUI;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Tab extends Button<Tab> {
-    private static final ElementID TEXTURE = new ElementID("textures/gui/tabs.png");
+    private static final Identifier TEXTURE = new Identifier("textures/gui/tabs.png");
     private final TabbedUI parent;
     private final boolean bottom;
     private final int index;
@@ -23,7 +23,7 @@ public class Tab extends Button<Tab> {
     public boolean enabled = true;
     public boolean visible = true;
     boolean selected = false;
-    private ElementID icon;
+    private Identifier icon;
     private TabContent content;
     private TextObject title;
 
@@ -112,7 +112,7 @@ public class Tab extends Button<Tab> {
         }
     }
 
-    public Tab icon(ElementID icon) {
+    public Tab icon(Identifier icon) {
         this.icon = icon;
         return this;
     }

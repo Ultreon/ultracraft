@@ -5,7 +5,7 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.events.WorldLifecycleEvent;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
@@ -62,7 +62,7 @@ public abstract class Biome {
 
         DomainWarping domainWarping = new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed)));
 
-        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.layers, this.features);
+        return new BiomeGenerator(this, noiseInstance, domainWarping, this.layers, this.features);
     }
 
     public NoiseConfig getSettings() {
@@ -83,12 +83,12 @@ public abstract class Biome {
         return mapType;
     }
 
-    private ElementID getId() {
+    private Identifier getId() {
         return Registries.BIOME.getId(this);
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getElement(ElementID.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.get(Identifier.tryParse(mapType.getString("id", "plains")));
     }
 
     public boolean isOcean() {

@@ -1,6 +1,6 @@
 package com.ultreon.craft.component;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +11,7 @@ public interface GameComponentHolder<T extends GameComponent<?>> {
         return Collections.unmodifiableCollection(this.componentRegistry().values());
     }
 
-    Map<ElementID, T> componentRegistry();
+    Map<Identifier, T> componentRegistry();
 
-    <T2 extends GameComponent<?>> T2 getComponent(ElementID id, T2[] typeGetter);
+    <T2 extends GameComponent<?>> T2 getComponent(Identifier id, T2[] typeGetter);
 }

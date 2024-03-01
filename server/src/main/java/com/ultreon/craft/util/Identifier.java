@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
-public final class ElementID {
+public final class Identifier {
     private final @NotNull String namespace;
     private final @NotNull String path;
 
@@ -34,7 +34,7 @@ public final class ElementID {
         return CommonConstants.NAMESPACE;
     }
 
-    public ElementID(@NotNull String namespace, @NotNull String path) {
+    public Identifier(@NotNull String namespace, @NotNull String path) {
         testNamespace(namespace);
         testPath(path);
 
@@ -42,7 +42,7 @@ public final class ElementID {
         this.path = path;
     }
 
-    public ElementID(@NotNull String name) {
+    public Identifier(@NotNull String name) {
         String[] split = name.split(":", 2);
         if (split.length == 2) {
             this.namespace = testNamespace(split[0]);
@@ -55,18 +55,18 @@ public final class ElementID {
 
     @NotNull
     @Contract("_ -> new")
-    public static ElementID parse(
+    public static Identifier parse(
             @NotNull String name) {
-        return new ElementID(name);
+        return new Identifier(name);
     }
 
     @Nullable
     @Contract("null -> null")
-    public static ElementID tryParse(@Nullable String name) {
+    public static Identifier tryParse(@Nullable String name) {
         if (name == null) return null;
 
         try {
-            return new ElementID(name);
+            return new Identifier(name);
         } catch (Exception e) {
             return null;
         }
@@ -93,7 +93,7 @@ public final class ElementID {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || this.getClass() != o.getClass()) return false;
-        ElementID that = (ElementID) o;
+        Identifier that = (Identifier) o;
         return this.namespace.equals(that.namespace) && this.path.equals(that.path);
     }
 
@@ -128,28 +128,28 @@ public final class ElementID {
     }
 
     @Contract("_ -> new")
-    public ElementID withNamespace(String namespace) {
-        return new ElementID(namespace, this.path);
+    public Identifier withNamespace(String namespace) {
+        return new Identifier(namespace, this.path);
     }
 
     @Contract("_ -> new")
-    public ElementID withPath(String path) {
-        return new ElementID(this.namespace, path);
+    public Identifier withPath(String path) {
+        return new Identifier(this.namespace, path);
     }
 
     @Contract("_ -> new")
-    public ElementID mapLocation(UnaryOperator<String> location) {
-        return new ElementID(location.apply(this.namespace), this.path);
+    public Identifier mapLocation(UnaryOperator<String> location) {
+        return new Identifier(location.apply(this.namespace), this.path);
     }
 
     @Contract("_ -> new")
-    public ElementID mapPath(UnaryOperator<String> path) {
-        return new ElementID(this.namespace, path.apply(this.path));
+    public Identifier mapPath(UnaryOperator<String> path) {
+        return new Identifier(this.namespace, path.apply(this.path));
     }
 
     @Contract("_, _ -> new")
-    public ElementID map(UnaryOperator<String> path, UnaryOperator<String> location) {
-        return new ElementID(location.apply(this.namespace), path.apply(this.path));
+    public Identifier map(UnaryOperator<String> path, UnaryOperator<String> location) {
+        return new Identifier(location.apply(this.namespace), path.apply(this.path));
     }
 
     public <T> T reduce(BiFunction<String, String, T> func) {

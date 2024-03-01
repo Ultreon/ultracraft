@@ -5,10 +5,11 @@ import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.experiments.ExperimentalFeature;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.recipe.RecipeType;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.SoundEvent;
@@ -29,13 +30,14 @@ public final class Registries {
     public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(RegistryKeys.DAMAGE_SOURCE);
     public static final Registry<RecipeType> RECIPE_TYPE = Registries.create(RegistryKeys.RECIPE_TYPE);
     public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = Registries.create(RegistryKeys.BLOCK_ENTITY_TYPE);
+    public static final Registry<ExperimentalFeature> EXPERIMENTAL_FEATURE = Registries.create(RegistryKeys.EXPERIMENTAL_FEATURE);
 
     public static void nopInit() {
         // Load class
     }
 
     @SafeVarargs
-    public static <T> Registry<T> create(ElementID id, T... typeGetter) {
+    public static <T> Registry<T> create(Identifier id, T... typeGetter) {
         Registry<T> registry = Registry.builder(id, typeGetter).build();
         Registries.REGISTRY.register(id, registry);
         return registry;

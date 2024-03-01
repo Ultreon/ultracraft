@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,14 +54,14 @@ public class ItemStack {
         this.item = item;
         this.count = count;
         this.data = data;
-        this.checkCount(); // Note: used method so mods can use @Redirect to remove stack limits.
+        this.checkCount(); // Note: used method so mods can use @Redirect to removeFirst stack limits.
     }
 
     public static ItemStack load(MapType data) {
-        @Nullable ElementID id = ElementID.tryParse(data.getString("item"));
+        @Nullable Identifier id = Identifier.tryParse(data.getString("item"));
         if (id == null) return new ItemStack();
 
-        Item item = Registries.ITEM.getElement(id);
+        Item item = Registries.ITEM.get(id);
         if (item == null || item == Items.AIR) return new ItemStack();
 
         int count = data.getInt("count", 0);

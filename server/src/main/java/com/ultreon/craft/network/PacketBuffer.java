@@ -4,7 +4,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.TypeRegistry;
@@ -71,13 +71,13 @@ public class PacketBuffer extends ByteBuf {
         this.buf.writeBytes(array);
     }
 
-    public ElementID readId() {
+    public Identifier readId() {
         var location = this.readUTF(100);
         var path = this.readUTF(200);
-        return new ElementID(location, path);
+        return new Identifier(location, path);
     }
 
-    public void writeId(ElementID id) {
+    public void writeId(Identifier id) {
         this.writeUTF(id.namespace(), 100);
         this.writeUTF(id.path(), 200);
     }
@@ -403,14 +403,16 @@ public class PacketBuffer extends ByteBuf {
 
     public ChunkPos readChunkPos() {
         int x = this.readInt();
+        int y = this.readInt();
         int z = this.readInt();
 
-        return new ChunkPos(x, z);
+        return new ChunkPos(x, y, z);
     }
 
     @CanIgnoreReturnValue
     public ByteBuf writeChunkPos(ChunkPos pos) {
         this.buf.writeInt(pos.x());
+        this.buf.writeInt(pos.y());
         this.buf.writeInt(pos.z());
         return this.buf;
     }

@@ -1,13 +1,11 @@
 package com.ultreon.craft.client.model.item;
 
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.item.Item;
-import com.ultreon.craft.util.ElementID;
-import org.lwjgl.opengl.GL20;
+import com.ultreon.craft.util.Identifier;
 
 public class FlatItemModel implements ItemModel {
     private final Item item;
@@ -31,7 +29,7 @@ public class FlatItemModel implements ItemModel {
     }
 
     @Override
-    public ElementID resourceId() {
+    public Identifier resourceId() {
         return item.getId();
     }
 

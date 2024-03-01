@@ -19,6 +19,8 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.util.Utils;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.ServerWorld.Region;
+import com.ultreon.craft.world.gen.WorldAccess;
+import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
@@ -48,14 +50,16 @@ import java.util.concurrent.*;
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @ApiStatus.NonExtendable
 @ParametersAreNonnullByDefault
-public abstract class World implements ServerDisposable {
+public abstract class World implements ServerDisposable, WorldAccess {
     public static final int CHUNK_SIZE = 16;
-    public static final int CHUNK_HEIGHT = 256;
-    public static final int WORLD_HEIGHT = 256;
-    public static final int WORLD_DEPTH = 0;
+    /**
+     * @deprecated use {@link #CHUNK_SIZE} instead
+     */
+    @Deprecated
+    public static final int CHUNK_HEIGHT = CHUNK_SIZE;
     public static final Marker MARKER = MarkerFactory.getMarker("World");
     public static final int REGION_SIZE = 32;
-    public static final ElementID OVERWORLD = new ElementID("overworld");
+    public static final Identifier OVERWORLD = new Identifier("overworld");
     public static final float SEA_LEVEL = 64;
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
@@ -74,8 +78,9 @@ public abstract class World implements ServerDisposable {
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new LinkedHashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
-    private DimensionInfo info = DimensionInfo.OVERWORLD;
+    private final DimensionInfo info = DimensionInfo.OVERWORLD;
     protected UUID uid = Utils.ZEROED_UUID;
+    private final Map<Vec2i, ChunkColumnInfo> chunkColumns = new ConcurrentHashMap<>();
 
     protected World() {
         // Shh, the original seed was 512.
@@ -92,20 +97,24 @@ public abstract class World implements ServerDisposable {
 
     static List<ChunkPos> getChunksAround(World world, Vec3d pos) {
         int startX = (int) (pos.x - world.getRenderDistance() * World.CHUNK_SIZE);
+        int startY = (int) (pos.y - world.getRenderDistance() * World.CHUNK_SIZE);
         int startZ = (int) (pos.z - world.getRenderDistance() * World.CHUNK_SIZE);
         int endX = (int) (pos.x + world.getRenderDistance() * World.CHUNK_SIZE);
+        int endY = (int) (pos.y + world.getRenderDistance() * World.CHUNK_SIZE);
         int endZ = (int) (pos.z + world.getRenderDistance() * World.CHUNK_SIZE);
 
         List<ChunkPos> toCreate = new ArrayList<>();
         for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
-            for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
-                ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
-                toCreate.add(chunkPos);
-                if (x >= pos.x - World.CHUNK_SIZE
+            for (int y = startY; y >= endY; y -= World.CHUNK_SIZE) {
+                for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
+                    ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
+                    toCreate.add(chunkPos);
+                    if (x >= pos.x - World.CHUNK_SIZE
                         && x <= pos.x + World.CHUNK_SIZE
+                        && y >= pos.y - World.CHUNK_SIZE
+                        && y <= pos.y + World.CHUNK_SIZE
                         && z >= pos.z - World.CHUNK_SIZE
                         && z <= pos.z + World.CHUNK_SIZE) {
-                    for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
                         chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
                         toCreate.add(chunkPos);
                     }
@@ -117,45 +126,67 @@ public abstract class World implements ServerDisposable {
     }
 
     public static ChunkPos blockToChunkPos(Vector3 pos) {
-        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.y, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos blockToChunkPos(Vec3d pos) {
-        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv((int) pos.x, World.CHUNK_SIZE), Math.floorDiv((int) pos.y, World.CHUNK_SIZE), Math.floorDiv((int) pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos blockToChunkPos(Vec3i pos) {
-        return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x, World.CHUNK_SIZE), Math.floorDiv(pos.y, World.CHUNK_SIZE), Math.floorDiv(pos.z, World.CHUNK_SIZE));
     }
 
     public static ChunkPos toChunkPos(BlockPos pos) {
-        return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.y(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
     }
 
     public static ChunkPos toChunkPos(int x, int y, int z) {
-        return new ChunkPos(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
+        return new ChunkPos(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(y, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
     }
 
-    public static Vec2i toChunkVec(BlockPos pos) {
-        return new Vec2i(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
+    public static Vec3i toChunkVec(BlockPos pos) {
+        return new Vec3i(Math.floorDiv(pos.x(), World.CHUNK_SIZE), Math.floorDiv(pos.y(), World.CHUNK_SIZE), Math.floorDiv(pos.z(), World.CHUNK_SIZE));
     }
 
-    public static Vec2i toChunkVec(int x, int y, int z) {
-        return new Vec2i(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
+    public static Vec3i toChunkVec(int x, int y, int z) {
+        return new Vec3i(Math.floorDiv(x, World.CHUNK_SIZE), Math.floorDiv(y, World.CHUNK_SIZE), Math.floorDiv(z, World.CHUNK_SIZE));
     }
 
     public List<ChunkPos> getChunksAround(Vec3d pos) {
         int renderDistance = this.getRenderDistance();
-        int startX = (int) (pos.x - renderDistance * World.CHUNK_SIZE);
-        int startZ = (int) (pos.z - renderDistance * World.CHUNK_SIZE);
-        int endX = (int) (pos.x + renderDistance * World.CHUNK_SIZE);
-        int endZ = (int) (pos.z + renderDistance * World.CHUNK_SIZE);
+
+        ChunkPos center = World.toChunkPos((int) pos.x, (int) pos.y, (int) pos.z);
+
+        UltracraftServer.LOGGER.debug(String.format("Center: (%s)", center));
+
+        int startX = center.x() - renderDistance;
+        int startY = center.y() - renderDistance;
+        int startZ = center.z() - renderDistance;
+        int endX = center.x() + renderDistance;
+        int endY = center.y() + renderDistance;
+        int endZ = center.z() + renderDistance;
+
+        ChunkPos start = World.blockToChunkPos(new Vec3i(startX, startY, startZ));
+        ChunkPos end = World.blockToChunkPos(new Vec3i(endX, endY, endZ));
+
+//        UltracraftServer.LOGGER.debug(String.format("Start: (%s) - End: (%s)", start, end));
 
         List<ChunkPos> toCreate = new ArrayList<>();
-        for (int x = startX; x <= endX; x += World.CHUNK_SIZE) {
-            for (int z = startZ; z <= endZ; z += World.CHUNK_SIZE) {
-                ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
-                toCreate.add(chunkPos);
+        for (int x = startX; x <= endX; x++) {
+            for (int y = startY; y <= endY; y++){
+                for (int z = startZ; z <= endZ; z++) {
+                    ChunkPos chunkPos = new ChunkPos(x, y, z);
+//                    UltracraftServer.LOGGER.debug(String.format("Adding: (%s)", chunkPos));
+//                    Vec3d chunkVec = new Vec3d(x, y, z);
+                    double abs = Math.abs(pos.d().div(World.CHUNK_SIZE).dst(x, y, z));
+                    if (abs < renderDistance) {
+//                        UltracraftServer.LOGGER.debug(String.format("Actually Adding: (%s)", chunkPos));
+                        toCreate.add(chunkPos);
+                    } else {
+//                        UltracraftServer.LOGGER.debug(String.format("Not Adding: (%s) - Too Far: (%s) < (%s)", chunkPos, abs, renderDistance));
+                    }
+                }
             }
         }
 
@@ -165,8 +196,7 @@ public abstract class World implements ServerDisposable {
     protected abstract int getRenderDistance();
 
     private boolean shouldStayLoaded(ChunkPos pos) {
-        return false;
-//		return this.isSpawnChunk(pos) || this.isAlwaysLoaded(pos);
+		return this.isSpawnChunk(pos) || this.isAlwaysLoaded(pos);
     }
 
     public boolean isAlwaysLoaded(ChunkPos pos) {
@@ -235,19 +265,6 @@ public abstract class World implements ServerDisposable {
     /**
      * Sets the block at the specified coordinates, with the given block type.
      *
-     * @param blockPos the position
-     * @param block    the block type to set
-     * @return true if the block was successfully set, false otherwise
-     */
-    public boolean set(BlockPos blockPos, Block block) {
-        this.checkThread();
-
-        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
-    }
-
-    /**
-     * Sets the block at the specified coordinates, with the given block type.
-     *
      * @param x     the x-coordinate
      * @param y     the y-coordinate
      * @param z     the z-coordinate
@@ -262,20 +279,8 @@ public abstract class World implements ServerDisposable {
         Chunk chunk = this.getChunkAt(x, y, z);
         if (chunk == null) return false;
 
-        BlockPos cp = World.toLocalBlockPos(x, y, z);
+        BlockPos cp = World.localizeBlock(x, y, z);
         return chunk.set(cp.x(), cp.y(), cp.z(), block);
-    }
-
-    /**
-     * Gets a block at the specified coordinates.
-     *
-     * @param pos the position
-     * @return the block at the specified coordinates
-     */
-    public Block get(BlockPos pos) {
-        this.checkThread();
-
-        return this.get(pos.x(), pos.y(), pos.z());
     }
 
     /**
@@ -293,7 +298,7 @@ public abstract class World implements ServerDisposable {
         if (chunkAt == null) return Blocks.AIR;
         if (!chunkAt.ready) return Blocks.AIR;
 
-        BlockPos cp = World.toLocalBlockPos(x, y, z);
+        BlockPos cp = World.localizeBlock(x, y, z);
         return chunkAt.getFast(cp.x(), cp.y(), cp.z());
     }
 
@@ -305,8 +310,8 @@ public abstract class World implements ServerDisposable {
      * @param pos the world space block position
      * @return the block position in chunk space
      */
-    public static BlockPos toLocalBlockPos(BlockPos pos) {
-        return World.toLocalBlockPos(pos.x(), pos.y(), pos.z());
+    public static BlockPos localize(BlockPos pos) {
+        return World.localizeBlock(pos.x(), pos.y(), pos.z());
     }
 
     /**
@@ -317,15 +322,13 @@ public abstract class World implements ServerDisposable {
      * @param z the z coordinate in world space
      * @return the block position in chunk space
      */
-    public static BlockPos toLocalBlockPos(int x, int y, int z) {
-        int cx = x % World.CHUNK_SIZE;
-        int cy = y % (World.CHUNK_HEIGHT + 1);
-        int cz = z % World.CHUNK_SIZE;
+    public static BlockPos localizeBlock(int x, int y, int z) {
+        return new BlockPos(localize(x), localize(y), localize(z));
+    }
 
-        if (cx < 0) cx += World.CHUNK_SIZE;
-        if (cz < 0) cz += World.CHUNK_SIZE;
-
-        return new BlockPos(cx, cy, cz);
+    public static int localize(int coordinate) {
+        int localized = coordinate % World.CHUNK_SIZE;
+        return localized < 0 ? localized + World.CHUNK_SIZE : localized;
     }
 
     /**
@@ -337,12 +340,13 @@ public abstract class World implements ServerDisposable {
      * @param tmp a temporary vector to store the result
      * @return the block position in chunk space
      */
-    public static Vec3i toLocalBlockPos(int x, int y, int z, Vec3i tmp) {
+    public static Vec3i localizeBlock(int x, int y, int z, Vec3i tmp) {
         tmp.x = x % World.CHUNK_SIZE;
-        tmp.y = y % (World.CHUNK_HEIGHT + 1);
+        tmp.y = y % World.CHUNK_SIZE;
         tmp.z = z % World.CHUNK_SIZE;
 
         if (tmp.x < 0) tmp.x += World.CHUNK_SIZE;
+        if (tmp.y < 0) tmp.y += World.CHUNK_SIZE;
         if (tmp.z < 0) tmp.z += World.CHUNK_SIZE;
 
         return tmp;
@@ -354,15 +358,31 @@ public abstract class World implements ServerDisposable {
      * @param x the x coordinate in world space
      * @param z the z coordinate in world space
      * @return the chunk position in region space
+     * @deprecated use {@link #localizeChunk(int, int, int)} instead
      */
-    public static ChunkPos toLocalChunkPos(int x, int z) {
+    @Deprecated
+    public static ChunkPos localizeChunk(int x, int z) {
+        return localizeChunk(x, 0, z);
+    }
+
+    /**
+     * Converts a world space chunk position to a region space chunk
+     *
+     * @param x the x coordinate in world space
+     * @param y the y coordinate in world space
+     * @param z the z coordinate in world space
+     * @return the chunk position in region space
+     */
+    public static ChunkPos localizeChunk(int x, int y, int z) {
         int cx = x % World.REGION_SIZE;
+        int cy = y % World.REGION_SIZE;
         int cz = z % World.REGION_SIZE;
 
         if (cx < 0) cx += World.REGION_SIZE;
+        if (cy < 0) cy += World.REGION_SIZE;
         if (cz < 0) cz += World.REGION_SIZE;
 
-        return new ChunkPos(cx, cz);
+        return new ChunkPos(cx, cy, cz);
     }
 
     /**
@@ -371,26 +391,35 @@ public abstract class World implements ServerDisposable {
      * @param pos the chunk position in world space
      * @return the chunk position in region space
      */
-    public static ChunkPos toLocalChunkPos(ChunkPos pos) {
-        return World.toLocalChunkPos(pos.x(), pos.z());
+    public static ChunkPos localize(ChunkPos pos) {
+        return World.localizeChunk(pos.x(), pos.y(), pos.z());
     }
 
     @Nullable
     public abstract Chunk getChunk(ChunkPos pos);
 
+    @Deprecated
     public Chunk getChunk(int x, int z) {
-        return this.getChunk(new ChunkPos(x, z));
+        return this.getChunk(new ChunkPos(x, 0, z));
+    }
+
+    public Chunk getChunk(int x, int y, int z) {
+        return this.getChunk(new ChunkPos(x, y, z));
+    }
+
+    @Override
+    public Chunk getChunk(Vec3i pos) {
+        return (Chunk) WorldAccess.super.getChunk(pos);
+    }
+
+    @Override
+    public @Nullable Chunk getChunkAt(Vec3i pos) {
+        return (Chunk) WorldAccess.super.getChunkAt(pos);
     }
 
     @Nullable
     public Chunk getChunkAt(int x, int y, int z) {
-        int chunkX = Math.floorDiv(x, World.CHUNK_SIZE);
-        int chunkZ = Math.floorDiv(z, World.CHUNK_SIZE);
-
-        if (this.isOutOfWorldBounds(x, y, z)) return null;
-
-        ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-        return this.getChunk(chunkPos);
+        return (Chunk) WorldAccess.super.getChunkAt(x, y, z);
     }
 
     @Nullable
@@ -399,13 +428,13 @@ public abstract class World implements ServerDisposable {
     }
 
     public boolean isOutOfWorldBounds(BlockPos pos) {
-        return pos.y() < World.WORLD_DEPTH || pos.y() >= World.WORLD_HEIGHT
+        return pos.y() < -30000000 || pos.y() >= 30000000
                 || pos.x() < -30000000 || pos.x() > 30000000
                 || pos.z() < -30000000 || pos.z() > 30000000;
     }
 
     public boolean isOutOfWorldBounds(int x, int y, int z) {
-        return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
+        return y < -30000000 || y > 30000000
                 || x < -30000000 || x > 30000000
                 || z < -30000000 || z > 30000000;
     }
@@ -418,18 +447,28 @@ public abstract class World implements ServerDisposable {
      * @return The highest block in the column, or -1 if the chunk isn't loaded.
      */
     public int getHighest(int x, int z) {
-        Chunk chunkAt = this.getChunkAt(x, 0, z);
-        if (chunkAt == null) return World.WORLD_DEPTH;
+        Chunk chunkAt = this.getChunkAt(x, getHighestChunkY(x, z), z);
+        if (chunkAt == null) return Integer.MIN_VALUE;
 
-        // FIXME: Optimize by using a heightmap.
-        for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
-            if (!this.get(x, y, z).isAir()) return y + 1;
-        }
-        return 0;
+        return chunkAt.getHighestBlock(x, z);
     }
 
+    private int getHighestChunkY(int x, int z) {
+        ChunkColumnInfo chunkColumnInfo = getChunkColumnInfo(x, z);
+        if (chunkColumnInfo == null) return Integer.MIN_VALUE;
+        return chunkColumnInfo.getHighestChunk() * World.CHUNK_SIZE;
+    }
+
+    private @Nullable ChunkColumnInfo getChunkColumnInfo(int x, int z) {
+        return this.chunkColumns.get(new Vec2i(x, z));
+    }
+
+    /**
+     * @deprecated Impossible to use due to infinite world height and depth.
+     */
+    @Deprecated
     public void setColumn(int x, int z, Block block) {
-        this.setColumn(x, z, World.CHUNK_HEIGHT, block);
+        this.setColumn(x, z, 256, block);
     }
 
     public void setColumn(int x, int z, int maxY, Block block) {
@@ -453,7 +492,6 @@ public abstract class World implements ServerDisposable {
      * @param block  the block to be set in the specified area
      * @return a {@link CompletableFuture} representing the asynchronous operation
      * @see #set(int, int, int, Block)
-     * @see #setColumn(int, int, Block)
      */
     public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, Block block) {
         return CompletableFuture.runAsync(() -> {
@@ -488,10 +526,18 @@ public abstract class World implements ServerDisposable {
     @ApiStatus.Internal
     public void updateNeighbours(Chunk chunk) {
         ChunkPos pos = chunk.getPos();
-        this.updateChunk(this.getChunk(new ChunkPos(pos.x() - 1, pos.z())));
-        this.updateChunk(this.getChunk(new ChunkPos(pos.x() + 1, pos.z())));
-        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.z() - 1)));
-        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.z() + 1)));
+
+        // X-Axis
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x() - 1, pos.y(), pos.z())));
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x() + 1, pos.y(), pos.z())));
+
+        // Y-Axis
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.y() - 1, pos.z())));
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.y() + 1, pos.z())));
+
+        // Z-Axis
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.y(), pos.z() - 1)));
+        this.updateChunk(this.getChunk(new ChunkPos(pos.x(), pos.y(), pos.z() + 1)));
     }
 
     @ApiStatus.Internal
@@ -647,7 +693,7 @@ public abstract class World implements ServerDisposable {
     public void startBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return;
-        BlockPos localBlockPos = World.toLocalBlockPos(breaking);
+        BlockPos localBlockPos = World.localize(breaking);
         chunk.startBreaking(localBlockPos.x(), localBlockPos.y(), localBlockPos.z());
     }
 
@@ -662,7 +708,7 @@ public abstract class World implements ServerDisposable {
     public BreakResult continueBreaking(BlockPos breaking, float amount, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return BreakResult.FAILED;
-        BlockPos localBlockPos = World.toLocalBlockPos(breaking);
+        BlockPos localBlockPos = World.localize(breaking);
         Block block = this.get(breaking);
 
         if (block.isAir()) return BreakResult.FAILED;
@@ -679,7 +725,7 @@ public abstract class World implements ServerDisposable {
     public void stopBreaking(BlockPos breaking, Player breaker) {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return;
-        BlockPos localBlockPos = World.toLocalBlockPos(breaking);
+        BlockPos localBlockPos = World.localize(breaking);
         chunk.stopBreaking(localBlockPos.x(), localBlockPos.y(), localBlockPos.z());
     }
 
@@ -692,7 +738,7 @@ public abstract class World implements ServerDisposable {
     public float getBreakProgress(BlockPos pos) {
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return -1.0F;
-        BlockPos localBlockPos = World.toLocalBlockPos(pos);
+        BlockPos localBlockPos = World.localize(pos);
         return chunk.getBreakProgress(localBlockPos.x(), localBlockPos.y(), localBlockPos.z());
     }
 
@@ -710,7 +756,7 @@ public abstract class World implements ServerDisposable {
      * @param spawnZ the z position of the spawn point
      */
     public void setSpawnPoint(int spawnX, int spawnZ) {
-        this.spawnPoint.set(spawnX, this.getHighest(spawnX, spawnZ), spawnZ);
+        this.spawnPoint.set(spawnX, 256, spawnZ);
     }
 
     /**
@@ -721,9 +767,11 @@ public abstract class World implements ServerDisposable {
      */
     public boolean isSpawnChunk(ChunkPos pos) {
         int x = pos.x();
+        int y = pos.y();
         int z = pos.z();
 
         return this.spawnPoint.x - 1 <= x && this.spawnPoint.x + 1 >= x &&
+               y >= 0 && y <= 16 &&
                 this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
     }
 
@@ -734,7 +782,7 @@ public abstract class World implements ServerDisposable {
      */
     public BlockPos getSpawnPoint() {
         int highest = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
-        if (highest != World.WORLD_DEPTH)
+        if (highest != Integer.MIN_VALUE)
             this.spawnPoint.y = highest;
 
         return new BlockPos(this.spawnPoint);
@@ -789,9 +837,9 @@ public abstract class World implements ServerDisposable {
     }
 
     public Biome getBiome(BlockPos pos) {
-        BlockPos localPos = World.toLocalBlockPos(pos);
+        BlockPos localPos = World.localize(pos);
         Chunk chunk = this.getChunkAt(pos);
-        if (chunk == null) return null;
+        if (chunk == null) return Biomes.PLAINS;
         return chunk.getBiome(localPos.x(), localPos.z());
     }
 
@@ -815,14 +863,14 @@ public abstract class World implements ServerDisposable {
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return;
 
-        chunk.setBlockEntity(World.toLocalBlockPos(pos), blockEntity);
+        chunk.setBlockEntity(World.localize(pos), blockEntity);
     }
 
     public BlockEntity getBlockEntity(BlockPos pos) {
         Chunk chunk = this.getChunkAt(pos);
         if (chunk == null) return null;
 
-        BlockPos localPos = World.toLocalBlockPos(pos);
+        BlockPos localPos = World.localize(pos);
         return chunk.getBlockEntity(localPos.x(), localPos.y(), localPos.z());
     }
 
@@ -834,5 +882,30 @@ public abstract class World implements ServerDisposable {
         if (this.isClientSide()) return;
 
         this.spawn(new DroppedItem(this, itemStack, position, velocity));
+    }
+
+    public int ascend(int x, int y, int z) {
+        while (true) {
+            if (this.get(x, y, z).isAir())
+                return y;
+            y++;
+        }
+    }
+
+    public int ascend(int x, int y, int z, int height) {
+        while (true) {
+            if (!this.get(x, y, z).isAir()) {
+                y++;
+                continue;
+            }
+
+            for (int i = 0; i < height; i++) {
+                if (this.get(x, y + i, z).isAir()) {
+                    return y;
+                }
+            }
+
+            y++;
+        }
     }
 }

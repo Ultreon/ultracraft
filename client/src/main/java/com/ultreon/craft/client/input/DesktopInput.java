@@ -14,7 +14,6 @@ import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.input.key.KeyBind;
 import com.ultreon.craft.client.input.key.KeyBinds;
-import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -61,6 +60,8 @@ public class DesktopInput extends GameInput {
     @Override
     public boolean keyDown(int keyCode) {
         super.keyDown(keyCode);
+
+        if (ImGuiOverlay.isImGuiFocused()) return false;
 
         Screen currentScreen = this.client.screen;
         if (currentScreen != null && !Gdx.input.isCursorCatched() && currentScreen.keyPress(keyCode))
@@ -172,6 +173,8 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
+        if (ImGuiOverlay.isImGuiHovered()) return false;
+
         if (Gdx.input.isCursorCatched())
             return false;
 
@@ -189,6 +192,8 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
+        if (ImGuiOverlay.isImGuiHovered()) return false;
+
         if (!Gdx.input.isCursorCatched()) {
             Screen currentScreen = this.client.screen;
             if (currentScreen != null) currentScreen.mouseDrag(
@@ -203,6 +208,8 @@ public class DesktopInput extends GameInput {
         screenX -= this.client.getDrawOffset().x;
         screenY -= this.client.getDrawOffset().y;
 
+        if (ImGuiOverlay.isImGuiHovered()) return false;
+
         Screen currentScreen = this.client.screen;
         World world = this.client.world;
         Player player = this.client.player;
@@ -216,12 +223,12 @@ public class DesktopInput extends GameInput {
             return !canceled && pressed;
         }
 
+        if (!Gdx.input.isCursorCatched()) {
+            DesktopInput.setCursorCaught(true);
+        }
+
         if (world == null || this.client.screen != null)
             return false;
-
-        if (!Gdx.input.isCursorCatched() && !UltracraftClient.get().isShowingImGui()) {
-            return true;
-        }
 
         if (player == null || hitResult == null)
             return false;
@@ -288,7 +295,7 @@ public class DesktopInput extends GameInput {
     public boolean scrolled(float amountX, float amountY) {
         Screen currentScreen = this.client.screen;
 
-        if (ImGuiOverlay.isShown()) return false;
+        if (ImGuiOverlay.isImGuiHovered()) return false;
 
         Player player = this.client.player;
         if (currentScreen == null && player != null) {

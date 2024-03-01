@@ -8,6 +8,7 @@ import com.ultreon.craft.client.gui.screens.DeathScreen;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
 import com.ultreon.craft.client.registry.MenuRegistry;
+import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -53,8 +54,16 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
-            this.handleMove();
+        ClientChunk chunk = this.world.getChunk(this.getChunkPos());
+        if (chunk != null && chunk.isReady()) {
+            if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
+                this.handleMove();
+        } else {
+            this.x = this.ox;
+            this.y = this.oy;
+            this.z = this.oz;
+        }
+
     }
 
     private void handleMove() {

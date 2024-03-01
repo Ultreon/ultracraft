@@ -1,8 +1,5 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.data.types.IType;
-
-import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 public class LightMap {
@@ -17,8 +14,8 @@ public class LightMap {
     }
 
     private int getIndex(int x, int y, int z) {
-        if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE) {
-            return z * (CHUNK_SIZE * CHUNK_HEIGHT) + y * CHUNK_SIZE + x;
+        if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE) {
+            return z * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + x;
         }
         return -1; // Out of bounds
     }

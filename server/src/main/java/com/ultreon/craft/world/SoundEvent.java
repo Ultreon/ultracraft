@@ -1,7 +1,7 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class SoundEvent {
@@ -11,7 +11,7 @@ public class SoundEvent {
         this.range = range;
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return Registries.SOUND_EVENT.getId(this);
     }
 

@@ -4,28 +4,33 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.ImGuiEx;
-import com.ultreon.craft.world.ChunkPos;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.imguifiledialog.ImGuiFileDialog;
 import imgui.extension.imguifiledialog.flag.ImGuiFileDialogFlags;
 import imgui.extension.implot.ImPlot;
 import imgui.extension.implot.ImPlotContext;
+import imgui.extension.texteditor.TextEditor;
+import imgui.extension.texteditor.TextEditorLanguageDefinition;
+import imgui.extension.texteditor.flag.TextEditorPaletteIndex;
 import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.mozilla.javascript.RhinoException;
 
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
+import java.util.Arrays;
+import java.util.Map;
 
 public class ImGuiOverlay {
     public static final ImFloat I_GAMMA = new ImFloat(1.5f);
@@ -43,8 +48,8 @@ public class ImGuiOverlay {
     private static final ImBoolean SHOW_CHUNK_SECTION_BORDERS = new ImBoolean(false);
     private static final ImBoolean SHOW_CHUNK_DEBUGGER = new ImBoolean(false);
     private static final ImBoolean SHOW_PROFILER = new ImBoolean(false);
+    private static final ImBoolean SHOW_RUN_DIALOG = new ImBoolean(false);
 
-    private static final ChunkPos RESET_CHUNK = new ChunkPos(17, 18);
     protected static final String[] keys = {"A", "B", "C"};
     protected static final Double[] values = {0.1, 0.3, 0.6};
 
@@ -55,6 +60,14 @@ public class ImGuiOverlay {
     private static final GuiEditor guiEditor = new GuiEditor();
     private static boolean triggerLoadWorld;
     private static ImPlotContext imPlotCtx;
+    private static TextEditor jsRunEditor;
+    private static final Int2ReferenceMap<String> jsErrors = new Int2ReferenceArrayMap<>();
+    private static final Int2ReferenceMap<String> jsRunErrors = new Int2ReferenceArrayMap<>();
+    private static String[] jsScript = new String[]{"// Write your script here"};
+    private static int jsCursorColumn;
+    private static int jsCursorLine;
+    private static boolean focused;
+    private static boolean hovered;
 
     public static void setupImGui() {
         UltracraftClient.LOGGER.info("Setting up ImGui");
@@ -78,6 +91,8 @@ public class ImGuiOverlay {
             ImGuiOverlay.imGuiGlfw.init(windowHandle, true);
             ImGuiOverlay.imGuiGl3.init("#version 110");
         });
+
+        ImGuiOverlay.createTextEditor();
     }
 
     public static void preInitImGui() {
@@ -92,6 +107,10 @@ public class ImGuiOverlay {
         return ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.get();
     }
 
+    public static boolean isImGuiFocused() {
+        return focused;
+    }
+
     public static void renderImGui(UltracraftClient client) {
         if (!ImGuiOverlay.SHOW_IM_GUI.get()) return;
 
@@ -102,24 +121,33 @@ public class ImGuiOverlay {
         ImGui.setNextWindowSize(client.getWidth(), 18);
         ImGui.setNextWindowCollapsed(true);
 
+        // Set style once
+        ImGui.getStyle().setWindowRounding(12);
+        ImGui.getStyle().setFrameRounding(12);
+        ImGui.getStyle().setTabRounding(10);
+        ImGui.getStyle().setPopupRounding(10);
+        ImGui.getStyle().setChildRounding(10);
+        ImGui.getStyle().setScrollbarRounding(10);
+        ImGui.getStyle().setGrabRounding(10);
+        ImGui.getStyle().setAntiAliasedFill(true);
+        ImGui.getStyle().setAntiAliasedLines(true);
+        ImGui.getStyle().setFramePadding(10, 10);
+        ImGui.getStyle().setWindowPadding(10, 10);
+        ImGui.getStyle().setCellPadding(5, 5);
+        ImGui.getStyle().setScrollbarSize(10);
+
         if (Gdx.input.isCursorCatched()) {
             ImGui.getIO().setMouseDown(new boolean[5]);
             ImGui.getIO().setMousePos(Integer.MAX_VALUE, Integer.MAX_VALUE);
         }
 
-        ImGuiOverlay.renderDisplay();
 
-        if (ImGui.begin("MenuBar", ImGuiWindowFlags.NoMove |
-                ImGuiWindowFlags.NoCollapse |
-                ImGuiWindowFlags.AlwaysAutoResize |
-                ImGuiWindowFlags.NoTitleBar |
-                ImGuiWindowFlags.MenuBar |
-                ImGuiInputTextFlags.AllowTabInput)) {
+        if (ImGui.beginMainMenuBar()) {
             ImGuiOverlay.renderMenuBar();
-            ImGui.end();
+            ImGui.endMainMenuBar();
         }
 
-
+        ImGuiOverlay.renderDisplay();
         ImGuiOverlay.renderWindows(client);
 
         ImGuiOverlay.handleTriggers();
@@ -128,6 +156,49 @@ public class ImGuiOverlay {
         ImGuiOverlay.imGuiGl3.renderDrawData(ImGui.getDrawData());
 
         ImGuiOverlay.handleInput();
+    }
+
+    private static void createTextEditor() {
+        jsRunEditor = new TextEditor();
+
+        TextEditorLanguageDefinition jsDefinition = createJsDefinition();
+        jsRunEditor.setLanguageDefinition(jsDefinition);
+        jsRunEditor.setColorizerEnable(true);
+        jsRunEditor.setShowWhitespaces(false);
+
+        System.out.println("jsRunEditor.getPalette() = " + Arrays.toString(jsRunEditor.getPalette()));
+    }
+
+    @NotNull
+    private static TextEditorLanguageDefinition createJsDefinition() {
+        TextEditorLanguageDefinition jsDefinition = new TextEditorLanguageDefinition();
+        jsDefinition.setSingleLineComment("//");
+        jsDefinition.setCommentStart("/*");
+        jsDefinition.setCommentEnd("*/");
+        jsDefinition.setKeywords(new String[]{
+                "break", "case", "catch", "class", "const", "continue", "debugger",
+                "default", "delete", "do", "else", "export", "extends", "finally",
+                "for", "function", "if", "import", "in", "instanceof", "new", "return",
+                "super", "switch", "this", "throw", "try", "typeof", "var", "void",
+                "while", "with", "yield", "enum", "await", "implements", "interface",
+                "let", "package", "private", "protected", "public", "static", "await",
+                "abstract", "boolean", "byte", "char", "double", "final", "float",
+                "goto", "int", "long", "native", "short", "synchronized", "throws",
+                "transient", "volatile", "null", "true", "false"
+        });
+        jsDefinition.setAutoIdentation(true);
+        jsDefinition.setName("JavaScript");
+        jsDefinition.setTokenRegexStrings(Map.of(
+                "\\\"(\\\\.|[^\\\"])*\\\"", TextEditorPaletteIndex.String,
+                "[+-]?(0|[1-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?", TextEditorPaletteIndex.Number,
+                "0[xX][0-9a-fA-F]+", TextEditorPaletteIndex.Number,
+                "0[0-7]+", TextEditorPaletteIndex.Number,
+                "0b[01]+", TextEditorPaletteIndex.Number,
+                "\\b(true|false|null|undefined)\\b", TextEditorPaletteIndex.Keyword,
+                "([a-zA-Z_$][a-zA-Z0-9_$]*)", TextEditorPaletteIndex.Identifier,
+                "[\\[\\]\\{\\}\\!\\%\\^\\&\\*\\(\\)\\-\\+\\=\\~\\|\\<\\>\\?\\/\\;\\,\\.]", TextEditorPaletteIndex.Punctuation
+        ));
+        return jsDefinition;
     }
 
     private static void renderDisplay() {
@@ -153,6 +224,59 @@ public class ImGuiOverlay {
         if (ImGuiOverlay.SHOW_UTILS.get()) ImGuiOverlay.showUtils(client);
         if (ImGuiOverlay.SHOW_CHUNK_DEBUGGER.get()) ImGuiOverlay.showChunkDebugger(client);
         if (ImGuiOverlay.SHOW_SHADER_EDITOR.get()) ImGuiOverlay.showShaderEditor();
+        if (ImGuiOverlay.SHOW_RUN_DIALOG.get()) ImGuiOverlay.showRunDialog();
+
+        focused = ImGui.isAnyItemFocused();
+        hovered = ImGui.isAnyItemHovered();
+    }
+
+    private static void showRunDialog() {
+        ImGui.setNextWindowBgAlpha(0.5f);
+        ImGui.setNextWindowSize(800, 640, ImGuiCond.Once);
+        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() - 400, ImGui.getMainViewport().getPosY() - 320, ImGuiCond.Once);
+        if (ImGui.begin("Run JS Dialog", ImGuiOverlay.getDefaultFlags())) {
+            ImGui.beginGroup();
+            if (ImGui.button("Close")) ImGuiOverlay.SHOW_RUN_DIALOG.set(false);
+            ImGui.sameLine();
+            if (ImGui.button("Run")) {
+                try {
+                    UltracraftClient.get().runJS(String.join("\n", jsScript));
+                } catch (RhinoException error) {
+                    for (Int2ReferenceMap.Entry<String> entry : jsErrors.int2ReferenceEntrySet()) {
+                        if (error.lineNumber() == entry.getIntKey() && error.details().equals(entry.getValue()))
+                            jsErrors.remove(entry.getIntKey(), entry.getValue());
+                    }
+                    jsRunErrors.clear();
+                    jsRunErrors.put(error.lineNumber(), error.details());
+                    jsErrors.putAll(jsRunErrors);
+                    jsRunEditor.setErrorMarkers(jsErrors);
+                }
+            }
+            ImGui.endGroup();
+
+            jsRunEditor.setTextLines(jsScript);
+            jsRunEditor.setCursorPosition(jsCursorLine, jsCursorColumn);
+            jsRunEditor.render("##RunJSDialog::Input");
+            if (jsRunEditor.isTextChanged()) {
+                jsScript = jsRunEditor.getTextLines();
+
+                RhinoException rhinoException = UltracraftClient.get().compileJS(String.join("\n", jsScript));
+                jsErrors.clear();
+                if (rhinoException != null)
+                    jsErrors.put(rhinoException.lineNumber(), rhinoException.details());
+
+                jsRunErrors.clear();
+
+                jsRunEditor.setTabSize(2);
+                jsRunEditor.setErrorMarkers(jsErrors);
+            }
+            if (jsRunEditor.isCursorPositionChanged()) {
+                jsCursorLine = jsRunEditor.getCursorPositionLine();
+                jsCursorColumn = jsRunEditor.getCursorPositionColumn();
+            }
+
+            ImGui.end();
+        }
     }
 
     private static void handleInput() {
@@ -166,60 +290,48 @@ public class ImGuiOverlay {
             ImGuiOverlay.SHOW_GUI_UTILS.set(!ImGuiOverlay.SHOW_GUI_UTILS.get());
         else if (Gdx.input.isKeyJustPressed(Input.Keys.F4))
             ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.set(!ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS.get());
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.R))
+            ImGuiOverlay.SHOW_RUN_DIALOG.set(!ImGuiOverlay.SHOW_RUN_DIALOG.get());
     }
 
     private static void renderMenuBar() {
-        if (ImGui.beginMenuBar()) {
-            if (ImGui.beginMenu("File")) {
-                if (ImGui.menuItem("Load World...", "Ctrl+O")) {
-                    ImGuiOverlay.triggerLoadWorld = true;
-                }
-                ImGui.endMenu();
-            }
-            if (ImGui.beginMenu("Edit")) {
-                ImGui.menuItem("Player Editor", "Ctrl+P", ImGuiOverlay.SHOW_PLAYER_UTILS);
-                ImGui.menuItem("Gui Editor", "Ctrl+G", ImGuiOverlay.SHOW_GUI_UTILS);
-                ImGui.menuItem("Shader Editor", "", ImGuiOverlay.SHOW_SHADER_EDITOR);
-                ImGui.endMenu();
-            }
-            if (ImGui.beginMenu("View")) {
-                ImGui.menuItem("Utils", null, ImGuiOverlay.SHOW_UTILS);
-                ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
-                ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
-                ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
-                ImGui.menuItem("Render Pipeline", null, ImGuiOverlay.SHOW_RENDER_PIPELINE);
-                ImGui.endMenu();
-            }
-
-            ImGui.text(" FPS: " + Gdx.graphics.getFramesPerSecond() + " ");
-            ImGui.sameLine();
-            ImGui.text(" Client TPS: " + Gdx.graphics.getFramesPerSecond() + " ");
-            ImGui.sameLine();
-            UltracraftServer server = UltracraftServer.get();
-            if (server != null) {
-                ImGui.text(" Server TPS: " + server.getCurrentTps() + " ");
-                ImGui.sameLine();
-            }
-            ImGui.text(" Frame ID: " + Gdx.graphics.getFrameId() + " ");
-            ImGui.endMenuBar();
+        if (ImGui.beginMenu("File")) {
+            if (ImGui.menuItem("Load World...", "Ctrl+O"))
+                ImGuiOverlay.triggerLoadWorld = true;
+            ImGui.menuItem("Run JS Command", "Ctrl+R", ImGuiOverlay.SHOW_RUN_DIALOG);
+            ImGui.endMenu();
         }
+        if (ImGui.beginMenu("Edit")) {
+            ImGui.menuItem("Player Editor", "Ctrl+P", ImGuiOverlay.SHOW_PLAYER_UTILS);
+            ImGui.menuItem("Gui Editor", "Ctrl+G", ImGuiOverlay.SHOW_GUI_UTILS);
+            ImGui.menuItem("Shader Editor", "", ImGuiOverlay.SHOW_SHADER_EDITOR);
+            ImGui.endMenu();
+        }
+        if (ImGui.beginMenu("View")) {
+            ImGui.menuItem("Utils", null, ImGuiOverlay.SHOW_UTILS);
+            ImGui.menuItem("Chunks", null, ImGuiOverlay.SHOW_CHUNK_DEBUGGER);
+            ImGui.menuItem("Chunk Node Borders", "Ctrl+F4", ImGuiOverlay.SHOW_CHUNK_SECTION_BORDERS);
+            ImGui.menuItem("InspectionRoot", "Ctrl+P", ImGuiOverlay.SHOW_PROFILER);
+            ImGui.menuItem("Render Pipeline", null, ImGuiOverlay.SHOW_RENDER_PIPELINE);
+            ImGui.endMenu();
+        }
+
+        ImGui.text(" FPS: " + Gdx.graphics.getFramesPerSecond() + " ");
+        ImGui.sameLine();
+        ImGui.text(" Client TPS: " + Gdx.graphics.getFramesPerSecond() + " ");
+        ImGui.sameLine();
+        UltracraftServer server = UltracraftServer.get();
+        if (server != null) {
+            ImGui.text(" Server TPS: " + server.getCurrentTps() + " ");
+            ImGui.sameLine();
+        }
+        ImGui.text(" Frame ID: " + Gdx.graphics.getFrameId() + " ");
     }
 
     private static void showChunkDebugger(UltracraftClient client) {
         ImGui.setNextWindowSize(400, 200, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (client.player != null && ImGui.begin("Chunk Debugging", ImGuiOverlay.getDefaultFlags())) {
-            if (ImGui.button("Reset chunk at %s".formatted(ImGuiOverlay.RESET_CHUNK))) {
-                CompletableFuture.runAsync(() -> {
-                    ClientWorld world = client.world;
-                    UltracraftClient.invokeAndWait(() -> {
-                        if (world != null) {
-                            world.unloadChunk(ImGuiOverlay.RESET_CHUNK);
-                        }
-                    });
-                    UltracraftServer.invokeAndWait(() -> client.integratedServer.getWorld().regenerateChunk(ImGuiOverlay.RESET_CHUNK));
-                });
-            }
             ImGui.end();
         }
     }
@@ -247,7 +359,8 @@ public class ImGuiOverlay {
             ImGuiEx.editFloat("Max Health:", "PlayerMaxHealth", client.player::getMaxHeath, client.player::setMaxHeath);
             ImGuiEx.editBool("No Gravity:", "PlayerNoGravity", () -> client.player.noGravity, v -> client.player.noGravity = v);
             ImGuiEx.editBool("Flying:", "PlayerFlying", client.player::isFlying, client.player::setFlying);
-            ImGuiEx.editBool("Allow Flight:", "PlayerAllowFlight", client.player::isAllowFlight, v -> {});
+            ImGuiEx.editBool("Allow Flight:", "PlayerAllowFlight", client.player::isAllowFlight, v -> {
+            });
             ImGuiEx.bool("On Ground:", () -> client.player.onGround);
             ImGuiEx.bool("Colliding:", () -> client.player.isColliding);
             ImGuiEx.bool("Colliding X:", () -> client.player.isCollidingX);
@@ -337,5 +450,9 @@ public class ImGuiOverlay {
                 ImPlot.destroyContext(ImGuiOverlay.imPlotCtx);
             }
         }
+    }
+
+    public static boolean isImGuiHovered() {
+        return hovered;
     }
 }

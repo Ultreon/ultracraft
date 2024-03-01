@@ -8,7 +8,6 @@ import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.debug.DebugFlags;
-import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
@@ -29,9 +28,8 @@ import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
-import com.ultreon.libs.commons.v0.vector.Vec2d;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
@@ -71,12 +69,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     private final Set<ChunkPos> activeChunks = new CopyOnWriteArraySet<>();
     private final Set<ChunkPos> skippedChunks = new CopyOnWriteArraySet<>();
     public boolean blockBrokenTick = false;
-    private ChunkPos oldChunkPos = new ChunkPos(0, 0);
-    private boolean sendingChunk;
+    private ChunkPos oldChunkPos = new ChunkPos(0, 0, 0);
     private boolean spawned;
     private boolean playedBefore;
     private final MutablePermissionMap permissions = new MutablePermissionMap();
     private boolean isAdmin;
+    private boolean readOnly = false;
+    private boolean movedSinceLastRefresh;
 
     public ServerPlayer(EntityType<? extends Player> entityType, ServerWorld world, UUID uuid, String name, Connection connection) {
         super(entityType, world, name);
@@ -148,14 +147,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void markSpawned() {
+        if (this.spawned) return;
+        
         this.spawned = true;
     }
 
     @Override
     public void tick() {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-        if (!this.isChunkActive(this.getChunkPos())) return;
-
         this.blockBrokenTick = false;
 
         super.tick();
@@ -184,15 +182,12 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     protected void onMoved() {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-        if (!this.isChunkActive(this.getChunkPos())) return;
-
         super.onMoved();
 
-        // Send the new position to the client.
-        if (this.world.getChunk(this.getChunkPos()) == null) {
-//            this.setPosition(this.ox, this.oy, this.oz);
-//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
+        if (this.world.getChunk(this.getChunkPos()) == null || !this.isChunkActive(this.getChunkPos())) {
+            this.connection.send(new S2CPlayerSetPosPacket(this.ox, this.oy, this.oz));
+            this.setPosition(this.ox, this.oy, this.oz);
+            return;
         }
 
         // Set old position.
@@ -235,15 +230,22 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     public String toString() {
+        if (this.readOnly) return "ServerPlayer{<read-only>}";
+        
         return "ServerPlayer{'" + this.name + "'}";
     }
 
     public void onChunkStatus(@NotNull ChunkPos pos, Chunk.Status status) {
         switch (status) {
             case FAILED -> this.handleFailedChunk(pos);
-            case SKIP -> this.skippedChunks.add(pos);
             case SUCCESS -> this.handleClientLoadChunk(pos);
-            case UNLOADED -> this.activeChunks.remove(pos);
+            case SKIP, UNLOADED -> {
+                this.activeChunks.remove(pos);
+                this.failedChunks.invalidate(pos);
+                this.pendingChunks.invalidate(pos);
+                this.retryChunks.removeInt(pos);
+                this.skippedChunks.remove(pos);
+            }
         }
 
         if (status == Chunk.Status.FAILED)
@@ -252,6 +254,8 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
         this.setPosition(this.ox, this.oy, this.oz);
+
+        this.pendingChunks.invalidate(pos);
         if (DebugFlags.LOG_POSITION_RESET_ON_CHUNK_LOAD.enabled()) {
             Chat.sendInfo(this, "Position reset on chunk load.");
         }
@@ -270,6 +274,10 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void refreshChunks(ChunkRefresher refresher) {
+        if (!this.movedSinceLastRefresh) return;
+
+        this.movedSinceLastRefresh = false;
+
         var pos = this.getPosition();
         var chunkPos = this.getChunkPos();
         var server = this.server;
@@ -297,9 +305,9 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public static void refreshChunks(ChunkRefresher refresher, UltracraftServer server, ServerWorld world, ChunkPos chunkPos, ListOrderedSet<ChunkPos> toLoad, ListOrderedSet<ChunkPos> toUnload) {
         List<ChunkPos> load = toLoad.stream().sorted((o1, o2) -> {
             // Compare against player position.
-            Vec2d playerPos = new Vec2d(chunkPos.x(), chunkPos.z());
-            Vec2d cPos1 = new Vec2d(o1.x(), o1.z());
-            Vec2d cPos2 = new Vec2d(o2.x(), o2.z());
+            Vec3d playerPos = new Vec3d(chunkPos.x(), chunkPos.y(), chunkPos.z());
+            Vec3d cPos1 = new Vec3d(o1.x(), o1.y(), o1.z());
+            Vec3d cPos2 = new Vec3d(o2.x(), o2.y(), o2.z());
 
             return Double.compare(cPos1.dst(playerPos), cPos2.dst(playerPos));
         }).toList();
@@ -342,11 +350,23 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         this.connection.send(new S2CPlayerSetPosPacket(x, y, z));
     }
 
+    @Override
+    public void setPosition(double x, double y, double z) {
+        super.setPosition(x, y, z);
+
+        this.movedSinceLastRefresh = true;
+    }
+
     public void sendChunk(ChunkPos pos, Chunk chunk) {
-        if (this.sendingChunk) return;
+        if (pendingChunks.getIfPresent(pos) != null) {
+            UltracraftServer.LOGGER.warn("Tried to send a chunk that is already pending to the player: " + pos);
+            return;
+        }
 
         this.onChunkPending(pos);
-        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage, chunk.getBlockEntities()), PacketResult.onEither(() -> this.sendingChunk = false));
+        UltracraftServer.LOGGER.info("Sending chunk " + pos);
+        this.connection.send(new S2CChunkDataPacket(pos, chunk.storage, chunk.biomeStorage, chunk.getBlockEntities()), PacketResult.onEither(() -> {
+        }));
     }
 
     @Override
@@ -431,7 +451,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         return this.world;
     }
 
-    public Vec2i getChunkVec() {
+    public Vec3i getChunkVec() {
         return World.toChunkVec(this.getBlockPos());
     }
 
@@ -450,8 +470,11 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     public void handlePlayerMove(double x, double y, double z) {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-        if (!this.isChunkActive(this.getChunkPos())) return;
+        if (this.world.getChunk(this.getChunkPos()) == null || !this.isChunkActive(this.getChunkPos())) {
+            this.connection.send(new S2CPlayerSetPosPacket(this.ox, this.oy, this.oz));
+            this.setPosition(this.ox, this.oy, this.oz);
+            return;
+        }
 
 //        double dst = this.getPosition().dst(x, this.y, z);
 //        if (dst > this.getSpeed() * this.runModifier * TPS) {
@@ -497,7 +520,10 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             return;
         }
 
-        baseCommand.onCommand(this, new CommandContext(command), command, argv);
+        String[] finalArgv = argv;
+        UltracraftServer.invoke(() -> {
+            baseCommand.onCommand(this, new CommandContext(command), command, finalArgv);
+        });
     }
 
     public void tabComplete(String input) {
@@ -562,5 +588,40 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     private void resendCommands() {
         this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().toList()));
+    }
+
+    @Override
+    public void setX(double x) {
+        super.setX(x);
+
+        this.movedSinceLastRefresh = true;
+    }
+
+    @Override
+    public void setY(double y) {
+        super.setY(y);
+
+        this.movedSinceLastRefresh = true;
+    }
+
+    @Override
+    public void setZ(double z) {
+        super.setZ(z);
+
+        this.movedSinceLastRefresh = true;
+    }
+
+    public void onDisconnect() {
+        this.readOnly = true;
+        this.markRemoved();
+
+        this.permissions.denies.addAll(this.permissions.allows);
+        this.permissions.allows.clear();
+        this.x = this.y = this.z = 0;
+        this.xRot = this.yRot = 0;
+        this.spawned = false;
+        this.isAdmin = false;
+        this.pendingChunks.invalidateAll();
+        this.failedChunks.invalidateAll();
     }
 }

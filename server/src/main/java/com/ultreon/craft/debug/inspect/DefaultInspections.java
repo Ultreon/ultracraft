@@ -26,7 +26,6 @@ public class DefaultInspections {
     public static void register() {
         InspectionRoot.registerAutoFill(Entity.class, node -> {
             node.create("position", Entity::getBlockPos);
-            node.create("isInVoid", Entity::isInVoid);
             node.create("health", Entity::getSize);
             node.create("isAffectedByFluid", Entity::isAffectedByFluid);
         });

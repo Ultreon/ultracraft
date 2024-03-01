@@ -25,7 +25,7 @@ public class S2CAddEntityPacket extends Packet<InGameClientPacketHandler> {
 
     public S2CAddEntityPacket(PacketBuffer buffer) {
         this.id = buffer.readVarInt();
-        this.type = Registries.ENTITY_TYPE.byId(buffer.readVarInt());
+        this.type = Registries.ENTITY_TYPE.get(buffer.readVarInt());
         this.position = new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
         this.pipeline = buffer.readUbo();
     }

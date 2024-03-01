@@ -1,20 +1,31 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Objects;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class DimensionInfo {
-    public static final DimensionInfo OVERWORLD = new DimensionInfo(new ElementID("overworld"));
-    private final ElementID id;
+    @ApiStatus.Experimental // Do not use: SPOILER ALERT!
+    public static final DimensionInfo SPACE = new DimensionInfo(new Identifier("space"));
 
-    public DimensionInfo(ElementID id) {
+    public static final DimensionInfo OVERWORLD = new DimensionInfo(new Identifier("overworld"));
+
+    @ApiStatus.Experimental // Do not use: SPOILER ALERT!
+    public static final DimensionInfo UNDERWORLD = new DimensionInfo(new Identifier("underworld"));
+
+    @ApiStatus.Experimental // Do not use: SPOILER ALERT!
+    public static final DimensionInfo ABYSS = new DimensionInfo(new Identifier("abyss"));
+
+    private final Identifier id;
+
+    public DimensionInfo(Identifier id) {
         this.id = id;
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return this.id;
     }
 

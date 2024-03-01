@@ -92,6 +92,9 @@ dependencies {
     implementation api("com.raylabz:opensimplex:1.0.3")
     implementation api("de.articdive:jnoise-pipeline:4.1.0")
 
+    // Add rhino
+    implementation api("org.mozilla:rhino:$rhino_version")
+
     implementation api("space.earlygrey:shapedrawer:$shapedrawer_version")
 
     // ImGui

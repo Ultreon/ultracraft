@@ -29,6 +29,6 @@ public class S2CBlockEntitySetPacket extends Packet<InGameClientPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
-        handler.onBlockEntitySet(this.pos, Registries.BLOCK_ENTITY_TYPE.byId(this.blockEntityId));
+        handler.onBlockEntitySet(this.pos, Registries.BLOCK_ENTITY_TYPE.get(this.blockEntityId));
     }
 }

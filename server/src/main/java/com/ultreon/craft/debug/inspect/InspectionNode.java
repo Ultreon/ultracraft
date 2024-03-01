@@ -85,7 +85,7 @@ public class InspectionNode<T> {
     /**
      * Remove a node from the inspection node.
      *
-     * @param name the name of the node to remove.
+     * @param name the name of the node to removeFirst.
      * @return true if the element was present, false otherwise.
      */
     @CanIgnoreReturnValue

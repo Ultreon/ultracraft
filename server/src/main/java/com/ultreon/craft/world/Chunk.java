@@ -1,17 +1,20 @@
 package com.ultreon.craft.world;
 
+import com.google.errorprone.annotations.RestrictedApi;
+import com.ultreon.craft.AcknowledgedBy;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
-import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -49,10 +52,10 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
     @Deprecated(since = "0.1.0", forRemoval = true)
     public final int size = CHUNK_SIZE;
     /**
-     * @deprecated Use {@link World#CHUNK_HEIGHT} instead
+     * @deprecated Use {@link World#CHUNK_SIZE} instead
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
-    public final int height = CHUNK_HEIGHT;
+    public final int height = CHUNK_SIZE;
     protected final Vec3i offset;
     @MonotonicNonNull
     @ApiStatus.Internal
@@ -61,7 +64,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
     private final World world;
 
     public final Storage<Block> storage;
-    protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+    protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
     protected final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
     public final Storage<Biome> biomeStorage;
 
@@ -82,7 +85,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos) {
-        this(world, size, height, pos, new FlatStorage<>(size * height * size));
+        this(world, size, height, pos, new PaletteStorage<>(Blocks.AIR, size * height * size));
     }
 
     /**
@@ -90,7 +93,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos, Storage<Block> storage) {
-        this(world, size, height, pos, storage, new FlatStorage<>(256));
+        this(world, size, height, pos, storage, new PaletteStorage<>(Biomes.PLAINS, 256));
     }
 
     /**
@@ -108,7 +111,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos   the chunk position.
      */
     protected Chunk(World world, ChunkPos pos) {
-        this(world, pos, new FlatStorage<>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE));
+        this(world, pos, new PaletteStorage<>(Blocks.AIR, CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE));
     }
 
     /**
@@ -119,7 +122,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param storage the block storage.
      */
     protected Chunk(World world, ChunkPos pos, Storage<Block> storage) {
-        this(world, pos, storage, new FlatStorage<>(256));
+        this(world, pos, storage, new PaletteStorage<>(Biomes.PLAINS, 256));
     }
 
     /**
@@ -133,7 +136,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
     protected Chunk(World world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
         this.world = world;
 
-        this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
+        this.offset = new Vec3i(pos.x() * CHUNK_SIZE, pos.y() * CHUNK_SIZE, pos.z() * CHUNK_SIZE);
 
         this.pos = pos;
         this.storage = storage;
@@ -148,7 +151,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      */
     public static Block decodeBlock(PacketBuffer buffer) {
         int id = buffer.readInt();
-        return Registries.BLOCK.byId(id);
+        return Registries.BLOCK.get(id);
     }
 
     /**
@@ -158,8 +161,8 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @return The decoded block data.
      */
     public static Block loadBlock(MapType data) {
-        @Nullable ElementID id = ElementID.parse(data.getString("id"));
-        return Registries.BLOCK.getElement(id);
+        @Nullable Identifier id = Identifier.parse(data.getString("id"));
+        return Registries.BLOCK.get(id);
     }
 
     /**
@@ -168,8 +171,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block get(Vec3i pos) {
-        if (this.disposed) return Blocks.AIR;
+    public final Block get(Vec3i pos) {
         return this.get(pos.x, pos.y, pos.z);
     }
 
@@ -179,8 +181,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block get(BlockPos pos) {
-        if (this.disposed) return Blocks.AIR;
+    public final Block get(BlockPos pos) {
         return this.get(pos.x(), pos.y(), pos.z());
     }
 
@@ -206,7 +207,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block getFast(Vec3i pos) {
+    public final Block getFast(Vec3i pos) {
         return this.getFast(pos.x, pos.y, pos.z);
     }
 
@@ -234,8 +235,12 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos   the position of the block
      * @param block the block to set
      */
-    public void set(Vec3i pos, Block block) {
-        this.set(pos.x, pos.y, pos.z, block);
+    public final boolean set(BlockPos pos, Block block) {
+        return this.set(pos.x(), pos.y(), pos.z(), block);
+    }
+
+    public final boolean set(Vec3i pos, Block block) {
+        return this.set(pos.x, pos.y, pos.z, block);
     }
 
     /**
@@ -302,8 +307,8 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
     }
 
     private int getIndex(int x, int y, int z) {
-        if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_HEIGHT && z >= 0 && z < CHUNK_SIZE) {
-            return z * (CHUNK_SIZE * CHUNK_HEIGHT) + y * CHUNK_SIZE + x;
+        if (x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE) {
+            return z * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + x;
         }
         return -1; // Out of bounds
     }
@@ -316,8 +321,8 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param z the z coordinate
      * @return true if the coordinates are out of bounds
      */
-    protected boolean isOutOfBounds(int x, int y, int z) {
-        return x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_HEIGHT || z < 0 || z >= CHUNK_SIZE;
+    public boolean isOutOfBounds(int x, int y, int z) {
+        return x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE;
     }
 
     /**
@@ -343,7 +348,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
 
     @Override
     public String toString() {
-        return "Chunk[x=" + this.getPos().x() + ", z=" + this.getPos().z() + "]";
+        return "Chunk[x=" + this.getPos().x() + ", y=" + this.getPos().y() + ", z=" + this.getPos().z() + "]";
     }
 
     public Vec3i getOffset() {
@@ -412,7 +417,9 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param x the x coordinate
      * @param z the z coordinate
      * @return The highest block Y coordinate.
+     * @deprecated use {@link World#getHighest(int, int)}
      */
+    @Deprecated
     public int getHighest(int x, int z) {
         return this.heightMap.get(x, z);
     }
@@ -424,14 +431,16 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param y The y position to use as base.
      * @param z The z position.
      * @return The found position.
+     * @deprecated use {@link World#ascend(int, int, int)} instead
      */
+    @Deprecated
     public int ascend(int x, int y, int z) {
-        for (; y < CHUNK_HEIGHT; y++) {
+        while (true) {
             if (this.getFast(x, y, z).isAir()) {
                 return y;
             }
+            y++;
         }
-        return CHUNK_HEIGHT;
     }
 
     /**
@@ -442,16 +451,18 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param z      The z position.
      * @param height The height of the space.
      * @return The found position.
+     * @deprecated use {@link World#ascend(int, int, int, int)} instead
      */
+    @Deprecated
     public int ascend(int x, int y, int z, int height) {
-        for (; y < CHUNK_HEIGHT; y++) {
+        for (; y < CHUNK_SIZE; y++) {
             if (!this.getFast(x, y, z).isAir()) continue;
 
             for (int i = 0; i < height; i++) {
                 if (this.getFast(x, y + i, z).isAir()) return y;
             }
         }
-        return CHUNK_HEIGHT;
+        return CHUNK_SIZE;
     }
 
     public void setTreeData(TreeData treeData) {
@@ -597,6 +608,39 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
 
     public void removeBlockEntity(BlockPos blockPos) {
         this.blockEntities.remove(blockPos);
+    }
+
+    /**
+     * Get the highest block in the chunk.
+     * This returns -1 if the height is not within the chunk.
+     *
+     * @param x the x position in the chunk
+     * @param z the z position in the chunk
+     * @return the highest block or -1 if the height is not within the chunk.
+     */
+    public int getHighestBlock(int x, int z) {
+        return heightMap.get(x, z);
+    }
+
+    /**
+     * Set the highest block in the chunk.
+     * Setting the height to -1 will remove the highest block from the chunk.
+     * <p style="color:#E91E63">WARNING: This does not change the height in the world, only the height in the chunk itself.
+     * Be careful when using this method.</p>
+     *
+     * @param x the x position in the chunk
+     * @param z the z position in the chunk
+     * @param height the height to set for the given column, or set to -1 to remove the highest block from the chunk.
+     * @return the new highest block or -1 if the height is not within the chunk.
+     */
+    @RestrictedApi(
+            explanation = "Internal use only",
+            link = "https://github.com/Ultreon/ultracraft/wiki/Restrictions#setting-block-height-in-the-chunk",
+            allowlistAnnotations = AcknowledgedBy.class
+    )
+    public int setHighestBlock(int x, int z, short height) {
+        this.heightMap.set(x, z, height);
+        return height;
     }
 
     /**

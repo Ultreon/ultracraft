@@ -12,7 +12,7 @@ import com.ultreon.craft.client.model.JsonModel;
 import com.ultreon.craft.client.model.JsonModelLoader;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,16 +21,16 @@ import java.util.function.Supplier;
 public class BlockModelRegistry {
     private static final Map<Block, Supplier<CubeModel>> REGISTRY = new HashMap<>();
     private static final Map<Block, Supplier<BlockModel>> CUSTOM_REGISTRY = new HashMap<>();
-    private static final Set<ElementID> TEXTURES = new HashSet<>();
+    private static final Set<Identifier> TEXTURES = new HashSet<>();
     private static final Map<Block, BlockModel> FINISHED_REGISTRY = new HashMap<>();
 
     static {
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking1"));
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking2"));
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking3"));
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking4"));
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking5"));
-        BlockModelRegistry.TEXTURES.add(new ElementID("misc/breaking6"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking1"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking2"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking3"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking4"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking5"));
+        BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking6"));
     }
 
     public static BlockModel get(Block block) {
@@ -50,14 +50,14 @@ public class BlockModelRegistry {
     }
 
     public static void registerDefault(Block block) {
-        ElementID key = Registries.BLOCK.getId(block);
+        Identifier key = Registries.BLOCK.getId(block);
         Preconditions.checkNotNull(key, "Block is not registered");
         BlockModelRegistry.register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
     }
 
     public static void registerDefault(Supplier<Block> block) {
         BlockModelRegistry.register(block, Suppliers.memoize(() -> {
-            ElementID key = Registries.BLOCK.getId(block.get());
+            Identifier key = Registries.BLOCK.getId(block.get());
             Preconditions.checkNotNull(key, "Block is not registered");
             return CubeModel.of(key.mapPath(path -> "blocks/" + path));
         }));
@@ -73,12 +73,12 @@ public class BlockModelRegistry {
         final int breakStages = 6;
 
         for (int i = 0; i < breakStages; i++) {
-            ElementID texId = new ElementID("textures/misc/breaking" + (i + 1) + ".png");
+            Identifier texId = new Identifier("textures/misc/breaking" + (i + 1) + ".png");
             Texture tex = textureManager.getTexture(texId);
             stitcher.add(texId, tex);
         }
 
-        for (ElementID texture : BlockModelRegistry.TEXTURES) {
+        for (Identifier texture : BlockModelRegistry.TEXTURES) {
             Texture emissive = textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".emissive.png"), null);
             if (emissive != null) {
                 stitcher.add(texture, textureManager.getTexture(texture.mapPath(path -> "textures/" + path + ".png")), emissive);
@@ -106,7 +106,7 @@ public class BlockModelRegistry {
     }
 
     public static void load(JsonModelLoader loader) {
-        for (Block value : Registries.BLOCK.values()) {
+        for (Block value : Registries.BLOCK.getValues()) {
             if (!REGISTRY.containsKey(value)) {
                 try {
                     JsonModel load = loader.load(value);

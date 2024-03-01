@@ -6,7 +6,6 @@ import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
-import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
 @SuppressWarnings("UnqualifiedStaticUsage")
@@ -68,16 +67,13 @@ public class WorldRayCaster {
 
 			if(chunk == null || chunk.isDisposed()){
 				chunk = world.getChunkAt(abs.x, abs.y, abs.z);
-				if(chunk == null || chunk.isDisposed()) return result;
+				if(chunk == null || chunk.isDisposed() || !chunk.isReady()) return result;
 			}
 
 			loc.set(abs).sub(chunk.getOffset().x, chunk.getOffset().y, chunk.getOffset().z);
 
-			if (loc.y >= World.WORLD_HEIGHT && dir.y >= 0) return result;
-			if (loc.y < 0 && dir.y < 0) return result;
-
 			if(loc.x < 0 || loc.y < 0 || loc.z < 0 ||
-					loc.x >= CHUNK_SIZE || loc.y >= CHUNK_HEIGHT || loc.z >= CHUNK_SIZE){
+					loc.x >= CHUNK_SIZE || loc.y >= CHUNK_SIZE || loc.z >= CHUNK_SIZE){
 				chunk = null;
 				continue;
 			}

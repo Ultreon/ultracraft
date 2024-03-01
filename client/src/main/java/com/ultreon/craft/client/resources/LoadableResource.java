@@ -1,11 +1,11 @@
 package com.ultreon.craft.client.resources;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 public interface LoadableResource {
     void load(UltracraftClient client);
 
-    ElementID resourceId();
+    Identifier resourceId();
 
 }

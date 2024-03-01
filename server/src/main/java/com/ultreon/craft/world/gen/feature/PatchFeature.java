@@ -2,9 +2,8 @@ package com.ultreon.craft.world.gen.feature;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.gen.WorldAccess;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
@@ -56,12 +55,13 @@ public class PatchFeature extends WorldGenFeature {
     }
 
     @Override
-    public boolean handle(@NotNull World world, @NotNull ChunkAccess chunk, int x, int z, int height) {
+    public boolean handle(@NotNull WorldAccess world, int x, int y, int z, int height) {
+        if (y != height) return false;
         if (this.baseNoise == null) return false;
 
-        for (int y = height; y > height - this.depth; y--) {
-            float value = (float) this.baseNoise.eval(chunk.getOffset().x + x, y, chunk.getOffset().z + z);
-            if (value < this.threshold && chunk.set(x, y, z, this.patchBlock)) {
+        for (int yOffset = y; yOffset > y - this.depth; yOffset--) {
+            float value = (float) this.baseNoise.eval(x, yOffset, z);
+            if (value < this.threshold && world.set(x, yOffset, z, this.patchBlock)) {
                 return true;
             }
         }

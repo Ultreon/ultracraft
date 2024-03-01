@@ -10,7 +10,7 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.ubo.DataWriter;
 import com.ultreon.craft.util.BoundingBox;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.loot.ConstantLoot;
 import com.ultreon.craft.world.loot.LootGenerator;
@@ -57,9 +57,9 @@ public class Block implements DataWriter<MapType> {
         this.greedyMerge = properties.greedyMerge;
     }
 
-    public ElementID getId() {
-        ElementID key = Registries.BLOCK.getId(this);
-        return key == null ? new ElementID(CommonConstants.NAMESPACE, "air") : key;
+    public Identifier getId() {
+        Identifier key = Registries.BLOCK.getId(this);
+        return key == null ? new Identifier(CommonConstants.NAMESPACE, "air") : key;
     }
 
     public boolean isAir() {
@@ -98,9 +98,9 @@ public class Block implements DataWriter<MapType> {
     }
 
     public static Block load(MapType data) {
-        ElementID id = ElementID.tryParse(data.getString("id"));
+        Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCK.getElement(id);
+        Block block = Registries.BLOCK.get(id);
         return block == null ? Blocks.AIR : block;
     }
 
@@ -118,7 +118,7 @@ public class Block implements DataWriter<MapType> {
 
     @NotNull
     public String getTranslationId() {
-        ElementID key = Registries.BLOCK.getId(this);
+        Identifier key = Registries.BLOCK.getId(this);
         return key == null ? "ultracraft.block.air.name" : key.namespace() + ".block." + key.path() + ".name";
     }
 

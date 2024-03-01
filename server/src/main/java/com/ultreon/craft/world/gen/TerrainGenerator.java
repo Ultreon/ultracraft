@@ -4,16 +4,12 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.util.MathHelper;
-import com.ultreon.craft.world.Biome;
-import com.ultreon.craft.world.BuilderChunk;
-import com.ultreon.craft.world.ServerWorld;
-import com.ultreon.craft.world.World;
+import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.biome.BiomeData;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.biome.BiomeIndex;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfig;
-import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import de.articdive.jnoise.core.api.noisegen.NoiseGenerator;
@@ -23,9 +19,11 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.ultreon.craft.world.World.CHUNK_SIZE;
 
@@ -61,13 +59,14 @@ public class TerrainGenerator {
 //        this.buildBiomeCenters(chunk);
 
         RecordingChunk recordingChunk = new RecordingChunk(chunk);
+        WorldAccess world = new GeneratingWorldAccess(chunk.getWorld(), recordingChunk);
 
         for (var x = 0; x < CHUNK_SIZE; x++) {
             for (var z = 0; z < CHUNK_SIZE; z++) {
-                var index = this.findGenerator(chunk, new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
+                var index = this.findGenerator(new Vec3i(chunk.getOffset().x + x, 0, chunk.getOffset().z + z));
                 chunk.setBiomeGenerator(x, z, index.biomeGenerator);
-                chunk = index.biomeGenerator.processColumn(chunk, x, z, recordedChanges);
-                chunk.getBiomeGenerator(x, z).generateTerrainFeatures(recordingChunk, x, z, chunk.getHighest(x, z));
+                int groundPos = index.biomeGenerator.processColumn(chunk, x, z, recordedChanges);
+                chunk.getBiomeGenerator(x, z).decorate(world, chunk, x, z, groundPos);
             }
         }
 
@@ -103,10 +102,10 @@ public class TerrainGenerator {
         for (var dir : Neighbour8Direction.values()) {
             var offXZ = dir.vec();
 
-            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
+            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * 2 * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * 2 * len));
         }
 
         return centers.asList();
@@ -116,19 +115,17 @@ public class TerrainGenerator {
         return centers.stream().map(center -> (float) this.noise.evaluateNoise(center.x, center.y)).collect(Collectors.toCollection(FloatArrayList::new));
     }
 
-    private BiomeGenerator.Index findGenerator(BuilderChunk chunk, Vec3i offset) {
-        return this.findGenerator(chunk, offset, true);
+    private BiomeGenerator.Index findGenerator(Vec3i offset) {
+        return this.findGenerator(offset, true);
     }
 
-    private BiomeGenerator.Index findGenerator(BuilderChunk chunk, Vec3i offset, boolean useDomainWarping) {
+    private BiomeGenerator.Index findGenerator(Vec3i offset, boolean useDomainWarping) {
         if (useDomainWarping) {
             Vec2i domainOffset = MathHelper.round(this.biomeDomain.generateDomainOffset(offset.x, offset.z));
             offset.add(domainOffset.x, 0, domainOffset.y);
         }
 
-        var localOffset = World.toLocalBlockPos(offset.x, offset.y, offset.z);
         var temp = this.noise.evaluateNoise(offset.x * this.noiseConfig.noiseZoom(), offset.z * this.noiseConfig.noiseZoom()) * 2.0f;
-        chunk.getHighest(localOffset.x(), localOffset.z());
         BiomeGenerator biomeGen = this.biomeGenData.get(0).biomeGen();
 
         for (var data : this.biomeGenData) {
@@ -176,5 +173,12 @@ public class TerrainGenerator {
 
     public void dispose() {
         this.biomeGenData.forEach(data -> data.biomeGen().dispose());
+    }
+
+    public int getGenHeight(int x, int z) {
+        BiomeGenerator.Index index = this.findGenerator(new Vec3i(x, 0, z));
+
+        BiomeGenerator biomeGenerator = index.biomeGenerator;
+        return biomeGenerator.getCarver().getSurfaceHeightNoise(x, z);
     }
 }

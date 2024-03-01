@@ -6,7 +6,7 @@ import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.error.*;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.World;
 
 import java.util.ArrayList;
@@ -36,25 +36,28 @@ public class WorldBaseSelector extends BaseSelector<World> {
             return new Result<>(null, this.getError());
         }
         World target = null;
-        if (this.getKey() == SelectorKey.TAG) {
-            if ("here".equals(this.getStringValue())) {
-                if (player == null) {
-                    return new Result<>(null, new NeedPlayerError());
+        switch (this.getKey()) {
+            case TAG -> {
+                if ("here".equals(this.getStringValue())) {
+                    if (player == null) {
+                        return new Result<>(null, new NeedPlayerError());
+                    } else {
+                        return new Result<>(player.getWorld(), null);
+                    }
                 } else {
-                    return new Result<>(player.getWorld(), null);
+                    return new Result<>(null, new OverloadError());
                 }
-            } else {
-                return new Result<>(null, new OverloadError());
             }
-        } else if (this.getKey() == SelectorKey.NAME) {
-            String name = this.getStringValue();
-            ElementID elementID = ElementID.tryParse(name);
-            if (elementID == null) {
-                return new Result<>(null, new InvalidKeyError(name));
-            }
-            target = UltracraftServer.get().getWorld(elementID);
-            if (target == null) {
-                return new Result<>(null, new NotFoundError("world " + name));
+            case NAME -> {
+                String name = this.getStringValue();
+                Identifier id = Identifier.tryParse(name);
+                if (id == null) {
+                    return new Result<>(null, new InvalidKeyError(name));
+                }
+                target = UltracraftServer.get().getWorld(id);
+                if (target == null) {
+                    return new Result<>(null, new NotFoundError("world " + name));
+                }
             }
         }
         if (target == null) {
@@ -64,6 +67,7 @@ public class WorldBaseSelector extends BaseSelector<World> {
         }
     }
 
+    @SuppressWarnings("unused")
     public static ArrayList<String> tabComplete(CommandSender sender, Command command, String arg) {
         ArrayList<String> output = new ArrayList<>();
         if (sender instanceof Player) {

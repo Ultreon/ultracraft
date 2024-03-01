@@ -1,7 +1,7 @@
 package com.ultreon.craft.api.commands;
 
 import com.ultreon.craft.api.commands.selector.Selector;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import org.jetbrains.annotations.NotNull;
@@ -184,8 +184,16 @@ public class CommandReader {
             throw new NotAtStartOfArg(this.totalOff);
         }
         char cur;
+        boolean first = true;
         StringBuilder sb = new StringBuilder();
         while ((cur = this.read()) != CommandReader.EOA) {
+            if (first && cur == '-') {
+                first = false;
+                sb.append(cur);
+                continue;
+            }
+            first = false;
+
             if (!Character.isDigit(cur)) {
                 throw new NotADigit(cur, this.totalOff);
             }
@@ -231,11 +239,20 @@ public class CommandReader {
             throw new NotAtStartOfArg(this.totalOff);
         }
         char cur;
+        boolean first = true;
         StringBuilder sb = new StringBuilder();
         while ((cur = this.read()) != CommandReader.EOA) {
-            if (!Character.isDigit(cur) && cur != '.') {
+            if (first && cur == '-') {
+                first = false;
+                sb.append(cur);
+                continue;
+            }
+
+            if (first && cur == '.' || !Character.isDigit(cur) && cur != '.') {
                 throw new NotADigit(cur, this.totalOff);
             }
+            first = false;
+
             sb.append(cur);
         }
         this.tryNextArg();
@@ -429,9 +446,9 @@ public class CommandReader {
         return this.readRemaining();
     }
 
-    public ElementID readId() throws CommandParseException {
+    public Identifier readId() throws CommandParseException {
         String text = this.readString();
-        ElementID key = ElementID.tryParse(text);
+        Identifier key = Identifier.tryParse(text);
         if (key == null) {
             throw new CommandParseException("Invalid key: " + text);
         }

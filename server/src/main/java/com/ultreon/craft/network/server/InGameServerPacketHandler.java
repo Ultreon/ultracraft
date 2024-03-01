@@ -26,7 +26,7 @@ import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.*;
 import net.fabricmc.api.EnvType;
@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InGameServerPacketHandler implements ServerPacketHandler {
-    private static final Map<ElementID, NetworkChannel> CHANNEL = new HashMap<>();
+    private static final Map<Identifier, NetworkChannel> CHANNEL = new HashMap<>();
     private final UltracraftServer server;
     private final ServerPlayer player;
     private final Connection connection;
@@ -48,7 +48,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.context = new PacketContext(player, connection, EnvType.SERVER);
     }
 
-    public static NetworkChannel registerChannel(ElementID id) {
+    public static NetworkChannel registerChannel(Identifier id) {
         NetworkChannel channel = NetworkChannel.create(id);
         InGameServerPacketHandler.CHANNEL.put(id, channel);
         return channel;
@@ -87,7 +87,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         packet.handlePacket(() -> new ModPacketContext(channel, this.player, this.connection, EnvType.SERVER));
     }
 
-    public NetworkChannel getChannel(ElementID channelId) {
+    public NetworkChannel getChannel(Identifier channelId) {
         return InGameServerPacketHandler.CHANNEL.get(channelId);
     }
 
@@ -214,8 +214,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.connection.send(new S2CPingPacket(time));
     }
 
-    public void onCraftRecipe(int typeId, ElementID recipeId) {
-        RecipeType recipeType = Registries.RECIPE_TYPE.byId(typeId);
+    public void onCraftRecipe(int typeId, Identifier recipeId) {
+        RecipeType recipeType = Registries.RECIPE_TYPE.get(typeId);
         ItemStack crafted = RecipeManager.get().get(recipeId, recipeType).craft(this.player.inventory);
         this.player.inventory.addItem(crafted);
     }

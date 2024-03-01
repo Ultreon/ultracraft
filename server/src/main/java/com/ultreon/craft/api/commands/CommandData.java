@@ -18,7 +18,7 @@ import com.ultreon.craft.server.chat.Chat;
 import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.server.util.Utils;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
@@ -420,8 +420,8 @@ public class CommandData {
         throw new CommandParseException.NotFound("item", ctx.getOffset());
     }
 
-    private static Item getItem(@Nullable ElementID id) {
-        for (var value : Registries.ITEM.entries()) {
+    private static Item getItem(@Nullable Identifier id) {
+        for (var value : Registries.ITEM.getEntries()) {
             if (Objects.equals(value.getKey(), id)) {
                 return value.getValue();
             }
@@ -454,7 +454,7 @@ public class CommandData {
 
     private static Block readBlock(CommandReader ctx) throws CommandParseException {
         var id = ctx.readId();
-        for (var entry : Registries.BLOCK.entries()) {
+        for (var entry : Registries.BLOCK.getEntries()) {
             try {
                 if (Objects.equals(entry.getKey(), id)) {
                     return entry.getValue();
@@ -468,7 +468,7 @@ public class CommandData {
 
     private static EntityType<?> readEntityTypeExceptPlayer(CommandReader ctx) throws CommandParseException {
         var id = ctx.readId();
-        for (var value : Registries.ENTITY_TYPE.values()) {
+        for (var value : Registries.ENTITY_TYPE.getValues()) {
             try {
                 if (value != EntityTypes.PLAYER && Objects.equals(value.getId(), id)) {
                     return value;
@@ -506,7 +506,7 @@ public class CommandData {
 
     public static <T> T readFromRegistry(CommandReader ctx, String type, Registry<T> registry) throws CommandParseException {
         var id = ctx.readId();
-        for (var value : registry.entries()) {
+        for (var value : registry.getEntries()) {
             if (Objects.equals(value.getKey(), id)) {
                 return value.getValue();
             }
@@ -524,7 +524,7 @@ public class CommandData {
         throw new CommandParseException.NotFound(type, ctx.getOffset());
     }
 
-    public static <T> T readFromFunc(CommandReader ctx, String type, Function<ElementID, T> enum_) throws CommandParseException {
+    public static <T> T readFromFunc(CommandReader ctx, String type, Function<Identifier, T> enum_) throws CommandParseException {
         var id = ctx.readId();
         T apply = enum_.apply(id);
         if (apply == null) throw new CommandParseException.NotFound(type, ctx.getOffset());
@@ -607,7 +607,7 @@ public class CommandData {
     static <T> List<String> complete(CommandReader ctx, Registry<T> registry) throws CommandParseException {
         var currentArgument = ctx.readString();
         List<String> list = new ArrayList<>();
-        for (var id : registry.ids()) {
+        for (var id : registry.getIds()) {
             try {
                 TabCompleting.addIfStartsWith(list, id, currentArgument);
             } catch (Exception ignored) {

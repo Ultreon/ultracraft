@@ -8,4 +8,12 @@ public interface ServerPacketHandler extends PacketHandler {
     default PacketDestination destination() {
         return PacketDestination.SERVER;
     }
+
+    default void onPing(long time) {
+
+    }
+
+    default void onKeepAlive() {
+
+    }
 }

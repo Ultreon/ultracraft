@@ -10,6 +10,8 @@ public class GameCommands {
         CommandRegistry.register(new KillCommand());
         CommandRegistry.register(new FlyCommand());
         CommandRegistry.register(new InvincibleCommand());
+        CommandRegistry.register(new SetBlockCommand());
+        CommandRegistry.register(new DumpChunkCommand());
         CommandRegistry.register(new WhereAmICommand());
         CommandRegistry.register(new GamemodeCommand());
         CommandRegistry.register(new TimeCommand());

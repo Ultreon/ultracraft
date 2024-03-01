@@ -2,7 +2,7 @@ package com.ultreon.craft.registry;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.registry.event.RegistryEvents;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class DelayedRegister<T> {
     private final String modId;
     @NotNull
     private final Registry<T> registry;
-    private final ArrayList<HashMap.Entry<ElementID, Supplier<T>>> objects = new ArrayList<>();
+    private final ArrayList<HashMap.Entry<Identifier, Supplier<T>>> objects = new ArrayList<>();
 
     protected DelayedRegister(@NotNull String modId, @NotNull Registry<T> registry) {
         Preconditions.checkNotNull(modId, "modId");
@@ -27,7 +27,7 @@ public class DelayedRegister<T> {
     }
 
     public <C extends T> RegistrySupplier<C> register(@NotNull String name, @NotNull Supplier<@NotNull C> supplier) {
-        var id = new ElementID(this.modId, name);
+        var id = new Identifier(this.modId, name);
 
         this.objects.add(new HashMap.SimpleEntry<>(id, supplier::get));
 
@@ -40,9 +40,9 @@ public class DelayedRegister<T> {
                 return;
             }
 
-            for (HashMap.Entry<ElementID, Supplier<T>> entry : this.objects) {
+            for (HashMap.Entry<Identifier, Supplier<T>> entry : this.objects) {
                 T object = entry.getValue().get();
-                ElementID id = entry.getKey();
+                Identifier id = entry.getKey();
 
                 if (!registry.getType().isAssignableFrom(object.getClass())) {
                     throw new IllegalArgumentException("Got invalid type in deferred register: " + object.getClass() + " expected assignable to " + registry.getType());

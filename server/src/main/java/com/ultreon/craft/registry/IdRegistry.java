@@ -1,7 +1,7 @@
 package com.ultreon.craft.registry;
 
 public interface IdRegistry<T> {
-    T byId(int id);
+    T get(int id);
 
     int getRawId(T object);
 }

@@ -266,8 +266,6 @@ public abstract class Player extends LivingEntity {
         this.x = Mth.clamp(this.x, -30000000, 30000000);
         this.z = Mth.clamp(this.z, -30000000, 30000000);
 
-        if (this.y < -64) this.y = -64;
-
         super.onMoved();
     }
 

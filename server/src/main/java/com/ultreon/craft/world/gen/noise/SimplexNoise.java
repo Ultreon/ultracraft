@@ -94,7 +94,7 @@ public class SimplexNoise implements NoiseType {
 
         private short[] p;
 
-        // To remove the need for index wrapping, double the permutation table length
+        // To removeFirst the need for index wrapping, double the permutation table length
         private short[] perm = new short[512];
         private short[] permMod12 = new short[512];
 

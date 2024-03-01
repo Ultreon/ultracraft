@@ -142,9 +142,24 @@ public final class WorldStorage {
      * @param x the x coordinate of the region.
      * @param z the z coordinate of the region.
      * @return {@code true} if the region file exists, {@code false} otherwise.
-     * @throws IOException if an I/O error occurs.
      */
-    public boolean regionExists(int x, int z) throws IOException {
+    public boolean regionExists(int x, int y, int z) {
+        return this.exists("regions/r_" + y + "/" + x + "." + z + ".ucregion");
+    }
+
+    /**
+     * Check if the given region file exists.
+     * <p style="color: #55aaff;">
+     *     NOTE: This method is deprecated and will be removed in the future.
+     *     It uses the old region format, which is no longer supported.
+     * </p>
+     *
+     * @param x the x coordinate of the region.
+     * @param z the z coordinate of the region.
+     * @return {@code true} if the region file exists, {@code false} otherwise.
+     */
+    @Deprecated
+    public boolean regionExists(int x, int z) {
         return this.exists("regions/" + x + "." + z + ".ucregion");
     }
 
@@ -155,8 +170,20 @@ public final class WorldStorage {
      * @param z the z coordinate of the region.
      * @return the region file.
      */
+    @Deprecated
     public File regionFile(int x, int z) {
-        return this.directory.resolve("regions/" + x + "." + z + ".ucregion").toFile();
+        return regionFile(x, 0, z);
+    }
+
+    /**
+     * Get the region file for the given coordinates.
+     *
+     * @param x the x coordinate of the region.
+     * @param z the z coordinate of the region.
+     * @return the region file.
+     */
+    public File regionFile(int x, int y, int z) {
+        return this.directory.resolve("regions/r_" + y + "/" + x + "." + z + ".ucregion").toFile();
     }
 
     /**
@@ -184,7 +211,7 @@ public final class WorldStorage {
      * @return the region file.
      */
     public File regionFile(RegionPos pos) {
-        return this.regionFile(pos.x(), pos.z());
+        return this.regionFile(pos.x(), pos.y(), pos.z());
     }
 
     /**

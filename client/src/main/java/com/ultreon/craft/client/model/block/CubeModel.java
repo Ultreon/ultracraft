@@ -6,7 +6,7 @@ import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,17 +16,17 @@ import java.util.Set;
 import static com.ultreon.craft.client.UltracraftClient.isOnMainThread;
 
 public final class CubeModel {
-    private final ElementID top;
-    private final ElementID bottom;
-    private final ElementID left;
-    private final ElementID right;
-    private final ElementID front;
-    private final ElementID back;
+    private final Identifier top;
+    private final Identifier bottom;
+    private final Identifier left;
+    private final Identifier right;
+    private final Identifier front;
+    private final Identifier back;
     private final ModelProperties properties;
 
-    private CubeModel(ElementID top, ElementID bottom,
-                      ElementID left, ElementID right,
-                      ElementID front, ElementID back, ModelProperties properties) {
+    private CubeModel(Identifier top, Identifier bottom,
+                      Identifier left, Identifier right,
+                      Identifier front, Identifier back, ModelProperties properties) {
         this.top = top;
         this.bottom = bottom;
         this.left = left;
@@ -36,47 +36,47 @@ public final class CubeModel {
         this.properties = properties;
     }
 
-    public static CubeModel of(ElementID all) {
+    public static CubeModel of(Identifier all) {
         return CubeModel.of(all, all, all);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side) {
         return CubeModel.of(top, bottom, side, side, side, side);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front) {
         return CubeModel.of(top, bottom, side, side, front, side);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ElementID back) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back) {
         return CubeModel.of(top, bottom, side, side, front, back);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID left, ElementID right, ElementID front, ElementID back) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back) {
         return new CubeModel(top, bottom, left, right, front, back, ModelProperties.builder().build());
     }
 
-    public static CubeModel of(ElementID all, ModelProperties properties) {
+    public static CubeModel of(Identifier all, ModelProperties properties) {
         return CubeModel.of(all, all, all, properties);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ModelProperties properties) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, side, side, properties);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ModelProperties properties) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, front, side, properties);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID side, ElementID front, ElementID back, ModelProperties properties) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier side, Identifier front, Identifier back, ModelProperties properties) {
         return CubeModel.of(top, bottom, side, side, front, back, properties);
     }
 
-    public static CubeModel of(ElementID top, ElementID bottom, ElementID left, ElementID right, ElementID front, ElementID back, ModelProperties properties) {
+    public static CubeModel of(Identifier top, Identifier bottom, Identifier left, Identifier right, Identifier front, Identifier back, ModelProperties properties) {
         return new CubeModel(top, bottom, left, right, front, back, properties);
     }
 
-    public BakedCubeModel bake(ElementID resourceId, TextureAtlas texture) {
+    public BakedCubeModel bake(Identifier resourceId, TextureAtlas texture) {
         if (!isOnMainThread()) return UltracraftClient.invokeAndWait(() -> this.bake(resourceId, texture));
         try {
             TextureRegion topTex = texture.get(this.top);
@@ -103,7 +103,7 @@ public final class CubeModel {
     }
 
     @NotNull
-    private CrashLog createCrash(ElementID resourceId, RuntimeException e) {
+    private CrashLog createCrash(Identifier resourceId, RuntimeException e) {
         CrashLog crashLog = new CrashLog("Failed to bake cube model", e);
         CrashCategory bakingModel = new CrashCategory("Baking Model");
         bakingModel.add("ID", resourceId);
@@ -120,27 +120,27 @@ public final class CubeModel {
         return crashLog;
     }
 
-    public ElementID top() {
+    public Identifier top() {
         return top;
     }
 
-    public ElementID bottom() {
+    public Identifier bottom() {
         return bottom;
     }
 
-    public ElementID left() {
+    public Identifier left() {
         return left;
     }
 
-    public ElementID right() {
+    public Identifier right() {
         return right;
     }
 
-    public ElementID front() {
+    public Identifier front() {
         return front;
     }
 
-    public ElementID back() {
+    public Identifier back() {
         return back;
     }
 
@@ -173,7 +173,7 @@ public final class CubeModel {
                 "back=" + back + ']';
     }
 
-    public Set<ElementID> all() {
+    public Set<Identifier> all() {
         return new ReferenceArraySet<>(new Object[]{top, bottom, left, right, front, back});
     }
 }

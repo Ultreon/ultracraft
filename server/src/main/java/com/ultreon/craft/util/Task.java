@@ -6,21 +6,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 public class Task <T> implements Runnable {
-    private final ElementID id;
+    private final Identifier id;
     private Supplier<@Nullable T> block = () -> null;
     @Nullable
     CompletableFuture<T> future;
 
-    public Task(ElementID id) {
+    public Task(Identifier id) {
         this.id = id;
     }
 
-    public Task(ElementID id, Supplier<T> block) {
+    public Task(Identifier id, Supplier<T> block) {
         this.id = id;
         this.block = block;
     }
 
-    public Task(ElementID id, Runnable block) {
+    public Task(Identifier id, Runnable block) {
         this.id = id;
         this.block = () -> {
             block.run();
@@ -28,7 +28,7 @@ public class Task <T> implements Runnable {
         };
     }
 
-    public ElementID id() {
+    public Identifier id() {
         return this.id;
     }
 

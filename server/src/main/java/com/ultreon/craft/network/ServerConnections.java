@@ -5,10 +5,9 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.s2c.S2CDisconnectPacket;
-import com.ultreon.craft.network.packets.s2c.S2CKeepAlivePacket;
 import com.ultreon.craft.network.server.LoginServerPacketHandler;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -30,7 +29,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class ServerConnections {
-    private static final Map<ElementID, NetworkChannel> CHANNELS = new HashMap<>();
+    private static final Map<Identifier, NetworkChannel> CHANNELS = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConnections.class);
     private final UltracraftServer server;
     private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
@@ -45,7 +44,7 @@ public class ServerConnections {
         this.running = true;
     }
 
-    public static NetworkChannel registerChannel(ElementID id) {
+    public static NetworkChannel registerChannel(Identifier id) {
         NetworkChannel channel = NetworkChannel.create(id);
         ServerConnections.CHANNELS.put(id, channel);
         return channel;
@@ -55,8 +54,8 @@ public class ServerConnections {
         return Collections.unmodifiableCollection(ServerConnections.CHANNELS.values());
     }
 
-    public static NetworkChannel getChannel(ElementID elementID) {
-        return ServerConnections.CHANNELS.get(elementID);
+    public static NetworkChannel getChannel(Identifier identifier) {
+        return ServerConnections.CHANNELS.get(identifier);
     }
 
     private static NioEventLoopGroup createServerEventGroup() {

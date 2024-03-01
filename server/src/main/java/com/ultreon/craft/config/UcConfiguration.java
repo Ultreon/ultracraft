@@ -4,17 +4,14 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.events.ConfigEvents;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.YamlIo;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.core.util.FileWatcher;
 import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.object.YamlElement;
-import org.fusionyaml.library.object.YamlPrimitive;
 import org.fusionyaml.library.serialization.ObjectTypeAdapter;
 import org.fusionyaml.library.serialization.TypeAdapter;
-import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -33,7 +30,7 @@ public final class UcConfiguration<T> {
     private final FileWatcher fileWatcher = file -> UcConfiguration.this.reload();
 
     public UcConfiguration(String name, EnvType configEnv, T object) {
-        FusionYAML.Builder builder = getBuilder();
+        FusionYAML.Builder builder = YamlIo.getBuilder();
         for (var member : object.getClass().getNestMembers()) {
             builder.addTypeAdapter(new MyTypeAdapter<>(member), member);
         }
@@ -41,13 +38,6 @@ public final class UcConfiguration<T> {
         yaml = builder.build();
 
         ConfigEvents.LOAD.listen(loadingEnv -> this.load(name, configEnv, object, loadingEnv));
-    }
-
-    @NotNull
-    private static FusionYAML.Builder getBuilder() {
-        FusionYAML.Builder builder = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).onlyExposed(true);
-        builder.addTypeAdapter(new ElementIDAdapter(), ElementID.class);
-        return builder;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -163,23 +153,7 @@ public final class UcConfiguration<T> {
         void onReload();
     }
 
-    private static class ElementIDAdapter extends TypeAdapter<ElementID> {
-        @Override
-        public YamlElement serialize(ElementID obj, Type type) {
-            if (obj == null) {
-                return null;
-            }
-            return new YamlPrimitive(obj.toString());
-        }
 
-        @Override
-        public ElementID deserialize(YamlElement element, Type type) {
-            if (element == null) {
-                return null;
-            }
-            return ElementID.tryParse(element.toString());
-        }
-    }
 
     private static class MyTypeAdapter<T> extends TypeAdapter<T> {
         private final Constructor<T> constructor;

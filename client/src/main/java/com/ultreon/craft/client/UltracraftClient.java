@@ -27,6 +27,9 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.RestrictedApi;
 import com.google.gson.Gson;
@@ -117,6 +120,7 @@ import com.ultreon.craft.registry.Registry;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.text.LanguageBootstrap;
 import com.ultreon.craft.text.TextObject;
@@ -124,10 +128,9 @@ import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.libs.commons.v0.Mth;
-import com.ultreon.libs.commons.v0.vector.Vec2f;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
-import com.ultreon.libs.commons.v0.vector.Vec3i;
+import com.ultreon.libs.commons.v0.vector.*;
 import com.ultreon.libs.datetime.v0.Duration;
+import io.netty.util.internal.ConcurrentSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -138,6 +141,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.lwjgl.glfw.GLFW;
+import org.mozilla.javascript.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MarkerFactory;
@@ -149,8 +153,10 @@ import java.net.SocketAddress;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Vector;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.math.MathUtils.ceil;
@@ -310,8 +316,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static Callback<CrashLog> crashHook;
     private final List<CrashLog> crashes = new CopyOnWriteArrayList<>();
     private long screenshotFlashTime;
-    private ClientSound screenshotSound;
     private final Color tmpColor = new Color();
+    final Context jsCtx = Context.enter();
+    final Scriptable jsScope = this.jsCtx.initStandardObjects();
+    private final WrapFactory jsWrapper = new WrapFactory();
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -825,7 +833,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         Registry.freeze();
 
-        for (Biome biome : Registries.BIOME.values()) {
+        for (Biome biome : Registries.BIOME.getValues()) {
             biome.buildLayers();
         }
 
@@ -943,7 +951,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void setupMods() {
         // Set mod icon overrides.
         ModIconOverrides.set("ultracraft", UltracraftClient.id("icon.png"));
-        ModIconOverrides.set("gdx", new ElementID("gdx", "icon.png"));
+        ModIconOverrides.set("gdx", new Identifier("gdx", "icon.png"));
 
         // Invoke entry points.
         FabricLoader.getInstance().invokeEntrypoints(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
@@ -1007,7 +1015,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @return A new instance of FileHandle for the specified resource.
      */
     @NewInstance
-    public static @NotNull FileHandle resource(ElementID id) {
+    public static @NotNull FileHandle resource(Identifier id) {
         return Gdx.files.internal("assets/" + id.namespace() + "/" + id.path());
     }
 
@@ -1118,8 +1126,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @param path the path to the resource.
      * @return the identifier for the given path.
      */
-    public static ElementID id(String path) {
-        return new ElementID(CommonConstants.NAMESPACE, path);
+    public static Identifier id(String path) {
+        return new Identifier(CommonConstants.NAMESPACE, path);
     }
 
     /**
@@ -1145,7 +1153,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         LanguageRegistry.doRegistration(this::registerLanguage);
     }
 
-    private void registerLanguage(ElementID id) {
+    private void registerLanguage(Identifier id) {
         var s = id.path().split("_", 2);
         var locale = s.length == 1 ? Locale.of(s[0]) : Locale.of(s[0], s[1]);
         LanguageManager.INSTANCE.register(locale, id);
@@ -1156,10 +1164,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.blocksTextureAtlas = deferDispose(BlockModelRegistry.stitch(this.textureManager));
 
         TextureStitcher itemTextures = new TextureStitcher(UltracraftClient.id("item"));
-        for (Map.Entry<ElementID, Item> e : Registries.ITEM.entries()) {
+        for (Map.Entry<Identifier, Item> e : Registries.ITEM.getEntries()) {
             if (e.getValue() == Items.AIR || e.getValue() instanceof BlockItem) continue;
 
-            ElementID texId = e.getKey().mapPath(path -> "textures/items/" + path + ".png");
+            Identifier texId = e.getKey().mapPath(path -> "textures/items/" + path + ".png");
             Texture tex = this.textureManager.getTexture(texId);
             itemTextures.add(texId, tex);
         }
@@ -1174,7 +1182,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.registerBlockRenderers();
         this.registerBlockRenderTypes();
 
-        for (var e : Registries.ENTITY_TYPE.entries()) {
+        for (var e : Registries.ENTITY_TYPE.getEntries()) {
             EntityType<?> type = e.getValue();
             EntityRenderer<?> renderer = RendererRegistry.get(type);
             EntityModel<?> entityModel = ModelRegistry.get(type);
@@ -2329,6 +2337,154 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     public GameWindow getWindow() {
         return window;
+    }
+
+    public void runJS(String command) {
+        this.putGiantJSScope();
+
+        this.jsCtx.evaluateString(this.jsScope, command, "<js-command>", 1, null);
+    }
+
+    private void putGiantJSScope() {
+        this.jsScope.put("client", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, this, UltracraftClient.class));
+        this.jsScope.put("logger", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, LoggerFactory.getLogger("<js-logger:cli>"), Logger.class));
+
+        LocalPlayer player = this.player;
+        if (player != null) {
+            this.jsScope.put("player", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, player, LocalPlayer.class));
+            this.jsScope.put("blockPos", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, player.getBlockPos(), LocalPlayer.class));
+            this.jsScope.put("position", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, player.getPosition(), LocalPlayer.class));
+            this.jsScope.put("chunkPos", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, player.getChunkPos(), LocalPlayer.class));
+        }
+
+        ClientWorld world = this.world;
+        if (world != null) {
+            this.jsScope.put("world", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, world, ClientWorld.class));
+
+            if (player != null) {
+                ClientChunk chunk = world.getChunk(player.getChunkPos());
+                if (chunk != null)
+                    this.jsScope.put("chunk", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, chunk, ClientChunk.class));
+            }
+        }
+
+        UltracraftServer server = UltracraftServer.get();
+        if (server != null) {
+            this.jsScope.put("server", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, server, UltracraftServer.class));
+
+            ServerWorld serverWorld = server.getWorld();
+            if (serverWorld != null) this.jsScope.put("serverWorld", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, serverWorld, ServerWorld.class));
+
+            if (player != null) {
+                if (serverWorld != null) {
+                    ServerChunk chunk = serverWorld.getChunk(player.getChunkPos());
+                    if (chunk != null)
+                        this.jsScope.put("serverChunk", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, chunk, ServerChunk.class));
+                }
+                ServerPlayer serverPlayer = server.getPlayer(player.getName());
+                if (serverPlayer != null)
+                    this.jsScope.put("serverPlayer", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, serverPlayer, ServerPlayer.class));
+            }
+        }
+
+        this.jsScope.put("Utils", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Utils.class));
+        this.jsScope.put("UltracraftClient", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, UltracraftClient.class));
+        this.jsScope.put("UltracraftServer", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, UltracraftServer.class));
+        this.jsScope.put("BlockPos", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, BlockPos.class));
+        this.jsScope.put("ChunkPos", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ChunkPos.class));
+        this.jsScope.put("RegionPos", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, RegionPos.class));
+        this.jsScope.put("Vec3i", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec3i.class));
+        this.jsScope.put("Vec3f", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec3f.class));
+        this.jsScope.put("Vec3d", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec3d.class));
+        this.jsScope.put("Vec2i", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec2i.class));
+        this.jsScope.put("Vec2f", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec2f.class));
+        this.jsScope.put("Vec2d", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec2d.class));
+        this.jsScope.put("Vec4f", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec4f.class));
+        this.jsScope.put("Vec4d", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec4d.class));
+        this.jsScope.put("Vec4i", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vec4i.class));
+        this.jsScope.put("Quaternion", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Quaternion.class));
+        this.jsScope.put("Vector3", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vector3.class));
+        this.jsScope.put("Vector2", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vector2.class));
+        this.jsScope.put("GridPoint2", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, GridPoint2.class));
+        this.jsScope.put("GridPoint3", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, GridPoint3.class));
+
+        this.jsScope.put("Gdx", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Gdx.class));
+        this.jsScope.put("files", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.files, Files.class));
+        this.jsScope.put("input", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.input, Input.class));
+        this.jsScope.put("graphics", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.graphics, Graphics.class));
+        this.jsScope.put("audio", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.audio, Audio.class));
+        this.jsScope.put("net", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.net, Net.class));
+        this.jsScope.put("GL20", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.gl20, GL20.class));
+        this.jsScope.put("GL30", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.gl30, GL30.class));
+        this.jsScope.put("GL31", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.gl31, GL31.class));
+        this.jsScope.put("GL32", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, Gdx.gl32, GL32.class));
+        this.jsScope.put("Mesh", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Mesh.class));
+        this.jsScope.put("Texture", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Texture.class));
+        this.jsScope.put("TextureRegion", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, TextureRegion.class));
+        this.jsScope.put("TextureAtlas", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, TextureAtlas.class));
+
+        this.jsScope.put("Map", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Map.class));
+        this.jsScope.put("Set", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Set.class));
+        this.jsScope.put("List", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, List.class));
+        this.jsScope.put("HashMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, HashMap.class));
+        this.jsScope.put("HashSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, HashSet.class));
+        this.jsScope.put("TreeMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, TreeMap.class));
+        this.jsScope.put("TreeSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, TreeSet.class));
+        this.jsScope.put("LinkedHashSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, LinkedHashSet.class));
+        this.jsScope.put("LinkedHashMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, LinkedHashMap.class));
+        this.jsScope.put("ArrayList", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ArrayList.class));
+        this.jsScope.put("LinkedList", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, LinkedList.class));
+        this.jsScope.put("CopyOnWriteArrayList", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, CopyOnWriteArrayList.class));
+        this.jsScope.put("Queue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Queue.class));
+        this.jsScope.put("Deque", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Deque.class));
+        this.jsScope.put("LinkedBlockingQueue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, LinkedBlockingQueue.class));
+        this.jsScope.put("PriorityQueue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, PriorityQueue.class));
+        this.jsScope.put("PriorityBlockingQueue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, PriorityBlockingQueue.class));
+        this.jsScope.put("BlockingQueue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, BlockingQueue.class));
+        this.jsScope.put("BlockingDeque", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, BlockingDeque.class));
+        this.jsScope.put("ConcurrentLinkedQueue", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentLinkedQueue.class));
+        this.jsScope.put("ConcurrentLinkedDeque", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentLinkedDeque.class));
+        this.jsScope.put("ConcurrentSkipListMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentSkipListMap.class));
+        this.jsScope.put("ConcurrentSkipListSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentSkipListSet.class));
+        this.jsScope.put("ConcurrentHashMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentHashMap.class));
+        this.jsScope.put("ConcurrentMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentMap.class));
+        this.jsScope.put("ConcurrentSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentSet.class));
+        this.jsScope.put("ConcurrentNavigableMap", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentNavigableMap.class));
+        this.jsScope.put("ConcurrentSkipListSet", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, ConcurrentSkipListSet.class));
+        this.jsScope.put("Stack", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Stack.class));
+        this.jsScope.put("Vector", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Vector.class));
+        this.jsScope.put("Iterator", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Iterator.class));
+
+        this.jsScope.put("Math", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Math.class));
+        this.jsScope.put("Mth", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Mth.class));
+        this.jsScope.put("MathUtils", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, MathUtils.class));
+
+        this.jsScope.put("ElementID", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Identifier.class));
+        this.jsScope.put("clientResourceManager", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, resourceManager, ResourceManager.class));
+
+        this.jsScope.put("Objects", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Objects.class));
+        this.jsScope.put("Collections", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Collections.class));
+        this.jsScope.put("Lists", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Lists.class));
+        this.jsScope.put("Maps", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Maps.class));
+        this.jsScope.put("Sets", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Sets.class));
+        this.jsScope.put("Optional", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Optional.class));
+        this.jsScope.put("Arrays", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Arrays.class));
+        this.jsScope.put("System", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, System.class));
+
+        this.jsScope.put("Random", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Random.class));
+        this.jsScope.put("Color", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, Color.class));
+        this.jsScope.put("UUID", jsScope, jsWrapper.wrapJavaClass(jsCtx, jsScope, UUID.class));
+        this.jsScope.put("fabricLoader", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, FabricLoader.getInstance(), FabricLoader.class));
+        this.jsScope.put("fabricEnvironment", jsScope, jsWrapper.wrapAsJavaObject(jsCtx, jsScope, FabricLoader.getInstance().getEnvironmentType(), EnvType.class));
+    }
+
+    public RhinoException compileJS(String code) {
+        try {
+            this.jsCtx.compileString(code, "<js-compile>", 1, null);
+        } catch (RhinoException error) {
+            return error;
+        }
+        return null;
     }
 
     private static class LibGDXLogger implements ApplicationLogger {

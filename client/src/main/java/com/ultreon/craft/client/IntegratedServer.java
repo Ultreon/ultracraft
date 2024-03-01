@@ -87,10 +87,20 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
-    public void placePlayer(ServerPlayer player) {
-        this.deferWorldLoad(() -> {
-            super.placePlayer(player);
+    public int getRenderDistance() {
+        return this.client.config.get().renderDistance;
+    }
 
+    @Override
+    public int getEntityRenderDistance() {
+        return this.client.config.get().entityRenderDistance;
+    }
+
+    @Override
+    public void placePlayer(ServerPlayer player) {
+        super.placePlayer(player);
+
+        this.deferWorldLoad(() -> {
             LocalPlayer localPlayer = this.client.player;
             if (localPlayer != null && player.getUuid().equals(localPlayer.getUuid())) {
                 this.client.integratedServer.loadPlayer(localPlayer);

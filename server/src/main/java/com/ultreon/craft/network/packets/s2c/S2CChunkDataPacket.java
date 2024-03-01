@@ -1,9 +1,10 @@
 package com.ultreon.craft.network.packets.s2c;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
-import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
@@ -30,8 +31,8 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
 
     public S2CChunkDataPacket(PacketBuffer buffer) {
         this.pos = buffer.readChunkPos();
-        this.storage = new FlatStorage<>(buffer, buf -> Registries.BLOCK.byId(buf.readShort()));
-        this.biomeStorage = new FlatStorage<>(buffer, buf -> Registries.BIOME.byId(buf.readShort()));
+        this.storage = new PaletteStorage<>(Blocks.AIR, buffer, buf -> Registries.BLOCK.get(buf.readShort()));
+        this.biomeStorage = new PaletteStorage<>(Biomes.PLAINS, buffer, buf -> Registries.BIOME.get(buf.readShort()));
 
         int blockEntityCount = buffer.readVarInt();
         for (int i = 0; i < blockEntityCount; i++) {
@@ -46,7 +47,7 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
         this.biomeStorage = biomeStorage;
 
         for (BlockEntity blockEntity : blockEntities) {
-            BlockPos bPos = World.toLocalBlockPos(blockEntity.pos());
+            BlockPos bPos = World.localize(blockEntity.pos());
             this.blockEntityPositions.add((bPos.x() % 16) << 20 | (bPos.y() % 65536) << 4 | bPos.z() % 16);
             this.blockEntities.add(blockEntity.getType().getRawId());
         }
@@ -55,7 +56,18 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
     @Override
     public void toBytes(PacketBuffer buffer) {
         buffer.writeChunkPos(this.pos);
-        this.storage.write(buffer, (encode, block) -> encode.writeShort(Registries.BLOCK.getRawId(block)));
+        this.storage.write(buffer, (encode, block) -> {
+            if (block == null) {
+                encode.writeShort(Registries.BLOCK.getRawId(Blocks.ERROR));
+                return;
+            }
+            int rawId = Registries.BLOCK.getRawId(block);
+            if (rawId == -1) {
+                encode.writeShort(Registries.BLOCK.getRawId(Blocks.ERROR));
+                return;
+            }
+            encode.writeShort(rawId);
+        });
         this.biomeStorage.write(buffer, (encode, biome) -> {
             if (biome == null) {
                 encode.writeShort(Registries.BIOME.getRawId(Biomes.VOID));
@@ -78,7 +90,7 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
             int x = (blockEntityPosition >> 20) & 0xF;
             int y = (blockEntityPosition >> 4) & 0xFFFF;
             int z = blockEntityPosition & 0xF;
-            blockEntities.put(new BlockPos(x, y, z).offset(this.pos), Registries.BLOCK_ENTITY_TYPE.byId(this.blockEntities.getInt(blockEntityPosition)));
+            blockEntities.put(new BlockPos(x, y, z).offset(this.pos), Registries.BLOCK_ENTITY_TYPE.get(this.blockEntities.getInt(blockEntityPosition)));
         }
 
         handler.onChunkData(this.pos, this.storage, this.biomeStorage, blockEntities);

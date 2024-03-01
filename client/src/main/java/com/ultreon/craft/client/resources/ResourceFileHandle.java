@@ -5,8 +5,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.resources.Resource;
-import com.ultreon.craft.resources.StaticResource;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,10 +14,10 @@ import java.io.InputStream;
 import java.util.UUID;
 
 public class ResourceFileHandle extends FileHandle {
-    private final ElementID id;
+    private final Identifier id;
     private final @Nullable Resource resource;
 
-    public ResourceFileHandle(ElementID id) {
+    public ResourceFileHandle(Identifier id) {
         super(id.toString());
         this.id = id;
         this.resource = UltracraftClient.get().getResourceManager().getResource(id);
@@ -29,11 +28,11 @@ public class ResourceFileHandle extends FileHandle {
 
         Preconditions.checkNotNull(resource, "resource");
 
-        this.id = new ElementID("java", "generated_" + UUID.randomUUID().toString().replace("-", ""));
+        this.id = new Identifier("java", "generated_" + UUID.randomUUID().toString().replace("-", ""));
         this.resource = resource;
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return this.id;
     }
 

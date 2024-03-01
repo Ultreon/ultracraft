@@ -12,19 +12,35 @@ import java.io.Serializable;
  *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
-@SuppressWarnings("ClassCanBeRecord")
 public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
     @Serial
     private static final long serialVersionUID = 782820744815861493L;
     private final int x;
+    private final int y;
     private final int z;
 
     /**
+     * Creates a new chunk position.
+     *
      * @param x The x coordinate.
      * @param z The z coordinate.
+     * @deprecated Use {@link #ChunkPos(int, int, int)} instead
      */
+    @Deprecated
     public ChunkPos(int x, int z) {
+        this(x, 0, z);
+    }
+
+    /**
+     * Creates a new chunk position.
+     *
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param z The z coordinate.
+     */
+    public ChunkPos(int x, int y, int z) {
         this.x = x;
+        this.y = y;
         this.z = z;
     }
 
@@ -35,7 +51,7 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
      */
     @Override
     public String toString() {
-        return this.x + "," + this.z;
+        return this.x + "," + this.y + "," + this.z;
     }
 
     /**
@@ -45,13 +61,18 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
      * @return The parsed chunk position, or {@code null} if the string cannot be parsed.
      */
     @Nullable
-    public static RegionPos parse(String s) {
+    public static ChunkPos parse(String s) {
         String[] split = s.split(",", 2);
         Integer x = ChunkPos.parseInt(split[0]);
-        Integer z = ChunkPos.parseInt(split[1]);
         if (x == null) return null;
-        if (z == null) return null;
-        return new RegionPos(x, z);
+        if (split.length == 2) {
+            Integer z = ChunkPos.parseInt(split[1]);
+            return z == null ? null : new ChunkPos(x, 0, z);
+        }
+        Integer y = ChunkPos.parseInt(split[1]);
+        Integer z = ChunkPos.parseInt(split[2]);
+        return y == null || z == null ? null : new ChunkPos(x, y, z);
+
     }
 
     @Nullable
@@ -67,13 +88,13 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
      * @return The origin of the chunk.
      */
     public Vec3d getChunkOrigin() {
-        return new Vec3d(this.x * World.CHUNK_SIZE, World.WORLD_DEPTH, this.z * World.CHUNK_SIZE);
+        return new Vec3d(this.x * World.CHUNK_SIZE, this.y * World.CHUNK_SIZE, this.z * World.CHUNK_SIZE);
     }
 
     /**
      * Compare this chunk position to another.
      *
-     * @param chunkPos the chunk positon to be compared.
+     * @param chunkPos the chunk position to be compared.
      * @return the comparison result.
      */
     @Override
@@ -86,6 +107,10 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
         return this.x;
     }
 
+    public int y() {
+        return this.y;
+    }
+
     public int z() {
         return this.z;
     }
@@ -96,11 +121,19 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (ChunkPos) obj;
         return this.x == that.x &&
+               this.y == that.y &&
                this.z == that.z;
     }
 
     @Override
     public int hashCode() {
-        return 31 * (31 + this.x) + this.z;
+        int result = this.x;
+        result = 31 * result + this.y;
+        result = 31 * result + this.z;
+        return result;
+    }
+
+    public Vec3d vec() {
+        return new Vec3d(this.x, this.y, this.z);
     }
 }

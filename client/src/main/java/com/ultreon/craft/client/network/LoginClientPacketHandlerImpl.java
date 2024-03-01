@@ -30,6 +30,12 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
         this.client.world = clientWorld;
         this.client.inspection.createNode("world", () -> this.client.world);
 
+        UltracraftClient.invoke(() -> {
+            this.client.worldRenderer = new WorldRenderer(this.client.world);
+            this.client.renderWorld = true;
+            this.client.showScreen(null);
+        });
+
         var player = this.client.player = new LocalPlayer(EntityTypes.PLAYER, clientWorld, uuid);
         clientWorld.spawn(player);
 
@@ -39,12 +45,6 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
         if (this.client.integratedServer != null) this.client.setActivity(GameActivity.SINGLEPLAYER);
         else this.client.setActivity(GameActivity.MULTIPLAYER);
-
-        UltracraftClient.invoke(() -> {
-            this.client.worldRenderer = new WorldRenderer(this.client.world);
-            this.client.renderWorld = true;
-            this.client.showScreen(null);
-        });
     }
 
     @Override
