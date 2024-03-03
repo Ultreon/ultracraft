@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.events.ScreenEvents;
+import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.PauseScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
@@ -14,7 +14,6 @@ import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.input.key.KeyBind;
 import com.ultreon.craft.client.input.key.KeyBinds;
-import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
@@ -63,8 +62,10 @@ public class DesktopInput extends GameInput {
         super.keyDown(keyCode);
 
         Screen currentScreen = this.client.screen;
-        if (currentScreen != null && !Gdx.input.isCursorCatched() && currentScreen.keyPress(keyCode))
+        if (currentScreen != null && !Gdx.input.isCursorCatched() && currentScreen.keyPress(keyCode)) {
+            ScreenEvents.KEY_PRESS.factory().onKeyPressScreen(keyCode);
             return true;
+        }
 
         Player player = this.client.player;
         if (player == null || keyCode < Input.Keys.NUM_1 || keyCode > Input.Keys.NUM_9 || !Gdx.input.isCursorCatched())
@@ -81,8 +82,10 @@ public class DesktopInput extends GameInput {
         super.keyUp(keyCode);
 
         Screen currentScreen = this.client.screen;
-        if (currentScreen != null)
+        if (currentScreen != null) {
+            ScreenEvents.KEY_RELEASE.factory().onKeyReleaseScreen(keyCode);
             return currentScreen.keyRelease(keyCode);
+        }
 
         return false;
     }
@@ -161,8 +164,10 @@ public class DesktopInput extends GameInput {
     @Override
     public boolean keyTyped(char character) {
         Screen currentScreen = this.client.screen;
-        if (currentScreen != null)
+        if (currentScreen != null) {
+            ScreenEvents.CHAR_TYPE.factory().onCharTypeScreen(character);
             return currentScreen.charType(character);
+        }
 
         return true;
     }

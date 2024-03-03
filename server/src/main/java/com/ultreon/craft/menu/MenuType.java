@@ -2,7 +2,7 @@ package com.ultreon.craft.menu;
 
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +18,7 @@ public class MenuType<T extends ContainerMenu> {
         return this.menuBuilder.create(this, world, entity, pos);
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return Registries.MENU_TYPE.getId(this);
     }
 

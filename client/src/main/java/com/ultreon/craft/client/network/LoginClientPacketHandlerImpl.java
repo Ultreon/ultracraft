@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.events.ClientPlayerEvents;
+import com.ultreon.craft.client.api.events.ClientPlayerEvents;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.world.ClientWorld;

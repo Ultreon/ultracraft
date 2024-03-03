@@ -2,7 +2,7 @@ package com.ultreon.craft.recipe;
 
 import com.badlogic.gdx.utils.IdentityMap;
 import com.ultreon.craft.menu.Inventory;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PagedList;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +15,7 @@ public class RecipeManager {
 
     private RecipeManager() { }
 
-    public <T extends Recipe> void register(ElementID id, T recipe) {
+    public <T extends Recipe> void register(Identifier id, T recipe) {
         RecipeType type = recipe.getType();
         if (this.registryMap.containsKey(type)) {
             this.registryMap.get(type).register(id, recipe);
@@ -27,7 +27,7 @@ public class RecipeManager {
         this.registryMap.put(type, registry);
     }
 
-    public Recipe get(ElementID id, RecipeType type) {
+    public Recipe get(Identifier id, RecipeType type) {
         return this.registryMap.get(type).get(id);
     }
 
@@ -43,7 +43,7 @@ public class RecipeManager {
         return Collections.unmodifiableCollection(this.registryMap.get(type).values());
     }
 
-    public ElementID getKey(RecipeType type, Recipe recipe) {
+    public Identifier getKey(RecipeType type, Recipe recipe) {
         return this.registryMap.get(type).getKey(recipe);
     }
 }

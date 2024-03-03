@@ -9,6 +9,7 @@ public abstract class DynamicResource implements Resource {
 
     public static DynamicResource of(Loader loader) {
         return new DynamicResource() {
+
             @Override
             protected byte[] dynamicLoad() {
                 return loader.get();

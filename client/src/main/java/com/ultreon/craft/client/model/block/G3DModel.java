@@ -6,21 +6,21 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceLoader;
 import com.ultreon.craft.client.world.ClientChunk;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
 public class G3DModel implements BlockModel {
-    private final ElementID resource;
+    private final Identifier resource;
     private final ModelConfig config;
     private Model model;
 
-    public G3DModel(ElementID resource) {
+    public G3DModel(Identifier resource) {
         this(resource, new ModelConfig());
     }
 
-    public G3DModel(ElementID resource, ModelConfig config) {
+    public G3DModel(Identifier resource, ModelConfig config) {
         this.resource = resource;
         this.config = config;
     }
@@ -31,7 +31,7 @@ public class G3DModel implements BlockModel {
     }
 
     @Override
-    public ElementID resourceId() {
+    public Identifier resourceId() {
         return this.resource;
     }
 

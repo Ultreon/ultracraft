@@ -1,9 +1,9 @@
 package com.ultreon.craft.client.gui.icon;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
-public record ImageIcon(ElementID id, int width, int height) implements Icon {
-    public ImageIcon(ElementID id) {
+public record ImageIcon(Identifier id, int width, int height) implements Icon {
+    public ImageIcon(Identifier id) {
         this(id, 16, 16);
     }
 

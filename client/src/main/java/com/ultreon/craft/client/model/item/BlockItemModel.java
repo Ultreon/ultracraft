@@ -3,7 +3,7 @@ package com.ultreon.craft.client.model.item;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BlockModel;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.function.Supplier;
 
@@ -20,7 +20,7 @@ public class BlockItemModel implements ItemModel {
     }
 
     @Override
-    public ElementID resourceId() {
+    public Identifier resourceId() {
         return this.blockModel.get().resourceId();
     }
 

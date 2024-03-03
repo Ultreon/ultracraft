@@ -35,7 +35,7 @@ import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
@@ -138,7 +138,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         this.breakingMeshes = new Array<>();
         for (int i = 0; i < 6; i++) {
-            BakedCubeModel bakedCubeModel = this.deferDispose(new BakedCubeModel(new ElementID("break_stage/stub_" + i), breakingTexRegions.get(i)));
+            BakedCubeModel bakedCubeModel = this.deferDispose(new BakedCubeModel(new Identifier("break_stage/stub_" + i), breakingTexRegions.get(i)));
             this.breakingMeshes.add(bakedCubeModel.getMesh());
         }
 

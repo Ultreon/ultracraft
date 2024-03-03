@@ -5,13 +5,15 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.events.MenuEvents;
+import com.ultreon.craft.events.api.EventResult;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
@@ -157,6 +159,10 @@ public abstract class ContainerMenu {
     public void onTakeItem(ServerPlayer player, int index, boolean rightClick) {
         ItemSlot slot = this.slots[index];
 
+        EventResult result = MenuEvents.MENU_CLICK.factory().onMenuClick(this, player, slot, rightClick);
+        if (result.isCanceled())
+            return;
+
         if (rightClick) {
             // Right click transfer
             if (player.getCursor().isEmpty()) {
@@ -200,7 +206,7 @@ public abstract class ContainerMenu {
      * @return the title
      */
     public TextObject getTitle() {
-        ElementID id = this.getType().getId();
+        Identifier id = this.getType().getId();
 
         if (this.customTitle == null)
             return TextObject.translation(id.namespace() + ".container." + id.path().replace("/", ".") + ".title");

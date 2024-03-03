@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.widget;
 
+import com.ultreon.craft.client.api.events.gui.WidgetEvents;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.Position;
 import com.ultreon.craft.client.gui.Renderer;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 
 public class UIContainer<T extends UIContainer<T>> extends Widget {
     @SuppressWarnings("rawtypes")
-    public static final UIContainer<?> ROOT = new UIContainer(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE) {
+    public static final UIContainer<?> ROOT = new UIContainer(Integer.MAX_VALUE, Integer.MAX_VALUE) {
         @Override
         public Path path() {
             return Path.of("/");
@@ -37,7 +38,7 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
     private Layout layout = new StandardLayout();
     protected Widget focused;
 
-    public UIContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
+    public UIContainer(@IntRange(from = 0) int width, @IntRange(from = 0) int height) {
         super(width, height);
     }
 
@@ -152,7 +153,17 @@ public class UIContainer<T extends UIContainer<T>> extends Widget {
         widget.parent = this;
         widget.root = this.root;
         this.widgets.add(widget);
+
+        WidgetEvents.WIDGET_ADDED.factory().onWidgetAdded(this, widget);
+
         return widget;
+    }
+
+    public void remove(Widget widget) {
+        this.widgets.remove(widget);
+        widget.disconnect(this);
+
+        WidgetEvents.WIDGET_REMOVED.factory().onWidgetRemoved(this, widget);
     }
 
     @Override

@@ -1,10 +1,10 @@
 package com.ultreon.craft.client.gui.icon;
 
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 public interface Icon {
-    ElementID id();
+    Identifier id();
 
     int width();
 

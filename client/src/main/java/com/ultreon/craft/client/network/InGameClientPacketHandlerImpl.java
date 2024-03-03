@@ -4,7 +4,8 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.events.ClientPlayerEvents;
+import com.ultreon.craft.client.api.events.ClientChunkEvents;
+import com.ultreon.craft.client.api.events.ClientPlayerEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
 import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
 import com.ultreon.craft.client.gui.screens.Screen;
@@ -38,7 +39,7 @@ import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.BlockPos;
@@ -56,7 +57,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler {
     private final Connection connection;
-    private final Map<ElementID, NetworkChannel> channels = new HashMap<>();
+    private final Map<Identifier, NetworkChannel> channels = new HashMap<>();
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private long ping = 0;
@@ -66,7 +67,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         this.context = new PacketContext(null, connection, EnvType.CLIENT);
     }
 
-    public NetworkChannel registerChannel(ElementID id) {
+    public NetworkChannel registerChannel(Identifier id) {
         NetworkChannel networkChannel = NetworkChannel.create(id);
         this.channels.put(id, networkChannel);
         return networkChannel;
@@ -78,7 +79,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public NetworkChannel getChannel(ElementID channelId) {
+    public NetworkChannel getChannel(Identifier channelId) {
         return this.channels.get(channelId);
     }
 
@@ -129,7 +130,9 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 return;
             }
 
-            world.loadChunk(pos, new ClientChunk(world, pos, storage, biomeStorage, blockEntities));
+            ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
+            ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
+            world.loadChunk(pos, data);
         }, this.client.chunkLoadingExecutor);
     }
 
@@ -225,7 +228,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onPlaySound(ElementID sound, float volume) {
+    public void onPlaySound(Identifier sound, float volume) {
         this.client.playSound(Registries.SOUND_EVENT.getElement(sound), volume);
     }
 
@@ -289,7 +292,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onOpenContainerMenu(ElementID menuTypeId) {
+    public void onOpenContainerMenu(Identifier menuTypeId) {
         var menuType = Registries.MENU_TYPE.getElement(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;

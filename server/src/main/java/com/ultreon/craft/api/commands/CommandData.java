@@ -18,7 +18,7 @@ import com.ultreon.craft.server.chat.Chat;
 import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.server.util.Utils;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
@@ -420,7 +420,7 @@ public class CommandData {
         throw new CommandParseException.NotFound("item", ctx.getOffset());
     }
 
-    private static Item getItem(@Nullable ElementID id) {
+    private static Item getItem(@Nullable Identifier id) {
         for (var value : Registries.ITEM.entries()) {
             if (Objects.equals(value.getKey(), id)) {
                 return value.getValue();
@@ -524,7 +524,7 @@ public class CommandData {
         throw new CommandParseException.NotFound(type, ctx.getOffset());
     }
 
-    public static <T> T readFromFunc(CommandReader ctx, String type, Function<ElementID, T> enum_) throws CommandParseException {
+    public static <T> T readFromFunc(CommandReader ctx, String type, Function<Identifier, T> enum_) throws CommandParseException {
         var id = ctx.readId();
         T apply = enum_.apply(id);
         if (apply == null) throw new CommandParseException.NotFound(type, ctx.getOffset());

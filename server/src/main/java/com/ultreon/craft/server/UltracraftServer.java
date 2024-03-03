@@ -29,7 +29,7 @@ import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.CachedPlayer;
 import com.ultreon.craft.server.player.PermissionMap;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PollingExecutorService;
 import com.ultreon.craft.util.Shutdownable;
 import com.ultreon.craft.world.*;
@@ -91,7 +91,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private boolean sendingChunk;
     protected int maxPlayers = 10;
     private final Cache<String, CachedPlayer> cachedPlayers = CacheBuilder.newBuilder().expireAfterAccess(24, TimeUnit.HOURS).build();
-    private final Map<ElementID, ? extends ServerWorld> worlds;
+    private final Map<Identifier, ? extends ServerWorld> worlds;
     private final GameRules gameRules = new GameRules();
     private final PermissionMap permissions = new PermissionMap();
     private final CommandSender consoleSender = new ConsoleCommandSender();
@@ -127,7 +127,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         // TODO: Make dimension registry.
         this.worlds = Map.of(
-                new ElementID("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
+                new Identifier("overworld"), this.world // Overworld dimension. TODO: Add more dimensions.
         );
 
         if (DebugFlags.INSPECTION_ENABLED.enabled()) {
@@ -784,7 +784,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         return this.gameRules;
     }
 
-    public ServerWorld getWorld(ElementID name) {
+    public ServerWorld getWorld(Identifier name) {
         return this.worlds.get(name);
     }
 

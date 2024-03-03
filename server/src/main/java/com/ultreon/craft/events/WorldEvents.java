@@ -19,8 +19,8 @@ public class WorldEvents {
     public static final Event<CreateBiome> CREATE_BIOME = Event.create();
     public static final Event<SaveWorld> SAVE_WORLD = Event.create();
     public static final Event<LoadWorld> LOAD_WORLD = Event.create();
-    public static final Event<SaveRegion> SAVE_REGION = Event.create();
-    public static final Event<LoadRegion> LOAD_REGION = Event.create();
+    @Deprecated public static final Event<SaveRegion> SAVE_REGION = Event.create();
+    @Deprecated public static final Event<LoadRegion> LOAD_REGION = Event.create();
     public static final Event<SaveChunk> SAVE_CHUNK = Event.create();
     public static final Event<LoadChunk> LOAD_CHUNK = Event.create();
 
