@@ -25,7 +25,7 @@ include 'api'
 include 'api-kotlin'
 include 'api-groovy'
 include 'api-scala'
+//include 'api-clojure'
 include 'api'
 include 'testmod'
-include 'api-clojure'
 

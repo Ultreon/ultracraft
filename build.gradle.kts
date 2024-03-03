@@ -309,7 +309,7 @@ commonProperties
             setupIdea(rootProject.project(":api-groovy"), "Groovy")
             setupIdea(rootProject.project(":api-scala"), "Scala")
             setupIdea(rootProject.project(":api-kotlin"), "Kotlin")
-            setupIdea(rootProject.project(":api-clojure"), "Clojure")
+//            setupIdea(rootProject.project(":api-clojure"), "Clojure")
             setupIdea(rootProject.project(":testmod"), "Test Mod")
         }
     }

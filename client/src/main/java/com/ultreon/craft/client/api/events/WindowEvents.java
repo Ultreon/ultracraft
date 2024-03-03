@@ -9,7 +9,7 @@ public class WindowEvents {
     public static final Event<WindowResized> WINDOW_RESIZED = Event.create();
     public static final Event<WindowMoved> WINDOW_MOVED = Event.create();
     public static final Event<WindowFocusChanged> WINDOW_FOCUS_CHANGED = Event.create();
-    public static final Event<WindowCloseRequested> WINDOW_CLOSE_REQUESTED = Event.create();
+    public static final Event<WindowCloseRequested> WINDOW_CLOSE_REQUESTED = Event.withResult();
     public static final Event<WindowFilesDropped> WINDOW_FILES_DROPPED = Event.create();
 
     @FunctionalInterface
