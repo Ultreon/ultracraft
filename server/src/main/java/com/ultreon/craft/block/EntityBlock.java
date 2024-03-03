@@ -2,6 +2,7 @@ package com.ultreon.craft.block;
 
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -15,8 +16,8 @@ public abstract class EntityBlock extends Block {
     }
 
     @Override
-    public void onPlace(World world, BlockPos pos) {
-        super.onPlace(world, pos);
+    public void onPlace(World world, BlockPos pos, BlockMetadata blockMetadata) {
+        super.onPlace(world, pos, blockMetadata);
 
         world.setBlockEntity(pos, this.createBlockEntity(world, pos));
     }

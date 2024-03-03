@@ -3,9 +3,9 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.entity.DroppedItem;
@@ -236,13 +236,13 @@ public abstract class World implements ServerDisposable {
      * Sets the block at the specified coordinates, with the given block type.
      *
      * @param blockPos the position
-     * @param block    the block type to set
+     * @param state    the block state to set
      * @return true if the block was successfully set, false otherwise
      */
-    public boolean set(BlockPos blockPos, Block block) {
+    public boolean set(BlockPos blockPos, BlockMetadata state) {
         this.checkThread();
 
-        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
+        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), state);
     }
 
     /**
@@ -254,7 +254,7 @@ public abstract class World implements ServerDisposable {
      * @param block the block type to set
      * @return true if the block was successfully set, false otherwise
      */
-    public boolean set(int x, int y, int z, Block block) {
+    public boolean set(int x, int y, int z, BlockMetadata block) {
         this.checkThread();
 
         BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
@@ -272,7 +272,7 @@ public abstract class World implements ServerDisposable {
      * @param pos the position
      * @return the block at the specified coordinates
      */
-    public Block get(BlockPos pos) {
+    public BlockMetadata get(BlockPos pos) {
         this.checkThread();
 
         return this.get(pos.x(), pos.y(), pos.z());
@@ -286,12 +286,13 @@ public abstract class World implements ServerDisposable {
      * @param z the z-coordinate
      * @return the block at the specified coordinates
      */
-    public Block get(int x, int y, int z) {
+    public BlockMetadata get(int x, int y, int z) {
         this.checkThread();
 
         Chunk chunkAt = this.getChunkAt(x, y, z);
-        if (chunkAt == null) return Blocks.AIR;
-        if (!chunkAt.ready) return Blocks.AIR;
+        BlockPos blockPos = new BlockPos(x, y, z);
+        if (chunkAt == null) return Blocks.AIR.createMeta();
+        if (!chunkAt.ready) return Blocks.AIR.createMeta();
 
         BlockPos cp = World.toLocalBlockPos(x, y, z);
         return chunkAt.getFast(cp.x(), cp.y(), cp.z());
@@ -428,11 +429,11 @@ public abstract class World implements ServerDisposable {
         return 0;
     }
 
-    public void setColumn(int x, int z, Block block) {
+    public void setColumn(int x, int z, BlockMetadata block) {
         this.setColumn(x, z, World.CHUNK_HEIGHT, block);
     }
 
-    public void setColumn(int x, int z, int maxY, Block block) {
+    public void setColumn(int x, int z, int maxY, BlockMetadata block) {
         if (this.getChunkAt(x, maxY, z) == null) return;
 
         // FIXME optimize
@@ -452,10 +453,10 @@ public abstract class World implements ServerDisposable {
      * @param depth  the depth of the 3D area
      * @param block  the block to be set in the specified area
      * @return a {@link CompletableFuture} representing the asynchronous operation
-     * @see #set(int, int, int, Block)
-     * @see #setColumn(int, int, Block)
+     * @see #set(int, int, int, BlockMetadata)
+     * @see #setColumn(int, int, BlockMetadata)
      */
-    public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, Block block) {
+    public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, BlockMetadata block) {
         return CompletableFuture.runAsync(() -> {
             int curX = x, curY = y, curZ = z;
             int startX = Math.max(curX, 0);
@@ -572,7 +573,7 @@ public abstract class World implements ServerDisposable {
         for (int x = xMin; x <= xMax; x++) {
             for (int y = yMin; y <= yMax; y++) {
                 for (int z = zMin; z <= zMax; z++) {
-                    Block block = this.get(x, y, z);
+                    BlockMetadata block = this.get(x, y, z);
                     if (block.hasCollider() && (!collideFluid || block.isFluid())) {
                         BoundingBox blockBox = block.getBoundingBox(x, y, z);
                         if (blockBox.intersects(box)) {
@@ -663,7 +664,7 @@ public abstract class World implements ServerDisposable {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return BreakResult.FAILED;
         BlockPos localBlockPos = World.toLocalBlockPos(breaking);
-        Block block = this.get(breaking);
+        BlockMetadata block = this.get(breaking);
 
         if (block.isAir()) return BreakResult.FAILED;
 

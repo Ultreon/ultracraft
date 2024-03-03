@@ -72,14 +72,14 @@ public class TreeFeature extends WorldGenFeature {
 
 
             for (int y = height; y < height + trunkHeight; y++) {
-                chunk.set(x, y, z, this.trunk);
+                chunk.set(x, y, z, this.trunk.createMeta());
             }
 
-            chunk.set(x, height - 1, z, Blocks.DIRT);
+            chunk.set(x, height - 1, z, Blocks.DIRT.createMeta());
             for (int xOffset = -1; xOffset <= 1; xOffset++) {
                 for (int zOffset = -1; zOffset <= 1; zOffset++) {
                     for (int y = height + trunkHeight - 1; y <= height + trunkHeight + 1; y++) {
-                        chunk.set(x + xOffset, y, z + zOffset, this.leaves);
+                        chunk.set(x + xOffset, y, z + zOffset, this.leaves.createMeta());
 
                         if (WorldGenDebugContext.isActive()) {
                             System.out.println("[End " + Thread.currentThread().threadId() + "] TreeFeature: " + x + ", " + z + ", " + height + " - Setting leaf at " + (x + xOffset) + ", " + y + ", " + (z + zOffset));

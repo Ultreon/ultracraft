@@ -1,6 +1,5 @@
 package com.ultreon.craft.entity;
 
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.events.api.ValueEventResult;
@@ -211,10 +210,6 @@ public class LivingEntity extends Entity {
 
     public boolean isDead() {
         return this.isDead;
-    }
-
-    public boolean isInWater() {
-        return this.world.get(this.getBlockPos()) == Blocks.WATER;
     }
 
     public ChunkPos getChunkPos() {

@@ -121,7 +121,7 @@ public final class ClientWorld extends World implements Disposable {
         if (breakResult == BreakResult.BROKEN) {
             this.client.connection.send(new C2SBlockBreakingPacket(breaking, C2SBlockBreakingPacket.BlockStatus.STOP));
             this.client.connection.send(new C2SBlockBreakPacket(breaking));
-            this.set(breaking, Blocks.AIR);
+            this.set(breaking, Blocks.AIR.createMeta());
         }
         return breakResult;
     }

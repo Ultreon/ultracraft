@@ -1,7 +1,7 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.events.WorldEvents;
@@ -23,14 +23,14 @@ public final class ServerChunk extends Chunk {
     private boolean original = true;
     private boolean locked = false;
 
-    public ServerChunk(ServerWorld world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, ServerWorld.Region region) {
+    public ServerChunk(ServerWorld world, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, ServerWorld.Region region) {
         super(world, pos, storage);
         this.world = world;
         this.region = region;
     }
 
     @Override
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         if (!UltracraftServer.isOnServerThread()) {
             throw new InvalidThreadException("Should be on server thread.");
         }
@@ -51,7 +51,7 @@ public final class ServerChunk extends Chunk {
     }
 
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData, ServerWorld.Region region) {
-        var storage = new FlatStorage<Block>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+        var storage = new FlatStorage<BlockMetadata>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
         var biomeStorage = new FlatStorage<Biome>(CHUNK_SIZE * CHUNK_SIZE);
 
         MapType blockData = chunkData.getMap("Blocks");
@@ -104,7 +104,7 @@ public final class ServerChunk extends Chunk {
         MapType chunkData = new MapType();
         MapType biomeData = new MapType();
 
-        this.storage.save(chunkData, Block::save);
+        this.storage.save(chunkData, BlockMetadata::save);
         this.biomeStorage.save(biomeData, Biome::save);
         data.put("Biomes", biomeData);
         data.put("Blocks", chunkData);

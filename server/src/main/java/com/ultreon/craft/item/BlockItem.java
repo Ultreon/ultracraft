@@ -39,7 +39,7 @@ public class BlockItem extends Item {
         BlockEvents.ATTEMPT_BLOCK_PLACEMENT.factory().onAttemptBlockPlacement(useItemContext.player(), this.block.get(), blockPos, useItemContext.stack());
         if (world.get(pos.x, pos.y, pos.z).isReplaceable()) {
             if (!world.intersectEntities(this.getBlock().getBoundingBox(pos))) {
-                world.set(new BlockPos(pos), this.getBlock());
+                world.set(new BlockPos(pos), this.getBlock().createMeta());
                 stack.shrink(1);
                 return InteractResult.ALLOW;
             }
@@ -48,7 +48,7 @@ public class BlockItem extends Item {
         }
 
         if (!world.intersectEntities(this.getBlock().getBoundingBox(next))) {
-            world.set(blockPos, this.getBlock());
+            world.set(blockPos, this.getBlock().createMeta());
             stack.shrink(1);
 
             BlockEvents.BLOCK_PLACED.factory().onBlockPlaced(useItemContext.player(), this.block.get(), blockPos, useItemContext.stack());

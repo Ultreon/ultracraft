@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.network;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientChunkEvents;
@@ -115,7 +115,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+    public void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         LocalPlayer player = this.client.player;
         if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
@@ -243,7 +243,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onBlockSet(BlockPos pos, Block block) {
+    public void onBlockSet(BlockPos pos, BlockMetadata block) {
         ClientWorld world = this.client.world;
         if (this.client.world != null) {
             this.client.submit(() -> world.set(pos, block));

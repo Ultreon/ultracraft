@@ -1,6 +1,6 @@
 package com.ultreon.craft.world.gen;
 
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.world.BuilderChunk;
 import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
@@ -19,26 +19,26 @@ public class RecordingChunk implements ChunkAccess {
     }
 
     @Override
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         this.recordedChanges.add(new ServerWorld.RecordedChange(x, y, z, block));
 
         return true;
     }
 
     @Override
-    public boolean set(int x, int y, int z, Block block) {
+    public boolean set(int x, int y, int z, BlockMetadata block) {
         this.recordedChanges.add(new ServerWorld.RecordedChange(x, y, z, block));
 
         return true;
     }
 
     @Override
-    public Block getFast(int x, int y, int z) {
+    public BlockMetadata getFast(int x, int y, int z) {
         return this.chunk.getFast(x, y, z);
     }
 
     @Override
-    public Block get(int x, int y, int z) {
+    public BlockMetadata get(int x, int y, int z) {
         return this.chunk.get(x, y, z);
     }
 

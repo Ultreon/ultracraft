@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.gui.screens.ChatScreen;
@@ -236,9 +236,9 @@ public class DesktopInput extends GameInput {
 
     private boolean doPlayerInteraction(int button, HitResult hitResult, World world, Player player) {
         Vec3i pos = hitResult.getPos();
-        Block block = world.get(new BlockPos(pos));
+        BlockMetadata block = world.get(new BlockPos(pos));
         Vec3i posNext = hitResult.getNext();
-        Block blockNext = world.get(new BlockPos(posNext));
+        BlockMetadata blockNext = world.get(new BlockPos(posNext));
 
         if (!hitResult.isCollide() || block == null || block.isAir())
             return false;

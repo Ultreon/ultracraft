@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ultreon.craft.*;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.api.events.*;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
@@ -220,8 +221,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public Hud hud;
     public HitResult hitResult;
     private Vec3i breaking;
-    @Nullable
-    private Block breakingBlock;
+    private BlockMetadata breakingBlock;
     public boolean showDebugHud = false;
 
     // Public Flags
@@ -1677,7 +1677,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void handleBlockBreaking(BlockPos breaking, HitResult hitResult) {
         World world = this.world;
         if (world == null) return;
-        if (!hitResult.getPos().equals(breaking.vec()) || !hitResult.getBlock().equals(this.breakingBlock) || this.player == null) {
+        if (!hitResult.getPos().equals(breaking.vec()) || !hitResult.getBlockMeta().equals(this.breakingBlock) || this.player == null) {
             this.resetBreaking(hitResult);
         } else {
             float efficiency = 1.0F;
@@ -1706,7 +1706,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (player == null) return;
 
         this.world.stopBreaking(new BlockPos(this.breaking), player);
-        Block block = hitResult.getBlock();
+        BlockMetadata block = hitResult.getBlockMeta();
 
         if (block == null || block.isAir()) {
             this.breaking = null;
@@ -1967,7 +1967,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.world.stopBreaking(new BlockPos(hitResult.getPos()), player);
         this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = hitResult.getPos();
-        this.breakingBlock = hitResult.getBlock();
+        this.breakingBlock = hitResult.getBlockMeta();
     }
 
     public void startBreaking() {
@@ -1978,7 +1978,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         if (player == null) return;
         this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = hitResult.getPos();
-        this.breakingBlock = hitResult.getBlock();
+        this.breakingBlock = hitResult.getBlockMeta();
     }
 
     public void stopBreaking() {

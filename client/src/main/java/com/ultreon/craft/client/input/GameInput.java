@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.Screen;
@@ -26,7 +26,6 @@ import com.ultreon.craft.network.packets.c2s.C2SItemUsePacket;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
-import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -243,7 +242,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     private void updateInGame(Player player, @NotNull World world) {
         HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
         Vec3i pos = hitResult.getPos();
-        Block block = world.get(new BlockPos(pos));
+        BlockMetadata block = world.get(pos.x, pos.y, pos.z);
         if (!hitResult.isCollide() || block == null || block.isAir()) return;
 
         this.updateControllerBlockBreak();

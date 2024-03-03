@@ -1,7 +1,6 @@
 package com.ultreon.craft.world.gen.feature;
 
 import com.ultreon.craft.block.Block;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.debug.WorldGenDebugContext;
 import com.ultreon.craft.world.ChunkAccess;
 import com.ultreon.craft.world.ServerWorld;
@@ -69,7 +68,7 @@ public class CactiFeature extends WorldGenFeature {
             }
 
             for (int y = height; y < height + trunkHeight; y++) {
-                chunk.set(x, y, z, this.block);
+                chunk.set(x, y, z, this.block.createMeta());
             }
 
             if (WorldGenDebugContext.isActive()) {

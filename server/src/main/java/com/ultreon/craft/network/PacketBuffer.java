@@ -2,6 +2,8 @@ package com.ultreon.craft.network;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.state.BlockDataEntry;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
@@ -1626,5 +1628,17 @@ public class PacketBuffer extends ByteBuf {
 
     public <T extends Enum<T>> T readEnum(T fallback) {
         return EnumUtils.byOrdinal(this.readVarInt(), fallback);
+    }
+
+    public BlockMetadata readBlockMeta() {
+        return BlockMetadata.load(this.readVarInt(), this);
+    }
+
+    public void writeBlockMeta(BlockMetadata blockMeta) {
+        this.writeVarInt(blockMeta.getBlock().getRawId());
+        for (Map.Entry<String, BlockDataEntry<?>> e : blockMeta.getProperties().entrySet()) {
+            this.writeUTF(e.getKey(), 64);
+            e.getValue().write(this);
+        }
     }
 }

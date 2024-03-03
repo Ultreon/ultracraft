@@ -8,8 +8,8 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.model.JsonModel;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
@@ -118,15 +118,15 @@ public class GreedyMesher implements Mesher {
             for (int z = 0; z < depth; z++) {
                 for (int x = 0; x < width; x++) {
                     try {
-                        Block curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
+                        BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             this.chunk.addModel(new BlockPos(x, y, z), new ModelInstance(blockModel.getModel()));
                             continue;
                         }
-                        if (curBlock == null || !condition.shouldUse(curBlock)) continue;
+                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
 
-                        if (y < height - 1 && !ocCond.shouldOcclude(curBlock, this.block(this.chunk, x, y + 1, z))) {
+                        if (y < height - 1 && !ocCond.shouldOcclude(curBlock.getBlock(), this.block(this.chunk, x, y + 1, z).getBlock())) {
                             topMask[x][z] = true;
 
                             if (this.perCornerLight) {
@@ -138,7 +138,7 @@ public class GreedyMesher implements Mesher {
                                 topPcld[x][z] = lightData;
                             }
                         }
-                        if (y > 0 && !ocCond.shouldOcclude(curBlock, this.block(this.chunk, x, y - 1, z))) {
+                        if (y > 0 && !ocCond.shouldOcclude(curBlock.getBlock(), this.block(this.chunk, x, y - 1, z).getBlock())) {
                             btmMask[x][z] = true;
 
                             if (this.perCornerLight) {
@@ -174,12 +174,12 @@ public class GreedyMesher implements Mesher {
             for (int y = 0; y <= World.CHUNK_HEIGHT; y++) {
                 for (int z = 0; z < depth; z++) {
                     try {
-                        Block curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
+                        BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
-                        if (curBlock == null || !condition.shouldUse(curBlock)) continue;
+                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
 
                         int westNeighborX = x - 1;
                         int eastNeighborX = x + 1;
@@ -194,8 +194,8 @@ public class GreedyMesher implements Mesher {
                             eastNeighborX -= World.CHUNK_SIZE;
                         }
                         if (westNeighborChunk != null) {
-                            Block westNeighborBlk = westNeighborChunk.get(westNeighborX, y, z);
-                            if (!ocCond.shouldOcclude(curBlock, westNeighborBlk)) {
+                            BlockMetadata westNeighborBlk = westNeighborChunk.get(westNeighborX, y, z);
+                            if (!ocCond.shouldOcclude(curBlock.getBlock(), westNeighborBlk.getBlock())) {
                                 westMask[z][y] = true;
 
                                 if (this.perCornerLight) {
@@ -210,8 +210,8 @@ public class GreedyMesher implements Mesher {
                         }
 
                         if (eastNeighborChunk != null) {
-                            Block eastNeighborBlk = eastNeighborChunk.get(eastNeighborX, y, z);
-                            if (!ocCond.shouldOcclude(curBlock, eastNeighborBlk)) {
+                            BlockMetadata eastNeighborBlk = eastNeighborChunk.get(eastNeighborX, y, z);
+                            if (!ocCond.shouldOcclude(curBlock.getBlock(), eastNeighborBlk.getBlock())) {
                                 eastMask[z][y] = true;
 
                                 if (this.perCornerLight) {
@@ -249,12 +249,12 @@ public class GreedyMesher implements Mesher {
             for (int y = 0; y <= World.CHUNK_HEIGHT; y++) {
                 for (int x = 0; x < width; x++) {
                     try {
-                        Block curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
+                        BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
-                        if (curBlock == null || !condition.shouldUse(curBlock)) continue;
+                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
 
                         int northNeighborZ = z + 1;
                         int southNeighborZ = z - 1;
@@ -269,8 +269,8 @@ public class GreedyMesher implements Mesher {
                         }
 
                         if (northNeighborChunk != null) {
-                            Block northNeighborBlock = northNeighborChunk.get(x, y, northNeighborZ);
-                            if (!ocCond.shouldOcclude(curBlock, northNeighborBlock)) {
+                            BlockMetadata northNeighborBlock = northNeighborChunk.get(x, y, northNeighborZ);
+                            if (!ocCond.shouldOcclude(curBlock.getBlock(), northNeighborBlock.getBlock())) {
                                 northMask[x][y] = true;
 
                                 if (this.perCornerLight) {
@@ -285,8 +285,8 @@ public class GreedyMesher implements Mesher {
                         }
 
                         if (southNeighborChunk != null) {
-                            Block southNeighborBlock = southNeighborChunk.get(x, y, southNeighborZ);
-                            if (!ocCond.shouldOcclude(curBlock, southNeighborBlock)) {
+                            BlockMetadata southNeighborBlock = southNeighborChunk.get(x, y, southNeighborZ);
+                            if (!ocCond.shouldOcclude(curBlock.getBlock(), southNeighborBlock.getBlock())) {
                                 southMask[x][y] = true;
 
                                 if (this.perCornerLight) {
@@ -399,7 +399,7 @@ public class GreedyMesher implements Mesher {
                     int realY = this.realY(side, x, y, z);
                     int realZ = this.realZ(side, x, y, z);
 
-                    Block block = this.block(this.chunk, realX, realY, realZ);
+                    BlockMetadata block = this.block(this.chunk, realX, realY, realZ);
                     if (block == null || block.isAir() || used[x][y]) continue;
                     used[x][y] = true;
                     float ll = 1;
@@ -418,7 +418,7 @@ public class GreedyMesher implements Mesher {
                             int newRealX = this.realX(side, newX, y, z);
                             int newRealY = this.realY(side, newX, y, z);
                             int newRealZ = this.realZ(side, newX, y, z);
-                            Block newBlock = this.block(this.chunk, newRealX, newRealY, newRealZ);
+                            BlockMetadata newBlock = this.block(this.chunk, newRealX, newRealY, newRealZ);
                             float newLight = 15;
                             PerCornerLightData newPcld = null;
                             if (this.perCornerLight) {
@@ -443,7 +443,7 @@ public class GreedyMesher implements Mesher {
                                     int lRY = this.realY(side, lx, endY, z);
                                     int lRZ = this.realZ(side, lx, endY, z);
 
-                                    Block lblk = this.block(this.chunk, lRX, lRY, lRZ);
+                                    BlockMetadata lblk = this.block(this.chunk, lRX, lRY, lRZ);
                                     if (lblk == null || lblk.isAir()) {
                                         allPassed = false;
                                         break;
@@ -473,7 +473,7 @@ public class GreedyMesher implements Mesher {
                             break;
                         }
                     }
-                    outputList.add(new Face(side, block, ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ, 1));
+                    outputList.add(new Face(side, block.getBlock(), ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ, 1));
                 }
             }
         } catch (PosOutOfBoundsException ex) {
@@ -589,8 +589,8 @@ public class GreedyMesher implements Mesher {
         return !(shouldNotRenderNormally(blockToBlockFace) || blockToBlockFace.isTransparent() && (curBlock.doesOcclude() && blockToBlockFace.doesOcclude()) && (BlockRenderTypeRegistry.get(curBlock) == BlockRenderTypeRegistry.get(blockToBlockFace)));
     }
 
-    private boolean shouldMerge(Block id1, float light1, PerCornerLightData lightData1, Block id2, float light2, PerCornerLightData lightData2) {
-        if (!id1.shouldGreedyMerge()) return false;
+    private boolean shouldMerge(BlockMetadata id1, float light1, PerCornerLightData lightData1, BlockMetadata id2, float light2, PerCornerLightData lightData2) {
+        if (id1 == null || !id1.equals(id2) || !id1.getBlock().shouldGreedyMerge()) return false;
 
         boolean sameBlock = id1 == id2;
         boolean sameLight = light1 == light2;
@@ -602,7 +602,7 @@ public class GreedyMesher implements Mesher {
 
         // Other block renderers may alter shape in an unpredictable way
         boolean considerAsSame = sameLight && !sameBlock && tooDarkToTell
-                && GreedyMesher.isFullCubeRender(id1) && GreedyMesher.isFullCubeRender(id2)
+                && GreedyMesher.isFullCubeRender(id1.getBlock()) && GreedyMesher.isFullCubeRender(id2.getBlock())
                 && (!id1.isTransparent() && !id2.isTransparent());
 
         if (considerAsSame)
@@ -703,17 +703,17 @@ public class GreedyMesher implements Mesher {
     }
 
     public interface MergeCondition {
-        boolean shouldMerge(Block id1, float light1, PerCornerLightData lightData1, Block id2, float light2, PerCornerLightData lightData2);
+        boolean shouldMerge(BlockMetadata data1, float light1, PerCornerLightData lightData1, BlockMetadata data2, float light2, PerCornerLightData lightData2);
     }
 
-    private @Nullable Block block(ClientChunk chunk, int x, int y, int z) {
+    private BlockMetadata block(ClientChunk chunk, int x, int y, int z) {
         if (y < WORLD_DEPTH) return null;
         ClientWorld world = chunk.getWorld();
         this.tmp3i.set(chunk.getPos().x(), 0, chunk.getPos().z()).mul(16).add(x, y, z);
         ClientChunk chunkAt = world.getChunkAt(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z);
         if (chunkAt != null)
             return chunkAt.get(World.toLocalBlockPos(this.tmp3i.x, this.tmp3i.y, this.tmp3i.z, this.tmp3i));
-        return Blocks.AIR;
+        return Blocks.AIR.createMeta();
     }
 
     private int blockLight(ClientChunk chunk, int x, int y, int z) {

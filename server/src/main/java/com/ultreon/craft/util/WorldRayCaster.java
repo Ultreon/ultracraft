@@ -1,6 +1,6 @@
 package com.ultreon.craft.util;
 
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.world.Chunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -27,12 +27,12 @@ public class WorldRayCaster {
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
 	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
 	public static HitResult rayCast(HitResult result, World world) {
-		return rayCast(result, world, BlockPredicate.NON_FLUID);
+		return rayCast(result, world, BlockMetaPredicate.NON_FLUID);
 	}
 
 	// sources : https://www.researchgate.net/publication/2611491_A_Fast_Voxel_Traversal_Algorithm_for_Ray_Tracing
 	// and https://www.gamedev.net/blogs/entry/2265248-voxel-traversal-algorithm-ray-casting/
-	public static HitResult rayCast(HitResult result, World world, BlockPredicate predicate) {
+	public static HitResult rayCast(HitResult result, World world, BlockMetaPredicate predicate) {
 		result.collide = false;
 
 		final Ray ray = result.ray;
@@ -82,7 +82,7 @@ public class WorldRayCaster {
 				continue;
 			}
 
-			Block block = chunk.get(loc.cpy());
+			BlockMetadata block = chunk.get(loc.cpy());
 			if(block != null && !block.isAir() && predicate.test(block)) {
 				box.set(box.min.set(abs.x, abs.y, abs.z), box.max.set(abs.x+1,abs.y+1,abs.z+1));
 				box.update();
@@ -93,7 +93,8 @@ public class WorldRayCaster {
 					result.distance = dst;
 					result.position.set(intersection);
 					result.pos.set(abs);
-					result.block = block;
+					result.blockMeta = block;
+					result.block = block.getBlock();
 
 					computeFace(result);
 				}

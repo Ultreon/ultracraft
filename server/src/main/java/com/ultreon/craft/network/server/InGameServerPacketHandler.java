@@ -1,7 +1,7 @@
 package com.ultreon.craft.network.server;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.PlayerEvents;
@@ -27,8 +27,8 @@ import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.*;
 import net.fabricmc.api.EnvType;
 
@@ -120,7 +120,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     public void onBlockBreaking(BlockPos pos, C2SBlockBreakingPacket.BlockStatus status) {
         this.server.submit(() -> {
             ServerWorld world = this.player.getWorld();
-            Block block = world.get(pos);
+            BlockMetadata block = world.get(pos);
             float efficiency = 1.0F;
             ItemStack stack = this.player.getSelectedItem();
             Item item = stack.getItem();
@@ -157,19 +157,19 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         UltracraftServer.invoke(() -> {
             if (Math.abs(pos.vec().d().add(1).dst(this.player.getPosition())) > this.player.getAttributes().get(Attribute.BLOCK_REACH)
                     || this.player.blockBrokenTick) {
-                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getRawId(world.get(pos))));
+                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), world.get(pos)));
                 return;
             }
 
-            Block original = world.get(pos);
+            BlockMetadata original = world.get(pos);
             ItemStack stack = this.player.getSelectedItem();
-            Block block = world.get(pos);
+            BlockMetadata block = world.get(pos);
 
             if (BlockEvents.ATTEMPT_BLOCK_REMOVAL.factory().onAttemptBlockRemoval(this.player, original, pos, stack).isCanceled()) {
                 return;
             }
 
-            world.set(pos, Blocks.AIR);
+            world.set(pos, Blocks.AIR.createMeta());
 
             BlockEvents.BLOCK_REMOVED.factory().onBlockRemoved(this.player, original, pos, stack);
 

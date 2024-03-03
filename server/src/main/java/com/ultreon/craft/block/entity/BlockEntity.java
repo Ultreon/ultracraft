@@ -1,6 +1,7 @@
 package com.ultreon.craft.block.entity;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
@@ -21,6 +22,10 @@ public abstract class BlockEntity {
     }
 
     public Block getBlock() {
+        return world.get(pos).getBlock();
+    }
+
+    public BlockMetadata getBlockMeta() {
         return world.get(pos);
     }
 

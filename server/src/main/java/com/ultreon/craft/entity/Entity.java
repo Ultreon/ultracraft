@@ -2,7 +2,6 @@ package com.ultreon.craft.entity;
 
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.api.commands.perms.Permission;
-import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.events.EntityEvents;
 import com.ultreon.craft.events.api.ValueEventResult;
@@ -190,8 +189,8 @@ public class Entity implements CommandSender {
         return this.isInWater();
     }
 
-    private boolean isInWater() {
-        return this.world.get(this.getBlockPos()) == Blocks.WATER;
+    public boolean isInWater() {
+        return this.world.get(this.getBlockPos()).isWater();
     }
 
     protected void swimUp() {

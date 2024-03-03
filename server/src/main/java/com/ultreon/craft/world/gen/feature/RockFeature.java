@@ -39,7 +39,7 @@ public class RockFeature extends WorldGenFeature {
             for (int xOffset = -1; xOffset < 1; xOffset++) {
                 for (int zOffset = -1; zOffset < 1; zOffset++) {
                     for (int y = height; y <= height + 1; y++) {
-                        chunk.set(x + xOffset, y, z + zOffset, this.material);
+                        chunk.set(x + xOffset, y, z + zOffset, this.material.createMeta());
                     }
                 }
             }

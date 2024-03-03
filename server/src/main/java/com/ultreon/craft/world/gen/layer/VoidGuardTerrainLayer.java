@@ -12,7 +12,7 @@ public class VoidGuardTerrainLayer extends TerrainLayer {
     @Override
     public boolean handle(World world, Chunk chunk, int x, int y, int z, int height) {
         if (y == 70) {
-            chunk.set(x, y, z, Blocks.VOIDGUARD);
+            chunk.set(x, y, z, Blocks.VOIDGUARD.createMeta());
             return true;
         }
         return false;

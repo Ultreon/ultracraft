@@ -7,8 +7,8 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.debug.WorldGenDebugContext;
@@ -17,9 +17,9 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CAddEntityPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockEntitySetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
-import com.ultreon.craft.network.packets.s2c.S2CAddEntityPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -166,7 +166,7 @@ public class ServerWorld extends World {
     }
 
     @Override
-    public boolean set(int x, int y, int z, @NotNull Block block) {
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block) {
         boolean isBlockSet = super.set(x, y, z, block);
         block.onPlace(this, new BlockPos(x, y, z));
         if (isBlockSet) {
@@ -184,8 +184,8 @@ public class ServerWorld extends World {
         }
     }
 
-    private void update(int x, int y, int z, @NotNull Block block) {
-        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getRawId()));
+    private void update(int x, int y, int z, BlockMetadata block) {
+        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block));
     }
 
     public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
@@ -878,7 +878,7 @@ public class ServerWorld extends World {
         this.setSpawnPoint(spawnX, spawnZ);
     }
 
-    public void recordOutOfBounds(int x, int y, int z, Block block) {
+    public void recordOutOfBounds(int x, int y, int z, BlockMetadata block) {
         if (this.isOutOfWorldBounds(x, y, z)) {
             return;
         }
@@ -1468,13 +1468,13 @@ public class ServerWorld extends World {
         }
     }
 
-    public record RecordedChange(int x, int y, int z, Block block) {
+    public record RecordedChange(int x, int y, int z, BlockMetadata block) {
         public MapType save() {
             MapType mapType = new MapType();
             mapType.putInt("x", this.x);
             mapType.putInt("y", this.y);
             mapType.putInt("z", this.z);
-            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getId(this.block)).toString());
+            mapType.put("block", this.block.save());
             return mapType;
         }
 
@@ -1497,7 +1497,7 @@ public class ServerWorld extends World {
                     "x=" + x +
                     ", y=" + y +
                     ", z=" + z +
-                    ", block=" + block.getId() +
+                    ", block=" + block +
                     '}';
         }
     }

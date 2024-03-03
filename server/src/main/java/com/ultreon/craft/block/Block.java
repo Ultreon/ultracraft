@@ -1,6 +1,7 @@
 package com.ultreon.craft.block;
 
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
@@ -78,7 +80,7 @@ public class Block implements DataWriter<MapType> {
         return this.fluid;
     }
 
-    public BoundingBox getBoundingBox(int x, int y, int z) {
+    public BoundingBox getBoundingBox(int x, int y, int z, BlockMetadata blockMetadata) {
         return new BoundingBox(new Vec3d(x, y, z), new Vec3d(x + 1, y + 1, z + 1));
     }
 
@@ -87,7 +89,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public BoundingBox getBoundingBox(Vec3i posNext) {
-        return this.getBoundingBox(posNext.x, posNext.y, posNext.z);
+        return this.getBoundingBox(posNext.x, posNext.y, posNext.z, this.createMeta());
     }
 
     @Override
@@ -139,7 +141,7 @@ public class Block implements DataWriter<MapType> {
         return this.toolRequired;
     }
 
-    public LootGenerator getLootGen() {
+    public LootGenerator getLootGen(BlockMetadata blockMetadata) {
         return this.lootGen;
     }
 
@@ -174,8 +176,12 @@ public class Block implements DataWriter<MapType> {
         return this.occlude;
     }
 
-    public void onPlace(World world, BlockPos pos) {
+    public void onPlace(World world, BlockPos pos, BlockMetadata blockMetadata) {
         // Used in implementations
+    }
+
+    public BlockMetadata createMeta() {
+        return new BlockMetadata(this, Collections.emptyMap());
     }
 
     public static class Properties {

@@ -9,6 +9,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientChunkEvents;
 import com.ultreon.craft.client.init.Shaders;
@@ -50,11 +51,11 @@ public final class ClientChunk extends Chunk {
      * @deprecated Use {@link #ClientChunk(ClientWorld, ChunkPos, Storage, Storage, Map)} instead
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
-    public ClientChunk(ClientWorld world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+    public ClientChunk(ClientWorld world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         this(world, pos, storage, biomeStorage, blockEntities);
     }
 
-    public ClientChunk(ClientWorld world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+    public ClientChunk(ClientWorld world, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         super(world, pos, storage, biomeStorage);
         this.clientWorld = world;
         this.active = false;
@@ -100,7 +101,7 @@ public final class ClientChunk extends Chunk {
     }
 
     @Override
-    public Block getFast(int x, int y, int z) {
+    public BlockMetadata getFast(int x, int y, int z) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
@@ -109,7 +110,7 @@ public final class ClientChunk extends Chunk {
     }
 
     @Override
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }

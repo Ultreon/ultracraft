@@ -1,7 +1,7 @@
 package com.ultreon.craft.network.client;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
@@ -39,7 +39,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities);
+    void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 
@@ -51,7 +51,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onRemovePlayer(UUID u);
 
-    void onBlockSet(BlockPos pos, Block block);
+    void onBlockSet(BlockPos pos, BlockMetadata block);
 
     void onMenuItemChanged(int index, ItemStack stack);
 

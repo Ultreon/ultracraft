@@ -130,7 +130,7 @@ public final class WorldRenderer implements DisposableContainer {
             breakingTexRegions.set(i, textureRegion);
         }
 
-        var boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
+        var boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0, Blocks.STONE.createMeta());
         float v = 0.001f;
         boundingBox.set(boundingBox);
         boundingBox.min.sub(v);

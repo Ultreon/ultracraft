@@ -3,6 +3,7 @@ package com.ultreon.craft.network.packets.s2c;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
@@ -22,7 +23,7 @@ import java.util.*;
 
 public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
     private final ChunkPos pos;
-    private final Storage<Block> storage;
+    private final Storage<BlockMetadata> storage;
     private final Storage<Biome> biomeStorage;
     private final IntList blockEntityPositions = new IntArrayList();
     private final IntList blockEntities = new IntArrayList();
@@ -30,7 +31,7 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
 
     public S2CChunkDataPacket(PacketBuffer buffer) {
         this.pos = buffer.readChunkPos();
-        this.storage = new FlatStorage<>(buffer, buf -> Registries.BLOCK.byId(buf.readShort()));
+        this.storage = new FlatStorage<>(buffer, PacketBuffer::readBlockMeta);
         this.biomeStorage = new FlatStorage<>(buffer, buf -> Registries.BIOME.byId(buf.readShort()));
 
         int blockEntityCount = buffer.readVarInt();
@@ -40,7 +41,7 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
         }
     }
 
-    public S2CChunkDataPacket(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Collection<BlockEntity> blockEntities) {
+    public S2CChunkDataPacket(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Collection<BlockEntity> blockEntities) {
         this.pos = pos;
         this.storage = storage;
         this.biomeStorage = biomeStorage;
@@ -55,7 +56,7 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
     @Override
     public void toBytes(PacketBuffer buffer) {
         buffer.writeChunkPos(this.pos);
-        this.storage.write(buffer, (encode, block) -> encode.writeShort(Registries.BLOCK.getRawId(block)));
+        this.storage.write(buffer, (encode, block) -> block.write(encode));
         this.biomeStorage.write(buffer, (encode, biome) -> {
             if (biome == null) {
                 encode.writeShort(Registries.BIOME.getRawId(Biomes.VOID));

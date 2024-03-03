@@ -2,8 +2,8 @@ package com.ultreon.craft.util;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.network.PacketBuffer;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
@@ -15,6 +15,7 @@ public class HitResult {
     protected Vec3d normal = new Vec3d();
     protected Vec3i pos = new Vec3i();
     protected Vec3i next = new Vec3i();
+    public BlockMetadata blockMeta = BlockMetadata.AIR;
     public Block block = Blocks.AIR;
     public boolean collide;
     public double distance;
@@ -39,7 +40,7 @@ public class HitResult {
         this.normal.set(buffer.readVec3d());
         this.pos.set(buffer.readVec3i());
         this.next.set(buffer.readVec3i());
-        this.block = Registries.BLOCK.getElement(buffer.readId());
+        this.blockMeta = buffer.readBlockMeta();
         this.collide = buffer.readBoolean();
         this.distance = buffer.readDouble();
     }
@@ -51,7 +52,7 @@ public class HitResult {
         buffer.writeVec3d(this.normal);
         buffer.writeVec3i(this.pos);
         buffer.writeVec3i(this.next);
-        buffer.writeId(this.block.getId());
+        buffer.writeBlockMeta(this.blockMeta);
         buffer.writeBoolean(this.collide);
         buffer.writeDouble(this.distance);
     }
@@ -83,6 +84,10 @@ public class HitResult {
 
     public Vec3i getNext() {
         return this.next;
+    }
+
+    public BlockMetadata getBlockMeta() {
+        return this.blockMeta;
     }
 
     public Block getBlock() {

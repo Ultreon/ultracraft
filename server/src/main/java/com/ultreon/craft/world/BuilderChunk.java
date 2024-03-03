@@ -1,6 +1,6 @@
 package com.ultreon.craft.world;
 
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.util.InvalidThreadException;
@@ -24,13 +24,13 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public Block getFast(int x, int y, int z) {
+    public BlockMetadata getFast(int x, int y, int z) {
         if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         return super.getFast(x, y, z);
     }
 
     @Override
-    public void set(Vec3i pos, Block block) {
+    public void set(Vec3i pos, BlockMetadata block) {
         if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(pos.x, pos.y, pos.z)) {
             this.world.recordOutOfBounds(this.offset.x + pos.x, this.offset.y + pos.y, this.offset.z + pos.z, block);
@@ -40,7 +40,7 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public boolean set(int x, int y, int z, Block block) {
+    public boolean set(int x, int y, int z, BlockMetadata block) {
         if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(x, y, z)) {
             this.world.recordOutOfBounds(this.offset.x + x, this.offset.y + y, this.offset.z + z, block);
@@ -50,7 +50,7 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public void setFast(Vec3i pos, Block block) {
+    public void setFast(Vec3i pos, BlockMetadata block) {
         if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(pos.x, pos.y, pos.z)) {
             this.world.recordOutOfBounds(this.offset.x + pos.x, this.offset.y + pos.y, this.offset.z + pos.z, block);
@@ -60,7 +60,7 @@ public final class BuilderChunk extends Chunk {
     }
 
     @Override
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         if (this.isOnInvalidThread()) throw new InvalidThreadException("Should be on the dedicated builder thread!");
         if (this.isOutOfBounds(x, y, z)) {
             this.world.recordOutOfBounds(this.offset.x + x, this.offset.y + y, this.offset.z + z, block);

@@ -3,6 +3,7 @@ package com.ultreon.craft.world;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.FlatStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
@@ -60,7 +61,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
     private boolean disposed;
     private final World world;
 
-    public final Storage<Block> storage;
+    public final Storage<BlockMetadata> storage;
     protected final LightMap lightMap = new LightMap(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
     protected final HeightMap heightMap = new HeightMap(CHUNK_SIZE);
     public final Storage<Biome> biomeStorage;
@@ -89,7 +90,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @deprecated Use {@link #Chunk(World, ChunkPos, Storage)} instead
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
-    protected Chunk(World world, int size, int height, ChunkPos pos, Storage<Block> storage) {
+    protected Chunk(World world, int size, int height, ChunkPos pos, Storage<BlockMetadata> storage) {
         this(world, size, height, pos, storage, new FlatStorage<>(256));
     }
 
@@ -97,7 +98,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @deprecated Use {@link #Chunk(World, ChunkPos, Storage, Storage)} instead@
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
-    protected Chunk(World world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+    protected Chunk(World world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage) {
         this(world, pos, storage, biomeStorage);
     }
 
@@ -118,7 +119,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos     the chunk position.
      * @param storage the block storage.
      */
-    protected Chunk(World world, ChunkPos pos, Storage<Block> storage) {
+    protected Chunk(World world, ChunkPos pos, Storage<BlockMetadata> storage) {
         this(world, pos, storage, new FlatStorage<>(256));
     }
 
@@ -130,7 +131,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param storage      the block storage.
      * @param biomeStorage the biome storage
      */
-    protected Chunk(World world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage) {
+    protected Chunk(World world, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage) {
         this.world = world;
 
         this.offset = new Vec3i(pos.x() * CHUNK_SIZE, WORLD_DEPTH, pos.z() * CHUNK_SIZE);
@@ -157,9 +158,9 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param data The input data.
      * @return The decoded block data.
      */
-    public static Block loadBlock(MapType data) {
+    public static BlockMetadata loadBlock(MapType data) {
         @Nullable Identifier id = Identifier.parse(data.getString("id"));
-        return Registries.BLOCK.getElement(id);
+        return BlockMetadata.load(id, data.getInt("x"), data.getInt("y"), data.getInt("z"), data);
     }
 
     /**
@@ -168,8 +169,8 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block get(Vec3i pos) {
-        if (this.disposed) return Blocks.AIR;
+    public BlockMetadata get(Vec3i pos) {
+        if (this.disposed) return Blocks.AIR.createMeta();
         return this.get(pos.x, pos.y, pos.z);
     }
 
@@ -179,8 +180,8 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block get(BlockPos pos) {
-        if (this.disposed) return Blocks.AIR;
+    public BlockMetadata get(BlockPos pos) {
+        if (this.disposed) return Blocks.AIR.createMeta();
         return this.get(pos.x(), pos.y(), pos.z());
     }
 
@@ -192,9 +193,9 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param z the z coordinate of the block
      * @return the block at the given coordinates
      */
-    public Block get(int x, int y, int z) {
-        if (this.disposed) return Blocks.AIR;
-        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR;
+    public BlockMetadata get(int x, int y, int z) {
+        if (this.disposed) return Blocks.AIR.createMeta();
+        if (this.isOutOfBounds(x, y, z)) return Blocks.AIR.createMeta();
         return this.getFast(x, y, z);
     }
 
@@ -206,7 +207,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos the position of the block
      * @return the block at the given coordinates
      */
-    public Block getFast(Vec3i pos) {
+    public BlockMetadata getFast(Vec3i pos) {
         return this.getFast(pos.x, pos.y, pos.z);
     }
 
@@ -220,12 +221,12 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param z the z coordinate of the block
      * @return the block at the given coordinates
      */
-    public Block getFast(int x, int y, int z) {
-        if (this.disposed) return Blocks.AIR;
+    public BlockMetadata getFast(int x, int y, int z) {
+        if (this.disposed) return Blocks.AIR.createMeta();
         int dataIdx = this.getIndex(x, y, z);
 
-        Block block = this.storage.get(dataIdx);
-        return block == null ? Blocks.AIR : block;
+        BlockMetadata block = this.storage.get(dataIdx);
+        return block == null ? Blocks.AIR.createMeta() : block;
     }
 
     /**
@@ -234,7 +235,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos   the position of the block
      * @param block the block to set
      */
-    public void set(Vec3i pos, Block block) {
+    public void set(Vec3i pos, BlockMetadata block) {
         this.set(pos.x, pos.y, pos.z, block);
     }
 
@@ -247,7 +248,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param block the block to set
      * @return true if the block was successfully set, false if setting the block failed
      */
-    public boolean set(int x, int y, int z, Block block) {
+    public boolean set(int x, int y, int z, BlockMetadata block) {
         if (this.isOutOfBounds(x, y, z)) return false;
         return this.setFast(x, y, z, block);
     }
@@ -260,7 +261,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos   the position of the block
      * @param block the block to set
      */
-    public void setFast(Vec3i pos, Block block) {
+    public void setFast(Vec3i pos, BlockMetadata block) {
         this.setFast(pos.x, pos.y, pos.z, block);
     }
 
@@ -275,7 +276,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param block the block to set
      * @return true if the block was successfully set, false if setting the block failed
      */
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         if (this.disposed) return false;
         int index = this.getIndex(x, y, z);
 
