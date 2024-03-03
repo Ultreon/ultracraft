@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.ultreon.craft.LoadingContext;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.registry.event.RegistryEvents;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 import static com.ultreon.craft.registry.RegistryKey.ROOT;
 
 public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements RawIdMap<T>, Publisher<Registry<T>> {
-    public static final Registry<Registry<?>> REGISTRY = new Registry<>(new Builder<>(new ElementID("registry")), ROOT);
+    public static final Registry<Registry<?>> REGISTRY = new Registry<>(new Builder<>(new Identifier("registry")), ROOT);
     private static final OrderedMap<RegistryKey<Registry<?>>, Registry<?>> REGISTRIES = new OrderedMap<>();
     private static Logger dumpLogger = (level, msg, t) -> {};
     private static boolean frozen;
     private final OrderedMap<RegistryKey<T>, T> keyMap = new OrderedMap<>();
     private final OrderedMap<T, RegistryKey<T>> valueMap = new OrderedMap<>();
     private final Class<T> type;
-    private final ElementID id;
+    private final Identifier id;
     private final boolean overrideAllowed;
     private final boolean syncDisabled;
     private final RegistryKey<Registry<T>> key;
@@ -72,7 +72,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
         Registry.dumpLogger = dumpLogger;
     }
 
-    public ElementID id() {
+    public Identifier id() {
         return this.id;
     }
 
@@ -82,18 +82,18 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
 
     @SafeVarargs
     @Deprecated
-    public static <T> Registry<T> create(ElementID id, @NotNull T... type) {
+    public static <T> Registry<T> create(Identifier id, @NotNull T... type) {
         return new Builder<>(id, type).build();
     }
 
     @SafeVarargs
-    public static <T> Builder<T> builder(ElementID id, T... typeGetter) {
+    public static <T> Builder<T> builder(Identifier id, T... typeGetter) {
         return new Builder<>(id, typeGetter);
     }
 
     @SafeVarargs
     public static <T> Builder<T> builder(String name, T... typeGetter) {
-        return new Builder<>(new ElementID(LoadingContext.get().namespace(), name), typeGetter);
+        return new Builder<>(new Identifier(LoadingContext.get().namespace(), name), typeGetter);
     }
 
     /**
@@ -103,7 +103,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
      * @return the element id of it.
      */
     @Nullable
-    public ElementID getId(T obj) {
+    public Identifier getId(T obj) {
         RegistryKey<T> registryKey = this.valueMap.get(obj);
         if (registryKey == null) return null;
         return registryKey.element();
@@ -120,17 +120,17 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
     }
 
     /**
-     * Returns the registered instance from the given {@link ElementID}
+     * Returns the registered instance from the given {@link Identifier}
      *
      * @param key the element id.
      * @return a registered instance of the type {@link T}.
      * @throws ClassCastException if the type is invalid.
      */
-    public T getElement(@Nullable ElementID key) {
+    public T getElement(@Nullable Identifier key) {
         return this.keyMap.get(RegistryKey.of(this.key, key));
     }
 
-    public boolean contains(ElementID rl) {
+    public boolean contains(Identifier rl) {
         return this.keyMap.containsKey(RegistryKey.of(this.key, rl));
     }
 
@@ -138,7 +138,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
         Registry.getDumpLogger().log("Registry dump: " + this.type.getSimpleName());
         for (Map.Entry<RegistryKey<T>, T> entry : this.entries()) {
             T object = entry.getValue();
-            ElementID rl = entry.getKey().element();
+            Identifier rl = entry.getKey().element();
 
             Registry.getDumpLogger().log("  (" + rl + ") -> " + object);
         }
@@ -150,7 +150,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
      * @param rl  the resource location.
      * @param val the register item value.
      */
-    public void register(ElementID rl, T val) {
+    public void register(Identifier rl, T val) {
         if (!this.type.isAssignableFrom(val.getClass()))
             throw new IllegalArgumentException("Not allowed type detected, got " + val.getClass() + " expected assignable to " + this.type);
 
@@ -174,7 +174,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
         return Collections.unmodifiableList(this.keyMap.valueList());
     }
 
-    public List<ElementID> ids() {
+    public List<Identifier> ids() {
         return this.keyMap.keyList().stream().map(RegistryKey::element).collect(Collectors.toList());
     }
 
@@ -289,12 +289,12 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
     public static class Builder<T> {
 
         private final Class<T> type;
-        private final ElementID id;
+        private final Identifier id;
         private boolean allowOverride = false;
         private boolean doNotSync = false;
 
         @SuppressWarnings("unchecked")
-        public Builder(ElementID id, T... typeGetter) {
+        public Builder(Identifier id, T... typeGetter) {
             this.type = (Class<T>) typeGetter.getClass().getComponentType();
             this.id = id;
         }

@@ -13,7 +13,7 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.ApiStatus;
@@ -206,7 +206,7 @@ public abstract class ContainerMenu {
      * @return the title
      */
     public TextObject getTitle() {
-        ElementID id = this.getType().getId();
+        Identifier id = this.getType().getId();
 
         if (this.customTitle == null)
             return TextObject.translation(id.namespace() + ".container." + id.path().replace("/", ".") + ".title");

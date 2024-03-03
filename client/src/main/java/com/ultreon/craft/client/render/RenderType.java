@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.client.ClientRegistries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 public class RenderType {
@@ -14,7 +14,7 @@ public class RenderType {
     public static final RenderType WATER = RenderType.register("water", new RenderType());
 
     private static RenderType register(String name, RenderType renderType) {
-        ClientRegistries.RENDER_TYPE.register(new ElementID(CommonConstants.NAMESPACE, name), renderType);
+        ClientRegistries.RENDER_TYPE.register(new Identifier(CommonConstants.NAMESPACE, name), renderType);
         return renderType;
     }
 

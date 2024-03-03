@@ -1,7 +1,7 @@
 package com.ultreon.craft.text;
 
 import com.ultreon.craft.util.Color;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +14,7 @@ public class TextStyle {
     private @Nullable HoverEvent<?> hoverEvent = null;
     private @Nullable ClickEvent clickEvent = null;
     private Color color = Color.WHITE;
-    private ElementID font;
+    private Identifier font;
 
     public static TextStyle deserialize(MapType data) {
         TextStyle textStyle = new TextStyle();
@@ -108,11 +108,11 @@ public class TextStyle {
         return this;
     }
 
-    public ElementID getFont() {
+    public Identifier getFont() {
         return this.font;
     }
 
-    public TextStyle font(ElementID font) {
+    public TextStyle font(Identifier font) {
         this.font = font;
         return this;
     }

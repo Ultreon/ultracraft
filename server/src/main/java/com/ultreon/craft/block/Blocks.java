@@ -6,7 +6,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.loot.RandomLoot;
 import org.apache.commons.lang3.IntegerRange;
 
@@ -33,7 +33,7 @@ public final class Blocks {
     public static final Block CACTUS = Blocks.register("cactus", new Block(new Properties().noOcclude().replaceable().usesCustomRender().dropsItems(Items.CACTUS)));
 
     private static <T extends Block> T register(String name, T block) {
-        Registries.BLOCK.register(new ElementID(name), block);
+        Registries.BLOCK.register(new Identifier(name), block);
         return block;
     }
 

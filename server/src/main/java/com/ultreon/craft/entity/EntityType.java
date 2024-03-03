@@ -3,7 +3,7 @@ package com.ultreon.craft.entity;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.entity.util.EntitySize;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import org.jetbrains.annotations.Contract;
@@ -34,7 +34,7 @@ public abstract class EntityType<T extends Entity> {
         return this.size;
     }
 
-    public @Nullable ElementID getId() {
+    public @Nullable Identifier getId() {
         return Registries.ENTITY_TYPE.getId(this);
     }
 

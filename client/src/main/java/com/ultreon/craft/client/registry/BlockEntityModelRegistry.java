@@ -5,7 +5,7 @@ import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.InternalApi;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BlockModel;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -14,14 +14,14 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class BlockEntityModelRegistry {
-    private static final Map<BlockEntityType<?>, Function<ElementID, BlockModel>> REGISTRY = new HashMap<>();
+    private static final Map<BlockEntityType<?>, Function<Identifier, BlockModel>> REGISTRY = new HashMap<>();
     private static final Map<BlockEntityType<?>, BlockModel> FINISHED_REGISTRY = new HashMap<>();
 
     private BlockEntityModelRegistry() {
 
     }
 
-    public static <T extends BlockEntity> void register(BlockEntityType<T> type, Function<ElementID, BlockModel> modelFactory) {
+    public static <T extends BlockEntity> void register(BlockEntityType<T> type, Function<Identifier, BlockModel> modelFactory) {
         REGISTRY.put(type, modelFactory);
     }
 

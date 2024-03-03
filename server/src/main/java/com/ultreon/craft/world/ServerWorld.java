@@ -638,7 +638,7 @@ public class ServerWorld extends World {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="<<Starting: Auto Save Schedule>>">
-        this.saveSchedule = this.server.schedule(new Task<>(new ElementID("auto_save")) {
+        this.saveSchedule = this.server.schedule(new Task<>(new Identifier("auto_save")) {
             @Override
             public void run() {
                 try {

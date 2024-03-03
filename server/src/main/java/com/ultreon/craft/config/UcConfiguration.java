@@ -4,7 +4,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.events.ConfigEvents;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.core.util.FileWatcher;
@@ -46,7 +46,7 @@ public final class UcConfiguration<T> {
     @NotNull
     private static FusionYAML.Builder getBuilder() {
         FusionYAML.Builder builder = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).onlyExposed(true);
-        builder.addTypeAdapter(new ElementIDAdapter(), ElementID.class);
+        builder.addTypeAdapter(new ElementIDAdapter(), Identifier.class);
         return builder;
     }
 
@@ -163,9 +163,9 @@ public final class UcConfiguration<T> {
         void onReload();
     }
 
-    private static class ElementIDAdapter extends TypeAdapter<ElementID> {
+    private static class ElementIDAdapter extends TypeAdapter<Identifier> {
         @Override
-        public YamlElement serialize(ElementID obj, Type type) {
+        public YamlElement serialize(Identifier obj, Type type) {
             if (obj == null) {
                 return null;
             }
@@ -173,11 +173,11 @@ public final class UcConfiguration<T> {
         }
 
         @Override
-        public ElementID deserialize(YamlElement element, Type type) {
+        public Identifier deserialize(YamlElement element, Type type) {
             if (element == null) {
                 return null;
             }
-            return ElementID.tryParse(element.toString());
+            return Identifier.tryParse(element.toString());
         }
     }
 

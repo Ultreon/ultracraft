@@ -1,7 +1,7 @@
 package com.ultreon.craft.block.entity;
 
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
@@ -24,7 +24,7 @@ public class BlockEntityType<T extends BlockEntity> {
         return blockEntity;
     }
 
-    public @Nullable ElementID getId() {
+    public @Nullable Identifier getId() {
         return Registries.BLOCK_ENTITY_TYPE.getId(this);
     }
 

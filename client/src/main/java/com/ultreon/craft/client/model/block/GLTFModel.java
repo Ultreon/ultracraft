@@ -2,22 +2,20 @@ package com.ultreon.craft.client.model.block;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.google.common.annotations.Beta;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceLoader;
 import com.ultreon.craft.client.world.ClientChunk;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.ApiStatus.Experimental;
 
 @Experimental
 public class GLTFModel implements BlockModel {
-    private final ElementID resource;
+    private final Identifier resource;
     private SceneAsset asset;
 
-    public GLTFModel(ElementID resource) {
+    public GLTFModel(Identifier resource) {
         this.resource = resource;
     }
 
@@ -27,7 +25,7 @@ public class GLTFModel implements BlockModel {
     }
 
     @Override
-    public ElementID resourceId() {
+    public Identifier resourceId() {
         return this.resource;
     }
 

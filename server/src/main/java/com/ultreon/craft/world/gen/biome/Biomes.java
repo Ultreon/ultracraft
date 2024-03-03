@@ -3,7 +3,7 @@ package com.ultreon.craft.world.gen.biome;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.gen.feature.*;
 import com.ultreon.craft.world.gen.layer.AirTerrainLayer;
@@ -77,7 +77,7 @@ public class Biomes {
 //            .build());
 
     private static Biome register(String name, Biome biome) {
-        Registries.BIOME.register(new ElementID(name), biome);
+        Registries.BIOME.register(new Identifier(name), biome);
         return biome;
     }
 

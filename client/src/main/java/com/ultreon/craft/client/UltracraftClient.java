@@ -861,7 +861,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void setupMods() {
         // Set mod icon overrides.
         ModIconOverrides.set("ultracraft", UltracraftClient.id("icon.png"));
-        ModIconOverrides.set("gdx", new ElementID("gdx", "icon.png"));
+        ModIconOverrides.set("gdx", new Identifier("gdx", "icon.png"));
 
         // Invoke entry points.
         FabricLoader.getInstance().invokeEntrypoints(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
@@ -925,7 +925,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @return A new instance of FileHandle for the specified resource.
      */
     @NewInstance
-    public static @NotNull FileHandle resource(ElementID id) {
+    public static @NotNull FileHandle resource(Identifier id) {
         return Gdx.files.internal("assets/" + id.namespace() + "/" + id.path());
     }
 
@@ -1036,8 +1036,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @param path the path to the resource.
      * @return the identifier for the given path.
      */
-    public static ElementID id(String path) {
-        return new ElementID(CommonConstants.NAMESPACE, path);
+    public static Identifier id(String path) {
+        return new Identifier(CommonConstants.NAMESPACE, path);
     }
 
     /**
@@ -1063,7 +1063,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         LanguageRegistry.doRegistration(this::registerLanguage);
     }
 
-    private void registerLanguage(ElementID id) {
+    private void registerLanguage(Identifier id) {
         var s = id.path().split("_", 2);
         var locale = s.length == 1 ? Locale.of(s[0]) : Locale.of(s[0], s[1]);
         LanguageManager.INSTANCE.register(locale, id);
@@ -1077,7 +1077,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         for (Map.Entry<RegistryKey<Item>, Item> e : Registries.ITEM.entries()) {
             if (e.getValue() == Items.AIR || e.getValue() instanceof BlockItem) continue;
 
-            ElementID texId = e.getKey().element().mapPath(path -> "textures/items/" + path + ".png");
+            Identifier texId = e.getKey().element().mapPath(path -> "textures/items/" + path + ".png");
             Texture tex = this.textureManager.getTexture(texId);
             itemTextures.add(texId, tex);
         }

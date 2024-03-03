@@ -7,7 +7,7 @@ import com.ultreon.craft.item.tool.AxeItem;
 import com.ultreon.craft.item.tool.PickaxeItem;
 import com.ultreon.craft.item.tool.ShovelItem;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 public class Items {
     public static final Item AIR = Items.register("air", new Item(new Properties()));
@@ -36,7 +36,7 @@ public class Items {
     public static final BlockItem CACTUS = Items.register("cactus", new BlockItem(new Properties(), () -> Blocks.CACTUS));
 
     private static <T extends Item> T register(String name, T block) {
-        Registries.ITEM.register(new ElementID(name), block);
+        Registries.ITEM.register(new Identifier(name), block);
         return block;
     }
 

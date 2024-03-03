@@ -1,13 +1,13 @@
 package com.ultreon.craft.registry;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.Objects;
 
-public record RegistryKey<T>(RegistryKey<Registry<T>> parent, ElementID element) {
-    public static final RegistryKey<Registry<Registry<?>>> ROOT = new RegistryKey<>(null, new ElementID("root"));
+public record RegistryKey<T>(RegistryKey<Registry<T>> parent, Identifier element) {
+    public static final RegistryKey<Registry<Registry<?>>> ROOT = new RegistryKey<>(null, new Identifier("root"));
 
-    public static <T> RegistryKey<T> of(RegistryKey<Registry<T>> parent, ElementID element) {
+    public static <T> RegistryKey<T> of(RegistryKey<Registry<T>> parent, Identifier element) {
         if (element == null) throw new IllegalArgumentException("Element ID cannot be null");
         return new RegistryKey<>(parent, element);
     }
@@ -18,7 +18,7 @@ public record RegistryKey<T>(RegistryKey<Registry<T>> parent, ElementID element)
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Registry<?>> RegistryKey<T> registry(ElementID id) {
+    public static <T extends Registry<?>> RegistryKey<T> registry(Identifier id) {
         return (RegistryKey<T>) new RegistryKey<>(ROOT, id);
     }
 

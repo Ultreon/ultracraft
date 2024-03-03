@@ -1,6 +1,6 @@
 package com.ultreon.craft.registry;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.function.Supplier;
 
@@ -8,25 +8,25 @@ import java.util.function.Supplier;
 public class DeferredElement<T> implements Supplier<T> {
     private final Registry<? super T> registry;
     private final Supplier<T> supplier;
-    private final ElementID elementID;
+    private final Identifier identifier;
 
-    public DeferredElement(Registry<? super T> registry, Supplier<T> supplier, ElementID elementID) {
+    public DeferredElement(Registry<? super T> registry, Supplier<T> supplier, Identifier identifier) {
         this.registry = registry;
         this.supplier = supplier;
-        this.elementID = elementID;
+        this.identifier = identifier;
     }
 
     public void register() {
-        this.registry.register(this.elementID, this.supplier.get());
+        this.registry.register(this.identifier, this.supplier.get());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T get() {
-        return (T) this.registry.getElement(this.elementID);
+        return (T) this.registry.getElement(this.identifier);
     }
 
-    public ElementID id() {
-        return this.elementID;
+    public Identifier id() {
+        return this.identifier;
     }
 }

@@ -24,7 +24,7 @@ import com.ultreon.craft.client.world.FaceProperties;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
 import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
@@ -43,7 +43,7 @@ public class RenderingRegistration {
             EntityRenderer<?> renderer = RendererRegistry.get(type);
             EntityModel<?> entityModel = ModelRegistry.get(type);
 
-            ElementID key = e.getKey().element();
+            Identifier key = e.getKey().element();
             FileHandle handle = UltracraftClient.resource(key.mapPath(path -> "models/entity/" + path + ".g3dj"));
             if (handle.exists()) {
                 Model model = UltracraftClient.invokeAndWait(() -> modelLoader.loadModel(handle, fileName -> {

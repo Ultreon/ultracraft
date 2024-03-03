@@ -1,20 +1,17 @@
 package com.ultreon.craft.client.model;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
@@ -22,7 +19,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.RegistryKey;
@@ -30,7 +26,7 @@ import com.ultreon.craft.registry.RegistryKeys;
 import com.ultreon.craft.resources.Resource;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Axis;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockFace;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,20 +43,20 @@ public class JsonModelLoader {
     }
 
     public JsonModel load(Block block) throws IOException {
-        ElementID elementID = block.getId().mapPath(path -> "models/blocks/" + path + ".json");
-        Resource resource = this.resourceManager.getResource(elementID);
+        Identifier identifier = block.getId().mapPath(path -> "models/blocks/" + path + ".json");
+        Resource resource = this.resourceManager.getResource(identifier);
         if (resource == null)
             return null;
-        UltracraftClient.LOGGER.debug("Loading block model: {}", elementID);
+        UltracraftClient.LOGGER.debug("Loading block model: {}", identifier);
         return this.load(Registries.BLOCK.getKey(block), GSON.fromJson(resource.openReader(), JsonObject.class));
     }
 
     public JsonModel load(Item item) throws IOException {
-        ElementID elementID = item.getId().mapPath(path -> "models/items/" + path + ".json");
-        Resource resource = this.resourceManager.getResource(elementID);
+        Identifier identifier = item.getId().mapPath(path -> "models/items/" + path + ".json");
+        Resource resource = this.resourceManager.getResource(identifier);
         if (resource == null)
             return null;
-        UltracraftClient.LOGGER.debug("Loading item model: {}", elementID);
+        UltracraftClient.LOGGER.debug("Loading item model: {}", identifier);
         return this.load(Registries.ITEM.getKey(item), GSON.fromJson(resource.openReader(), JsonObject.class));
     }
 
@@ -72,7 +68,7 @@ public class JsonModelLoader {
 
         JsonObject root = modelData.getAsJsonObject();
         JsonObject textures = root.getAsJsonObject("textures");
-        Map<String, ElementID> textureElements = loadTextures(textures);
+        Map<String, Identifier> textureElements = loadTextures(textures);
 
 //        GridPoint2 textureSize = loadVec2i(root.getAsJsonArray("texture_size"), new GridPoint2(16, 16));
         GridPoint2 textureSize = new GridPoint2(16, 16);
@@ -145,13 +141,13 @@ public class JsonModelLoader {
         return faceElems;
     }
 
-    private Map<String, ElementID> loadTextures(JsonObject textures) {
-        Map<String, ElementID> textureElements = new HashMap<>();
+    private Map<String, Identifier> loadTextures(JsonObject textures) {
+        Map<String, Identifier> textureElements = new HashMap<>();
 
         for (var entry : textures.entrySet()) {
             String name = entry.getKey();
             String stringId = entry.getValue().getAsString();
-            ElementID id = ElementID.parse(stringId).mapPath(path -> "textures/" + path + ".png");
+            Identifier id = Identifier.parse(stringId).mapPath(path -> "textures/" + path + ".png");
             textureElements.put(name, id);
         }
 
@@ -238,7 +234,7 @@ public class JsonModelLoader {
             Preconditions.checkNotNull(to);
         }
 
-        public void bake(int idx, ModelBuilder modelBuilder, Map<String, ElementID> textureElements) {
+        public void bake(int idx, ModelBuilder modelBuilder, Map<String, Identifier> textureElements) {
             Vector3 from = this.from();
             Vector3 to = this.to();
 
@@ -254,11 +250,11 @@ public class JsonModelLoader {
                 BlockFace blockFace = entry.getKey();
                 FaceElement faceElement = entry.getValue();
                 String texRef = faceElement.texture;
-                ElementID texture;
+                Identifier texture;
 
-                if (texRef.equals("#missing")) texture = new ElementID("textures/block/error.png");
+                if (texRef.equals("#missing")) texture = new Identifier("textures/block/error.png");
                 else if (texRef.startsWith("#")) texture = textureElements.get(texRef.substring(1));
-                else texture = ElementID.parse(texRef).mapPath(path -> "textures/" + path + ".png");
+                else texture = Identifier.parse(texRef).mapPath(path -> "textures/" + path + ".png");
 
                 meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
 

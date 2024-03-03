@@ -7,7 +7,7 @@ import com.ultreon.craft.network.api.packet.ModPacketContext;
 import com.ultreon.craft.network.packets.c2s.C2SModPacket;
 import com.ultreon.craft.network.packets.s2c.S2CModPacket;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
@@ -23,8 +23,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class NetworkChannel {
-    private static final Map<ElementID, NetworkChannel> CHANNELS = new HashMap<>();
-    private final ElementID key;
+    private static final Map<Identifier, NetworkChannel> CHANNELS = new HashMap<>();
+    private final Identifier key;
     private int curId;
     private final Reference2IntMap<Class<? extends ModPacket<?>>> idMap = new Reference2IntArrayMap<>();
     private final Map<Class<? extends ModPacket<?>>, BiConsumer<? extends ModPacket<?>, PacketBuffer>> encoders = new HashMap<>();
@@ -34,18 +34,18 @@ public class NetworkChannel {
     @Environment(EnvType.CLIENT)
     private Connection c2sConnection;
 
-    private NetworkChannel(ElementID key) {
+    private NetworkChannel(Identifier key) {
         this.key = key;
     }
 
-    public static NetworkChannel create(ElementID id) {
+    public static NetworkChannel create(Identifier id) {
         NetworkChannel channel = new NetworkChannel(id);
         NetworkChannel.CHANNELS.put(id, channel);
         return channel;
     }
 
     @CheckReturnValue
-    public static NetworkChannel getChannel(ElementID channelId) {
+    public static NetworkChannel getChannel(Identifier channelId) {
         return NetworkChannel.CHANNELS.get(channelId);
     }
 
@@ -54,7 +54,7 @@ public class NetworkChannel {
         this.c2sConnection = connection;
     }
 
-    public ElementID id() {
+    public Identifier id() {
         return this.key;
     }
 

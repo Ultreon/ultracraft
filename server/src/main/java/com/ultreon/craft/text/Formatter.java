@@ -5,7 +5,7 @@ import com.ultreon.craft.registry.CustomKeyRegistry;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.Color;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharPredicate;
@@ -49,7 +49,7 @@ public class Formatter {
     private Color currentColor;
     private @Nullable ClickEvent currentClickEvent = null;
     private @Nullable HoverEvent<?> currentHoverEvent = null;
-    private final @Nullable ElementID currentFont = null;
+    private final @Nullable Identifier currentFont = null;
     private boolean bold = false;
     private boolean italic = false;
     private boolean underlined = false;
@@ -349,7 +349,7 @@ public class Formatter {
             case "time" -> this.currentBuilder.append(LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
             case "date" -> this.currentBuilder.append(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
             default -> {
-                var identifier = ElementID.tryParse(key);
+                var identifier = Identifier.tryParse(key);
                 if (identifier == null) break;
                 var textKey = CustomKeyRegistry.get(identifier);
                 if (textKey == null) break;
