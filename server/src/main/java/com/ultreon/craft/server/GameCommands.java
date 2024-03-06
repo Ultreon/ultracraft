@@ -2,9 +2,10 @@ package com.ultreon.craft.server;
 
 import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.command.*;
+import com.ultreon.craft.events.LoadingEvent;
 import com.ultreon.craft.registry.CommandRegistry;
 
-public class GameCommands {
+public final class GameCommands {
     public static void register() {
         CommandRegistry.register(new TeleportCommand());
         CommandRegistry.register(new KillCommand());
@@ -17,6 +18,8 @@ public class GameCommands {
         CommandRegistry.register(new GiveCommand());
         CommandRegistry.register(new SummonCommand());
         CommandRegistry.register(new SummonItemCommand());
+
+        LoadingEvent.REGISTER_COMMANDS.factory().onRegisterCommands();
 
         Command.runCommandLoaders();
     }

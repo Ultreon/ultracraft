@@ -13,13 +13,14 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Suppliers;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.model.JsonModel;
 import com.ultreon.craft.client.model.JsonModelLoader;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
+import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.model.item.BlockItemModel;
 import com.ultreon.craft.client.model.item.FlatItemModel;
 import com.ultreon.craft.client.model.item.ItemModel;
@@ -32,7 +33,9 @@ import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class ItemRenderer {
@@ -76,7 +79,7 @@ public class ItemRenderer {
                 return;
             }
 
-            this.renderBlockItem(blockItem.getBlock(), renderer, x + 8, this.client.getScaledHeight() - y - 16);
+            this.renderBlockItem(blockItem,blockItem.createBlockMeta(), renderer, x + 8, this.client.getScaledHeight() - y - 16);
             return;
         }
 
@@ -108,13 +111,17 @@ public class ItemRenderer {
         }
     }
 
-    private void renderBlockItem(Block block, Renderer renderer, int x, int y) {
+    private void renderBlockItem(Item item, BlockMetadata block, Renderer renderer, int x, int y) {
         renderer.external(() -> {
             float guiScale = this.client.getGuiScale();
             this.itemCam.zoom = 4.0f / guiScale;
             this.itemCam.far = 100000;
             this.itemCam.update();
             BakedCubeModel bakedBlockModel = this.client.getBakedBlockModel(block);
+            if (bakedBlockModel == BakedCubeModel.DEFAULT) {
+                renderCustomBlock(item, block, renderer, x, y);
+                return;
+            }
             this.batch.begin(this.itemCam);
             Mesh mesh = bakedBlockModel.getMesh();
             Renderable renderable = new Renderable();
@@ -131,6 +138,21 @@ public class ItemRenderer {
             this.batch.render(renderable);
             this.batch.end();
         });
+    }
+
+    private void renderCustomBlock(Item item, BlockMetadata block, Renderer renderer, int x, int y) {
+        ModelInstance modelInstance = new ModelInstance(getModel(block));
+        this.modelsInstances.put(item, modelInstance);
+
+        renderModel(modelInstance, renderer, x, y);
+    }
+
+    private static Model getModel(BlockMetadata block) {
+        BlockModel blockModel = BlockModelRegistry.get(block);
+        Model defaultModel = BakedCubeModel.DEFAULT.getModel();
+        if (blockModel == null) return defaultModel;
+        Model model = blockModel.getModel();
+        return model == null ? defaultModel : model;
     }
 
     public OrthographicCamera getItemCam() {
@@ -184,9 +206,7 @@ public class ItemRenderer {
 
     private void fallbackModel(Item e) {
         if (e instanceof BlockItem blockItem) {
-            this.registerBlockModel(blockItem, () -> this.client.getBakedBlockModel(blockItem.getBlock()));
-        } else {
-
+//            this.registerBlockModel(blockItem, () -> this.client.getBakedBlockModel(blockItem.createBlockMeta()));
         }
     }
 }

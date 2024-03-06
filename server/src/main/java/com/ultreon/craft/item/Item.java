@@ -3,7 +3,7 @@ package com.ultreon.craft.item;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
-import com.ultreon.craft.world.InteractResult;
+import com.ultreon.craft.world.UseResult;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,8 +17,8 @@ public class Item {
         this.maxStackSize = properties.maxStackSize;
     }
 
-    public InteractResult use(UseItemContext useItemContext) {
-        return InteractResult.DENY;
+    public UseResult use(UseItemContext useItemContext) {
+        return UseResult.SKIP;
     }
 
     public TextObject getTranslation() {

@@ -39,6 +39,7 @@ import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ExitCodes;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.Biome;
@@ -61,6 +62,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private long ping = 0;
+    private boolean disconnected;
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -116,24 +118,36 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
-        LocalPlayer player = this.client.player;
-        if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
-            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> {
-            ClientWorld world = this.client.world;
-
-            if (world == null) {
-                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+        try {
+            LocalPlayer player = this.client.player;
+            if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
                 return;
             }
 
-            ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
-            ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
-            world.loadChunk(pos, data);
-        }, this.client.chunkLoadingExecutor);
+            CompletableFuture.runAsync(() -> {
+                ClientWorld world = this.client.world;
+
+                if (world == null) {
+                    this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                    return;
+                }
+
+                ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
+                ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
+                world.loadChunk(pos, data);
+            }, this.client.chunkLoadingExecutor).exceptionally(throwable -> {
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                UltracraftClient.LOGGER.error("Failed to load chunk:", throwable);
+                return null;
+            });
+        } catch (Exception e) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            UltracraftClient.LOGGER.error("Hard error while loading chunk:", e);
+            UltracraftClient.LOGGER.debug("What, why? Pls no!!!");
+
+            Runtime.getRuntime().halt(ExitCodes.FATAL_ERROR);
+        }
     }
 
     @Override
@@ -162,6 +176,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         }
 
         this.client.connection.closeAll();
+        this.disconnected = true;
 
         this.client.submit(() -> {
             this.client.renderWorld = false;
@@ -409,5 +424,10 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         if (this.client.world != null) {
             this.client.world.getEntity(id).onPipeline(pipeline);
         }
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return disconnected;
     }
 }

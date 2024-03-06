@@ -1,7 +1,9 @@
 package com.ultreon.craft.recipe;
 
 import com.badlogic.gdx.utils.IdentityMap;
+import com.ultreon.craft.events.LoadingEvent;
 import com.ultreon.craft.menu.Inventory;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PagedList;
 import org.jetbrains.annotations.Nullable;
@@ -45,5 +47,17 @@ public class RecipeManager {
 
     public Identifier getKey(RecipeType type, Recipe recipe) {
         return this.registryMap.get(type).getKey(recipe);
+    }
+
+    public void fireRecipeModifications() {
+        for (RecipeType type : Registries.RECIPE_TYPE.values()) {
+            LoadingEvent.MODIFY_RECIPES.factory().onModifyRecipes(this, type, this.registryMap.get(type));
+        }
+    }
+
+    public void freeze() {
+        for (RecipeType type : Registries.RECIPE_TYPE.values()) {
+            this.registryMap.get(type).freeze();
+        }
     }
 }

@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ultreon.craft.world.World.WORLD_DEPTH;
 
@@ -119,7 +120,7 @@ public class GreedyMesher implements Mesher {
                 for (int x = 0; x < width; x++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             this.chunk.addModel(new BlockPos(x, y, z), new ModelInstance(blockModel.getModel()));
                             continue;
@@ -175,7 +176,7 @@ public class GreedyMesher implements Mesher {
                 for (int z = 0; z < depth; z++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
@@ -250,7 +251,7 @@ public class GreedyMesher implements Mesher {
                 for (int x = 0; x < width; x++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
-                        BlockModel blockModel = BlockModelRegistry.get(curBlock.getBlock());
+                        BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
@@ -473,7 +474,7 @@ public class GreedyMesher implements Mesher {
                             break;
                         }
                     }
-                    outputList.add(new Face(side, block.getBlock(), ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ, 1));
+                    outputList.add(new Face(side, block, ll, lightData, x + offsetX, y + offsetY, endX + offsetX, endY + offsetY, z + offsetZ, 1));
                 }
             }
         } catch (PosOutOfBoundsException ex) {
@@ -590,9 +591,9 @@ public class GreedyMesher implements Mesher {
     }
 
     private boolean shouldMerge(BlockMetadata id1, float light1, PerCornerLightData lightData1, BlockMetadata id2, float light2, PerCornerLightData lightData2) {
-        if (id1 == null || !id1.equals(id2) || !id1.getBlock().shouldGreedyMerge()) return false;
+        if (!id1.getBlock().shouldGreedyMerge()) return false;
 
-        boolean sameBlock = id1 == id2;
+        boolean sameBlock = Objects.equals(id1, id2);
         boolean sameLight = light1 == light2;
         boolean tooDarkToTell = light1 < 0.1f; // Too dark to tell they're not the same block
 
@@ -602,6 +603,7 @@ public class GreedyMesher implements Mesher {
 
         // Other block renderers may alter shape in an unpredictable way
         boolean considerAsSame = sameLight && !sameBlock && tooDarkToTell
+                && UltracraftClient.get().getBakedBlockModel(id1) == UltracraftClient.get().getBakedBlockModel(id2)
                 && GreedyMesher.isFullCubeRender(id1.getBlock()) && GreedyMesher.isFullCubeRender(id2.getBlock())
                 && (!id1.isTransparent() && !id2.isTransparent());
 
@@ -632,7 +634,7 @@ public class GreedyMesher implements Mesher {
          * @param lightData     Per corner light data. Pass null if per corner lighting is disabled.
          * @param sunlightLevel
          */
-        public Face(BlockFace side, Block block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z, float sunlightLevel) {
+        public Face(BlockFace side, BlockMetadata block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z, float sunlightLevel) {
             this.lightLevel = lightLevel;
             this.x1 = startX;
             this.y1 = startY;
@@ -644,7 +646,7 @@ public class GreedyMesher implements Mesher {
             this.lightData = null;
 
             UltracraftClient client = UltracraftClient.get();
-            this.renderer = BlockRendererRegistry.get(block);
+            this.renderer = BlockRendererRegistry.get(block.getBlock());
             this.bakedBlockModel = client.getBakedBlockModel(block);
         }
 

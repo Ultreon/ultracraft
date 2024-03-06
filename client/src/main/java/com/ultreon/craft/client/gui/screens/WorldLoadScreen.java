@@ -13,7 +13,7 @@ import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.*;
-import com.ultreon.libs.commons.v0.vector.Vec2i;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 
 public class WorldLoadScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldLoadScreen.class);
@@ -157,27 +156,40 @@ public class WorldLoadScreen extends Screen {
             WorldLoadScreen.LOGGER.info("Loading spawn chunks...");
 
             ChunkPos spawnChunk = World.toChunkPos(this.world.getSpawnPoint());
-            int spawnChunkX = spawnChunk.x();
-            int spawnChunkZ = spawnChunk.z();
-
-            for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
-                for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
-                    this.world.loadChunk(spawnChunkX, spawnChunkZ);
-                    this.message("Loading spawn chunk " + chunkX + ", " + chunkZ);
-                }
-            }
+//            int spawnChunkX = spawnChunk.x();
+//            int spawnChunkY = spawnChunk.y();
+//            int spawnChunkZ = spawnChunk.z();
+//
+//            for (int chunkX = spawnChunkX - 1; chunkX <= spawnChunkX + 1; chunkX++) {
+//                for (int chunkY = spawnChunkY - 1; chunkY <= spawnChunkY + 1; chunkY++) {
+//                    for (int chunkZ = spawnChunkZ - 1; chunkZ <= spawnChunkZ + 1; chunkZ++) {
+//                        this.world.loadChunkNow(spawnChunkX, spawnChunkY, spawnChunkZ);
+//                        this.message("Loading spawn chunk " + chunkX + ", " + chunkY + ", " + chunkZ);
+//                    }
+//                }
+//            }
 
             ChunkRefresher refresher = new ChunkRefresher();
-            ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk, ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5)).stream().filter(chunkPos -> {
-                Vec2i loadChunk = new Vec2i(chunkPos.x(), chunkPos.z());
-                Vec2i spawnChunkXZ = new Vec2i(spawnChunkX, spawnChunkZ);
-                return loadChunk.dst(spawnChunkXZ) < this.client.config.get().renderDistance;
-            }).sorted(Comparator.naturalOrder()).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
-            this.world.doRefreshNow(refresher);
+            ServerPlayer.refreshChunks(refresher, this.client.integratedServer, this.world, spawnChunk,
+                    ListOrderedSet.listOrderedSet(this.world.getChunksAround(this.world.getSpawnPoint().vec().d().add(0.5, 0, 0.5))
+                            .stream()
+                            .sorted((o1, o2) -> {
+                                Vec3d vec1 = o1.getChunkOrigin();
+                                Vec3d vec2 = o2.getChunkOrigin();
+                                Vec3d origin = this.world.getSpawnPoint().vec().d();
+                                return Double.compare(vec1.dst(origin), vec2.dst(origin));
+                            }).collect(() -> new ArrayList<>(), ArrayList::add, ArrayList::addAll)), new ListOrderedSet<>());
+            refresher.freeze();
+            this.world.doRefresh(refresher);
 
             this.message("Spawn chunks loaded!");
         } catch (Exception t) {
             UltracraftClient.LOGGER.error("Failed to load chunks for world.", t);
         }
+    }
+
+    @Override
+    public boolean canCloseWithEsc() {
+        return false;
     }
 }

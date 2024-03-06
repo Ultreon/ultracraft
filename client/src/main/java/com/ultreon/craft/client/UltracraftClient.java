@@ -1,11 +1,19 @@
 package com.ultreon.craft.client;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.backends.lwjgl3.*;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,7 +23,8 @@ import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.JsonReader;
@@ -27,19 +36,19 @@ import com.google.errorprone.annotations.RestrictedApi;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ultreon.craft.*;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.state.BlockMetadata;
-import com.ultreon.craft.client.api.events.*;
+import com.ultreon.craft.client.api.events.ClientLifecycleEvents;
+import com.ultreon.craft.client.api.events.ClientTickEvents;
+import com.ultreon.craft.client.api.events.RenderEvents;
+import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.audio.ClientSound;
 import com.ultreon.craft.client.config.GameSettings;
 import com.ultreon.craft.client.config.UltracraftClientConfig;
-import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.debug.*;
-import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -53,12 +62,15 @@ import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.JsonModelLoader;
-import com.ultreon.craft.client.model.block.*;
+import com.ultreon.craft.client.model.block.BakedCubeModel;
+import com.ultreon.craft.client.model.block.BakedModelRegistry;
+import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.LocalPlayer;
-import com.ultreon.craft.client.registry.*;
+import com.ultreon.craft.client.registry.LanguageRegistry;
+import com.ultreon.craft.client.registry.MenuRegistry;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
 import com.ultreon.craft.client.render.pipeline.MainRenderNode;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
@@ -76,7 +88,8 @@ import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.util.DeferredDisposable;
 import com.ultreon.craft.client.util.GG;
 import com.ultreon.craft.client.util.Resizer;
-import com.ultreon.craft.client.world.*;
+import com.ultreon.craft.client.world.ClientWorld;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.config.UcConfiguration;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashCategory;
@@ -110,6 +123,7 @@ import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -1955,8 +1969,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.futures.add(future);
     }
 
-    public @NotNull BakedCubeModel getBakedBlockModel(Block block) {
-        return Objects.requireNonNull(this.bakedBlockModels.bakedModels().getOrDefault(block, BakedCubeModel.DEFAULT));
+    public @NotNull BakedCubeModel getBakedBlockModel(BlockMetadata block) {
+        return Objects.requireNonNull(this.bakedBlockModels.bakedModels().getOrDefault(block.getBlock(), List.of()))
+                .stream()
+                .filter(pair -> pair.getFirst().test(block))
+                .findFirst()
+                .map(Pair::getSecond)
+                .orElse(BakedCubeModel.DEFAULT);
     }
 
     public void resetBreaking() {

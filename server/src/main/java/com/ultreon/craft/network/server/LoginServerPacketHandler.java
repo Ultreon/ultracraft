@@ -23,6 +23,7 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
     private final UltracraftServer server;
     private final Connection connection;
     private final PacketContext context;
+    private boolean disconnected;
 
     public LoginServerPacketHandler(UltracraftServer server, Connection connection) {
         this.server = server;
@@ -38,7 +39,8 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
-        this.connection.closeAll();
+        this.connection.setReadOnly();
+        this.disconnected = true;
     }
 
     @Override
@@ -113,5 +115,10 @@ public class LoginServerPacketHandler implements ServerPacketHandler {
 
             PlayerEvents.PLAYER_SPAWNED.factory().onPlayerSpawned(player);
         }), true);
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return disconnected;
     }
 }

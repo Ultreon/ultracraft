@@ -14,7 +14,7 @@ public class C2SCommandPacket extends Packet<InGameServerPacketHandler> {
     }
 
     public C2SCommandPacket(PacketBuffer buffer) {
-        this.input = buffer.readUTF(32768);
+        this.input = buffer.readString(32768);
     }
 
     @Override

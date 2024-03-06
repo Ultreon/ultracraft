@@ -1989,7 +1989,11 @@ public class Renderer {
     public Renderer external(Runnable block) {
         boolean drawing = this.batch.isDrawing();
         if (drawing) this.batch.end();
-        block.run();
+        try {
+            block.run();
+        } catch (Exception e) {
+            UltracraftClient.LOGGER.warn("Failed to render model", e);
+        }
         if (drawing) this.batch.begin();
         return this;
     }

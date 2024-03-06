@@ -4,6 +4,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.registry.Registries;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
@@ -41,6 +42,7 @@ public class HitResult {
         this.pos.set(buffer.readVec3i());
         this.next.set(buffer.readVec3i());
         this.blockMeta = buffer.readBlockMeta();
+        this.block = Registries.BLOCK.byId(buffer.readVarInt());
         this.collide = buffer.readBoolean();
         this.distance = buffer.readDouble();
     }
@@ -53,6 +55,7 @@ public class HitResult {
         buffer.writeVec3i(this.pos);
         buffer.writeVec3i(this.next);
         buffer.writeBlockMeta(this.blockMeta);
+        buffer.writeVarInt(Registries.BLOCK.getRawId(this.block));
         buffer.writeBoolean(this.collide);
         buffer.writeDouble(this.distance);
     }

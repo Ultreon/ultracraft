@@ -92,9 +92,12 @@ public class RenderingRegistration {
     }
 
     private static void registerBlockModels() {
-        BlockModelRegistry.register(Blocks.GRASS_BLOCK, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
-        BlockModelRegistry.register(Blocks.LOG, CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
-        BlockModelRegistry.register(Blocks.CRAFTING_BENCH, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+        BlockModelRegistry.register(Blocks.GRASS_BLOCK, meta -> true, CubeModel.of(UltracraftClient.id("blocks/grass_top"), UltracraftClient.id("blocks/dirt"), UltracraftClient.id("blocks/grass_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+        BlockModelRegistry.register(Blocks.LOG, meta -> true , CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+        BlockModelRegistry.register(Blocks.CRAFTING_BENCH, meta -> true, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
+
+        BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_on")));
+        BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> !meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_off")));
 
         ClientRegistrationEvents.BLOCK_MODELS.factory().onRegister();
 

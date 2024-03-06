@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.client.ClientPacketHandler;
@@ -72,6 +73,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private ServerPlayer player;
     private int keepAlive = 100;
     private long ping;
+    private boolean disconnecting = false;
 
     public Connection(PacketDestination direction) {
         this.direction = direction;
@@ -183,7 +185,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public void disconnect(@NotNull String message) {
-        if (this.channel == null || !this.channel.isOpen()) return;
+        if (this.channel == null || !this.channel.isOpen() || this.disconnecting) return;
+        this.disconnecting = true;
 
         @NotNull String msg = "Disconnected: ";
         Connection.LOGGER.info("%s%s (%s)".formatted(msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
@@ -264,6 +267,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
             ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
 
+            if (DebugFlags.PACKET_LOGGING.enabled())
+                Connection.LOGGER.debug("Sending packet: {}", packet.getClass().getName());
+
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
             sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
@@ -321,6 +327,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                 ValueTracker.setPacketsReceived(ValueTracker.getPacketsReceived() + 1);
                 this.readGeneric(msg, handler);
             } catch (RejectedExecutionException ex) {
+                Connection.LOGGER.error("Packet handler rejected the packet:", ex);
                 this.disconnect("Server shutdown");
             } catch (ClassCastException ex) {
                 Connection.LOGGER.error("Received {} that couldn't be processed", msg.getClass(), ex);
@@ -333,20 +340,30 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends PacketHandler> void readGeneric(Packet<T> msg, PacketHandler handler) {
+    private <T extends PacketHandler> void readGeneric(@NotNull Packet<T> msg, @NotNull PacketHandler handler) {
         PacketContext context = handler.context();
         if (context == null) context = this.context;
         PacketContext finalContext = context;
+        if (handler.isDisconnected()) return;
+        if (DebugFlags.PACKET_LOGGING.enabled())
+            CommonConstants.LOGGER.debug("Received packet: {}", msg.getClass().getSimpleName());
+
         if (handler.isAsync()) {
             CompletableFuture.runAsync(() -> {
                 try {
+                    if (handler.isDisconnected()) return;
                     msg.handle(finalContext, (T) handler);
                 } catch (Exception e) {
                     Connection.LOGGER.error("Failed to handle packet:", e);
                 }
             }, this.dispatchExecutor);
         } else {
-            msg.handle(finalContext, (T) handler);
+            try {
+                if (handler.isDisconnected()) return;
+                msg.handle(finalContext, (T) handler);
+            } catch (Exception e) {
+                Connection.LOGGER.error("Failed to handle packet:", e);
+            }
         }
     }
 
@@ -472,9 +489,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             PacketHandler handler = this.handler;
             PacketHandler finalHandler = handler != null ? handler : this.disconnectHandler;
             if (finalHandler == null) return;
+            if (finalHandler.isDisconnected()) return;
 
             String message = this.disconnectMsg;
             if (message == null) message = "Connection lost";
+
 
             finalHandler.onDisconnect(message);
 

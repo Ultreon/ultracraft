@@ -1,5 +1,6 @@
 package com.ultreon.craft.block.state;
 
+import com.ultreon.craft.UnsafeApi;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.item.tool.ToolType;
@@ -12,86 +13,105 @@ import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class BlockMetadata {
     public static final BlockMetadata AIR = Blocks.AIR.createMeta();
     private final Block block;
-    private final Map<String, BlockDataEntry<?>> properties;
+    private final Map<String, BlockDataEntry<?>> entries;
 
-    public BlockMetadata(Block block, Map<String, BlockDataEntry<?>> properties) {
+    public BlockMetadata(Block block, Map<String, BlockDataEntry<?>> entries) {
         this.block = block;
-        this.properties = properties;
+        this.entries = entries;
     }
 
-    public static BlockMetadata load(int identifier, PacketBuffer packetBuffer) {
-        Block block = Registries.BLOCK.byId(identifier);
+    public static BlockMetadata read(PacketBuffer packetBuffer) {
+        int rawId = packetBuffer.readVarInt();
+        Block block = Registries.BLOCK.byId(rawId);
+        if (block == null)
+            throw new IllegalArgumentException("Block " + rawId + " does not exist");
+
         BlockMetadata meta = block.createMeta();
-        meta.properties.clear();
-        meta.properties.putAll(meta.loadProperties(packetBuffer));
+        meta.entries.putAll(meta.readEntries(packetBuffer));
 
         return meta;
     }
 
-    public static BlockMetadata load(Identifier id, int x, int y, int z, MapType data) {
-        Block block = Registries.BLOCK.getElement(id);
+    public static BlockMetadata load(MapType data) {
+        Block block = Registries.BLOCK.getElement(Identifier.parse(data.getString("block")));
         BlockMetadata meta = block.createMeta();
-        meta.properties.clear();
-        meta.properties.putAll(meta.loadProperties(data.getMap("properties", new MapType())));
+        meta.entries.clear();
+        meta.entries.putAll(meta.loadEntries(data.getMap("entries", new MapType())));
 
         return meta;
     }
 
-    private Map<String, ? extends BlockDataEntry<?>> loadProperties(MapType data) {
-        for (Map.Entry<String, ? extends BlockDataEntry<?>> entry : this.getProperties().entrySet()) {
+    private Map<String, ? extends BlockDataEntry<?>> loadEntries(MapType data) {
+        for (Map.Entry<String, ? extends BlockDataEntry<?>> entry : this.getEntries().entrySet()) {
             BlockDataEntry<?> property = entry.getValue().load(data.get(entry.getKey()));
-            properties.put(entry.getKey(), property);
+            entries.put(entry.getKey(), property);
         }
-        return properties;
+        return entries;
     }
 
-    private Map<String, BlockDataEntry<?>> loadProperties(PacketBuffer packetBuffer) {
-        int size = packetBuffer.readVarInt();
-        for (Map.Entry<String, BlockDataEntry<?>> entry : this.getProperties().entrySet()) {
-            BlockDataEntry<?> property = entry.getValue().read(packetBuffer);
-            properties.put(entry.getKey(), property);
+    private Map<String, BlockDataEntry<?>> readEntries(PacketBuffer packetBuffer) {
+        int size = packetBuffer.readMedium();
+        for (int i = 0; i < size; i++) {
+            String key = packetBuffer.readString(64);
+            BlockDataEntry<?> blockDataEntry = this.entries.get(key);
+            if (blockDataEntry == null)
+                throw new IllegalArgumentException("Entry " + key + " does not exist in block " + block);
+
+            BlockDataEntry<?> property = blockDataEntry.read(packetBuffer);
+            entries.put(key, property);
             size--;
 
             if (size == 0) break;
         }
-        return properties;
+        return entries;
     }
 
     public Block getBlock() {
         return block;
     }
 
-    public Map<String, BlockDataEntry<?>> getProperties() {
-        return properties;
+
+    public Map<String, BlockDataEntry<?>> getEntries() {
+        return entries;
     }
 
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    public final <T> BlockDataEntry<T> getProperty(String name, T... typeGetter) {
+    public final <T> BlockDataEntry<T> getEntry(String name, T... typeGetter) {
         Class<T> type = (Class<T>) typeGetter.getClass().getComponentType();
 
-        BlockDataEntry<?> property = properties.get(name);
+        BlockDataEntry<?> property = entries.get(name);
         if (property == null)
-            throw new IllegalArgumentException("Property " + name + " does not exist in block " + block);
-        if (!type.isAssignableFrom(property.getClass()))
-            throw new IllegalArgumentException("Property " + name + " is not of type " + type.getSimpleName() + " in block " + block);
+            throw new IllegalArgumentException("Entry '" + name + "' does not exist in block " + block);
+        if (!type.isAssignableFrom(property.value.getClass()))
+            throw new IllegalArgumentException("Entry '" + name + "' is not of type " + type.getSimpleName() + " in block " + block);
         return property.cast(type);
     }
 
-    public void setProperty(String name, BlockDataEntry<?> property) {
-        if (!properties.containsKey(name))
-            throw new IllegalArgumentException("Property " + name + " does not exist in block " + block);
-
-        properties.put(name, property);
+    @UnsafeApi
+    public final BlockDataEntry<?> getEntryUnsafe(String name) {
+        BlockDataEntry<?> property = entries.get(name);
+        if (property == null)
+            throw new IllegalArgumentException("Entry " + name + " does not exist in block " + block);
+        return property;
     }
 
-    public boolean hasProperty(String name) {
-        return properties.containsKey(name);
+    public void setEntry(String name, BlockDataEntry<?> entry) {
+        if (!entries.containsKey(name))
+            throw new IllegalArgumentException("Entry " + name + " does not exist in block " + block);
+
+        entries.put(name, entry);
+    }
+
+    public boolean hasEntry(String name) {
+        return entries.containsKey(name);
     }
 
     public boolean isAir() {
@@ -100,9 +120,18 @@ public class BlockMetadata {
 
     public MapType save() {
         MapType map = new MapType();
-        for (Map.Entry<String, BlockDataEntry<?>> entry : properties.entrySet()) {
+        Identifier id = Registries.BLOCK.getId(block);
+        if (id == null)
+            throw new IllegalArgumentException("Block " + block + " isn't registered");
+
+        map.putString("block", id.toString());
+
+        MapType entriesData = new MapType();
+        for (Map.Entry<String, BlockDataEntry<?>> entry : this.entries.entrySet()) {
             map.put(entry.getKey(), entry.getValue().save());
         }
+
+        map.put("Entries", entriesData);
         return map;
     }
 
@@ -115,12 +144,12 @@ public class BlockMetadata {
     }
 
     public int write(PacketBuffer encode) {
-        encode.writeVarInt(Registries.BLOCK.getRawId(block));
-        encode.writeVarInt(properties.size());
-        for (Map.Entry<String, BlockDataEntry<?>> entry : properties.entrySet()) {
+        encode.writeMedium(Registries.BLOCK.getRawId(block));
+        encode.writeMedium(entries.size());
+        for (Map.Entry<String, BlockDataEntry<?>> entry : entries.entrySet()) {
             entry.getValue().write(encode);
         }
-        return properties.size();
+        return entries.size();
     }
 
     public boolean hasCollider() {
@@ -157,5 +186,36 @@ public class BlockMetadata {
 
     public boolean isTransparent() {
         return block.isTransparent();
+    }
+
+    public <T> BlockMetadata withEntry(String name, BlockDataEntry<T> value) {
+        HashMap<String, BlockDataEntry<?>> entries = new HashMap<>(this.entries);
+        entries.put(name, value);
+        return new BlockMetadata(block, entries);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> BlockMetadata withEntry(String name, T value) {
+        HashMap<String, BlockDataEntry<?>> entries = new HashMap<>(this.entries);
+        entries.put(name, entries.get(name).cast((Class<T>) value.getClass()).with(value));
+        return new BlockMetadata(block, entries);
+    }
+
+    @Override
+    public String toString() {
+        return block.getId() + " #" + entries;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BlockMetadata that = (BlockMetadata) o;
+        return Objects.equals(block, that.block) && Objects.equals(entries, that.entries);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(block, entries);
     }
 }

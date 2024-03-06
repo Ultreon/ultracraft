@@ -2,6 +2,8 @@ package com.ultreon.craft.client.model;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.google.common.collect.Table;
+import com.ultreon.craft.block.state.BlockDataEntry;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.item.ItemModel;
@@ -18,13 +20,15 @@ public class JsonModel implements BlockModel, ItemModel {
     public final JsonModelLoader.Display display;
     private final RegistryKey<?> key;
     private Model model;
+    private Table<String, BlockDataEntry<?>, JsonModel> overrides;
 
-    public JsonModel(RegistryKey<?> key, Map<String, Identifier> textureElements, List<JsonModelLoader.ModelElement> modelElements, boolean ambientOcclusion, JsonModelLoader.Display display) {
+    public JsonModel(RegistryKey<?> key, Map<String, Identifier> textureElements, List<JsonModelLoader.ModelElement> modelElements, boolean ambientOcclusion, JsonModelLoader.Display display, Table<String, BlockDataEntry<?>, JsonModel> overrides) {
         this.key = key;
         this.textureElements = textureElements;
         this.modelElements = modelElements;
         this.ambientOcclusion = ambientOcclusion;
         this.display = display;
+        this.overrides = overrides;
     }
 
     public Model bake() {
@@ -66,5 +70,9 @@ public class JsonModel implements BlockModel, ItemModel {
         if (model != null) {
             model.dispose();
         }
+    }
+
+    public Table<String, BlockDataEntry<?>, JsonModel> getOverrides() {
+        return this.overrides;
     }
 }

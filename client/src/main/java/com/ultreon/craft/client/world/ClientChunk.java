@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.block.state.BlockMetadata;
@@ -41,7 +40,7 @@ public final class ClientChunk extends Chunk {
     public volatile boolean dirty;
     public boolean initialized = false;
     private final UltracraftClient client = UltracraftClient.get();
-    private final Map<BlockPos, Block> customRendered = new HashMap<>();
+    private final Map<BlockPos, BlockMetadata> customRendered = new HashMap<>();
     private final Map<BlockPos, ModelInstance> models = new HashMap<>();
     public boolean immediateRebuild = false;
     private final Vector3 tmp = new Vector3();
@@ -161,7 +160,7 @@ public final class ClientChunk extends Chunk {
         return null;
     }
 
-    public Map<BlockPos, Block> getCustomRendered() {
+    public Map<BlockPos, BlockMetadata> getCustomRendered() {
         return this.customRendered;
     }
 

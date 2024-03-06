@@ -103,4 +103,8 @@ public final class ChunkPos implements Comparable<ChunkPos>, Serializable {
     public int hashCode() {
         return 31 * (31 + this.x) + this.z;
     }
+
+    public Vec2d vec() {
+        return new Vec2d(this.x, this.z);
+    }
 }

@@ -4,8 +4,9 @@ import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityTypes;
 import com.ultreon.craft.block.entity.CrateBlockEntity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.item.Item;
 import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.InteractResult;
+import com.ultreon.craft.world.UseResult;
 import com.ultreon.craft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,16 +21,16 @@ public class CrateBlock extends EntityBlock {
     }
 
     @Override
-    public InteractResult use(@NotNull World world, @NotNull Player player, @NotNull BlockPos pos) {
-        super.use(world, player, pos);
+    public UseResult use(@NotNull World world, @NotNull Player player, @NotNull Item item, @NotNull BlockPos pos) {
+        super.use(world, player, item, pos);
 
-        if (world.isClientSide()) return InteractResult.ALLOW;
+        if (world.isClientSide()) return UseResult.ALLOW;
 
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof CrateBlockEntity crate) {
             crate.open(player);
         }
 
-        return InteractResult.ALLOW;
+        return UseResult.ALLOW;
     }
 }

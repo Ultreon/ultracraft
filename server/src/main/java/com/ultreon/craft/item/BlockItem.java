@@ -3,10 +3,11 @@ package com.ultreon.craft.item;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
-import com.ultreon.craft.world.InteractResult;
+import com.ultreon.craft.world.UseResult;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -28,7 +29,7 @@ public class BlockItem extends Item {
     }
 
     @Override
-    public InteractResult use(UseItemContext useItemContext) {
+    public UseResult use(UseItemContext useItemContext) {
         super.use(useItemContext);
 
         World world = useItemContext.world();
@@ -41,10 +42,10 @@ public class BlockItem extends Item {
             if (!world.intersectEntities(this.getBlock().getBoundingBox(pos))) {
                 world.set(new BlockPos(pos), this.getBlock().createMeta());
                 stack.shrink(1);
-                return InteractResult.ALLOW;
+                return UseResult.ALLOW;
             }
             if (world instanceof ServerWorld serverWorld) serverWorld.update(pos);
-            return InteractResult.DENY;
+            return UseResult.DENY;
         }
 
         if (!world.intersectEntities(this.getBlock().getBoundingBox(next))) {
@@ -53,10 +54,10 @@ public class BlockItem extends Item {
 
             BlockEvents.BLOCK_PLACED.factory().onBlockPlaced(useItemContext.player(), this.block.get(), blockPos, useItemContext.stack());
 
-            return InteractResult.ALLOW;
+            return UseResult.ALLOW;
         }
         if (world instanceof ServerWorld serverWorld) serverWorld.update(next);
-        return InteractResult.DENY;
+        return UseResult.DENY;
     }
 
     @Override
@@ -68,5 +69,9 @@ public class BlockItem extends Item {
     @Override
     public String getTranslationId() {
         return this.block.get().getTranslationId();
+    }
+
+    public BlockMetadata createBlockMeta() {
+        return this.block.get().createMeta();
     }
 }

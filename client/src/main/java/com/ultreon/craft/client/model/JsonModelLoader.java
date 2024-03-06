@@ -5,7 +5,10 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.*;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
@@ -14,10 +17,14 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockDataEntry;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.registry.Registries;
@@ -37,6 +44,7 @@ import static com.ultreon.craft.client.UltracraftClient.GSON;
 
 public class JsonModelLoader {
     private final ResourceManager resourceManager;
+    private RegistryKey<?> key;
 
     public JsonModelLoader(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -79,10 +87,41 @@ public class JsonModelLoader {
         JsonElement ambientocclusion = root.get("ambientocclusion");
         boolean ambientOcclusion = ambientocclusion == null || ambientocclusion.getAsBoolean();
 
+        Table<String, BlockDataEntry<?>, JsonModel> overrides = null;
+        if (key.parent().equals(RegistryKeys.BLOCK)) {
+            JsonObject overridesJson = root.getAsJsonObject("overrides");
+            if (overridesJson == null) overridesJson = new JsonObject();
+            //noinspection unchecked
+            overrides = loadOverrides((RegistryKey<Block>) key, overridesJson);
+        }
+
         // TODO: Allow display properties.
         Display display = new Display();
 
-        return new JsonModel(key, textureElements, modelElements, ambientOcclusion, display);
+        return new JsonModel(key, textureElements, modelElements, ambientOcclusion, display, overrides);
+    }
+
+    private Table<String, BlockDataEntry<?>, JsonModel> loadOverrides(RegistryKey<Block> key, JsonObject overridesJson) {
+        Table<String, BlockDataEntry<?>, JsonModel> overrides = HashBasedTable.create();
+        Block block = Registries.BLOCK.get(key);
+        BlockMetadata meta = block.createMeta();
+        for (Map.Entry<String, JsonElement> entry : overridesJson.entrySet()) {
+            String keyName = entry.getKey();
+            JsonElement overrideElem = entry.getValue();
+            JsonObject overrideObj = overrideElem.getAsJsonObject();
+
+            JsonModel model = load(key, overrideObj);
+            BlockDataEntry<?> entry1 = meta.getEntry(keyName);
+            if (entry1 == null)
+                throw new IllegalArgumentException("Invalid model override: " + keyName);
+
+            if (model == null)
+                throw new IllegalArgumentException("Invalid model override: " + keyName);
+
+            overrides.put(keyName, entry1.parse(overrideObj), model);
+        }
+
+        return overrides;
     }
 
     private GridPoint2 loadVec2i(JsonArray textureSize, GridPoint2 defaultValue) {

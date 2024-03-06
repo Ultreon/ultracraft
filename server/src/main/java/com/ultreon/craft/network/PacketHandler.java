@@ -19,4 +19,6 @@ public interface PacketHandler {
     default boolean isAsync() {
         return true;
     }
+
+    boolean isDisconnected();
 }

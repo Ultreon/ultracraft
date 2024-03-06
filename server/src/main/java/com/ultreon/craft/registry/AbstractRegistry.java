@@ -24,4 +24,12 @@ public abstract class AbstractRegistry<K, V> {
     public abstract List<K> keys();
 
     public abstract Set<Map.Entry<K, V>> entries() throws IllegalAccessException;
+
+    public V random() {
+        return this.random(new Random());
+    }
+
+    private V random(Random random) {
+        return this.values().get(random.nextInt(this.values().size()));
+    }
 }

@@ -1,16 +1,32 @@
 package com.ultreon.craft.block.state;
 
-import com.google.common.base.Preconditions;
+import com.google.gson.JsonObject;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.data.types.BooleanType;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.IntType;
 
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Function;
+
 public abstract class BlockDataEntry<T> {
-    public T value;
+    public final T value;
 
     public BlockDataEntry(T value) {
         this.value = value;
+    }
+
+    public static <T extends Enum<T>> BlockDataEntry<T> ofEnum(T value) {
+        return new EnumProperty<>(value);
+    }
+
+    public static BlockDataEntry<Integer> of(int value, int min, int max) {
+        return new IntProperty(value, min, max);
+    }
+
+    public static BlockDataEntry<Boolean> of(boolean value) {
+        return new BooleanEntry(value);
     }
 
     public abstract BlockDataEntry<?> read(PacketBuffer packetBuffer);
@@ -21,10 +37,6 @@ public abstract class BlockDataEntry<T> {
         return value;
     }
 
-    public void setValue(T value) {
-        this.value = value;
-    }
-
     @SuppressWarnings("unchecked")
     public <R> BlockDataEntry<R> cast(Class<R> type) {
         if (!type.isAssignableFrom(this.value.getClass())) {
@@ -33,29 +45,55 @@ public abstract class BlockDataEntry<T> {
         return (BlockDataEntry<R>) this;
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
     public abstract IType<?> save();
 
     public abstract void write(PacketBuffer packetBuffer);
 
-    public static class BooleanProperty extends BlockDataEntry<Boolean> {
-        public BooleanProperty(boolean value) {
+    public abstract BlockDataEntry<?> parse(JsonObject overrideObj);
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BlockDataEntry<?> that = (BlockDataEntry<?>) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
+    }
+
+    public abstract BlockDataEntry<T> copy();
+
+    public abstract BlockDataEntry<T> with(T apply);
+
+    public BlockDataEntry<T> map(Function<T, T> o) {
+        return this.with(o.apply(value));
+    }
+
+    private static class BooleanEntry extends BlockDataEntry<Boolean> {
+        public BooleanEntry(boolean value) {
             super(value);
         }
 
-        public BooleanProperty() {
+        public BooleanEntry() {
             super(false);
         }
 
         @Override
         public BlockDataEntry<?> read(PacketBuffer packetBuffer) {
-            this.value = packetBuffer.readBoolean();
-            return this;
+            return this.with(packetBuffer.readBoolean());
         }
 
         @Override
         public BlockDataEntry<?> load(IType<?> type) {
-            this.value = ((BooleanType) type).getValue();
-            return this;
+            return this.with(((BooleanType) type).getValue());
         }
 
         @Override
@@ -67,9 +105,24 @@ public abstract class BlockDataEntry<T> {
         public void write(PacketBuffer packetBuffer) {
             packetBuffer.writeBoolean(this.value);
         }
+
+        @Override
+        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+            return this.with(overrideObj.get("value").getAsBoolean());
+        }
+
+        @Override
+        public BlockDataEntry<Boolean> copy() {
+            return new BooleanEntry(this.value);
+        }
+
+        @Override
+        public BlockDataEntry<Boolean> with(Boolean apply) {
+            return new BooleanEntry(apply);
+        }
     }
 
-    public static class IntProperty extends BlockDataEntry<Integer> {
+    private static class IntProperty extends BlockDataEntry<Integer> {
         private final int min;
         private final int max;
 
@@ -96,27 +149,12 @@ public abstract class BlockDataEntry<T> {
 
         @Override
         public BlockDataEntry<?> read(PacketBuffer packetBuffer) {
-            this.value = packetBuffer.readInt();
-            return this;
+            return this.with(packetBuffer.readInt());
         }
 
         @Override
         public BlockDataEntry<?> load(IType<?> type) {
-            this.value = ((IntType) type).getValue();
-            return this;
-        }
-
-        @Override
-        public void setValue(Integer value) {
-            Preconditions.checkNotNull(value, "Value cannot be null");
-
-            if (value < min) {
-                this.value = min;
-            } else if (value > max) {
-                this.value = max;
-            } else {
-                this.value = value;
-            }
+            return this.with(((IntType) type).getValue());
         }
 
         @Override
@@ -128,9 +166,24 @@ public abstract class BlockDataEntry<T> {
         public void write(PacketBuffer packetBuffer) {
             packetBuffer.writeInt(this.value);
         }
+
+        @Override
+        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+            return this.with(overrideObj.get("value").getAsInt());
+        }
+
+        @Override
+        public BlockDataEntry<Integer> copy() {
+            return new IntProperty(this.value, this.min, this.max);
+        }
+
+        @Override
+        public BlockDataEntry<Integer> with(Integer apply) {
+            return new IntProperty(apply, this.min, this.max);
+        }
     }
 
-    public static class EnumProperty<T extends Enum<T>> extends BlockDataEntry<T> {
+    private static class EnumProperty<T extends Enum<T>> extends BlockDataEntry<T> {
         public EnumProperty(T value) {
             super(value);
         }
@@ -138,15 +191,13 @@ public abstract class BlockDataEntry<T> {
         @SuppressWarnings("unchecked")
         @Override
         public BlockDataEntry<?> read(PacketBuffer packetBuffer) {
-            this.value = (T) this.value.getClass().getEnumConstants()[packetBuffer.readInt()];
-            return this;
+            return this.with((T) this.value.getClass().getEnumConstants()[packetBuffer.readInt()]);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public BlockDataEntry<?> load(IType<?> type) {
-            this.value = (T) this.value.getClass().getEnumConstants()[((IntType) type).getValue()];
-            return this;
+            return this.with((T) this.value.getClass().getEnumConstants()[((IntType) type).getValue()]);
         }
 
         @Override
@@ -157,6 +208,29 @@ public abstract class BlockDataEntry<T> {
         @Override
         public void write(PacketBuffer packetBuffer) {
             packetBuffer.writeInt(this.value.ordinal());
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+            return this.with((T) Enum.valueOf(this.value.getClass(), overrideObj.get("value").getAsString().toUpperCase()));
+        }
+
+        @Override
+        public BlockDataEntry<T> copy() {
+            return new EnumProperty<>(this.value);
+        }
+
+        @Override
+        public BlockDataEntry<T> with(T apply) {
+            return new EnumProperty<>(apply);
+        }
+
+        @Override
+        public String toString() {
+            return '"' + this.value.name().toLowerCase(Locale.ROOT)
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"") + '"';
         }
     }
 }

@@ -22,7 +22,7 @@ public class S2CAddPlayerPacket extends Packet<InGameClientPacketHandler> {
 
     public S2CAddPlayerPacket(PacketBuffer buffer) {
         this.uuid = buffer.readUuid();
-        this.name = buffer.readUTF(20);
+        this.name = buffer.readString(20);
         this.position = buffer.readVec3d();
     }
 

@@ -14,7 +14,7 @@ public class C2SRequestTabComplete extends Packet<InGameServerPacketHandler> {
     }
 
     public C2SRequestTabComplete(PacketBuffer buffer) {
-        this.input = buffer.readUTF(32768);
+        this.input = buffer.readString(32768);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class C2SChatPacket extends Packet<InGameServerPacketHandler> {
     }
 
     public C2SChatPacket(PacketBuffer buffer) {
-        this.message = buffer.readUTF(1024);
+        this.message = buffer.readString(1024);
     }
 
     @Override

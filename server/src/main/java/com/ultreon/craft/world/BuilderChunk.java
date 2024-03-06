@@ -1,10 +1,11 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.state.BlockMetadata;
-import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
+import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 public final class BuilderChunk extends Chunk {
     private final ServerWorld world;
     private final Thread thread;
-    private final FlatStorage<BiomeGenerator> biomeData = new FlatStorage<>(256);
+    private final Storage<BiomeGenerator> biomeData;
     private List<Vec3i> biomeCenters;
     private final ServerWorld.Region region;
 
@@ -21,6 +22,7 @@ public final class BuilderChunk extends Chunk {
         this.world = world;
         this.thread = thread;
         this.region = region;
+        biomeData = new PaletteStorage<>(Biomes.PLAINS.create(this.world, world.getSeed()), 256);
     }
 
     @Override
@@ -83,7 +85,7 @@ public final class BuilderChunk extends Chunk {
     }
 
     public ServerChunk build() {
-        Storage<Biome> map = this.biomeData.map(BiomeGenerator::getBiome, Biome.class);
+        Storage<Biome> map = this.biomeData.map(Biomes.PLAINS, BiomeGenerator::getBiome);
         return new ServerChunk(this.world, World.toLocalChunkPos(this.getPos()), this.storage, map, region);
     }
 

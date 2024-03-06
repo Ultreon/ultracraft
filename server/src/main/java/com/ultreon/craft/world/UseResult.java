@@ -1,5 +1,5 @@
 package com.ultreon.craft.world;
 
-public enum InteractResult {
+public enum UseResult {
     ALLOW, SKIP, DENY
 }

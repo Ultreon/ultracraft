@@ -235,7 +235,8 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
     }
 
     @Override
-    public T byId(int id) {
+    public @Nullable T byId(int id) {
+        if (id < 0 || id >= this.keyMap.size()) return null;
         return this.keyMap.valueList().get(id);
     }
 

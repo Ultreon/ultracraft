@@ -19,8 +19,8 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.DisposableContainer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -35,8 +35,8 @@ import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -383,7 +383,7 @@ public final class WorldRenderer implements DisposableContainer {
                 this.tmp.set(chunk.renderOffset);
                 this.tmp.add(key.x(), key.y(), key.z());
 
-                Block value = entry.getValue();
+                BlockMetadata value = entry.getValue();
                 BlockModel blockModel = BlockModelRegistry.get(value);
                 if (blockModel != null) {
                     blockModel.render(this.tmp, output, renderablePool);

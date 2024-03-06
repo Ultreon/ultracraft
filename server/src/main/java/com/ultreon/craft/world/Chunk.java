@@ -4,21 +4,20 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.state.BlockMetadata;
-import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
+import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;
@@ -83,7 +82,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos) {
-        this(world, size, height, pos, new FlatStorage<>(size * height * size));
+        this(world, size, height, pos, new PaletteStorage<>(BlockMetadata.AIR, size * height * size));
     }
 
     /**
@@ -91,7 +90,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
     protected Chunk(World world, int size, int height, ChunkPos pos, Storage<BlockMetadata> storage) {
-        this(world, size, height, pos, storage, new FlatStorage<>(256));
+        this(world, size, height, pos, storage, new PaletteStorage<>(Biomes.PLAINS, 256));
     }
 
     /**
@@ -109,7 +108,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param pos   the chunk position.
      */
     protected Chunk(World world, ChunkPos pos) {
-        this(world, pos, new FlatStorage<>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE));
+        this(world, pos, new PaletteStorage<>(BlockMetadata.AIR, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE));
     }
 
     /**
@@ -120,7 +119,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @param storage the block storage.
      */
     protected Chunk(World world, ChunkPos pos, Storage<BlockMetadata> storage) {
-        this(world, pos, storage, new FlatStorage<>(256));
+        this(world, pos, storage, new PaletteStorage<>(Biomes.PLAINS, 256));
     }
 
     /**
@@ -157,10 +156,11 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      *
      * @param data The input data.
      * @return The decoded block data.
+     * @deprecated Use {@link BlockMetadata#load(MapType)} instead
      */
+    @Deprecated
     public static BlockMetadata loadBlock(MapType data) {
-        @Nullable Identifier id = Identifier.parse(data.getString("id"));
-        return BlockMetadata.load(id, data.getInt("x"), data.getInt("y"), data.getInt("z"), data);
+        return BlockMetadata.load(data);
     }
 
     /**

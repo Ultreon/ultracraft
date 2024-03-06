@@ -15,7 +15,7 @@ public class InitialPermissionsPacket extends Packet<InGameClientPacketHandler> 
     }
 
     public InitialPermissionsPacket(PacketBuffer buffer) {
-        this.permissions = buffer.readList((buf) -> new Permission(buffer.readUTF(128)));
+        this.permissions = buffer.readList((buf) -> new Permission(buffer.readString(128)));
     }
 
     @Override

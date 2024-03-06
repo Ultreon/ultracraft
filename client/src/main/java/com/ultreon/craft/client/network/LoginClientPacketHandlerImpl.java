@@ -16,6 +16,7 @@ import java.util.UUID;
 public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
     private final UltracraftClient client = UltracraftClient.get();
     private final Connection connection;
+    private boolean disconnected;
 
     public LoginClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -49,6 +50,7 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
+        this.disconnected = true;
         this.connection.closeAll();
     }
 
@@ -65,5 +67,10 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
     @Override
     public boolean isAsync() {
         return false;
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return disconnected;
     }
 }

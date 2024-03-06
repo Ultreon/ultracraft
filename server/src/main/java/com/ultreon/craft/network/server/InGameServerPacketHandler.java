@@ -7,7 +7,6 @@ import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
@@ -41,6 +40,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     private final ServerPlayer player;
     private final Connection connection;
     private final PacketContext context;
+    private boolean disconnected;
 
     public InGameServerPacketHandler(UltracraftServer server, ServerPlayer player, Connection connection) {
         this.server = server;
@@ -65,7 +65,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         Connection.LOGGER.info("Player {} disconnected: {}", this.player.getName(), message);
         PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
 
-        this.connection.closeAll();
+        this.disconnected = true;
+        this.connection.setReadOnly();
     }
 
     @Override
@@ -77,6 +78,11 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     @Override
     public PacketContext context() {
         return this.context;
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return this.disconnected;
     }
 
     @Override
@@ -197,12 +203,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
         if (item == null) return;
 
-        UltracraftServer.invoke(() -> {
-            InteractResult result = item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
-            if (result == InteractResult.DENY) {
-                slot.update();
-            }
-        });
+        UltracraftServer.invoke(() -> player.useItem(hitResult, stack, slot));
     }
 
     public void onOpenInventory() {

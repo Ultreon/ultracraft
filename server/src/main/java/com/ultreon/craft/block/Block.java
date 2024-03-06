@@ -106,8 +106,8 @@ public class Block implements DataWriter<MapType> {
         return block == null ? Blocks.AIR : block;
     }
 
-    public InteractResult use(@NotNull World world, @NotNull Player player, @NotNull BlockPos pos) {
-        return InteractResult.SKIP;
+    public UseResult use(@NotNull World world, @NotNull Player player, @NotNull Item item, @NotNull BlockPos pos) {
+        return UseResult.SKIP;
     }
 
     public void write(PacketBuffer buffer) {

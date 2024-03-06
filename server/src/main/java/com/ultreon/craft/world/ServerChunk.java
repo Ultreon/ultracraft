@@ -2,11 +2,12 @@ package com.ultreon.craft.world;
 
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.state.BlockMetadata;
-import com.ultreon.craft.collection.FlatStorage;
+import com.ultreon.craft.collection.PaletteStorage;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.InvalidThreadException;
+import com.ultreon.craft.world.gen.biome.Biomes;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
 
@@ -24,7 +25,7 @@ public final class ServerChunk extends Chunk {
     private boolean locked = false;
 
     public ServerChunk(ServerWorld world, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, ServerWorld.Region region) {
-        super(world, pos, storage);
+        super(world, pos, storage, biomeStorage);
         this.world = world;
         this.region = region;
     }
@@ -51,11 +52,11 @@ public final class ServerChunk extends Chunk {
     }
 
     public static ServerChunk load(ServerWorld world, ChunkPos pos, MapType chunkData, ServerWorld.Region region) {
-        var storage = new FlatStorage<BlockMetadata>(CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
-        var biomeStorage = new FlatStorage<Biome>(CHUNK_SIZE * CHUNK_SIZE);
+        var storage = new PaletteStorage<>(BlockMetadata.AIR, CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE);
+        var biomeStorage = new PaletteStorage<>(Biomes.PLAINS, CHUNK_SIZE * CHUNK_SIZE);
 
         MapType blockData = chunkData.getMap("Blocks");
-        storage.load(blockData, Chunk::loadBlock);
+        storage.load(blockData, BlockMetadata::load);
 
         MapType biomeData = chunkData.getMap("Biomes");
         biomeStorage.load(biomeData, Biome::load);

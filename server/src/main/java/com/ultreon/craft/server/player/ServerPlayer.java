@@ -7,6 +7,7 @@ import com.ultreon.craft.api.commands.Command;
 import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
+import com.ultreon.craft.block.Block;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -15,7 +16,9 @@ import com.ultreon.craft.events.MenuEvents;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketResult;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
@@ -27,6 +30,7 @@ import com.ultreon.craft.text.Formatter;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Gamemode;
+import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Unit;
 import com.ultreon.craft.world.*;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
@@ -153,9 +157,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     public void tick() {
-        if (this.world.getChunk(this.getChunkPos()) == null) return;
-        if (!this.isChunkActive(this.getChunkPos())) return;
-
         this.blockBrokenTick = false;
 
         super.tick();
@@ -445,6 +446,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         this.inventory.addItem(Items.WOODEN_PICKAXE.defaultStack());
         this.inventory.addItem(Items.WOODEN_SHOVEL.defaultStack());
         this.inventory.addItem(new ItemStack(Items.CRATE, 32));
+        this.inventory.addItem(new ItemStack(Items.META_SWITCH_TEST, 32));
     }
 
     public void handlePlayerMove(double x, double y, double z) {
@@ -560,5 +562,26 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     private void resendCommands() {
         this.connection.send(new S2CCommandSyncPacket(CommandRegistry.getCommandNames().toList()));
+    }
+
+    public UseResult useItem(HitResult hitResult, ItemStack stack, ItemSlot slot) {
+        UseItemContext ctx = new UseItemContext(getWorld(), this, hitResult, stack);
+        HitResult result = ctx.result();
+        if (result == null)
+            return UseResult.SKIP;
+
+        Block block = result.block;
+        if (block != null && !block.isAir()) {
+            UseResult blockResult = block.use(ctx.world(), ctx.player(), stack.getItem(), new BlockPos(result.getPos()));
+
+            if (blockResult == UseResult.DENY || blockResult == UseResult.ALLOW)
+                return blockResult;
+        }
+
+        UseResult itemResult = stack.getItem().use(ctx);
+        if (itemResult == UseResult.DENY)
+            slot.update();
+
+        return itemResult;
     }
 }

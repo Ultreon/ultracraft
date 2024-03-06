@@ -2,15 +2,19 @@ package com.ultreon.craft.client.model.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.atlas.TextureAtlas;
+import com.ultreon.libs.commons.v0.tuple.Pair;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public final class BakedModelRegistry {
     private final TextureAtlas atlas;
-    private final ImmutableMap<Block, BakedCubeModel> bakedModels;
+    private final ImmutableMap<Block, List<Pair<Predicate<BlockMetadata>, BakedCubeModel>>> bakedModels;
 
-    public BakedModelRegistry(TextureAtlas atlas, ImmutableMap<Block, BakedCubeModel> bakedModels) {
+    public BakedModelRegistry(TextureAtlas atlas, ImmutableMap<Block, List<Pair<Predicate<BlockMetadata>, BakedCubeModel>>> bakedModels) {
         this.atlas = atlas;
         this.bakedModels = bakedModels;
     }
@@ -19,7 +23,7 @@ public final class BakedModelRegistry {
         return this.atlas;
     }
 
-    public ImmutableMap<Block, BakedCubeModel> bakedModels() {
+    public ImmutableMap<Block, List<Pair<Predicate<BlockMetadata>, BakedCubeModel>>> bakedModels() {
         return this.bakedModels;
     }
 
