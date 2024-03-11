@@ -50,7 +50,7 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
         LocalPlayer localPlayer = this.client.player;
 
         if (world != null && worldRenderer != null && this.client.renderWorld && localPlayer != null) {
-            this.renderWorldOnce(worldRenderer, world, localPlayer.getPosition(), batch);
+            this.renderWorldOnce(worldRenderer, world, localPlayer.getPosition(client.partialTick), batch);
         }
     }
 

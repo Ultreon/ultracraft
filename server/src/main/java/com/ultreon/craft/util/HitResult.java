@@ -5,10 +5,12 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 
 public class HitResult {
+    public CubicDirection direction;
     // input
     protected Ray ray;
     protected float distanceMax = 5.0F;
@@ -27,15 +29,18 @@ public class HitResult {
 
     public HitResult(Ray ray) {
         this.ray = ray;
+        this.direction = ray.getDirection();
     }
 
     public HitResult(Ray ray, float distanceMax) {
         this.ray = ray;
+        this.direction = ray.getDirection();
         this.distanceMax = distanceMax;
     }
 
     public HitResult(PacketBuffer buffer) {
         this.ray = new Ray(buffer);
+        this.direction = ray.getDirection();
         this.distanceMax = buffer.readFloat();
         this.position.set(buffer.readVec3d());
         this.normal.set(buffer.readVec3d());
@@ -62,6 +67,7 @@ public class HitResult {
 
     public HitResult setInput(Ray ray){
         this.ray = ray;
+        this.direction = ray.getDirection();
         return this;
     }
 

@@ -1,10 +1,12 @@
 package com.ultreon.craft.client.config;
 
+import com.ultreon.craft.FieldsAreNullableByDefault;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.util.Identifier;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.UnknownNullability;
 
+@FieldsAreNullableByDefault
 public class UltracraftClientConfig {
     public int renderDistance = 16;
     public int entityRenderDistance = 12;
@@ -20,6 +22,10 @@ public class UltracraftClientConfig {
     public static class PersonalisationConfig {
         public boolean diagonalFontShadow = false;
         public boolean enforceUnicode = false;
+        public Double blurRadius = 16.0;
+        public Double hexagonTransparency = 0.2;
+        public String hexagonColorHex = "#ffffff";
+        public double backgroundTransparency = 0.63f;
     }
 
     public static class CraftingConfig {

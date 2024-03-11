@@ -34,7 +34,7 @@ import com.ultreon.craft.resources.Resource;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Axis;
 import com.ultreon.craft.util.Identifier;
-import com.ultreon.craft.world.BlockFace;
+import com.ultreon.craft.world.CubicDirection;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -138,7 +138,7 @@ public class JsonModelLoader {
         for (JsonElement elem : elements) {
             JsonObject element = elem.getAsJsonObject();
             JsonObject faces = element.getAsJsonObject("faces");
-            Map<BlockFace, FaceElement> blockFaceFaceElementMap = loadFaces(faces, textureWidth, textureHeight);
+            Map<CubicDirection, FaceElement> blockFaceFaceElementMap = loadFaces(faces, textureWidth, textureHeight);
 
             JsonElement shade1 = element.get("shade");
             boolean shade = shade1 != null && shade1.getAsBoolean();
@@ -160,10 +160,10 @@ public class JsonModelLoader {
     }
 
     @SuppressWarnings("SpellCheckingInspection")
-    private Map<BlockFace, FaceElement> loadFaces(JsonObject faces, int textureWidth, int textureHeight) {
-        Map<BlockFace, FaceElement> faceElems = new HashMap<>();
+    private Map<CubicDirection, FaceElement> loadFaces(JsonObject faces, int textureWidth, int textureHeight) {
+        Map<CubicDirection, FaceElement> faceElems = new HashMap<>();
         for (Map.Entry<String, JsonElement> face : faces.entrySet()) {
-            BlockFace blockFace = BlockFace.valueOf(face.getKey().toUpperCase(Locale.ROOT));
+            CubicDirection cubicDirection = CubicDirection.valueOf(face.getKey().toUpperCase(Locale.ROOT));
             JsonObject faceData = face.getValue().getAsJsonObject();
             JsonArray uvs = faceData.getAsJsonArray("uv");
             String texture = faceData.get("texture").getAsString();
@@ -174,7 +174,7 @@ public class JsonModelLoader {
             JsonElement cullface = faceData.get("cullface");
             String cullFace = cullface == null ? null : cullface.getAsString();
 
-            faceElems.put(blockFace, new FaceElement(texture, new UVs(uvs.get(0).getAsInt(), uvs.get(1).getAsInt(), uvs.get(2).getAsInt(), uvs.get(3).getAsInt(), textureWidth, textureHeight), rotation, tintIndex, cullFace));
+            faceElems.put(cubicDirection, new FaceElement(texture, new UVs(uvs.get(0).getAsInt(), uvs.get(1).getAsInt(), uvs.get(2).getAsInt(), uvs.get(3).getAsInt(), textureWidth, textureHeight), rotation, tintIndex, cullFace));
         }
 
         return faceElems;
@@ -261,7 +261,7 @@ public class JsonModelLoader {
 
 
     }
-    public record ModelElement(Map<BlockFace, FaceElement> blockFaceFaceElementMap, boolean shade,
+    public record ModelElement(Map<CubicDirection, FaceElement> blockFaceFaceElementMap, boolean shade,
                                ElementRotation rotation, Vector3 from, Vector3 to) {
         private static final Vector3 tmp = new Vector3();
         private static final Quaternion tmpQ = new Quaternion();
@@ -285,8 +285,8 @@ public class JsonModelLoader {
             VertexInfo v01 = new VertexInfo();
             VertexInfo v10 = new VertexInfo();
             VertexInfo v11 = new VertexInfo();
-            for (Map.Entry<BlockFace, FaceElement> entry : blockFaceFaceElementMap.entrySet()) {
-                BlockFace blockFace = entry.getKey();
+            for (Map.Entry<CubicDirection, FaceElement> entry : blockFaceFaceElementMap.entrySet()) {
+                CubicDirection cubicDirection = entry.getKey();
                 FaceElement faceElement = entry.getValue();
                 String texRef = faceElement.texture;
                 Identifier texture;
@@ -297,17 +297,17 @@ public class JsonModelLoader {
 
                 meshBuilder.begin(new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0)), GL20.GL_TRIANGLES);
 
-                v00.setNor(blockFace.getNormal());
-                v01.setNor(blockFace.getNormal());
-                v10.setNor(blockFace.getNormal());
-                v11.setNor(blockFace.getNormal());
+                v00.setNor(cubicDirection.getNormal());
+                v01.setNor(cubicDirection.getNormal());
+                v10.setNor(cubicDirection.getNormal());
+                v11.setNor(cubicDirection.getNormal());
 
                 v00.setUV(faceElement.uvs.x1, faceElement.uvs.y2);
                 v01.setUV(faceElement.uvs.x1, faceElement.uvs.y1);
                 v10.setUV(faceElement.uvs.x2, faceElement.uvs.y2);
                 v11.setUV(faceElement.uvs.x2, faceElement.uvs.y1);
 
-                switch (blockFace) {
+                switch (cubicDirection) {
                     case UP -> {
                         v00.setPos(to.x, to.y, from.z);
                         v01.setPos(to.x, to.y, to.z);
@@ -353,7 +353,7 @@ public class JsonModelLoader {
                 material.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
                 material.set(new FloatAttribute(FloatAttribute.AlphaTest));
                 material.set(new DepthTestAttribute(GL20.GL_LEQUAL));
-                nodeBuilder.part(idx + "." + blockFace.name(), meshBuilder.end(), GL20.GL_TRIANGLES, material);
+                nodeBuilder.part(idx + "." + cubicDirection.name(), meshBuilder.end(), GL20.GL_TRIANGLES, material);
             }
 
             Model end = nodeBuilder.end();

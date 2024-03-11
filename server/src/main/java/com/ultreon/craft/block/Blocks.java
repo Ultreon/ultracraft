@@ -32,6 +32,7 @@ public final class Blocks {
     public static final Block TALL_GRASS = Blocks.register("tall_grass", new Block(new Properties().noOcclude().replaceable().transparent().noCollision().usesCustomRender().dropsItems(new RandomLoot(new RandomLoot.ChanceLootEntry(0.4f, Items.GRASS_FIBRE)))));
     public static final Block CACTUS = Blocks.register("cactus", new Block(new Properties().noOcclude().replaceable().usesCustomRender().dropsItems(Items.CACTUS)));
     public static final Block META_SWITCH_TEST = Blocks.register("meta_switch_test", new MetaSwitchTestBlock());
+    public static final Block BLAST_FURNACE = Blocks.register("blast_furnace", new BlastFurnaceBlock(new Properties().hardness(12.0F).effectiveTool(ToolType.PICKAXE).requiresTool().dropsItems(Items.BLAST_FURNACE)));
 
     private static <T extends Block> T register(String name, T block) {
         Registries.BLOCK.register(new Identifier(name), block);

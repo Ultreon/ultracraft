@@ -22,6 +22,8 @@ import com.ultreon.craft.network.packets.s2c.C2SAbilitiesPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
+import com.ultreon.libs.commons.v0.Mth;
+import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +55,13 @@ public class LocalPlayer extends ClientPlayer {
             this.oldSelected = this.selected;
         }
 
-        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01)
+        if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01) {
             this.handleMove();
+        } else {
+            this.ox = this.x;
+            this.oy = this.y;
+            this.oz = this.z;
+        }
     }
 
     private void handleMove() {
@@ -187,5 +194,19 @@ public class LocalPlayer extends ClientPlayer {
 
     public void onHurt(S2CPlayerHurtPacket packet) {
         this.hurt(packet.getDamage(), packet.getSource());
+    }
+
+    public Vec3d getPosition(float partialTick) {
+        return new Vec3d(
+                Mth.lerp(this.ox, this.x, partialTick),
+                Mth.lerp(this.oy, this.y, partialTick),
+                Mth.lerp(this.oz, this.z, partialTick)
+        );
+    }
+
+    @Override
+    @Deprecated
+    public Vec3d getPosition() {
+        return super.getPosition();
     }
 }

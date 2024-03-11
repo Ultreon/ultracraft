@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.model.block;
 
 import com.ultreon.craft.client.world.FaceProperties;
+import com.ultreon.craft.world.CubicDirection;
 
 import java.util.Objects;
 
@@ -11,18 +12,20 @@ public class ModelProperties {
     public final FaceProperties right;
     public final FaceProperties front;
     public final FaceProperties back;
+    public final CubicDirection rotation;
 
-    public ModelProperties(FaceProperties top, FaceProperties bottom, FaceProperties left, FaceProperties right, FaceProperties front, FaceProperties back) {
+    public ModelProperties(FaceProperties top, FaceProperties bottom, FaceProperties left, FaceProperties right, FaceProperties front, FaceProperties back, CubicDirection rotation) {
         this.top = top;
         this.bottom = bottom;
         this.left = left;
         this.right = right;
         this.front = front;
         this.back = back;
+        this.rotation = rotation;
     }
 
-    public ModelProperties(FaceProperties all) {
-        this(all, all, all, all, all, all);
+    public ModelProperties(FaceProperties all, CubicDirection rotation) {
+        this(all, all, all, all, all, all, rotation);
     }
 
     @Override
@@ -30,12 +33,19 @@ public class ModelProperties {
         if (this == o) return true;
         if (o == null || this.getClass() != o.getClass()) return false;
         ModelProperties that = (ModelProperties) o;
-        return Objects.equals(this.top, that.top) && Objects.equals(this.bottom, that.bottom) && Objects.equals(this.left, that.left) && Objects.equals(this.right, that.right) && Objects.equals(this.front, that.front) && Objects.equals(this.back, that.back);
+        return Objects.equals(this.top, that.top) && Objects.equals(this.bottom, that.bottom) && Objects.equals(this.left, that.left) && Objects.equals(this.right, that.right) && Objects.equals(this.front, that.front) && Objects.equals(this.back, that.back) && Objects.equals(this.rotation, that.rotation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.top, this.bottom, this.left, this.right, this.front, this.back);
+        int result = this.top.hashCode();
+        result = 31 * result + this.bottom.hashCode();
+        result = 31 * result + this.left.hashCode();
+        result = 31 * result + this.right.hashCode();
+        result = 31 * result + this.front.hashCode();
+        result = 31 * result + this.back.hashCode();
+        result = 31 * result + this.rotation.hashCode();
+        return result;
     }
 
     public static Builder builder() {
@@ -49,6 +59,7 @@ public class ModelProperties {
         private FaceProperties right = new FaceProperties();
         private FaceProperties front = new FaceProperties();
         private FaceProperties back = new FaceProperties();
+        private CubicDirection horizontalRotation = CubicDirection.NORTH;
 
         public Builder top(FaceProperties top) {
             this.top = top;
@@ -81,7 +92,12 @@ public class ModelProperties {
         }
 
         public ModelProperties build() {
-            return new ModelProperties(this.top, this.bottom, this.left, this.right, this.front, this.back);
+            return new ModelProperties(this.top, this.bottom, this.left, this.right, this.front, this.back, this.horizontalRotation);
+        }
+
+        public Builder rotateHorizontal(CubicDirection direction) {
+            this.horizontalRotation = direction;
+            return this;
         }
     }
 }

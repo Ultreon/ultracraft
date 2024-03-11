@@ -166,8 +166,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     public void update(float deltaTime) {
         if (this.client.isPlaying()) {
             Player player = this.client.player;
-            if (player != null && this.isControllerConnected()) {
-                this.updateController(deltaTime, player);
+            if (player != null) {
+                this.updatePlayer(deltaTime, player);
             }
         }
 
@@ -183,7 +183,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         }
     }
 
-    private void updateController(float deltaTime, Player player) {
+    private void updatePlayer(float deltaTime, Player player) {
         Joystick joystick = GameInput.JOYSTICKS.get(JoystickType.RIGHT);
 
         float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;

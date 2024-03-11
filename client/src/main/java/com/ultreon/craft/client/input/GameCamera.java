@@ -49,7 +49,7 @@ public class GameCamera extends PerspectiveCamera {
             this.node.create("hitPosition", () -> this.hitResult.getPosition());
             this.node.create("relHitPosition", () -> this.hitPosition);
             this.node.create("eyePosition", () -> this.camPos);
-            this.node.create("playerPosition", () -> this.player.getPosition());
+            this.node.create("playerPosition", () -> this.player.getPosition(client.partialTick));
         }
     }
 
@@ -60,7 +60,7 @@ public class GameCamera extends PerspectiveCamera {
      */
     public void update(LocalPlayer player) {
         var lookVec = player.getLookVector();
-        this.camPos = player.getPosition().div(WorldRenderer.SCALE).add(0, player.getEyeHeight() / WorldRenderer.SCALE, 0);
+        this.camPos = player.getPosition(client.partialTick).div(WorldRenderer.SCALE).add(0, player.getEyeHeight() / WorldRenderer.SCALE, 0);
         this.player = player;
 
         if (this.client.isInThirdPerson()) {
@@ -141,7 +141,7 @@ public class GameCamera extends PerspectiveCamera {
     public Vector3 relative(Vec3d position, Vector3 tmp) {
         LocalPlayer localPlayer = this.client.player;
         if (localPlayer == null) return null;
-        Vec3f sub = position.sub(this.player.getPosition().add(0, this.player.getEyeHeight(), 0)).f();
+        Vec3f sub = position.sub(this.player.getPosition(client.partialTick).add(0, this.player.getEyeHeight(), 0)).f();
         return tmp.set(sub.x, sub.y, sub.z);
     }
 }

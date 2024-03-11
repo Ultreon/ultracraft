@@ -192,7 +192,6 @@ afterEvaluate {
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx/${project.property("gdx_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-ai/${project.property("ai_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-backend-lwjgl3/${project.property("gdx_version")}",
-            "https://javadoc.io/doc/io.github.spair/imgui-java-binding/${project.property("imgui_version")}",
             "https://javadoc.io/doc/io.netty/netty-buffer/${project.property("netty_version")}",
             "https://javadoc.io/doc/io.netty/netty-codec-socks/${project.property("netty_version")}",
             "https://javadoc.io/doc/io.netty/netty-common/${project.property("netty_version")}",

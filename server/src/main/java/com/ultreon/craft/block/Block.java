@@ -172,7 +172,7 @@ public class Block implements DataWriter<MapType> {
         return this.replaceable;
     }
 
-    public boolean shouldOcclude(BlockFace face, Chunk chunk, int x, int y, int z) {
+    public boolean shouldOcclude(CubicDirection face, Chunk chunk, int x, int y, int z) {
         return this.occlude;
     }
 
@@ -182,6 +182,10 @@ public class Block implements DataWriter<MapType> {
 
     public BlockMetadata createMeta() {
         return new BlockMetadata(this, Collections.emptyMap());
+    }
+
+    public BlockMetadata onPlacedBy(World world, BlockPos blockPos, BlockMetadata blockMeta, Player player, ItemStack stack, CubicDirection direction) {
+        return blockMeta;
     }
 
     public static class Properties {

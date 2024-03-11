@@ -76,19 +76,23 @@ public final class UcConfiguration<T> {
             CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             return;
         } catch (Exception e) {
+            CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             this.object = object;
             this.save();
             return;
         }
 
         if (this.object == null) {
+            CommonConstants.LOGGER.warn("Config file {} was empty", this.configPath);
             this.object = object;
             this.save();
         }
 
         if (!existed) {
+            CommonConstants.LOGGER.info("Config file {} was created", this.configPath);
             this.save();
         } else {
+            CommonConstants.LOGGER.info("Config file {} was loaded", this.configPath);
             this.reload(false);
             this.save();
         }

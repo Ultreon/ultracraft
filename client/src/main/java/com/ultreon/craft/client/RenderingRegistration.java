@@ -25,6 +25,7 @@ import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
+import com.ultreon.craft.world.CubicDirection;
 
 import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
 import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
@@ -98,6 +99,11 @@ public class RenderingRegistration {
 
         BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_on")));
         BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> !meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_off")));
+
+        for (CubicDirection direction : CubicDirection.HORIZONTAL) {
+            BlockModelRegistry.register(Blocks.BLAST_FURNACE, meta -> meta.<Boolean>getEntry("lit").value && meta.<CubicDirection>getEntry("facing").value == direction, CubeModel.of(UltracraftClient.id("blocks/blast_furnace_top"), UltracraftClient.id("blocks/blast_furnace_bottom"), UltracraftClient.id("blocks/blast_furnace_side"), UltracraftClient.id("blocks/blast_furnace_front_lit"), ModelProperties.builder().rotateHorizontal(direction).build()));
+            BlockModelRegistry.register(Blocks.BLAST_FURNACE, meta -> !meta.<Boolean>getEntry("lit").value && meta.<CubicDirection>getEntry("facing").value == direction, CubeModel.of(UltracraftClient.id("blocks/blast_furnace_top"), UltracraftClient.id("blocks/blast_furnace_bottom"), UltracraftClient.id("blocks/blast_furnace_side"), UltracraftClient.id("blocks/blast_furnace_front"), ModelProperties.builder().rotateHorizontal(direction).build()));
+        }
 
         ClientRegistrationEvents.BLOCK_MODELS.factory().onRegister();
 

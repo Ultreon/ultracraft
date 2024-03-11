@@ -260,7 +260,7 @@ public final class WorldRenderer implements DisposableContainer {
         if (gameCursor != null && gameCursor.isCollide() && !this.client.hideHud && !player.isSpectator()) {
             UltracraftClient.PROFILER.section("cursor", () -> {
                 Vec3i pos = gameCursor.getPos();
-                Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+                Vec3f renderOffsetC = pos.d().sub(player.getPosition(client.partialTick).add(0, player.getEyeHeight(), 0)).f();
 
                 this.cursor.meshPart.id = OUTLINE_CURSOR_ID;
                 this.cursor.worldTransform.setToTranslation(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
@@ -302,7 +302,7 @@ public final class WorldRenderer implements DisposableContainer {
             }
 
             Vec3i chunkOffset = chunk.getOffset();
-            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
+            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition(client.partialTick).add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
             chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
             if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
                 continue;
@@ -442,7 +442,7 @@ public final class WorldRenderer implements DisposableContainer {
             }
             LocalPlayer player = this.client.player;
             if (player == null) return;
-            Vec3f vec3f = entity.getPosition().sub(player.getPosition()).f();
+            Vec3f vec3f = entity.getPosition().sub(player.getPosition(client.partialTick)).f();
 //            instance.transform.setToTranslationAndScaling(vec3f.x, vec3f.y, vec3f.z, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE, 1 * WorldRenderer.SCALE);
             renderer.animate(instance, entity);
 

@@ -6,23 +6,30 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.Disposable;
+import com.crashinvaders.vfx.VfxManager;
+import com.crashinvaders.vfx.effects.GaussianBlurEffect;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.client.util.InvalidValueException;
 import com.ultreon.craft.text.ChatColor;
 import com.ultreon.craft.text.FormattedText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import space.earlygrey.shapedrawer.JoinType;
@@ -45,7 +52,7 @@ import static com.ultreon.craft.client.UltracraftClient.id;
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @SuppressWarnings("unused")
-public class Renderer {
+public class Renderer implements Disposable {
     private static final int TAB_WIDTH = 32;
     ////////////////////
     //     Fields     //
@@ -55,13 +62,23 @@ public class Renderer {
     private final Batch batch;
     private final ShapeDrawer shapes;
     private final TextureManager textureManager;
+    private final VfxManager vfxManager;
+    private final ShaderProgram blurShader;
+    private final ShaderProgram gridShader;
     private float strokeWidth = 1;
     private Font font;
     private final MatrixStack matrixStack;
     private Color blitColor = Color.rgb(0xffffff);
     private final Vector2 tmp2A = new Vector2();
     private final Vector3 tmp3A = new Vector3();
-    private GlStateStack glState = new GlStateStack();
+    private final GlStateStack glState = new GlStateStack();
+    private int width;
+    private int height;
+    private boolean blurred;
+
+    public static final int FBO_SIZE = 1024;
+
+    private FrameBuffer grid;
 
     /**
      * @param shapes shape drawer instance from {@link UltracraftClient}
@@ -86,6 +103,38 @@ public class Renderer {
 
         // Projection matrix.
         this.matrixStack.onEdit = matrix -> shapes.getBatch().setTransformMatrix(matrix);
+
+
+        // VfxManager is a host for the effects.
+        // It captures rendering into internal off-screen buffer and applies a chain of defined effects.
+        // Off-screen buffers may have any pixel format; for this example, we will use RGBA8888.
+        vfxManager = new VfxManager(Format.RGBA8888);
+
+        // Create and add an effect.
+        // VfxEffect derivative classes serve as controllers for the effects.
+        // They provide public properties to configure and control them.
+        GaussianBlurEffect vfxBlur = new GaussianBlurEffect(GaussianBlurEffect.BlurType.Gaussian5x5b);
+
+        blurShader = new ShaderProgram(VERT, FRAG);
+        if (!blurShader.isCompiled()) {
+            System.err.println(blurShader.getLog());
+            System.exit(0);
+        }
+        if (!blurShader.getLog().isEmpty())
+            System.out.println(blurShader.getLog());
+
+        //setup uniforms for our shader
+        blurShader.bind();
+        blurShader.setUniformf("dir", 0f, 0f);
+        blurShader.setUniformf("radius", 1f);
+
+        gridShader = new ShaderProgram(VERT, GRID_FRAG);
+        if (!gridShader.isCompiled()) {
+            System.err.println(gridShader.getLog());
+            System.exit(0);
+        }
+        if (!gridShader.getLog().isEmpty())
+            System.out.println(gridShader.getLog());
     }
 
     public MatrixStack getMatrixStack() {
@@ -2070,7 +2119,7 @@ public class Renderer {
 
     public void end() {
         if (!this.batch.isDrawing()) {
-            UltracraftClient.LOGGER.warn("Batch not drawin!", new Exception());
+            UltracraftClient.LOGGER.warn("Batch not drawing!", new Exception());
             return;
         }
         this.batch.end();
@@ -2081,5 +2130,328 @@ public class Renderer {
             UltracraftClient.LOGGER.warn("Batch still drawing");
             this.batch.end();
         }
+    }
+
+    @Language("GLSL")
+    final String VERT =
+            """
+                    attribute vec4 a_position;
+                    attribute vec4 a_color;
+                    attribute vec2 a_texCoord0;
+                    uniform mat4 u_projTrans;
+                    
+                    varying vec4 vColor;
+                    varying vec2 vTexCoord;
+                                        
+                    void main() {
+                    	vColor = a_color;
+                    	vTexCoord = a_texCoord0;
+                    	gl_Position =  u_projTrans * a_position;
+                    }
+                    """;
+
+    @Language("GLSL")
+    final String FRAG =
+            """
+            #version 130
+            
+            // Fragment shader
+            #ifdef GL_ES
+            precision mediump float;
+            #endif
+            
+            varying vec4 vColor;
+            varying vec2 vTexCoord0;
+            
+            uniform sampler2D u_texture;
+            uniform vec2 resolution;
+            uniform float radius; // Radius of the blur
+            uniform vec2 dir; // Direction of the blur
+            
+            void main() {
+              float Pi = 6.28318530718; // Pi*2
+            
+              // GAUSSIAN BLUR SETTINGS {{{
+              float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+              float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+              float Size = radius; // BLUR SIZE (Radius)
+              // GAUSSIAN BLUR SETTINGS }}}
+            
+              vec2 Radius = Size/resolution.xy;
+            
+              // Normalized pixel coordinates (from 0 to 1)
+              vec2 uv = gl_FragCoord.xy/resolution.xy;
+              // Pixel colour
+              vec4 color = texture(u_texture, uv);
+            
+              // Blur calculations
+              for( float d=0.0; d<Pi; d+=Pi/Directions)
+              {
+                for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
+                {
+                  color += texture2D(u_texture, uv+vec2(cos(d),sin(d))*Radius*i);
+                }
+              }
+            
+              // Output to screen
+              color /= Quality * Directions - 15.0;
+              gl_FragColor = color;
+            }
+            """;
+
+
+    @Language("GLSL")
+    final String GRID_FRAG =
+            """
+            varying vec2 vTexCoords0;
+            varying vec4 vColor;
+            uniform sampler2D u_texture;
+            uniform vec2 iResolution;
+            uniform vec3 hexagonColor;
+            uniform float hexagonTransparency;
+            
+            void main() {\s
+              vec2 uv = (gl_FragCoord.xy * 2.0 - iResolution.xy) / iResolution.y;
+              uv *= 16.0;
+              vec2 orig_uv = uv;
+             \s
+              /** Subdivide 2D space in tiling hexagons **/
+              // hexagon border distance
+              // hexagon aspect ratio
+              uv.x *= sqrt(4.0/3.0);
+             \s
+              // this is how big cells should be so the hexagon corners are ON a circle of radius 1
+              // (as opposed to cells that are 1 unit wide, meaning a circle of radius 1 fits snugly in the hexagon)
+              const float onCircleAdjust = 0.5 / sqrt(0.75);
+             \s
+              // adjust so our hexagons have an oncircle of radius 1\s
+              uv *= onCircleAdjust;
+              // and align with the center of the screen
+              uv.x -= 0.5;
+             \s
+              // track horizontal tiling
+              float cx = floor(uv.x);
+              // stagger columns
+              uv.y += mod(floor(uv.x), 2.0) * 0.5;
+              // track vertical tiling
+              float cy = floor(uv.y);
+              // get tile-local uv
+              vec2 st = fract(uv) - 0.5;
+              // get hexagon distance
+              uv = abs(st);
+              float s = max(uv.x * 1.5 + uv.y, uv.y + uv.y);
+              // if s > 1.0 it actually belongs to the adjacent hexagon
+              if(s > 1.0)
+              {
+                // this part is just to adjust tile ID for the
+                // adjacent hexagons overlapping this tile
+               \s
+                // vertical tiling is different per column
+                float o = -sign(mod(cx,2.0)-0.5);
+                if(st.y * o > 0.0)
+                {
+                  cy += o;
+                }
+               \s
+                // horizontal tiling is pretty straight forward
+                cx += sign(st.x);
+               \s
+                // adjsut local UVs as well so they are now fully hexagon local
+                st.x -= sign(st.x);
+                st.y -= sign(st.y) * 0.5;
+              }
+              // hexagon distance accros tile boundaries
+              s = abs(s - 1.0);
+              // invert the aspect ratio and size correction of the local uvs
+              st.x *= sqrt(0.75);
+              st /= onCircleAdjust;
+             \s
+              // If the hexagon distance is close to 1.0, set gl_FragColor to transparent white
+              if (s >= 0.0 && s < 0.125){
+                gl_FragColor = vec4(hexagonColor.rgb, 0.24);
+              } else {
+                // Otherwise, keep it transparent
+                gl_FragColor = vec4(0.0);
+              }
+            }
+            """;
+    @ApiStatus.Experimental
+    public void blurred(Runnable block) {
+        if (this.blurred) {
+            block.run();
+            return;
+        }
+
+        float blurRad = this.client.config.get().personalisation.blurRadius != null ? this.client.config.get().personalisation.blurRadius.floatValue() : 32.0f;
+
+        this.blurred = true;
+        try {
+            FrameBuffer blurTargetA = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+            FrameBuffer blurTargetB = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+            TextureRegion fboRegion = new TextureRegion(blurTargetA.getColorBufferTexture());
+
+            //Start rendering to an offscreen color buffer
+            blurTargetA.begin();
+
+            //before rendering, ensure we are using the default shader
+            batch.setShader(null);
+
+            batch.flush();
+
+            //render the batch contents to the offscreen buffer
+            this.flush();
+
+            block.run();
+
+            //finish rendering to the offscreen buffer
+            batch.flush();
+
+            //finish rendering to the offscreen buffer
+            blurTargetA.end();
+
+            //now let's start blurring the offscreen image
+            batch.setShader(blurShader);
+
+            //since we never called batch.end(), we should still be drawing
+            //which means are blurShader should now be in use
+
+            //ensure the direction is along the X-axis only
+            blurShader.setUniformf("dir", 1f, 0f);
+
+            //update the resolution of the blur along X-axis
+            blurShader.setUniformf("resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            //update the Y-axis blur radius
+            blurShader.setUniformf("radius", blurRad);
+
+            //our first blur pass goes to target B
+            blurTargetB.begin();
+
+            //we want to render FBO target A into target B
+            fboRegion.setTexture(blurTargetA.getColorBufferTexture());
+
+            //draw the scene to target B with a horizontal blur effect
+            batch.draw(fboRegion, 0, 0);
+
+            //flush the batch before ending the FBO
+            batch.flush();
+
+            //finish rendering target B
+            blurTargetB.end();
+
+            //now we can render to the screen using the vertical blur shader
+
+            //update the blur only along Y-axis
+            blurShader.setUniformf("dir", 0f, 1f);
+
+            //update the resolution of the blur along Y-axis
+            blurShader.setUniformf("resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            //update the Y-axis blur radius
+            blurShader.setUniformf("radius", blurRad);
+
+            //draw target B to the screen with a vertical blur effect
+            fboRegion.setTexture(blurTargetB.getColorBufferTexture());
+            batch.draw(fboRegion, 0, 0);
+
+            //reset to default shader without blurs
+            batch.setShader(null);
+
+            this.flush();
+
+            //get the texture for the hexagon grid
+            Texture colorBufferTexture = this.grid.getColorBufferTexture();
+
+            //render the grid to the screen
+            this.batch.setColor(1, 1, 1, 1);
+            this.batch.draw(colorBufferTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            //dispose of the FBOs
+            blurTargetA.dispose();
+            blurTargetB.dispose();
+        } finally {
+            this.blurred = false;
+        }
+    }
+
+    public void blurred(Texture texture) {
+        if (this.blurred) {
+            return;
+        }
+
+        vfxManager.useAsInput(texture);
+        vfxManager.applyEffects();
+        vfxManager.renderToScreen(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        this.flush();
+    }
+
+    public void resize(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        // VfxManager manages internal off-screen buffers,
+        // which should always match the required viewport (whole screen in our case).
+        vfxManager.resize(width, height);
+
+        this.resizeGrid(width, height);
+    }
+
+    public void resetGrid() {
+        this.resizeGrid(width, height);
+    }
+
+    private void resizeGrid(int width, int height) {
+        if (width == 0 || height == 0) return;
+
+        if (grid != null) this.grid.dispose();
+
+        this.grid = new FrameBuffer(Format.RGBA8888, width, height, false);
+        this.grid.begin();
+        Gdx.gl.glClearColor(1, 1, 1, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        Color hexagonColor;
+        try {
+            String hexagonColorHex = this.client.config.get().personalisation.hexagonColorHex;
+            if (hexagonColorHex == null) hexagonColorHex = "#ffffff";
+            if (hexagonColorHex.length() > 7) hexagonColorHex = hexagonColorHex.substring(0, 7);
+            if (hexagonColorHex.length() < 7 && hexagonColorHex.length() > 4) hexagonColorHex = hexagonColorHex.substring(0, 4);
+            if (hexagonColorHex.length() < 4) hexagonColorHex = "#ffffff";
+            hexagonColor = Color.hex(hexagonColorHex);
+        } catch (InvalidValueException e) {
+            hexagonColor = Color.WHITE;
+        }
+
+        float hexagonTransparency = this.client.config.get().personalisation.hexagonTransparency != null ? this.client.config.get().personalisation.hexagonTransparency.floatValue() : 0.24f;
+
+        this.batch.begin();
+        this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        this.batch.setShader(gridShader);
+        this.gridShader.setUniformf("iResolution", width, height);
+        this.blurShader.setUniformf("hexagonColor", hexagonColor.getRed(), hexagonColor.getGreen(), hexagonColor.getBlue(), hexagonTransparency);
+
+        this.shapes.filledRectangle(0, 0, width, height, Color.TRANSPARENT.toGdx());
+
+        this.batch.setShader(null);
+        this.batch.end();
+        this.grid.end();
+    }
+
+    @Override
+    public void dispose() {
+                        vfxManager.dispose();
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public boolean isBlurred() {
+        return blurred;
     }
 }

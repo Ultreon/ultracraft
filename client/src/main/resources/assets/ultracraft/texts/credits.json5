@@ -6,14 +6,38 @@
    */
 
   // Contributors that contributed with code.
-  Code: [
-    "XyperCode"
-  ],
+  Code: {
+    XyperCode: {
+      "url": "https://github.com/XyperCode"
+    },
+    MaroonShaded: {
+      "url": "https://github.com/MaroonShaded"
+    }
+  },
   // Contributors that contributed language changes/additions through GitHub pull requests.
-  Language: [
-    "Oszoou",
-    "XyperCode"
-  ],
+  Translations: {
+    Oszoou: {
+      "url": "https://github.com/Oszoou"
+    },
+    XyperCode: {
+      "url": "https://github.com/XyperCode"
+    },
+  },
+  // People that tested the game.
+  Testing: {
+    XyperCode: {
+      "url": "https://github.com/XyperCode"
+    },
+    MincraftEinstein: {
+      "url": "https://github.com/MincraftEinstein"
+    }
+  },
+  // Contributions to documentation.
+  Documentation: {
+    XyperCode: {
+      "url": "https://github.com/XyperCode"
+    }
+  },
   // External libraries that are included with the game.
   ExternalLibraries: {
     "LibGDX": {
@@ -21,7 +45,15 @@
     },
     "Fabric Loader": {
       "url": "https://fabricmc.net/"
+    },
+    "LWJGL": {
+      "url": "https://www.lwjgl.org/"
     }
     // TODO add other external libraries in credits
+  },
+  Extra: {
+    "Everyone on Crowdin that helped with translations": {
+      "url": "https://crowdin.com/editor/ultreon-team/350"
+    }
   }
 }

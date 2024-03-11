@@ -109,7 +109,7 @@ public abstract class Screen extends UIContainer<Screen> {
      * @param renderer renderer to draw/render with.
      */
     protected void renderTransparentBackground(Renderer renderer) {
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0x80101010));
+        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0xa0000000));
     }
 
     /**

@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.world.BlockFace;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.craft.util.MathHelper;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -57,7 +57,7 @@ public class BoxBuilder {
         return this;
     }
 
-    private void face(Vec3i pos, BlockFace face, TextureRegion region, FloatArray output) {
+    private void face(Vec3i pos, CubicDirection face, TextureRegion region, FloatArray output) {
         float[] vertices = switch (face) {
             case UP -> BoxBuilder.topVertices;
             case DOWN -> BoxBuilder.bottomVertices;
@@ -122,14 +122,14 @@ public class BoxBuilder {
         int id = (int) this.depth;
         int iu = this.u;
         int iv = this.v;
-        this.face(new Vec3i(ix, iy2, iz), BlockFace.UP, new TextureRegion(texture, iu + id, iv, iw, id), output);
-        this.face(new Vec3i(ix, iy, iz), BlockFace.DOWN, new TextureRegion(texture, iu + id, iv + id + ih, iw, id), output);
+        this.face(new Vec3i(ix, iy2, iz), CubicDirection.UP, new TextureRegion(texture, iu + id, iv, iw, id), output);
+        this.face(new Vec3i(ix, iy, iz), CubicDirection.DOWN, new TextureRegion(texture, iu + id, iv + id + ih, iw, id), output);
 
-        this.face(new Vec3i(ix, iy, iz), BlockFace.WEST, new TextureRegion(texture, iu, iv + id, id, ih), output);
-        this.face(new Vec3i(ix2, iy, iz), BlockFace.EAST, new TextureRegion(texture, iu + id + iw, iv + id + ih, id, ih), output);
+        this.face(new Vec3i(ix, iy, iz), CubicDirection.WEST, new TextureRegion(texture, iu, iv + id, id, ih), output);
+        this.face(new Vec3i(ix2, iy, iz), CubicDirection.EAST, new TextureRegion(texture, iu + id + iw, iv + id + ih, id, ih), output);
 
-        this.face(new Vec3i(ix, iy, iz), BlockFace.NORTH, new TextureRegion(texture, iu + id, id + id, iw, ih), output);
-        this.face(new Vec3i(ix, iy, iz2), BlockFace.SOUTH, new TextureRegion(texture, iu + id * 2 + iw, id + id), output);
+        this.face(new Vec3i(ix, iy, iz), CubicDirection.NORTH, new TextureRegion(texture, iu + id, id + id, iw, ih), output);
+        this.face(new Vec3i(ix, iy, iz2), CubicDirection.SOUTH, new TextureRegion(texture, iu + id * 2 + iw, id + id), output);
 
         return UltracraftClient.invokeAndWait(() -> {
             var modelBuilder = new ModelBuilder();

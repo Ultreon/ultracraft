@@ -144,9 +144,10 @@ public class BlockMetadata {
     }
 
     public int write(PacketBuffer encode) {
-        encode.writeMedium(Registries.BLOCK.getRawId(block));
+        encode.writeVarInt(Registries.BLOCK.getRawId(block));
         encode.writeMedium(entries.size());
         for (Map.Entry<String, BlockDataEntry<?>> entry : entries.entrySet()) {
+            encode.writeUTF(entry.getKey(), 64);
             entry.getValue().write(encode);
         }
         return entries.size();

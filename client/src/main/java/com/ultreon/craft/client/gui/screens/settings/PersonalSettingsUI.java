@@ -8,8 +8,7 @@ import com.ultreon.craft.client.gui.screens.options.OptionsScreen.BooleanEnum;
 import com.ultreon.craft.client.gui.screens.tabs.TabBuilder;
 import com.ultreon.craft.client.gui.widget.CycleButton;
 import com.ultreon.craft.client.gui.widget.Label;
-import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.text.UITranslations;
+import com.ultreon.craft.client.gui.widget.Slider;
 import com.ultreon.craft.text.TextObject;
 
 public class PersonalSettingsUI {
@@ -37,6 +36,16 @@ public class PersonalSettingsUI {
                 .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 75, 150, 21))
                 .formatter(booleanEnum -> TextObject.translation(booleanEnum == BooleanEnum.TRUE ? "ultracraft.ui.enabled" : "ultracraft.ui.disabled"))
                 .callback(this::setEnforceUnicode));
+
+        builder.add(TextObject.translation("ultracraft.screen.options.personalisation.blurRadius"), new Slider(this.client.config.get().personalisation.blurRadius == 0 ? 32 : (int) this.client.config.get().personalisation.blurRadius.floatValue(), 4, 128)
+                .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 150, 150, 21))
+                .text(TextObject.translation("ultracraft.screen.options.personalisation.blurRadius.text"))
+                .callback(this::setBlurRadius));
+    }
+
+    private void setBlurRadius(Slider integerCycleButton) {
+        this.client.config.get().personalisation.blurRadius = (double) integerCycleButton.value().get();
+        this.client.config.save();
     }
 
     private void setEnforceUnicode(CycleButton<BooleanEnum> booleanEnumCycleButton) {

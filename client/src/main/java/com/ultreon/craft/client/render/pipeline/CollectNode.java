@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.ultreon.craft.client.input.GameCamera;
-import com.ultreon.craft.client.player.LocalPlayer;
-import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.debug.ValueTracker;
 import org.checkerframework.common.reflection.qual.NewInstance;
 
@@ -24,7 +22,7 @@ public class CollectNode extends RenderPipeline.RenderNode {
             LOGGER.warn("worldRenderer or localPlayer is null");
             return input;
         }
-        var position = localPlayer.getPosition();
+        var position = localPlayer.getPosition(client.partialTick);
         world.getAllEntities().stream().sorted((e1, e2) -> {
             var d1 = e1.getPosition().dst(position);
             var d2 = e2.getPosition().dst(position);

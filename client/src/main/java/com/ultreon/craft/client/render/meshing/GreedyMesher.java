@@ -20,8 +20,8 @@ import com.ultreon.craft.client.render.NormalBlockRenderer;
 import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.util.PosOutOfBoundsException;
-import com.ultreon.craft.world.BlockFace;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
@@ -125,6 +125,7 @@ public class GreedyMesher implements Mesher {
                             this.chunk.addModel(new BlockPos(x, y, z), new ModelInstance(blockModel.getModel()));
                             continue;
                         }
+
                         if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
 
                         if (y < height - 1 && !ocCond.shouldOcclude(curBlock.getBlock(), this.block(this.chunk, x, y + 1, z).getBlock())) {
@@ -132,10 +133,10 @@ public class GreedyMesher implements Mesher {
 
                             if (this.perCornerLight) {
                                 PerCornerLightData lightData = new PerCornerLightData();
-                                lightData.l00 = this.calcPerCornerLight(BlockFace.UP, x, y, z);
-                                lightData.l01 = this.calcPerCornerLight(BlockFace.UP, x, y, z + 1);
-                                lightData.l10 = this.calcPerCornerLight(BlockFace.UP, x + 1, y, z);
-                                lightData.l11 = this.calcPerCornerLight(BlockFace.UP, x + 1, y, z + 1);
+                                lightData.l00 = this.calcPerCornerLight(CubicDirection.UP, x, y, z);
+                                lightData.l01 = this.calcPerCornerLight(CubicDirection.UP, x, y, z + 1);
+                                lightData.l10 = this.calcPerCornerLight(CubicDirection.UP, x + 1, y, z);
+                                lightData.l11 = this.calcPerCornerLight(CubicDirection.UP, x + 1, y, z + 1);
                                 topPcld[x][z] = lightData;
                             }
                         }
@@ -144,10 +145,10 @@ public class GreedyMesher implements Mesher {
 
                             if (this.perCornerLight) {
                                 PerCornerLightData lightData = new PerCornerLightData();
-                                lightData.l00 = this.calcPerCornerLight(BlockFace.DOWN, x, y, z);
-                                lightData.l01 = this.calcPerCornerLight(BlockFace.DOWN, x, y, z + 1);
-                                lightData.l10 = this.calcPerCornerLight(BlockFace.DOWN, x + 1, y, z);
-                                lightData.l11 = this.calcPerCornerLight(BlockFace.DOWN, x + 1, y, z + 1);
+                                lightData.l00 = this.calcPerCornerLight(CubicDirection.DOWN, x, y, z);
+                                lightData.l01 = this.calcPerCornerLight(CubicDirection.DOWN, x, y, z + 1);
+                                lightData.l10 = this.calcPerCornerLight(CubicDirection.DOWN, x + 1, y, z);
+                                lightData.l11 = this.calcPerCornerLight(CubicDirection.DOWN, x + 1, y, z + 1);
                                 btmPcld[x][z] = lightData;
                             }
                         }
@@ -156,8 +157,8 @@ public class GreedyMesher implements Mesher {
                     }
                 }
             }
-            this.greedy(faces, BlockFace.UP, shouldMerge, topMask, topPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
-            this.greedy(faces, BlockFace.DOWN, shouldMerge, btmMask, btmPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
+            this.greedy(faces, CubicDirection.UP, shouldMerge, topMask, topPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
+            this.greedy(faces, CubicDirection.DOWN, shouldMerge, btmMask, btmPcld, y, GreedyMesher.OFF_X, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y);
         }
 
         // East, west
@@ -201,10 +202,10 @@ public class GreedyMesher implements Mesher {
 
                                 if (this.perCornerLight) {
                                     PerCornerLightData lightData = new PerCornerLightData();
-                                    lightData.l00 = this.calcPerCornerLight(BlockFace.WEST, x, y, z);
-                                    lightData.l01 = this.calcPerCornerLight(BlockFace.WEST, x, y, z + 1);
-                                    lightData.l10 = this.calcPerCornerLight(BlockFace.WEST, x, y + 1, z);
-                                    lightData.l11 = this.calcPerCornerLight(BlockFace.WEST, x, y + 1, z + 1);
+                                    lightData.l00 = this.calcPerCornerLight(CubicDirection.WEST, x, y, z);
+                                    lightData.l01 = this.calcPerCornerLight(CubicDirection.WEST, x, y, z + 1);
+                                    lightData.l10 = this.calcPerCornerLight(CubicDirection.WEST, x, y + 1, z);
+                                    lightData.l11 = this.calcPerCornerLight(CubicDirection.WEST, x, y + 1, z + 1);
                                     westPcld[z][y] = lightData;
                                 }
                             }
@@ -217,10 +218,10 @@ public class GreedyMesher implements Mesher {
 
                                 if (this.perCornerLight) {
                                     PerCornerLightData lightData = new PerCornerLightData();
-                                    lightData.l00 = this.calcPerCornerLight(BlockFace.EAST, x, y, z);
-                                    lightData.l01 = this.calcPerCornerLight(BlockFace.EAST, x, y, z + 1);
-                                    lightData.l10 = this.calcPerCornerLight(BlockFace.EAST, x, y + 1, z);
-                                    lightData.l11 = this.calcPerCornerLight(BlockFace.EAST, x, y + 1, z + 1);
+                                    lightData.l00 = this.calcPerCornerLight(CubicDirection.EAST, x, y, z);
+                                    lightData.l01 = this.calcPerCornerLight(CubicDirection.EAST, x, y, z + 1);
+                                    lightData.l10 = this.calcPerCornerLight(CubicDirection.EAST, x, y + 1, z);
+                                    lightData.l11 = this.calcPerCornerLight(CubicDirection.EAST, x, y + 1, z + 1);
                                     eastPcld[z][y] = lightData;
                                 }
                             }
@@ -231,8 +232,8 @@ public class GreedyMesher implements Mesher {
                 }
             }
 
-            this.greedy(faces, BlockFace.EAST, shouldMerge, eastMask, eastPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
-            this.greedy(faces, BlockFace.WEST, shouldMerge, westMask, westPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
+            this.greedy(faces, CubicDirection.EAST, shouldMerge, eastMask, eastPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
+            this.greedy(faces, CubicDirection.WEST, shouldMerge, westMask, westPcld, x, GreedyMesher.OFF_Z, GreedyMesher.OFF_Y, GreedyMesher.OFF_X);
         }
 
         // North, south
@@ -276,10 +277,10 @@ public class GreedyMesher implements Mesher {
 
                                 if (this.perCornerLight) {
                                     PerCornerLightData lightData = new PerCornerLightData();
-                                    lightData.l00 = this.calcPerCornerLight(BlockFace.NORTH, x, y, z);
-                                    lightData.l01 = this.calcPerCornerLight(BlockFace.NORTH, x, y + 1, z);
-                                    lightData.l10 = this.calcPerCornerLight(BlockFace.NORTH, x + 1, y, z);
-                                    lightData.l11 = this.calcPerCornerLight(BlockFace.NORTH, x + 1, y + 1, z);
+                                    lightData.l00 = this.calcPerCornerLight(CubicDirection.NORTH, x, y, z);
+                                    lightData.l01 = this.calcPerCornerLight(CubicDirection.NORTH, x, y + 1, z);
+                                    lightData.l10 = this.calcPerCornerLight(CubicDirection.NORTH, x + 1, y, z);
+                                    lightData.l11 = this.calcPerCornerLight(CubicDirection.NORTH, x + 1, y + 1, z);
                                     northPcld[x][y] = lightData;
                                 }
                             }
@@ -292,10 +293,10 @@ public class GreedyMesher implements Mesher {
 
                                 if (this.perCornerLight) {
                                     PerCornerLightData lightData = new PerCornerLightData();
-                                    lightData.l00 = this.calcPerCornerLight(BlockFace.SOUTH, x, y, z);
-                                    lightData.l01 = this.calcPerCornerLight(BlockFace.SOUTH, x, y + 1, z);
-                                    lightData.l10 = this.calcPerCornerLight(BlockFace.SOUTH, x + 1, y, z);
-                                    lightData.l11 = this.calcPerCornerLight(BlockFace.SOUTH, x + 1, y + 1, z);
+                                    lightData.l00 = this.calcPerCornerLight(CubicDirection.SOUTH, x, y, z);
+                                    lightData.l01 = this.calcPerCornerLight(CubicDirection.SOUTH, x, y + 1, z);
+                                    lightData.l10 = this.calcPerCornerLight(CubicDirection.SOUTH, x + 1, y, z);
+                                    lightData.l11 = this.calcPerCornerLight(CubicDirection.SOUTH, x + 1, y + 1, z);
                                     southPcld[x][y] = lightData;
                                 }
                             }
@@ -307,14 +308,14 @@ public class GreedyMesher implements Mesher {
             }
 
 
-            this.greedy(faces, BlockFace.NORTH, shouldMerge, northMask, northPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
-            this.greedy(faces, BlockFace.SOUTH, shouldMerge, southMask, southPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
+            this.greedy(faces, CubicDirection.NORTH, shouldMerge, northMask, northPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
+            this.greedy(faces, CubicDirection.SOUTH, shouldMerge, southMask, southPcld, z, GreedyMesher.OFF_X, GreedyMesher.OFF_Y, GreedyMesher.OFF_Z);
         }
 
         return faces;
     }
 
-    private float calcLightLevel(BlockFace side, int x, int y, int z) throws PosOutOfBoundsException {
+    private float calcLightLevel(CubicDirection side, int x, int y, int z) throws PosOutOfBoundsException {
         LightLevelData result = this.calcLightLevels(side, x, y, z);
         if (result == null) return 1;
 
@@ -322,7 +323,7 @@ public class GreedyMesher implements Mesher {
     }
 
     @Nullable
-    private LightLevelData calcLightLevels(BlockFace side, int x, int y, int z) {
+    private LightLevelData calcLightLevels(CubicDirection side, int x, int y, int z) {
         switch (side) {
             case UP:
                 y += 1;
@@ -385,7 +386,7 @@ public class GreedyMesher implements Mesher {
      * @param side       BlockFace being meshed
      * @param z          Depth on the plane
      */
-    private void greedy(List<Face> outputList, BlockFace side, MergeCondition mergeCond, boolean[][] mask, PerCornerLightData[][] lightDatas, int z, int offsetX, int offsetY, int offsetZ) {
+    private void greedy(List<Face> outputList, CubicDirection side, MergeCondition mergeCond, boolean[][] mask, PerCornerLightData[][] lightDatas, int z, int offsetX, int offsetY, int offsetZ) {
         int width = mask.length;
         int height = mask[0].length;
         boolean[][] used = new boolean[mask.length][mask[0].length];
@@ -500,7 +501,7 @@ public class GreedyMesher implements Mesher {
      * @param y    Chunk-relative Y coordinate for the corner. NOT PRE-OFFSET FOR THE FACE!
      * @param cz   Chunk-relative Z coordinate for the corner. NOT PRE-OFFSET FOR THE FACE!
      */
-    private float calcPerCornerLight(BlockFace side, int cx, int y, int cz) {
+    private float calcPerCornerLight(CubicDirection side, int cx, int y, int cz) {
         // coordinate offsets for getting the blocks to average
         int posX = 0, negX = 0, posY = 0, negY = 0, posZ = 0, negZ = 0;
         switch (side) {
@@ -622,7 +623,7 @@ public class GreedyMesher implements Mesher {
 
     public static class Face {
 
-        private final BlockFace side;
+        private final CubicDirection side;
         private final int x1, y1, x2, y2, z;
         private final float lightLevel;
         private final PerCornerLightData lightData;
@@ -634,7 +635,7 @@ public class GreedyMesher implements Mesher {
          * @param lightData     Per corner light data. Pass null if per corner lighting is disabled.
          * @param sunlightLevel
          */
-        public Face(BlockFace side, BlockMetadata block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z, float sunlightLevel) {
+        public Face(CubicDirection side, BlockMetadata block, float lightLevel, PerCornerLightData lightData, int startX, int startY, int endX, int endY, int z, float sunlightLevel) {
             this.lightLevel = lightLevel;
             this.x1 = startX;
             this.y1 = startY;
@@ -671,7 +672,7 @@ public class GreedyMesher implements Mesher {
     }
 
     // Find "real" x based on relative position in the greedy method
-    private int realX(BlockFace side, int x, int y, int z) {
+    private int realX(CubicDirection side, int x, int y, int z) {
         return switch (side) {
             case UP, DOWN, NORTH, SOUTH -> x;
             case EAST, WEST -> z;
@@ -679,7 +680,7 @@ public class GreedyMesher implements Mesher {
     }
 
     // Find "real" y based on relative position in the greedy method
-    private int realY(BlockFace side, int x, int y, int z) {
+    private int realY(CubicDirection side, int x, int y, int z) {
         return switch (side) {
             case EAST, WEST, NORTH, SOUTH -> y;
             case UP, DOWN -> z;
@@ -687,7 +688,7 @@ public class GreedyMesher implements Mesher {
     }
 
     // Find "real" z based on relative position in the greedy method
-    private int realZ(BlockFace side, int x, int y, int z) {
+    private int realZ(CubicDirection side, int x, int y, int z) {
         return switch (side) {
             case UP, DOWN -> y;
             case WEST, EAST -> x;

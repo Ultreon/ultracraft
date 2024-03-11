@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -35,9 +34,11 @@ public class MainRenderNode extends RenderNode {
 
         modelBatch.end();
         this.client.renderer.begin();
-        this.client.spriteBatch.setShader(this.program);
-        this.program.setUniformf("u_resolution", new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        this.client.spriteBatch.draw(diffuseTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (client.screen != null) {
+            this.client.renderer.blurred(() -> this.drawDiffuse(diffuseTexture));
+        } else {
+            this.drawDiffuse(diffuseTexture);
+        }
         this.client.renderer.end();
         this.client.spriteBatch.setShader(null);
 
@@ -52,6 +53,11 @@ public class MainRenderNode extends RenderNode {
         }
 
         return input;
+    }
+
+    private void drawDiffuse(Texture diffuseTexture) {
+        this.client.spriteBatch.setShader(this.program);
+        this.client.spriteBatch.draw(diffuseTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override
