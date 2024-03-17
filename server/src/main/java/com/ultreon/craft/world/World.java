@@ -102,9 +102,9 @@ public abstract class World implements ServerDisposable {
                 ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
                 toCreate.add(chunkPos);
                 if (x >= pos.x - World.CHUNK_SIZE
-                        && x <= pos.x + World.CHUNK_SIZE
-                        && z >= pos.z - World.CHUNK_SIZE
-                        && z <= pos.z + World.CHUNK_SIZE) {
+                    && x <= pos.x + World.CHUNK_SIZE
+                    && z >= pos.z - World.CHUNK_SIZE
+                    && z <= pos.z + World.CHUNK_SIZE) {
                     for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
                         chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
                         toCreate.add(chunkPos);
@@ -401,14 +401,14 @@ public abstract class World implements ServerDisposable {
 
     public boolean isOutOfWorldBounds(BlockPos pos) {
         return pos.y() < World.WORLD_DEPTH || pos.y() >= World.WORLD_HEIGHT
-                || pos.x() < -30000000 || pos.x() > 30000000
-                || pos.z() < -30000000 || pos.z() > 30000000;
+               || pos.x() < -30000000 || pos.x() > 30000000
+               || pos.z() < -30000000 || pos.z() > 30000000;
     }
 
     public boolean isOutOfWorldBounds(int x, int y, int z) {
         return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
-                || x < -30000000 || x > 30000000
-                || z < -30000000 || z > 30000000;
+               || x < -30000000 || x > 30000000
+               || z < -30000000 || z > 30000000;
     }
 
     /**
@@ -519,12 +519,29 @@ public abstract class World implements ServerDisposable {
         return entity;
     }
 
+    /**
+     * Spawns an entity with the given spawn data.
+     *
+     * @param entity The entity to spawn
+     * @param spawnData The data for spawning the entity
+     * @return The spawned entity
+     */
     public <T extends Entity> T spawn(T entity, MapType spawnData) {
+        // Check if entity is not null
         Preconditions.checkNotNull(entity, "Cannot spawn null entity");
-        Preconditions.checkNotNull(entity, "Cannot entity with nul spawn data");
+
+        // Check if spawn data is not null
+        Preconditions.checkNotNull(spawnData, "Cannot spawn entity with null spawn data");
+
+        // Set the entity ID
         this.setEntityId(entity);
+
+        // Prepare the entity for spawn
         entity.onPrepareSpawn(spawnData);
+
+        // Add the entity to the map of entities by ID
         this.entitiesById.put(entity.getId(), entity);
+
         return entity;
     }
 
@@ -542,10 +559,20 @@ public abstract class World implements ServerDisposable {
         return this.curId++;
     }
 
+    /**
+     * Despawns an entity.
+     *
+     * @param entity the entity to despawn
+     */
     public void despawn(Entity entity) {
         this.entitiesById.remove(entity.getId());
     }
 
+    /**
+     * Despawns the entity from the entitiesById map.
+     *
+     * @param id The ID of the entity to be removed.
+     */
     public void despawn(int id) {
         this.entitiesById.remove(id);
     }
@@ -614,15 +641,20 @@ public abstract class World implements ServerDisposable {
      * Fills the crash log with information about the world.
      * <p style="color: red;">NOTE: Internal API!</p>
      *
-     * @param crashLog the crash log.
+     * @param crashLog the crash log
      */
     @ApiStatus.Internal
     public void fillCrashInfo(CrashLog crashLog) {
+        // Create a new CrashCategory for world details
         CrashCategory cat = new CrashCategory("World Details");
+        // Add total chunks information to the crash category
         cat.add("Total chunks", this.totalChunks); // Too many chunks?
+        // Add rendered chunks information to the crash category
         cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+        // Add seed information to the crash category
         cat.add("Seed", this.seed); // For weird world generation glitches
 
+        // Add the world details category to the crash log
         crashLog.addCategory(cat);
     }
 
@@ -725,7 +757,7 @@ public abstract class World implements ServerDisposable {
         int z = pos.z();
 
         return this.spawnPoint.x - 1 <= x && this.spawnPoint.x + 1 >= x &&
-                this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
+               this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
     }
 
     /**

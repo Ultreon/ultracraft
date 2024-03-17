@@ -42,38 +42,58 @@ public class LocalPlayer extends ClientPlayer {
         this.setUuid(uuid);
     }
 
+    /**
+     * Overrides the tick method to handle player actions and movement in the game.
+     */
     @Override
     public void tick() {
+        // Do not execute if not rendering the world
         if (!this.client.renderWorld) return;
 
+        // Determine if the player is jumping based on input
         this.jumping = !this.isDead() && (Gdx.input.isKeyPressed(Input.Keys.SPACE) && Gdx.input.isCursorCatched() || GameInput.isControllerButtonDown(ControllerButton.A));
 
+        // Call the superclass tick method
         super.tick();
 
+        // Send a packet when the selected item changes
         if (this.selected != this.oldSelected) {
             this.client.connection.send(new C2SHotbarIndexPacket(this.selected));
             this.oldSelected = this.selected;
         }
 
+        // Handle player movement if there is a significant change in position
         if (Math.abs(this.x - this.ox) >= 0.01 || Math.abs(this.y - this.oy) >= 0.01 || Math.abs(this.z - this.oz) >= 0.01) {
             this.handleMove();
         } else {
+            // Update previous position if no significant change
             this.ox = this.x;
             this.oy = this.y;
             this.oz = this.z;
         }
     }
 
+
+    /**
+     * Handles the player movement by sending the new coordinates to the server.
+     */
     private void handleMove() {
+        // Send the player's new coordinates to the server
         this.client.connection.send(new C2SPlayerMovePacket(this.x, this.y, this.z));
+
+        // Update the old coordinates to the current ones
         this.ox = this.x;
         this.oy = this.y;
         this.oz = this.z;
     }
 
+    /**
+     * {@inheritDoc}
+     * This will do nothing on the client side of the player.
+     */
     @Override
     protected void hitGround() {
-
+        // Do nothing on the client side of the player.
     }
 
     @Override
@@ -125,9 +145,19 @@ public class LocalPlayer extends ClientPlayer {
         return this.isRunning() ? super.getWalkingSpeed() * this.runModifier : super.getWalkingSpeed();
     }
 
+    /**
+     * {@inheritDoc}
+     * If the sound event is not null, it also plays the sound using the client.
+     *
+     * @param sound The sound event to be played. Can be null.
+     * @param volume The volume at which the sound should be played.
+     */
     @Override
     public void playSound(@Nullable SoundEvent sound, float volume) {
+        // Call the superclass method to play the sound event and volume
         super.playSound(sound, volume);
+
+        // If the sound event is not null, play the sound using the client
         if (sound != null) {
             this.client.playSound(sound, volume);
         }
@@ -138,12 +168,19 @@ public class LocalPlayer extends ClientPlayer {
         this.client.connection.send(new C2SAbilitiesPacket(this.abilities));
     }
 
+    /**
+     * Updates the player's abilities based on the information received in the AbilitiesPacket.
+     * @param packet The AbilitiesPacket containing the player's abilities information.
+     */
     @Override
     public void onAbilities(@NotNull AbilitiesPacket packet) {
+        // Update the player's abilities
         this.abilities.flying = packet.isFlying();
         this.abilities.allowFlight = packet.allowFlight();
         this.abilities.instaMine = packet.isInstaMine();
         this.abilities.invincible = packet.isInvincible();
+
+        // Call superclass method
         super.onAbilities(packet);
     }
 
@@ -164,7 +201,7 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     public void resurrect() {
-        this.setHealth(this.getMaxHeath());
+        this.setHealth(this.getMaxHealth());
         this.isDead = false;
     }
 
@@ -196,6 +233,12 @@ public class LocalPlayer extends ClientPlayer {
         this.hurt(packet.getDamage(), packet.getSource());
     }
 
+    /**
+     * Returns the position with interpolation based on the partial tick.
+     *
+     * @param partialTick the partial tick for interpolation
+     * @return the interpolated position as a Vec3d object
+     */
     public Vec3d getPosition(float partialTick) {
         return new Vec3d(
                 Mth.lerp(this.ox, this.x, partialTick),

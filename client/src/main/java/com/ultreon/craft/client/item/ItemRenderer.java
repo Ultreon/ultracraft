@@ -16,8 +16,8 @@ import com.google.common.base.Suppliers;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
-import com.ultreon.craft.client.model.JsonModel;
-import com.ultreon.craft.client.model.JsonModelLoader;
+import com.ultreon.craft.client.model.Json5Model;
+import com.ultreon.craft.client.model.Json5ModelLoader;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
@@ -189,10 +189,10 @@ public class ItemRenderer {
         }
     }
 
-    public void registerModels(JsonModelLoader loader) {
+    public void registerModels(Json5ModelLoader loader) {
         Registries.ITEM.values().forEach((e) -> {
             try {
-                JsonModel load = loader.load(e);
+                Json5Model load = loader.load(e);
                 if (load == null) {
                     fallbackModel(e);
                     return;

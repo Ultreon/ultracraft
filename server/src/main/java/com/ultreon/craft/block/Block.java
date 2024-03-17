@@ -102,7 +102,7 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCK.getElement(id);
+        Block block = Registries.BLOCK.get(id);
         return block == null ? Blocks.AIR : block;
     }
 

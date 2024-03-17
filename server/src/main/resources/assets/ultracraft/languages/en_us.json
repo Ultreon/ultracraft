@@ -73,6 +73,8 @@
   "ultracraft.screen.options.personalisation.title": "Personalisation",
   "ultracraft.screen.options.personalisation.diagonalFontShadow": "Diagonal Font Shadow",
   "ultracraft.screen.options.personalisation.enforceUnicode": "Enforce Unicode",
+  "ultracraft.screen.options.personalisation.blurRadius": "Blur Strength in Pixels",
+  "ultracraft.screen.options.personalisation.blurRadius.text": "Strength",
   "ultracraft.screen.options.language": "Language...",
   "ultracraft.screen.options.language.title": "Language",
   "ultracraft.screen.pause.back_to_game": "Back to the game",
@@ -108,6 +110,8 @@
   "ultracraft.recipe.craftable": "Craftable",
   "ultracraft.recipe.uncraftable": "Uncraftable",
   "ultracraft.recipe.ingredients": "Ingredients:",
+
+  "ultracraft.screen.message.disconnected": "You have been disconnected.",
 
   "ultracraft.commands.player.dumpData.success": "Dumped player data: "
 }

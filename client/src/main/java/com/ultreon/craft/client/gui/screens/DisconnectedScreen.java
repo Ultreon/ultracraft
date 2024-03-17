@@ -10,17 +10,19 @@ import org.jetbrains.annotations.NotNull;
 
 public class DisconnectedScreen extends Screen {
     private final String message;
+    private boolean wasMultiplayer;
 
-    public DisconnectedScreen(String message) {
-        super("Disconnected");
+    public DisconnectedScreen(String message, boolean wasMultiplayer) {
+        super(TextObject.translation("ultracraft.screen.message.disconnected"));
         this.message = message;
+        this.wasMultiplayer = wasMultiplayer;
     }
 
     @Override
     public void build(GuiBuilder builder) {
         builder.add(TextButton.of(TextObject.translation("ultracraft.ui.exitWorld"), 150)
                 .position(() -> new Position(this.size.width / 2 - 75, this.size.height / 2 - 10))
-                .callback(caller -> new TitleScreen()));
+                .callback(caller -> this.client.showScreen(wasMultiplayer ? new MultiplayerScreen() : new TitleScreen())));
     }
 
     @Override

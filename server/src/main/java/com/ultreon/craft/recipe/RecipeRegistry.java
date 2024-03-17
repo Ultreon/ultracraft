@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifier, T> {
+    public static final String CATEGORY = "recipe";
     private final OrderedMap<Identifier, T> keyMap = new OrderedMap<>();
     private final OrderedMap<T, Identifier> valueMap = new OrderedMap<>();
     private final Class<T> type;

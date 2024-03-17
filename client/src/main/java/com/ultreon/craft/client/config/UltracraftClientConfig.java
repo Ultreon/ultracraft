@@ -6,6 +6,7 @@ import com.ultreon.craft.util.Identifier;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.UnknownNullability;
 
+@Deprecated
 @FieldsAreNullableByDefault
 public class UltracraftClientConfig {
     public int renderDistance = 16;

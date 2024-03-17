@@ -3,7 +3,7 @@ package com.ultreon.craft.api.commands;
 import com.ultreon.craft.api.commands.error.InternalError;
 import com.ultreon.craft.api.commands.error.NoPermissionError;
 import com.ultreon.craft.api.commands.error.OverloadError;
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.chat.Chat;
@@ -127,7 +127,7 @@ public class CommandParserImpl {
         }
     }
 
-    public @Nullable CommandOutput execute(
+    public @Nullable CommandResult execute(
         Command instance,
         CommandSender sender,
         CommandContext commandCtx,
@@ -181,7 +181,7 @@ public class CommandParserImpl {
 
         // Invoke method and return command output.
         try {
-            return (CommandOutput) method.invoke(instance, callArgs.toArray(new Object[0]));
+            return (CommandResult) method.invoke(instance, callArgs.toArray(new Object[0]));
         } catch (IllegalAccessException e) {
             UltracraftServer.LOGGER.error("Failed to access command method: " + method);
             return null;

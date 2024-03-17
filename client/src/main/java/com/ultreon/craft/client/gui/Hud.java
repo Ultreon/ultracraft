@@ -2,6 +2,7 @@ package com.ultreon.craft.client.gui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
 import com.ultreon.craft.client.util.GameRenderable;
 import com.ultreon.craft.entity.Player;
@@ -40,7 +41,7 @@ public class Hud implements GameRenderable {
         Player player = this.client.player;
         if (player == null) return;
 
-        if (!this.client.isInThirdPerson() || !this.client.config.get().accessibility.hideHotbarWhenThirdPerson) {
+        if (!this.client.isInThirdPerson() || !Config.hideHotbarWhenThirdPerson) {
             this.renderHotbar(renderer, player);
         }
 

@@ -1,8 +1,8 @@
 package com.ultreon.craft.api.commands;
 
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
 
 @FunctionalInterface
 public interface CommandRunnable {
-    CommandOutput invoke(Object... objects);
+    CommandResult invoke(Object... objects);
 }

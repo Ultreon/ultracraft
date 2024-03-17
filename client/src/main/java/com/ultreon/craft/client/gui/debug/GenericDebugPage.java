@@ -39,6 +39,11 @@ public class GenericDebugPage implements DebugPage {
                     .left("Server TPS", integratedServer.getCurrentTps())
                     .left("Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent())
                     .left();
+        } else {
+            context.left("Server Connection")
+                    .left("Server TPS", "N/A (Coming Soon!)")
+                    .left("Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent())
+                    .left();
         }
 
         context.left("Meshes")

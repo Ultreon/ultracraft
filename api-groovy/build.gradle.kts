@@ -16,7 +16,7 @@ plugins {
 
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 
-group = "io.github.ultreon.craftmods"
+group = "com.github.Ultreon.craftmods"
 version = "0.1.0"
 
 base {

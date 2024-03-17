@@ -1,9 +1,9 @@
-package com.ultreon.craft.api.commands;
+package com.ultreon.craft.config.crafty;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RegisterCommand {
-
+public @interface ConfigInfo {
+    String fileName();
 }

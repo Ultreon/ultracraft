@@ -24,6 +24,7 @@ import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CAddPlayerPacket;
 import com.ultreon.craft.network.packets.s2c.S2CRemovePlayerPacket;
+import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.CacheablePlayer;
 import com.ultreon.craft.server.player.CachedPlayer;
@@ -37,6 +38,7 @@ import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.tuple.Pair;
 import com.ultreon.libs.commons.v0.vector.Vec2d;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
+import com.ultreon.libs.datetime.v0.Duration;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import org.apache.logging.log4j.core.config.ConfigurationScheduler;
@@ -78,6 +80,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final Map<UUID, ServerPlayer> players = new ConcurrentHashMap<>();
     private final ServerConnections connections;
     private final WorldStorage storage;
+    private final ResourceManager resourceManager;
     protected InspectionNode<UltracraftServer> node;
     private InspectionNode<Object> playersNode;
     protected ServerWorld world;
@@ -141,6 +144,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
             this.node.create("tps", () -> this.currentTps);
             this.node.create("onlineTicks", () -> this.onlineTicks);
         }
+
+        this.resourceManager = new ResourceManager("data");
     }
 
     public static WatchManager getWatchManager() {
@@ -250,10 +255,11 @@ public abstract class UltracraftServer extends PollingExecutorService implements
      */
     @Override
     @ApiStatus.Internal
-    public final void run() {
+    public void run() {
         // Send server starting event to mods.
         ServerLifecycleEvents.SERVER_STARTING.factory().onServerStarting(this);
 
+        // Calculate tick duration based on TPS.
         var tickCap = 1000.0 / (double) UltracraftServer.TPS;
         var tickTime = 0d;
         var gameFrameTime = 0d;
@@ -261,6 +267,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         double time = System.currentTimeMillis();
 
+        Duration sleepDuration = Duration.ofMilliseconds(5);
         try {
             // Send server started event to mods.
             ServerLifecycleEvents.SERVER_STARTED.factory().onServerStarted(this);
@@ -289,6 +296,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                         // Tick the server.
                         this.runTick();
                     } catch (Throwable t) {
+                        // Handle server tick error.
                         this.crash(new Throwable("Game being ticked.", t));
                     }
                 }
@@ -301,10 +309,10 @@ public abstract class UltracraftServer extends PollingExecutorService implements
                 }
 
                 // Allow thread interrupting.
-                Thread.sleep(1);
+                sleepDuration.sleep();
             }
         } catch (InterruptedException ignored) {
-
+            // Ignore interruption exception.
         } catch (Throwable t) {
             // Server crashed.
             this.crash(t);
@@ -319,12 +327,15 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         try {
             this.save(false);
         } catch (IOException e) {
+            // Log error for saving server data failure.
             UltracraftServer.LOGGER.error("Saving server data failed!", e);
         }
 
         // Cleanup any resources allocated.
         this.players.clear();
         this.scheduler.shutdownNow();
+
+        this.resourceManager.close();
 
         this.close();
 
@@ -334,6 +345,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         // Send event for server stopping to mods.
         ServerLifecycleEvents.SERVER_STOPPED.factory().onServerStopped(this);
 
+        // Log server stopped event.
         UltracraftServer.LOGGER.info("Server stopped.");
     }
 
@@ -809,5 +821,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public CommandSender getConsoleSender() {
         return this.consoleSender;
+    }
+
+    public ResourceManager getResourceManager() {
+        return resourceManager;
     }
 }

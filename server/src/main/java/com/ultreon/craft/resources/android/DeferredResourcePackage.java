@@ -13,7 +13,7 @@ public class DeferredResourcePackage extends ResourcePackage {
     private final String root;
 
     public DeferredResourcePackage(Class<?> ref, String root) {
-        super(new HashMap<>());
+        super(new HashMap<>(), new HashMap<>());
         this.ref = ref;
         this.root = root;
     }

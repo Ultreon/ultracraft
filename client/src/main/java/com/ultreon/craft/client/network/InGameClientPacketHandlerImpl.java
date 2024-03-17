@@ -2,14 +2,10 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.block.state.BlockMetadata;
-import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientChunkEvents;
 import com.ultreon.craft.client.api.events.ClientPlayerEvents;
-import com.ultreon.craft.client.gui.screens.ChatScreen;
-import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
-import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.ContainerScreen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
@@ -120,7 +116,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     public void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         try {
             LocalPlayer player = this.client.player;
-            if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
+            if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.getConfig()*/) {
                 this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
                 return;
             }
@@ -210,10 +206,12 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 }
             }
 
-            IntegratedServer server = this.client.getSingleplayerServer();
-            server.shutdown();
+            if (this.client.integratedServer != null) {
+                this.client.integratedServer.shutdown();
+                this.client.integratedServer = null;
+            }
 
-            this.client.showScreen(new DisconnectedScreen(message));
+            this.client.showScreen(new DisconnectedScreen(message, !this.connection.isMemoryConnection()));
         });
     }
 
@@ -244,7 +242,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onPlaySound(Identifier sound, float volume) {
-        this.client.playSound(Registries.SOUND_EVENT.getElement(sound), volume);
+        this.client.playSound(Registries.SOUND_EVENT.get(sound), volume);
     }
 
     @Override
@@ -308,7 +306,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onOpenContainerMenu(Identifier menuTypeId) {
-        var menuType = Registries.MENU_TYPE.getElement(menuTypeId);
+        var menuType = Registries.MENU_TYPE.get(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
         ContainerMenu o = menuType.create(this.client.world, player, null);

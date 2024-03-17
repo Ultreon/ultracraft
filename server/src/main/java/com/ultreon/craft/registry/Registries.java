@@ -27,7 +27,7 @@ public final class Registries {
     public static final Registry<Weather> WEATHER = Registries.create(RegistryKeys.WEATHER);
     public static final Registry<Attribute> ATTRIBUTE = Registries.create(RegistryKeys.ATTRIBUTE);
     public static final Registry<DamageSource> DAMAGE_SOURCE = Registries.create(RegistryKeys.DAMAGE_SOURCE);
-    public static final Registry<RecipeType> RECIPE_TYPE = Registries.create(RegistryKeys.RECIPE_TYPE);
+    public static final Registry<RecipeType<?>> RECIPE_TYPE = Registries.create(RegistryKeys.RECIPE_TYPE);
     public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = Registries.create(RegistryKeys.BLOCK_ENTITY_TYPE);
 
     public static void nopInit() {

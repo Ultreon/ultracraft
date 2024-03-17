@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.render.shader.OpenShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.shaders.provider.ModelViewShaderProvider;
+import com.ultreon.craft.client.shaders.provider.SkyboxShaderProvider;
 import com.ultreon.craft.client.shaders.provider.WorldShaderProvider;
 import com.ultreon.craft.registry.Registry;
 
@@ -22,6 +24,10 @@ public class Shaders {
     public static final WorldShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
             new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
+    ));
+    public static final DefaultShaderProvider SKYBOX = Shaders.register("skybox", new SkyboxShaderProvider(
+            new ResourceFileHandle(UltracraftClient.id("shaders/skybox.vert")),
+            new ResourceFileHandle(UltracraftClient.id("shaders/skybox.frag"))
     ));
     public static final ModelViewShaderProvider MODEL_VIEW = Shaders.register("model_view", new ModelViewShaderProvider(
             new ResourceFileHandle(UltracraftClient.id("shaders/model_view.vert")),

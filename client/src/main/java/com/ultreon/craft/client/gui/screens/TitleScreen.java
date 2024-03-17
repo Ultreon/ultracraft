@@ -3,7 +3,6 @@ package com.ultreon.craft.client.gui.screens;
 import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.*;
-import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
 import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.Panel;

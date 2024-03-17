@@ -34,7 +34,7 @@ public class SSAONode extends RenderPipeline.RenderNode {
     @NewInstance
     @Override
     public Array<Renderable> render(ObjectMap<String, Texture> textures, ModelBatch modelBatch, GameCamera camera, Array<Renderable> input) {
-//        this.tex0 = textures.get("depth");
+//        this.tex0 = textures.getConfig("depth");
 //        this.tex0.bind(0);
 //
 //        this.tex1 = SSAONode.RAND_TEX;

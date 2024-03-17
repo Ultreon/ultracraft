@@ -126,7 +126,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
      * @return a registered instance of the type {@link T}.
      * @throws ClassCastException if the type is invalid.
      */
-    public T getElement(@Nullable Identifier key) {
+    public T get(@Nullable Identifier key) {
         return this.keyMap.get(RegistryKey.of(this.key, key));
     }
 

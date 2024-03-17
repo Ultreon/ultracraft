@@ -9,8 +9,8 @@ import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
-import com.ultreon.craft.client.model.JsonModel;
-import com.ultreon.craft.client.model.JsonModelLoader;
+import com.ultreon.craft.client.model.Json5Model;
+import com.ultreon.craft.client.model.Json5ModelLoader;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
@@ -124,11 +124,11 @@ public class BlockModelRegistry {
         }
     }
 
-    public static void load(JsonModelLoader loader) {
+    public static void load(Json5ModelLoader loader) {
         for (Block value : Registries.BLOCK.values()) {
             if (!REGISTRY.containsKey(value)) {
                 try {
-                    JsonModel load = loader.load(value);
+                    Json5Model load = loader.load(value);
                     if (load != null) {
                         CUSTOM_REGISTRY.computeIfAbsent(value, key -> new ArrayList<>()).add(new Pair<>(meta -> true, () -> load));
 

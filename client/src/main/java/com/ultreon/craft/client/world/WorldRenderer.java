@@ -23,6 +23,7 @@ import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.DisposableContainer;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
@@ -270,7 +271,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         UltracraftClient.PROFILER.section("(Local Player)", () -> {
             LocalPlayer localPlayer = this.client.player;
-            if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.config.get().accessibility.hideFirstPersonPlayer)) return;
+            if (localPlayer == null || (!this.client.isInThirdPerson() && Config.hideFirstPersonPlayer)) return;
 
             this.collectEntity(localPlayer, output, renderablePool);
         });

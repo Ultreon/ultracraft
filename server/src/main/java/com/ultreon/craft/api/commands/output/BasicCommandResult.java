@@ -3,11 +3,11 @@ package com.ultreon.craft.api.commands.output;
 import com.ultreon.craft.api.commands.CommandSender;
 import com.ultreon.craft.server.chat.Chat;
 
-public class BasicCommandOutput implements CommandOutput {
+public class BasicCommandResult implements CommandResult {
     private final String message;
     private final MessageType type;
 
-    public BasicCommandOutput(String message, MessageType type) {
+    public BasicCommandResult(String message, MessageType type) {
         this.message = message;
         this.type = type;
     }

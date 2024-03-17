@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.error.CommandError;
 import com.ultreon.craft.api.commands.error.InvalidError;
-import com.ultreon.craft.api.commands.output.BasicCommandOutput;
+import com.ultreon.craft.api.commands.output.BasicCommandResult;
 import com.ultreon.craft.api.commands.selector.*;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.entity.*;
@@ -119,7 +119,7 @@ public class CommandData {
         for (var entry : this.flags.reference2BooleanEntrySet()) {
             if (entry.getBooleanValue()) {
                 final var key = entry.getKey();
-                new BasicCommandOutput("</pc/>[</ptc/>" + key.getMessageCode() + "</pc/>] </>" + key.getDescription(), key.getMessageType()).send(s);
+                new BasicCommandResult("</pc/>[</ptc/>" + key.getMessageCode() + "</pc/>] </>" + key.getDescription(), key.getMessageType()).send(s);
             }
         }
     }
@@ -147,7 +147,7 @@ public class CommandData {
 
     public void onRegister(CommandContext commandCtx) {
         for (var method : this.executor.getClass().getMethods()) {
-            final var annotation = method.getAnnotation(SubCommand.class);
+            final var annotation = method.getAnnotation(DefineCommand.class);
             if (annotation == null) continue;
             @Nullable String permission = null;
             final var perm = method.getAnnotation(Perm.class);

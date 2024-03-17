@@ -23,7 +23,7 @@ public class DebugGui {
         this.leftY = DebugGui.OFFSET;
         this.rightY = DebugGui.OFFSET;
 
-        if (!this.client.showDebugHud || this.client.world == null) return;
+        if (!this.client.isShowDebugHud() || this.client.world == null) return;
 
         this.renderPage(renderer);
     }
@@ -106,12 +106,12 @@ public class DebugGui {
 
     public void nextPage() {
         var page = this.page + 1;
-        if (!this.client.showDebugHud) {
+        if (!this.client.isShowDebugHud()) {
             page = 0;
-            this.client.showDebugHud = true;
+            this.client.setShowDebugHud(true);
         }
         if (page >= ClientRegistries.DEBUG_PAGE.values().size()) {
-            this.client.showDebugHud = false;
+            this.client.setShowDebugHud(false);
         }
 
         this.page = page;
@@ -119,12 +119,12 @@ public class DebugGui {
 
     public void prevPage() {
         var page = this.page - 1;
-        if (!this.client.showDebugHud) {
+        if (!this.client.isShowDebugHud()) {
             page = ClientRegistries.DEBUG_PAGE.values().size() - 1;
-            this.client.showDebugHud = true;
+            this.client.setShowDebugHud(true);
         }
         if (page < 0) {
-            this.client.showDebugHud = false;
+            this.client.setShowDebugHud(false);
         }
 
         this.page = page;

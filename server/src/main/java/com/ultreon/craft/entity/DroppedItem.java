@@ -2,7 +2,6 @@ package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -38,9 +37,7 @@ public class DroppedItem extends Entity {
         super.tick();
         this.age++;
 
-        if (this.world instanceof ServerWorld serverWorld) {
-            serverWorld.sendAllTracking((int) this.x, (int) this.y, (int) this.z, new S2CEntityPipeline(this.getId(), this.getPipeline()));
-        }
+        sendPipeline();
     }
 
     @Override

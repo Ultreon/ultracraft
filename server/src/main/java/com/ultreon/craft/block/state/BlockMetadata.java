@@ -40,7 +40,7 @@ public class BlockMetadata {
     }
 
     public static BlockMetadata load(MapType data) {
-        Block block = Registries.BLOCK.getElement(Identifier.parse(data.getString("block")));
+        Block block = Registries.BLOCK.get(Identifier.parse(data.getString("block")));
         BlockMetadata meta = block.createMeta();
         meta.entries.clear();
         meta.entries.putAll(meta.loadEntries(data.getMap("entries", new MapType())));

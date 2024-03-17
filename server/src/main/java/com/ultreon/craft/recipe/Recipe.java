@@ -11,7 +11,7 @@ public interface Recipe {
 
     boolean canCraft(Inventory inventory);
 
-    RecipeType getType();
+    RecipeType<?> getType();
 
     ItemStack result();
 

@@ -25,6 +25,6 @@ public class RegistryKeys {
     public static final RegistryKey<Registry<Weather>> WEATHER = RegistryKey.registry(new Identifier("weather"));
     public static final RegistryKey<Registry<Attribute>> ATTRIBUTE = RegistryKey.registry(new Identifier("attribute"));
     public static final RegistryKey<Registry<DamageSource>> DAMAGE_SOURCE = RegistryKey.registry(new Identifier("damage_source"));
-    public static final RegistryKey<Registry<RecipeType>> RECIPE_TYPE = RegistryKey.registry(new Identifier("recipe_type"));
+    public static final RegistryKey<Registry<RecipeType<?>>> RECIPE_TYPE = RegistryKey.registry(new Identifier("recipe_type"));
     public static final RegistryKey<Registry<BlockEntityType<?>>> BLOCK_ENTITY_TYPE = RegistryKey.registry(new Identifier("block_entity_type"));
 }

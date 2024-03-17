@@ -1,6 +1,6 @@
 package com.ultreon.craft.api.commands;
 
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
@@ -12,8 +12,8 @@ public class PositionCommand extends Command {
         this.data().aliases("/pos", "/position");
     }
 
-    @SubCommand(value = "(1|1st|first)", comment = "Sets first region selection to current position")
-    public CommandOutput executeFirst(CommandSender sender, CommandContext commandCtx, String alias) {
+    @DefineCommand(value = "(1|1st|first)", comment = "Sets first region selection to current position")
+    public CommandResult executeFirst(CommandSender sender, CommandContext commandCtx, String alias) {
         if (!(sender instanceof Entity entity)) {
             return this.needEntity();
         }
@@ -45,8 +45,8 @@ public class PositionCommand extends Command {
         return this.editModeMessage("No region selected yet.");
     }
 
-    @SubCommand(value = "(2|2nd|second)", comment = "Sets second region selection to current position")
-    public CommandOutput executeSecond(CommandSender sender, CommandContext commandCtx, String alias) {
+    @DefineCommand(value = "(2|2nd|second)", comment = "Sets second region selection to current position")
+    public CommandResult executeSecond(CommandSender sender, CommandContext commandCtx, String alias) {
         if (!(sender instanceof Entity entity)) {
             return this.needEntity();
         }
@@ -59,7 +59,7 @@ public class PositionCommand extends Command {
         return this.editModeMessage("Second position set to " + loc.x + "," + loc.y + "," + loc.z);
     }
 
-    static class PositionSelection {
+    public static class PositionSelection {
         private World world = null;
         private BlockPos first = null;
         private BlockPos second = null;

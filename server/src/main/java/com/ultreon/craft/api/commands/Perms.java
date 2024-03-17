@@ -1,10 +1,12 @@
 package com.ultreon.craft.api.commands;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SubCommand {
-    String value() default "";
-    String comment() default "No info available...";
+@Target({ElementType.METHOD})
+@interface Perms {
+    Perm[] value();
 }

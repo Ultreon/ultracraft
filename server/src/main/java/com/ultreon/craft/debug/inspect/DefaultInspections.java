@@ -32,7 +32,7 @@ public class DefaultInspections {
         });
         InspectionRoot.registerAutoFill(LivingEntity.class, node -> {
             node.create("health", LivingEntity::getHealth);
-            node.create("maxHealth", LivingEntity::getMaxHeath);
+            node.create("maxHealth", LivingEntity::getMaxHealth);
             node.create("isInvincible", LivingEntity::isInvincible);
             node.create("isInWater", LivingEntity::isInWater);
         });

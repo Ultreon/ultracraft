@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.*;
 public class AdvancedMeshBuilder extends MeshBuilder {
     /** maximum number of vertices mesh builder can hold (64k) */
     public static final int MAX_VERTICES = 1 << 16;
-    /** highest index mesh builder can get (64k - 1) */
+    /** highest index mesh builder can getConfig (64k - 1) */
     public static final int MAX_INDEX = AdvancedMeshBuilder.MAX_VERTICES - 1;
 
     private final static ShortArray tmpIndices = new ShortArray();
@@ -245,7 +245,7 @@ public class AdvancedMeshBuilder extends MeshBuilder {
         this.part = null;
     }
 
-    /** @return the size in number of floats of one vertex, multiply by four to get the size in bytes. */
+    /** @return the size in number of floats of one vertex, multiply by four to getConfig the size in bytes. */
     @Override
     public int getFloatsPerVertex () {
         return stride;

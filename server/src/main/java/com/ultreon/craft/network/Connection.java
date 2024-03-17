@@ -16,6 +16,7 @@ import com.ultreon.craft.network.server.ServerPacketHandler;
 import com.ultreon.craft.network.stage.PacketStages;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
+import com.ultreon.craft.text.TextObject;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -139,6 +140,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.disconnect("End of stream");
     }
 
+    @ApiStatus.Internal
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof ClosedChannelException) return;
@@ -184,39 +186,96 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return this.disconnectMsg != null;
     }
 
+    /**
+     * Disconnects the connection with the given message.
+     */
+    public void disconnect() {
+        disconnect("Disconnected");
+    }
+
+    /**
+     * Disconnects the connection with the given message.
+     *
+     * @param message The message to display when disconnecting.
+     */
+    public void disconnect(@NotNull TextObject message) {
+        this.disconnect(message.getText());
+    }
+
+    /**
+     * Disconnects the connection with the given message.
+     *
+     * @param message The message to display when disconnecting.
+     */
     public void disconnect(@NotNull String message) {
-        if (this.channel == null || !this.channel.isOpen() || this.disconnecting) return;
+        // Check if the channel is null, not open, or already disconnecting
+        if (this.channel == null || !this.channel.isOpen() || this.disconnecting) {
+            return;
+        }
+
         this.disconnecting = true;
 
         @NotNull String msg = "Disconnected: ";
+
+        // Log the disconnection message
         Connection.LOGGER.info("%s%s (%s)".formatted(msg, this.remoteAddress != null ? this.remoteAddress.toString() : null, message));
 
+        // Send the appropriate disconnect packet based on the connection direction
         if (this.direction.getSourceEnv() == EnvType.SERVER) {
             this.send(new S2CDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
         } else if (this.direction.getSourceEnv() == EnvType.CLIENT) {
             this.send(new C2SDisconnectPacket<>(message), PacketResult.onEither(this::closeAll));
         }
 
+        // Set the disconnect message
         this.disconnectMsg = message;
+
+        // Handle the disconnection
         this.handleDisconnect();
 
+        // Set the connection to read-only mode
         this.setReadOnly();
     }
 
+    /**
+     * Sends a packet.
+     *
+     * @param packet The packet to send
+     */
     public void send(@NotNull Packet<?> packet) {
         this.send(packet, true);
     }
 
+    /**
+     * Sends a packet with an option to flush.
+     *
+     * @param packet The packet to send
+     * @param flush Whether to flush the packet
+     */
     public void send(@NotNull Packet<?> packet, boolean flush) {
         this.send(packet, null, flush);
     }
 
+    /**
+     * Sends a packet with an optional state listener and an option to flush.
+     *
+     * @param packet The packet to send
+     * @param stateListener The listener for packet state
+     */
     public void send(@NotNull Packet<?> packet, @Nullable PacketResult stateListener) {
         this.send(packet, stateListener, true);
     }
 
+    /**
+     * Sends the packet, with an optional state listener, and flushes the data if specified.
+     *
+     * @param packet        the packet to send
+     * @param stateListener the optional state listener
+     * @param flush         true if the data should be flushed
+     */
     public void send(@NotNull Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
         if (!this.isConnected()) {
+            // If not connected, add the task to send the packet once connected
             this.tasks.add(() -> {
                 try {
                     this._send(packet, stateListener, flush);
@@ -227,24 +286,39 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             return;
         }
 
+        // Poll all tasks before sending the packet
         this.pollAll();
 
         try {
+            // Send the packet
             this._send(packet, stateListener, flush);
         } catch (Exception e) {
             Connection.LOGGER.error(CommonConstants.EX_FAILED_TO_SEND_PACKET, e);
         }
     }
 
+    /**
+     * Sends a packet through the channel, handling cases where the channel is closed or not in the event loop.
+     *
+     * @param packet        The packet to send
+     * @param stateListener Optional listener for packet result
+     * @param flush         Whether to flush the packet
+     * @throws ClosedChannelException If the channel is closed
+     */
     private void _send(@NotNull Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) throws ClosedChannelException {
+        // Check if the channel is null
         if (this.channel == null) {
             return;
         }
+
+        // Throw exception if channel is not open
         if (!this.channel.isOpen()) throw new ClosedChannelException();
 
+        // If in the event loop, directly send the packet
         if (this.channel.eventLoop().inEventLoop()) {
             this._actuallySend(packet, stateListener, flush);
         } else {
+            // If not in event loop, execute sending on the event loop
             this.channel.eventLoop().execute(() -> {
                 try {
                     this._actuallySend(packet, stateListener, flush);
@@ -255,61 +329,98 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
+    /**
+     * Actually send a packet over a channel with optional flushing and state listener handling.
+     *
+     * @param packet        The packet to be sent
+     * @param stateListener The listener for packet sending state
+     * @param flush         Whether to flush the channel
+     */
     private void _actuallySend(Packet<?> packet, @Nullable PacketResult stateListener, boolean flush) {
         Preconditions.checkNotNull(packet, "packet");
 
         try {
+            // Check if channel is available
             if (this.channel == null) {
                 Connection.LOGGER.warn("Can't send packet because the channel isn't available.");
                 return;
             }
+            // Check if channel is open
             if (!this.channel.isOpen()) return;
 
+            // Increment packets sent count
             ValueTracker.setPacketsSent(ValueTracker.getPacketsSent() + 1);
 
+            // Log sending packet if packet logging is enabled
             if (DebugFlags.PACKET_LOGGING.enabled())
                 Connection.LOGGER.debug("Sending packet: {}", packet.getClass().getName());
 
+            // Send packet with or without flushing based on 'flush' parameter
             ChannelFuture sent = flush ? this.channel.writeAndFlush(packet) : this.channel.write(packet);
 
+            // Fire exception on failure
             sent.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 
+            // Handle state listener if present
             if (stateListener != null) {
                 sent.addListener(future -> this.handleListener(packet, stateListener, future));
             }
         } catch (Exception e) {
+            // Log error if sending packet fails
             Connection.LOGGER.error("Failed to send packet: {}", packet.getClass().getName(), e);
         }
     }
 
+    /**
+     * Handles the listener for a packet.
+     *
+     * @param packet        the packet to handle
+     * @param stateListener the listener for the packet result
+     * @param future        the future result of sending the packet
+     */
     private void handleListener(Packet<?> packet, @NotNull PacketResult stateListener, Future<? super Void> future) {
         try {
             Channel ch = this.channel;
+
+            // Check if the channel is available
             if (ch == null) {
                 Connection.LOGGER.warn("Can't handle packet because the channel isn't available.");
                 return;
             }
 
+            // Check if sending the packet was successful
             if (future.isSuccess()) {
                 stateListener.onSuccess();
                 return;
             }
 
+            // Check if the failure was due to a closed channel
             if (future.cause() instanceof ClosedChannelException) {
                 return;
             }
 
+            // Log the failure to send the packet
             Connection.LOGGER.warn("Failed to send packet: " + packet.getClass().getName(), future.cause());
+
+            // Get a packet for failure response
             Packet<?> failPacket = stateListener.onFailure();
+
+            // Send the fail packet if available
             if (failPacket != null) {
                 ChannelFuture finalAttempt = ch.writeAndFlush(failPacket);
                 finalAttempt.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
             }
         } catch (Exception e) {
+            // Log any exceptions that occur during handling
             Connection.LOGGER.error("Failed to handle response: " + packet.getClass().getName(), e);
         }
     }
 
+    /**
+     * Checks if the connection is currently connected to a server or the client.
+     *
+     * @return {@code true} if the connection is currently connected, {@code false} otherwise
+     */
     public boolean isConnected() {
         return this.channel != null && this.channel.isOpen();
     }
@@ -378,14 +489,29 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
+    /**
+     * Gets the direction of the connection.
+     *
+     * @return the direction of the connection
+     */
     public PacketDestination getDirection() {
         return this.direction;
     }
 
+    /**
+     * Gets the current environment of the connection.
+     *
+     * @return the current environment using Fabric's {@link EnvType}
+     */
     public EnvType getCurrentEnv() {
         return this.direction.getSourceEnv();
     }
 
+    /**
+     * Sets the initial attributes for the connection.
+     *
+     * @param channel the Netty channel to set the attributes on.
+     */
     public static void setInitAttributes(Channel channel) {
         channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.LOGIN.getClientBoundData());
         channel.attr(Connection.DATA_TO_SERVER_KEY).set(PacketStages.LOGIN.getServerData());
@@ -393,6 +519,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         channel.config().setRecvByteBufAllocator(new AdaptiveRecvByteBufAllocator(64, 8192, 1024 * 1024 * 2));
     }
 
+    /**
+     * Moves to the in-game connection stage.
+     */
     public void moveToInGame() {
         if (this.channel != null && this.channel.isOpen()) {
             this.channel.attr(Connection.DATA_TO_CLIENT_KEY).set(PacketStages.IN_GAME.getClientBoundData());
@@ -400,6 +529,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
+    /**
+     * Sets up the pipeline to handle packets.
+     * Adds the packet encoding and decoding, and optionally ZLib compression (when this is not a memory connection).
+     *
+     * @param pipeline the pipeline to set up
+     */
+    @ApiStatus.Internal
     public void setup(ChannelPipeline pipeline) {
         try {
             var oppositeDirection = this.direction.opposite();
@@ -420,6 +556,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
+    /**
+     * Sets up the packet handler for the pipeline
+     *
+     * @param pipeline the pipeline
+     */
     public void setupPacketHandler(ChannelPipeline pipeline) {
         pipeline.addLast("handler", this);
     }
@@ -431,18 +572,41 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         };
     }
 
+    /**
+     * Set the active packet handler
+     *
+     * @param handler the handler
+     */
     public void setHandler(PacketHandler handler) {
         this.handler = handler;
     }
 
+    /**
+     * Get the remote address of the connection
+     *
+     * @return the remote address
+     */
     public @Nullable SocketAddress getRemoteAddress() {
         return this.remoteAddress;
     }
 
+    /**
+     * Queues a runnable to be executed on the server/client thread.
+     *
+     * @param handler the runnable
+     */
     public void queue(Runnable handler) {
         this.tasks.offer(handler);
     }
 
+    /**
+     * Initiates the connection.
+     *
+     * @param address     the address to connect to
+     * @param port        the port to connect to
+     * @param handler     the handler to use for the connection
+     * @param loginPacket the login packet to send once connected
+     */
     public void initiate(String address, int port, PacketHandler handler, Packet<?> loginPacket) {
         this.disconnectHandler = handler;
         this.address = address;
@@ -454,6 +618,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         });
     }
 
+    /**
+     * Runs the consumer once the connection is connected.
+     *
+     * @param consumer the consumer to run
+     */
     public void runOnceConnected(Runnable consumer) {
         if (this.isConnected()) {
             this.pollAll();
@@ -463,14 +632,28 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         this.tasks.add(consumer);
     }
 
+    /**
+     * Checks if the connection is a memory connection.
+     *
+     * @return true if the connection is a memory connection, false otherwise
+     */
     public boolean isMemoryConnection() {
         return this.memoryConnection;
     }
 
+    /**
+     * Checks if the connection is currently connecting.
+     *
+     * @return true if the connection is currently connecting, false otherwise
+     */
     public boolean isConnecting() {
         return this.connecting;
     }
 
+    /**
+     * Ticks the connection.
+     */
+    @ApiStatus.Internal
     public void tick() {
         this.pollAll();
 
@@ -483,6 +666,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
+    @ApiStatus.Internal
     public void handleDisconnect() {
         if (!this.disconnected) {
             this.disconnected = true;

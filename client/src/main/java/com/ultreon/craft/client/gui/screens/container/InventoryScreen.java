@@ -2,11 +2,13 @@ package com.ultreon.craft.client.gui.screens.container;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.ItemSlot;
 import com.ultreon.craft.network.packets.c2s.C2SCraftRecipePacket;
+import com.ultreon.craft.recipe.CraftingRecipe;
 import com.ultreon.craft.recipe.Recipe;
 import com.ultreon.craft.recipe.RecipeManager;
 import com.ultreon.craft.recipe.RecipeType;
@@ -23,8 +25,8 @@ public class InventoryScreen extends ContainerScreen {
     private static final int CONTAINER_SIZE = 40;
     private static final Identifier BACKGROUND = UltracraftClient.id("textures/gui/container/inventory.png");
     private final Inventory inventory;
-    private PagedList<Recipe> recipes;
-    private List<Recipe> currentPage;
+    private PagedList<? extends CraftingRecipe> recipes;
+    private List<? extends CraftingRecipe> currentPage;
     private int page = 0;
     private final List<ItemSlot> recipeSlots = new ArrayList<>();
 
@@ -163,13 +165,13 @@ public class InventoryScreen extends ContainerScreen {
     }
 
     private boolean showOnlyCraftable() {
-        return this.client.config.get().crafting.showOnlyCraftable;
+        return Config.showOnlyCraftable;
     }
 
     @Nullable
     private RecipeSlot getRecipeSlotAt(int mouseX, int mouseY) {
         List<ItemSlot> slots = this.recipeSlots;
-        List<Recipe> recipeList = this.currentPage;
+        List<? extends CraftingRecipe> recipeList = this.currentPage;
         for (int i = 0, slotsSize = slots.size(); i < slotsSize; i++) {
             ItemSlot slot = slots.get(i);
             if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {

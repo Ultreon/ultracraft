@@ -228,6 +228,12 @@ public abstract class Player extends LivingEntity {
         return data;
     }
 
+    /**
+     * Play a sound event and volume.
+     *
+     * @param sound The sound event to be played. Can be null.
+     * @param volume The volume at which the sound should be played.
+     */
     public void playSound(@Nullable SoundEvent sound, float volume) {
 
     }
@@ -267,6 +273,12 @@ public abstract class Player extends LivingEntity {
         this.openMenu = null;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This also clamps the player's position to {@code -30000000..30000000}
+     * And other handling of invalid positions
+     */
     @Override
     protected void onMoved() {
         this.x = Mth.clamp(this.x, -30000000, 30000000);

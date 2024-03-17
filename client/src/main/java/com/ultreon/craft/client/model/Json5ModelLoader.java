@@ -19,9 +19,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.state.BlockDataEntry;
 import com.ultreon.craft.block.state.BlockMetadata;
@@ -35,82 +32,85 @@ import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Axis;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.CubicDirection;
+import de.marhali.json5.Json5Array;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
 
-import static com.ultreon.craft.client.UltracraftClient.GSON;
+import static com.ultreon.craft.CommonConstants.JSON5;
 
-public class JsonModelLoader {
+public class Json5ModelLoader {
     private final ResourceManager resourceManager;
     private RegistryKey<?> key;
 
-    public JsonModelLoader(ResourceManager resourceManager) {
+    public Json5ModelLoader(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 
-    public JsonModel load(Block block) throws IOException {
-        Identifier identifier = block.getId().mapPath(path -> "models/blocks/" + path + ".json");
+    public Json5Model load(Block block) throws IOException {
+        Identifier identifier = block.getId().mapPath(path -> "models/blocks/" + path + ".json5");
         Resource resource = this.resourceManager.getResource(identifier);
         if (resource == null)
             return null;
         UltracraftClient.LOGGER.debug("Loading block model: {}", identifier);
-        return this.load(Registries.BLOCK.getKey(block), GSON.fromJson(resource.openReader(), JsonObject.class));
+        return this.load(Registries.BLOCK.getKey(block), JSON5.parse(resource.openReader()));
     }
 
-    public JsonModel load(Item item) throws IOException {
-        Identifier identifier = item.getId().mapPath(path -> "models/items/" + path + ".json");
+    public Json5Model load(Item item) throws IOException {
+        Identifier identifier = item.getId().mapPath(path -> "models/items/" + path + ".json5");
         Resource resource = this.resourceManager.getResource(identifier);
         if (resource == null)
             return null;
         UltracraftClient.LOGGER.debug("Loading item model: {}", identifier);
-        return this.load(Registries.ITEM.getKey(item), GSON.fromJson(resource.openReader(), JsonObject.class));
+        return this.load(Registries.ITEM.getKey(item), JSON5.parse(resource.openReader()));
     }
 
     @SuppressWarnings("SpellCheckingInspection")
-    public JsonModel load(RegistryKey<?> key, JsonElement modelData) {
+    public Json5Model load(RegistryKey<?> key, Json5Element modelData) {
         if (!key.parent().equals(RegistryKeys.BLOCK) && !key.parent().equals(RegistryKeys.ITEM)) {
             throw new IllegalArgumentException("Invalid model key, must be block or item: " + key);
         }
 
-        JsonObject root = modelData.getAsJsonObject();
-        JsonObject textures = root.getAsJsonObject("textures");
+        Json5Object root = modelData.getAsJson5Object();
+        Json5Object textures = root.getAsJson5Object("textures");
         Map<String, Identifier> textureElements = loadTextures(textures);
 
-//        GridPoint2 textureSize = loadVec2i(root.getAsJsonArray("texture_size"), new GridPoint2(16, 16));
+//        GridPoint2 textureSize = loadVec2i(root.getAsJson5Array("texture_size"), new GridPoint2(16, 16));
         GridPoint2 textureSize = new GridPoint2(16, 16);
 
-        JsonArray elements = root.getAsJsonArray("elements");
+        Json5Array elements = root.getAsJson5Array("elements");
         List<ModelElement> modelElements = loadElements(elements, textureSize.x, textureSize.y);
 
-        JsonElement ambientocclusion = root.get("ambientocclusion");
+        Json5Element ambientocclusion = root.get("ambientocclusion");
         boolean ambientOcclusion = ambientocclusion == null || ambientocclusion.getAsBoolean();
 
-        Table<String, BlockDataEntry<?>, JsonModel> overrides = null;
+        Table<String, BlockDataEntry<?>, Json5Model> overrides = null;
         if (key.parent().equals(RegistryKeys.BLOCK)) {
-            JsonObject overridesJson = root.getAsJsonObject("overrides");
-            if (overridesJson == null) overridesJson = new JsonObject();
+            Json5Object overridesJson5 = root.getAsJson5Object("overrides");
+            if (overridesJson5 == null) overridesJson5 = new Json5Object();
             //noinspection unchecked
-            overrides = loadOverrides((RegistryKey<Block>) key, overridesJson);
+            overrides = loadOverrides((RegistryKey<Block>) key, overridesJson5);
         }
 
         // TODO: Allow display properties.
         Display display = new Display();
 
-        return new JsonModel(key, textureElements, modelElements, ambientOcclusion, display, overrides);
+        return new Json5Model(key, textureElements, modelElements, ambientOcclusion, display, overrides);
     }
 
-    private Table<String, BlockDataEntry<?>, JsonModel> loadOverrides(RegistryKey<Block> key, JsonObject overridesJson) {
-        Table<String, BlockDataEntry<?>, JsonModel> overrides = HashBasedTable.create();
+    private Table<String, BlockDataEntry<?>, Json5Model> loadOverrides(RegistryKey<Block> key, Json5Object overridesJson5) {
+        Table<String, BlockDataEntry<?>, Json5Model> overrides = HashBasedTable.create();
         Block block = Registries.BLOCK.get(key);
         BlockMetadata meta = block.createMeta();
-        for (Map.Entry<String, JsonElement> entry : overridesJson.entrySet()) {
+        for (Map.Entry<String, Json5Element> entry : overridesJson5.entrySet()) {
             String keyName = entry.getKey();
-            JsonElement overrideElem = entry.getValue();
-            JsonObject overrideObj = overrideElem.getAsJsonObject();
+            Json5Element overrideElem = entry.getValue();
+            Json5Object overrideObj = overrideElem.getAsJson5Object();
 
-            JsonModel model = load(key, overrideObj);
+            Json5Model model = load(key, overrideObj);
             BlockDataEntry<?> entry1 = meta.getEntry(keyName);
             if (entry1 == null)
                 throw new IllegalArgumentException("Invalid model override: " + keyName);
@@ -124,7 +124,7 @@ public class JsonModelLoader {
         return overrides;
     }
 
-    private GridPoint2 loadVec2i(JsonArray textureSize, GridPoint2 defaultValue) {
+    private GridPoint2 loadVec2i(Json5Array textureSize, GridPoint2 defaultValue) {
         if (textureSize == null)
             return defaultValue;
         if (textureSize.size() != 2)
@@ -132,21 +132,21 @@ public class JsonModelLoader {
         return new GridPoint2(textureSize.get(0).getAsInt(), textureSize.get(1).getAsInt());
     }
 
-    private List<ModelElement> loadElements(JsonArray elements, int textureWidth, int textureHeight) {
+    private List<ModelElement> loadElements(Json5Array elements, int textureWidth, int textureHeight) {
         List<ModelElement> modelElements = new ArrayList<>();
 
-        for (JsonElement elem : elements) {
-            JsonObject element = elem.getAsJsonObject();
-            JsonObject faces = element.getAsJsonObject("faces");
+        for (Json5Element elem : elements) {
+            Json5Object element = elem.getAsJson5Object();
+            Json5Object faces = element.getAsJson5Object("faces");
             Map<CubicDirection, FaceElement> blockFaceFaceElementMap = loadFaces(faces, textureWidth, textureHeight);
 
-            JsonElement shade1 = element.get("shade");
+            Json5Element shade1 = element.get("shade");
             boolean shade = shade1 != null && shade1.getAsBoolean();
-            JsonElement rotation1 = element.get("rotation");
-            ElementRotation rotation = ElementRotation.deserialize(rotation1 == null ? null : rotation1.getAsJsonObject());
+            Json5Element rotation1 = element.get("rotation");
+            ElementRotation rotation = ElementRotation.deserialize(rotation1 == null ? null : rotation1.getAsJson5Object());
 
-            Vector3 from = loadVec3(element.getAsJsonArray("from"));
-            Vector3 to = loadVec3(element.getAsJsonArray("to"));
+            Vector3 from = loadVec3(element.getAsJson5Array("from"));
+            Vector3 to = loadVec3(element.getAsJson5Array("to"));
 
             ModelElement modelElement = new ModelElement(blockFaceFaceElementMap, shade, rotation, from, to);
             modelElements.add(modelElement);
@@ -155,23 +155,23 @@ public class JsonModelLoader {
         return modelElements;
     }
 
-    private Vector3 loadVec3(JsonArray from) {
+    private Vector3 loadVec3(Json5Array from) {
         return new Vector3(from.get(0).getAsFloat(), from.get(1).getAsFloat(), from.get(2).getAsFloat());
     }
 
     @SuppressWarnings("SpellCheckingInspection")
-    private Map<CubicDirection, FaceElement> loadFaces(JsonObject faces, int textureWidth, int textureHeight) {
+    private Map<CubicDirection, FaceElement> loadFaces(Json5Object faces, int textureWidth, int textureHeight) {
         Map<CubicDirection, FaceElement> faceElems = new HashMap<>();
-        for (Map.Entry<String, JsonElement> face : faces.entrySet()) {
+        for (Map.Entry<String, Json5Element> face : faces.entrySet()) {
             CubicDirection cubicDirection = CubicDirection.valueOf(face.getKey().toUpperCase(Locale.ROOT));
-            JsonObject faceData = face.getValue().getAsJsonObject();
-            JsonArray uvs = faceData.getAsJsonArray("uv");
+            Json5Object faceData = face.getValue().getAsJson5Object();
+            Json5Array uvs = faceData.getAsJson5Array("uv");
             String texture = faceData.get("texture").getAsString();
-            JsonElement rotation1 = faceData.get("rotation");
+            Json5Element rotation1 = faceData.get("rotation");
             int rotation = rotation1 == null ? 0 : rotation1.getAsInt();
-            JsonElement tintIndex1 = faceData.get("tintindex");
+            Json5Element tintIndex1 = faceData.get("tintindex");
             int tintIndex = tintIndex1 == null ? -1 : tintIndex1.getAsInt();
-            JsonElement cullface = faceData.get("cullface");
+            Json5Element cullface = faceData.get("cullface");
             String cullFace = cullface == null ? null : cullface.getAsString();
 
             faceElems.put(cubicDirection, new FaceElement(texture, new UVs(uvs.get(0).getAsInt(), uvs.get(1).getAsInt(), uvs.get(2).getAsInt(), uvs.get(3).getAsInt(), textureWidth, textureHeight), rotation, tintIndex, cullFace));
@@ -180,7 +180,7 @@ public class JsonModelLoader {
         return faceElems;
     }
 
-    private Map<String, Identifier> loadTextures(JsonObject textures) {
+    private Map<String, Identifier> loadTextures(Json5Object textures) {
         Map<String, Identifier> textureElements = new HashMap<>();
 
         for (var entry : textures.entrySet()) {
@@ -375,15 +375,15 @@ public class JsonModelLoader {
 
     public record ElementRotation(Vector3 originVec, Axis axis, float angle, boolean rescale) {
 
-        public static ElementRotation deserialize(@Nullable JsonObject rotation) {
+        public static ElementRotation deserialize(@Nullable Json5Object rotation) {
             if (rotation == null) {
                 return new ElementRotation(new Vector3(0, 0, 0), Axis.Y, 0, false);
             }
 
-            JsonArray origin = rotation.getAsJsonArray("origin");
+            Json5Array origin = rotation.getAsJson5Array("origin");
             String axis = rotation.get("axis").getAsString();
             float angle = rotation.get("angle").getAsFloat();
-            JsonElement rescale1 = rotation.get("rescale");
+            Json5Element rescale1 = rotation.get("rescale");
             boolean rescale = rescale1 != null && rescale1.getAsBoolean();
 
             Vector3 originVec = new Vector3(origin.get(0).getAsFloat(), origin.get(1).getAsFloat(), origin.get(2).getAsFloat());

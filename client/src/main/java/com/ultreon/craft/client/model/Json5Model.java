@@ -13,16 +13,16 @@ import com.ultreon.craft.util.Identifier;
 import java.util.List;
 import java.util.Map;
 
-public class JsonModel implements BlockModel, ItemModel {
+public class Json5Model implements BlockModel, ItemModel {
     public final Map<String, Identifier> textureElements;
-    public final List<JsonModelLoader.ModelElement> modelElements;
+    public final List<Json5ModelLoader.ModelElement> modelElements;
     public final boolean ambientOcclusion;
-    public final JsonModelLoader.Display display;
+    public final Json5ModelLoader.Display display;
     private final RegistryKey<?> key;
     private Model model;
-    private Table<String, BlockDataEntry<?>, JsonModel> overrides;
+    private Table<String, BlockDataEntry<?>, Json5Model> overrides;
 
-    public JsonModel(RegistryKey<?> key, Map<String, Identifier> textureElements, List<JsonModelLoader.ModelElement> modelElements, boolean ambientOcclusion, JsonModelLoader.Display display, Table<String, BlockDataEntry<?>, JsonModel> overrides) {
+    public Json5Model(RegistryKey<?> key, Map<String, Identifier> textureElements, List<Json5ModelLoader.ModelElement> modelElements, boolean ambientOcclusion, Json5ModelLoader.Display display, Table<String, BlockDataEntry<?>, Json5Model> overrides) {
         this.key = key;
         this.textureElements = textureElements;
         this.modelElements = modelElements;
@@ -35,7 +35,7 @@ public class JsonModel implements BlockModel, ItemModel {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         for (int i = 0, modelElementsSize = modelElements.size(); i < modelElementsSize; i++) {
-            JsonModelLoader.ModelElement modelElement = modelElements.get(i);
+            Json5ModelLoader.ModelElement modelElement = modelElements.get(i);
             modelElement.bake(i, modelBuilder, textureElements);
         }
         return modelBuilder.end();
@@ -72,7 +72,7 @@ public class JsonModel implements BlockModel, ItemModel {
         }
     }
 
-    public Table<String, BlockDataEntry<?>, JsonModel> getOverrides() {
+    public Table<String, BlockDataEntry<?>, Json5Model> getOverrides() {
         return this.overrides;
     }
 }

@@ -1,13 +1,14 @@
 package com.ultreon.craft.client.gui.screens.settings;
 
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.Alignment;
 import com.ultreon.craft.client.gui.Bounds;
 import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.screens.options.OptionsScreen.BooleanEnum;
+import com.ultreon.craft.client.gui.screens.options.BooleanEnum;
 import com.ultreon.craft.client.gui.screens.tabs.TabBuilder;
-import com.ultreon.craft.client.gui.widget.*;
-import com.ultreon.craft.client.text.UITranslations;
+import com.ultreon.craft.client.gui.widget.CycleButton;
+import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.text.TextObject;
 
 public class AccessibilitySettingsUI {
@@ -27,14 +28,14 @@ public class AccessibilitySettingsUI {
 
         builder.add(TextObject.translation("ultracraft.screen.options.accessibility.hideFirstPersonPlayer"), new CycleButton<BooleanEnum>()
                 .values(BooleanEnum.values())
-                .value(this.client.config.get().accessibility.hideFirstPersonPlayer ? BooleanEnum.TRUE : BooleanEnum.FALSE)
+                .value(Config.hideFirstPersonPlayer ? BooleanEnum.TRUE : BooleanEnum.FALSE)
                 .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 50, 150, 21))
                 .formatter(scale -> scale == BooleanEnum.TRUE ? TextObject.translation("ultracraft.ui.hidden") : TextObject.translation("ultracraft.ui.visible"))
                 .callback(this::setHideFirstPersonPlayer));
 
         builder.add(TextObject.translation("ultracraft.screen.options.accessibility.hideHotbarWhenThirdPerson"), new CycleButton<BooleanEnum>()
                 .values(BooleanEnum.values())
-                .value(this.client.config.get().accessibility.hideHotbarWhenThirdPerson ? BooleanEnum.TRUE : BooleanEnum.FALSE)
+                .value(Config.hideHotbarWhenThirdPerson ? BooleanEnum.TRUE : BooleanEnum.FALSE)
                 .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 75, 150, 21))
                 .formatter(booleanEnum -> TextObject.translation(booleanEnum == BooleanEnum.TRUE ? "ultracraft.ui.hidden" : "ultracraft.ui.visible"))
                 .callback(this::setHideHotbarWhenThirdPerson)
@@ -42,24 +43,24 @@ public class AccessibilitySettingsUI {
 
         builder.add(TextObject.translation("ultracraft.screen.options.accessibility.vibration"), new CycleButton<BooleanEnum>()
                 .values(BooleanEnum.values())
-                .value(this.client.config.get().accessibility.vibration ? BooleanEnum.TRUE : BooleanEnum.FALSE)
+                .value(Config.vibration ? BooleanEnum.TRUE : BooleanEnum.FALSE)
                 .bounds(() -> new Bounds(builder.content().getX() + 160, builder.content().getY() + 100, 150, 21))
                 .formatter(scale -> scale == BooleanEnum.TRUE ? TextObject.translation("ultracraft.ui.enabled") : TextObject.translation("ultracraft.ui.disabled"))
                 .callback(this::setVibration));
     }
 
     private void setHideFirstPersonPlayer(CycleButton<BooleanEnum> value) {
-        this.client.config.get().accessibility.hideFirstPersonPlayer = value.getValue() == BooleanEnum.TRUE;
-        this.client.config.save();
+        Config.hideFirstPersonPlayer = value.getValue() == BooleanEnum.TRUE;
+        this.client.newConfig.save();
     }
 
     private void setHideHotbarWhenThirdPerson(CycleButton<BooleanEnum> value) {
-        this.client.config.get().accessibility.hideHotbarWhenThirdPerson = value.getValue() == BooleanEnum.TRUE;
-        this.client.config.save();
+        Config.hideHotbarWhenThirdPerson = value.getValue() == BooleanEnum.TRUE;
+        this.client.newConfig.save();
     }
 
     private void setVibration(CycleButton<BooleanEnum> value) {
-        this.client.config.get().accessibility.vibration = value.getValue() == BooleanEnum.TRUE;
-        this.client.config.save();
+        Config.vibration = value.getValue() == BooleanEnum.TRUE;
+        this.client.newConfig.save();
     }
 }

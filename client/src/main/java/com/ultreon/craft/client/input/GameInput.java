@@ -14,6 +14,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.input.util.*;
 import com.ultreon.craft.debug.Debugger;
@@ -309,7 +310,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
 
     @CanIgnoreReturnValue
     public static boolean startVibration(int duration, float strength) {
-        if (!UltracraftClient.get().config.get().accessibility.vibration) return false;
+        if (!Config.vibration) return false;
 
         Controller current = Controllers.getCurrent();
         if (current == null) return false;

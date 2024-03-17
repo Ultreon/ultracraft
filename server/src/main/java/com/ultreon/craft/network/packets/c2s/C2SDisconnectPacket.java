@@ -19,7 +19,11 @@ public class C2SDisconnectPacket<T extends ServerPacketHandler> extends Packet<T
 
     @Override
     public void toBytes(PacketBuffer buffer) {
-        buffer.writeUTF(this.message, 300);
+        String message1 = this.message;
+        if (message1.length() > 300) {
+            message1 = message1.substring(0, 297) + "...";
+        }
+        buffer.writeUTF(message1, 300);
     }
 
     @Override

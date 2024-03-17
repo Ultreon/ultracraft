@@ -43,7 +43,7 @@ public abstract class BlockEntity {
 
     public static BlockEntity fullyLoad(World world, BlockPos pos, MapType mapType) {
         Identifier type = Identifier.tryParse(mapType.getString("type"));
-        BlockEntityType<?> value = Registries.BLOCK_ENTITY_TYPE.getElement(type);
+        BlockEntityType<?> value = Registries.BLOCK_ENTITY_TYPE.get(type);
         return value.load(world, pos, mapType);
     }
 

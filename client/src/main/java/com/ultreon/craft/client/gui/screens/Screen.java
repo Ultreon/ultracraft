@@ -100,7 +100,7 @@ public abstract class Screen extends UIContainer<Screen> {
      * @param renderer renderer to draw/render with.
      */
     protected void renderSolidBackground(Renderer renderer) {
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0xff202020));
+        renderer.blurred(true, (int) this.client.getGuiScale(), () -> renderer.blit(UltracraftClient.id("textures/gui/title_background.png"), 0, 0, this.size.width, this.size.height, 0, 0, 256, 256, 256, 256));
     }
 
     /**
@@ -109,7 +109,7 @@ public abstract class Screen extends UIContainer<Screen> {
      * @param renderer renderer to draw/render with.
      */
     protected void renderTransparentBackground(Renderer renderer) {
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0xa0000000));
+        renderer.fill(0, 0, this.size.width, this.size.height, Color.argb(0x40000000));
     }
 
     /**

@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.api.events.RenderEvents;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
@@ -73,7 +74,7 @@ public class GameRenderer {
                 }
 
                 this.client.camera.update(player);
-                this.client.camera.far = (this.client.config.get().renderDistance - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
+                this.client.camera.far = (Config.renderDistance - 1) * World.CHUNK_SIZE / WorldRenderer.SCALE;
 
                 var rotation = this.tmp.set(player.xHeadRot, player.yRot);
                 var quaternion = new Quaternion();

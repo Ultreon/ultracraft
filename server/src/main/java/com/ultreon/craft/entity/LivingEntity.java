@@ -39,7 +39,7 @@ public class LivingEntity extends Entity {
         this.health = Mth.clamp(health, 0, this.maxHeath);
     }
 
-    public float getMaxHeath() {
+    public float getMaxHealth() {
         return this.maxHeath;
     }
 
@@ -67,31 +67,43 @@ public class LivingEntity extends Entity {
         return this.attributes.get(Attribute.SPEED);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method represents the tick behavior for the {@link LivingEntity}.
+     */
     @Override
     public void tick() {
+        // If the entity is dead, do nothing
         if (this.isDead) return;
 
+        // Handle jumping logic
         if (this.jumping && this.onGround) {
             this.jump();
         }
 
+        // Decrease damage immunity counter
         if (this.damageImmunity > 0) {
             this.damageImmunity--;
         }
 
+        // Check if the entity is in the void and apply damage
         if (this.isInVoid()) {
             this.hurtFromVoid();
         }
 
+        // Check if the entity's health is zero to trigger death event
         if (this.health <= 0) {
             this.health = 0;
 
+            // Trigger entity death event if not already dead and event is not canceled
             if (!this.isDead && !EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
                 this.isDead = true;
                 this.onDeath();
             }
         }
 
+        // Call the superclass tick method
         super.tick();
     }
 
@@ -119,6 +131,11 @@ public class LivingEntity extends Entity {
         this.velocityY = this.jumpVel;
     }
 
+    /**
+     * This method is called when the entity hits the ground.
+     * If gravity is enabled and the entity is not in water, it calculates fall damage based on the fall distance.
+     * If the calculated damage is greater than 0, it applies that damage to the entity.
+     */
     @Override
     protected void hitGround() {
         if (!this.noGravity && !this.isInWater()) {
@@ -129,29 +146,44 @@ public class LivingEntity extends Entity {
         }
     }
 
+    /**
+     * Inflicts damage on the entity based on the specified amount and source.
+     *
+     * @param damage the amount of damage to inflict
+     * @param source the source of the damage
+     */
     public final void hurt(float damage, DamageSource source) {
-        if (this.isDead || this.health <= 0 || ((this.invincible || this.damageImmunity > 0) && source.byPassInvincibility())) return;
+        // Check if the entity is already dead, has no health, or has temporary invincibility
+        if (this.isDead || this.health <= 0 || ((this.invincible || this.damageImmunity > 0) && source.byPassInvincibility()))
+            return;
 
+        // Trigger entity damage event
         ValueEventResult<Float> result = EntityEvents.DAMAGE.factory().onEntityDamage(this, source, damage);
         Float value = result.getValue();
         if (value != null) damage = value;
 
+        // Check if custom onHurt behavior should be executed
         if (this.onHurt(damage, source)) return;
 
+        // Play hurt sound if available
         SoundEvent hurtSound = this.getHurtSound();
         if (hurtSound != null) {
             this.world.playSound(hurtSound, this.x, this.y, this.z);
         }
 
+        // Ensure damage is not negative
         damage = Math.max(damage, 0);
 
+        // Update health and damage immunity
         this.oldHealth = this.health;
         this.health = Math.max(this.health - damage, 0);
         this.damageImmunity = 10;
 
+        // Check if entity has died
         if (this.health <= 0) {
             this.health = 0;
 
+            // Trigger entity death event and handle death
             if (!EntityEvents.DEATH.factory().onEntityDeath(this).isCanceled()) {
                 this.isDead = true;
                 this.onDeath();
@@ -171,15 +203,42 @@ public class LivingEntity extends Entity {
         return false;
     }
 
+    /**
+     * Get the sound that should be played when the entity gets hurt.
+     *
+     * @return the hurt sound
+     */
     @Nullable
     public SoundEvent getHurtSound() {
         return null;
     }
 
+    /**
+     * Called when the entity dies.
+     */
     public void onDeath() {
-
+        // Play death sound if available
+        SoundEvent deathSound = this.getDeathSound();
+        if (deathSound != null) {
+            this.world.playSound(deathSound, this.x, this.y, this.z);
+        }
     }
 
+    /**
+     * Get the sound that should be played when the entity dies.
+     *
+     * @return the death sound
+     */
+    @Nullable
+    public SoundEvent getDeathSound() {
+        return null;
+    }
+
+    /**
+     * Load the data for the player character.
+     *
+     * @param data the map containing player data
+     */
     @Override
     public void load(MapType data) {
         super.load(data);
@@ -193,6 +252,12 @@ public class LivingEntity extends Entity {
         this.invincible = data.getBoolean("invincible", this.invincible);
     }
 
+    /**
+     * A description of the entire Java function.
+     *
+     * @param data Description of the data parameter
+     * @return Description of the return value
+     */
     @Override
     public MapType save(MapType data) {
         data = super.save(data);
@@ -208,20 +273,35 @@ public class LivingEntity extends Entity {
         return data;
     }
 
+    /**
+     * Check if the entity is dead.
+     *
+     * @return {@code true} if the entity is dead, {@code false} otherwise
+     */
     public boolean isDead() {
         return this.isDead;
     }
 
+    /**
+     * Get the chunk position of the entity.
+     *
+     * @return the chunk position
+     */
     public ChunkPos getChunkPos() {
         return Utils.toChunkPos(this.getBlockPos());
     }
 
+    /**
+     * Instantly kill the entity.
+     */
     public void kill() {
+        // Set health to zero and mark as dead. Which basically is insta-kill.
         this.lastDamage = this.health;
         this.lastDamageSource = DamageSource.KILL;
         this.health = 0;
         this.isDead = true;
 
+        // Trigger entity death event and handle death
         this.onDeath();
     }
 }

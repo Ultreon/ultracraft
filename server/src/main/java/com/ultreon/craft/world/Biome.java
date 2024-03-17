@@ -88,7 +88,7 @@ public abstract class Biome {
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getElement(Identifier.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.get(Identifier.tryParse(mapType.getString("id", "plains")));
     }
 
     public boolean isOcean() {

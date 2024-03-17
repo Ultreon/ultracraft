@@ -20,6 +20,7 @@ import com.crashinvaders.vfx.effects.GaussianBlurEffect;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.client.util.InvalidValueException;
@@ -79,6 +80,7 @@ public class Renderer implements Disposable {
     public static final int FBO_SIZE = 1024;
 
     private FrameBuffer grid;
+    private float iTime;
 
     /**
      * @param shapes shape drawer instance from {@link UltracraftClient}
@@ -125,7 +127,7 @@ public class Renderer implements Disposable {
 
         //setup uniforms for our shader
         blurShader.bind();
-        blurShader.setUniformf("dir", 0f, 0f);
+        blurShader.setUniformf("iBlurDirection", 0f, 0f);
         blurShader.setUniformf("radius", 1f);
 
         gridShader = new ShaderProgram(VERT, GRID_FRAG);
@@ -150,7 +152,8 @@ public class Renderer implements Disposable {
     @CanIgnoreReturnValue
     public Renderer setColor(Color c) {
         if (c == null) return this;
-        if (this.font != null) this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        if (this.font != null)
+            this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         this.shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         return this;
     }
@@ -2076,15 +2079,15 @@ public class Renderer implements Disposable {
         this.shapes.polygon(vertices, thickness, JoinType.POINTY);
     }
 
-    public void renderFrame(int x, int y, int w , int h) {
+    public void renderFrame(int x, int y, int w, int h) {
         renderFrame(id("textures/gui/frame.png"), x, y, w, h, 0, 0, 4, 4, 12, 12);
     }
 
-    public void renderFrame(@NotNull Identifier texture, int x, int y, int w , int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight) {
+    public void renderFrame(@NotNull Identifier texture, int x, int y, int w, int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight) {
         renderFrame(texture, x, y, w, h, u, v, uvW, uvH, texWidth, texHeight, Color.WHITE);
     }
 
-    public void renderFrame(@NotNull Identifier texture, int x, int y, int w , int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight, @NotNull Color color) {
+    public void renderFrame(@NotNull Identifier texture, int x, int y, int w, int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight, @NotNull Color color) {
         Texture handle = this.client.getTextureManager().getTexture(texture);
 
         w = Math.max(w, uvW * 2);
@@ -2115,6 +2118,8 @@ public class Renderer implements Disposable {
             this.batch.end();
         }
         this.batch.begin();
+
+        this.iTime = System.currentTimeMillis() / 1000f;
     }
 
     public void end() {
@@ -2139,7 +2144,7 @@ public class Renderer implements Disposable {
                     attribute vec4 a_color;
                     attribute vec2 a_texCoord0;
                     uniform mat4 u_projTrans;
-                    
+                                        
                     varying vec4 vColor;
                     varying vec2 vTexCoord;
                                         
@@ -2153,136 +2158,170 @@ public class Renderer implements Disposable {
     @Language("GLSL")
     final String FRAG =
             """
-            #version 130
-            
-            // Fragment shader
-            #ifdef GL_ES
-            precision mediump float;
-            #endif
-            
-            varying vec4 vColor;
-            varying vec2 vTexCoord0;
-            
-            uniform sampler2D u_texture;
-            uniform vec2 resolution;
-            uniform float radius; // Radius of the blur
-            uniform vec2 dir; // Direction of the blur
-            
-            void main() {
-              float Pi = 6.28318530718; // Pi*2
-            
-              // GAUSSIAN BLUR SETTINGS {{{
-              float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
-              float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
-              float Size = radius; // BLUR SIZE (Radius)
-              // GAUSSIAN BLUR SETTINGS }}}
-            
-              vec2 Radius = Size/resolution.xy;
-            
-              // Normalized pixel coordinates (from 0 to 1)
-              vec2 uv = gl_FragCoord.xy/resolution.xy;
-              // Pixel colour
-              vec4 color = texture(u_texture, uv);
-            
-              // Blur calculations
-              for( float d=0.0; d<Pi; d+=Pi/Directions)
-              {
-                for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
-                {
-                  color += texture2D(u_texture, uv+vec2(cos(d),sin(d))*Radius*i);
-                }
-              }
-            
-              // Output to screen
-              color /= Quality * Directions - 15.0;
-              gl_FragColor = color;
-            }
-            """;
+                    #version 130
+                                
+                    // Fragment shader
+                    #ifdef GL_ES
+                    precision mediump float;
+                    #endif
+                                
+                    varying vec4 vColor;
+                    varying vec2 vTexCoord0;
+                                
+                    uniform sampler2D u_texture;
+                    uniform vec2 iResolution;
+                    uniform float iBlurRadius; // Radius of the blur
+                    uniform vec2 iBlurDirection; // Direction of the blur
+                                
+                    void main() {
+                      float Pi = 6.28318530718; // Pi*2
+                                
+                      // GAUSSIAN BLUR SETTINGS {{{
+                      float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+                      float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+                      float Size = iBlurRadius; // BLUR SIZE (Radius)
+                      // GAUSSIAN BLUR SETTINGS }}}
+                                
+                      vec2 Radius = Size/iResolution.xy;
+                                
+                      // Normalized pixel coordinates (from 0 to 1)
+                      vec2 uv = gl_FragCoord.xy/iResolution.xy;
+                      // Pixel colour
+                      vec4 color = texture(u_texture, uv);
+                                
+                      // Blur calculations
+                      for( float d=0.0; d<Pi; d+=Pi/Directions)
+                      {
+                        for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
+                        {
+                          color += texture2D(u_texture, uv+vec2(cos(d),sin(d))*Radius*i);
+                        }
+                      }
+                      
+                      // Gamma correction
+                      float Gamma = 1.05;
+                      color.rgba = pow(color.rgba, vec4(1.0/Gamma));
+                                
+                      // Output to screen
+                      color /= Quality * Directions;
+                      gl_FragColor = color;
+                    }
+                    """;
 
 
-    @Language("GLSL")
+//    @Language("GLSL")
     final String GRID_FRAG =
-            """
-            varying vec2 vTexCoords0;
-            varying vec4 vColor;
-            uniform sampler2D u_texture;
-            uniform vec2 iResolution;
-            uniform vec3 hexagonColor;
-            uniform float hexagonTransparency;
-            
-            void main() {\s
-              vec2 uv = (gl_FragCoord.xy * 2.0 - iResolution.xy) / iResolution.y;
-              uv *= 16.0;
-              vec2 orig_uv = uv;
-             \s
-              /** Subdivide 2D space in tiling hexagons **/
-              // hexagon border distance
-              // hexagon aspect ratio
-              uv.x *= sqrt(4.0/3.0);
-             \s
-              // this is how big cells should be so the hexagon corners are ON a circle of radius 1
-              // (as opposed to cells that are 1 unit wide, meaning a circle of radius 1 fits snugly in the hexagon)
-              const float onCircleAdjust = 0.5 / sqrt(0.75);
-             \s
-              // adjust so our hexagons have an oncircle of radius 1\s
-              uv *= onCircleAdjust;
-              // and align with the center of the screen
-              uv.x -= 0.5;
-             \s
-              // track horizontal tiling
-              float cx = floor(uv.x);
-              // stagger columns
-              uv.y += mod(floor(uv.x), 2.0) * 0.5;
-              // track vertical tiling
-              float cy = floor(uv.y);
-              // get tile-local uv
-              vec2 st = fract(uv) - 0.5;
-              // get hexagon distance
-              uv = abs(st);
-              float s = max(uv.x * 1.5 + uv.y, uv.y + uv.y);
-              // if s > 1.0 it actually belongs to the adjacent hexagon
-              if(s > 1.0)
-              {
-                // this part is just to adjust tile ID for the
-                // adjacent hexagons overlapping this tile
-               \s
-                // vertical tiling is different per column
-                float o = -sign(mod(cx,2.0)-0.5);
-                if(st.y * o > 0.0)
-                {
-                  cy += o;
-                }
-               \s
-                // horizontal tiling is pretty straight forward
-                cx += sign(st.x);
-               \s
-                // adjsut local UVs as well so they are now fully hexagon local
-                st.x -= sign(st.x);
-                st.y -= sign(st.y) * 0.5;
-              }
-              // hexagon distance accros tile boundaries
-              s = abs(s - 1.0);
-              // invert the aspect ratio and size correction of the local uvs
-              st.x *= sqrt(0.75);
-              st /= onCircleAdjust;
-             \s
-              // If the hexagon distance is close to 1.0, set gl_FragColor to transparent white
-              if (s >= 0.0 && s < 0.125){
-                gl_FragColor = vec4(hexagonColor.rgb, 0.24);
-              } else {
-                // Otherwise, keep it transparent
-                gl_FragColor = vec4(0.0);
-              }
-            }
-            """;
+                    """
+                    varying vec2 vTexCoords0;
+                    varying vec4 vColor;
+                    uniform sampler2D u_texture;
+                    uniform vec2 iResolution;
+                    uniform vec3 hexagonColor;
+                    uniform float hexagonTransparency;
+                    
+                    float rng( in vec2 pos )
+                    {
+                        return fract(sin( pos.y + pos.x*78.233 )*43758.5453)*2.0 - 1.0;
+                    }
+                    
+                    float simplexValue1DPart(vec2 uv, float ix) {
+                        float x = uv.x - ix;
+                        float f = 1.0 - x * x;
+                        float f2 = f * f;
+                        float f3 = f * f2;
+                        return f3;
+                    }
+                    
+                    float simplexValue1D(vec2 uv) {
+                        vec2 iuv = floor(uv);   \s
+                        float n = simplexValue1DPart(uv, iuv.x);
+                        n += simplexValue1DPart(uv, iuv.x + 1.0);
+                        return rng(vec2(n * 2.0 - 1.0, 0.0));
+                    }
+                    
+                    float perlin( in float pos )
+                    {
+                        // Get node values
+                       \s
+                        float a = rng( vec2(floor(pos), 1.0) );
+                        float b = rng( vec2(ceil( pos), 1.0) );
+                       \s
+                        float a_x = rng( vec2(floor(pos), 2.0) );
+                        float b_x = rng( vec2(ceil( pos), 2.0) );
+                       \s
+                        a += a_x*fract(pos);
+                        b += b_x*(fract(pos)-1.0);
+                       \s
+                       \s
+                       \s
+                        // Interpolate values
+                       \s
+                        return a + (b-a)*smoothstep(0.0,1.0,fract(pos));
+                    }
+                    
+                    void main() {\s
+                      vec2 uv = gl_FragCoord.xy;
+                      uv /= 24.0;
+                      
+                      vec4 color = texture2D(u_texture, vTexCoords0);
+                      const float A = 0.0;
+                      const float B = 0.15;
+                      
+                      float x = uv.x;
+                      float y = (uv.y) * (1.5 / 3.0);
+                      
+                      float val = (0.5 + 0.5 * x + 0.5 * y);
+                      
+                      float noise = perlin(val);
+                      if (noise > 0.1) {
+                          noise = -1.0;
+                      }
+                      
+                      noise = 1.0 - (noise + 1.0) / 2.0;
+                      
+                      color.rgb = vec3(1.0);
+                      color.a = color.a * (noise * (B - A)) + A;
+                      
+                      gl_FragColor = color;
+                    }
+                    """;
+
     @ApiStatus.Experimental
     public void blurred(Runnable block) {
+        blurred(true, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, Runnable block) {
+        blurred(radius, true, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(boolean grid, Runnable block) {
+        blurred(grid, 1, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, boolean grid, Runnable block) {
+        blurred(radius, grid, 1, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(boolean grid, int guiScale, Runnable block) {
+        blurred(Config.blurRadius, grid, guiScale, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, boolean grid, int guiScale, Runnable block) {
+        blurred(1.0F, radius, grid, guiScale, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float overlayOpacity, float radius, boolean grid, int guiScale, Runnable block) {
         if (this.blurred) {
             block.run();
             return;
         }
-
-        float blurRad = this.client.config.get().personalisation.blurRadius != null ? this.client.config.get().personalisation.blurRadius.floatValue() : 32.0f;
 
         this.blurred = true;
         try {
@@ -2315,14 +2354,11 @@ public class Renderer implements Disposable {
             //since we never called batch.end(), we should still be drawing
             //which means are blurShader should now be in use
 
-            //ensure the direction is along the X-axis only
-            blurShader.setUniformf("dir", 1f, 0f);
-
-            //update the resolution of the blur along X-axis
-            blurShader.setUniformf("resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-            //update the Y-axis blur radius
-            blurShader.setUniformf("radius", blurRad);
+            // set the shader uniforms
+            blurShader.setUniformf("iBlurDirection", 1f, 0f);
+            blurShader.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            blurShader.setUniformf("iBlurRadius", radius / guiScale);
+            blurShader.setUniformf("iTime", iTime);
 
             //our first blur pass goes to target B
             blurTargetB.begin();
@@ -2331,6 +2367,7 @@ public class Renderer implements Disposable {
             fboRegion.setTexture(blurTargetA.getColorBufferTexture());
 
             //draw the scene to target B with a horizontal blur effect
+            this.batch.setColor(1f, 1f, 1f, overlayOpacity);
             batch.draw(fboRegion, 0, 0);
 
             //flush the batch before ending the FBO
@@ -2342,16 +2379,17 @@ public class Renderer implements Disposable {
             //now we can render to the screen using the vertical blur shader
 
             //update the blur only along Y-axis
-            blurShader.setUniformf("dir", 0f, 1f);
+            blurShader.setUniformf("iBlurDirection", 0f, 1f);
 
             //update the resolution of the blur along Y-axis
-            blurShader.setUniformf("resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            blurShader.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
             //update the Y-axis blur radius
-            blurShader.setUniformf("radius", blurRad);
+            blurShader.setUniformf("radius", radius);
 
             //draw target B to the screen with a vertical blur effect
             fboRegion.setTexture(blurTargetB.getColorBufferTexture());
+            this.batch.setColor(1f, 1f, 1f, overlayOpacity);
             batch.draw(fboRegion, 0, 0);
 
             //reset to default shader without blurs
@@ -2359,12 +2397,17 @@ public class Renderer implements Disposable {
 
             this.flush();
 
-            //get the texture for the hexagon grid
-            Texture colorBufferTexture = this.grid.getColorBufferTexture();
+            if (grid) {
+                //getConfig the texture for the hexagon grid
+                Texture colorBufferTexture = this.grid.getColorBufferTexture();
 
-            //render the grid to the screen
-            this.batch.setColor(1, 1, 1, 1);
-            this.batch.draw(colorBufferTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+                //render the grid to the screen
+                this.batch.setColor(1, 1, 1, 1);
+                blurred(32, false, 1, () -> {
+                    this.batch.setColor(1f, 1f, 1f, overlayOpacity);
+                    this.batch.draw(colorBufferTexture, 0, 0, (float) Gdx.graphics.getWidth() / guiScale, (float) Gdx.graphics.getHeight() / guiScale);
+                });
+            }
 
             //dispose of the FBOs
             blurTargetA.dispose();
@@ -2413,34 +2456,54 @@ public class Renderer implements Disposable {
 
         Color hexagonColor;
         try {
-            String hexagonColorHex = this.client.config.get().personalisation.hexagonColorHex;
+            String hexagonColorHex = Config.hexagonColor;
             if (hexagonColorHex == null) hexagonColorHex = "#ffffff";
             if (hexagonColorHex.length() > 7) hexagonColorHex = hexagonColorHex.substring(0, 7);
-            if (hexagonColorHex.length() < 7 && hexagonColorHex.length() > 4) hexagonColorHex = hexagonColorHex.substring(0, 4);
+            if (hexagonColorHex.length() < 7 && hexagonColorHex.length() > 4)
+                hexagonColorHex = hexagonColorHex.substring(0, 4);
             if (hexagonColorHex.length() < 4) hexagonColorHex = "#ffffff";
             hexagonColor = Color.hex(hexagonColorHex);
         } catch (InvalidValueException e) {
             hexagonColor = Color.WHITE;
         }
 
-        float hexagonTransparency = this.client.config.get().personalisation.hexagonTransparency != null ? this.client.config.get().personalisation.hexagonTransparency.floatValue() : 0.24f;
+        float hexagonTransparency = Config.hexagonTransparency;
 
         this.batch.begin();
         this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         this.batch.setShader(gridShader);
         this.gridShader.setUniformf("iResolution", width, height);
-        this.blurShader.setUniformf("hexagonColor", hexagonColor.getRed(), hexagonColor.getGreen(), hexagonColor.getBlue(), hexagonTransparency);
+//        this.gridShader.setUniformf("iColor", hexagonColor.getRed() / 255f, hexagonColor.getGreen() / 255f, hexagonColor.getBlue() / 255f, hexagonTransparency);
 
-        this.shapes.filledRectangle(0, 0, width, height, Color.TRANSPARENT.toGdx());
+        this.shapes.filledRectangle(0, 0, width, height, Color.WHITE.toGdx());
 
         this.batch.setShader(null);
         this.batch.end();
         this.grid.end();
+
+        var old = this.grid;
+
+//        this.grid = new FrameBuffer(Format.RGBA8888, width, height, false);
+//        this.grid.begin();
+//        this.batch.begin();
+//        this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//
+//        Gdx.gl.glClearColor(0, 0, 0, 0);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//
+//        this.batch.draw(old.getColorBufferTexture(), 0, 0, width, height);
+//        this.batch.flush();
+//
+//        this.batch.setShader(null);
+//        this.batch.end();
+//        this.grid.end();
+//
+//        old.dispose();
     }
 
     @Override
     public void dispose() {
-                        vfxManager.dispose();
+        vfxManager.dispose();
     }
 
     public int getWidth() {

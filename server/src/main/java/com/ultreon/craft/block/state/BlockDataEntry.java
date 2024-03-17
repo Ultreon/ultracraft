@@ -5,6 +5,7 @@ import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.data.types.BooleanType;
 import com.ultreon.data.types.IType;
 import com.ultreon.data.types.IntType;
+import de.marhali.json5.Json5Object;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -54,7 +55,7 @@ public abstract class BlockDataEntry<T> {
 
     public abstract void write(PacketBuffer packetBuffer);
 
-    public abstract BlockDataEntry<?> parse(JsonObject overrideObj);
+    public abstract BlockDataEntry<?> parse(Json5Object overrideObj);
 
     @Override
     public boolean equals(Object o) {
@@ -107,7 +108,7 @@ public abstract class BlockDataEntry<T> {
         }
 
         @Override
-        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+        public BlockDataEntry<?> parse(Json5Object overrideObj) {
             return this.with(overrideObj.get("value").getAsBoolean());
         }
 
@@ -168,7 +169,7 @@ public abstract class BlockDataEntry<T> {
         }
 
         @Override
-        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+        public BlockDataEntry<?> parse(Json5Object overrideObj) {
             return this.with(overrideObj.get("value").getAsInt());
         }
 
@@ -212,7 +213,7 @@ public abstract class BlockDataEntry<T> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public BlockDataEntry<?> parse(JsonObject overrideObj) {
+        public BlockDataEntry<?> parse(Json5Object overrideObj) {
             return this.with((T) Enum.valueOf(this.value.getClass(), overrideObj.get("value").getAsString().toUpperCase()));
         }
 
