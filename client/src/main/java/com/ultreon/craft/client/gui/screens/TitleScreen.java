@@ -62,7 +62,7 @@ public class TitleScreen extends Screen {
     }
 
     private void quitGame(TextButton caller) {
-        Gdx.app.exit();
+        System.exit(0);
     }
 
     private void openSingleplayer(TextButton caller) {

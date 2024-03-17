@@ -19,7 +19,5 @@ public class CommonRegistries {
         SoundEvents.nopInit();
 
         GameCommands.register();
-
-        Recipes.init();
     }
 }

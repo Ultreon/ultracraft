@@ -745,9 +745,9 @@ public class ServerWorld extends World {
                 } catch (Exception e) {
                     World.LOGGER.error(World.MARKER, "Failed to save world:", e);
                 }
-                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.get().autoSaveInterval, TimeUnit.SECONDS);
+                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.autoSaveInterval, TimeUnit.SECONDS);
             }
-        }, UltracraftServerConfig.get().initialAutoSaveDelay, TimeUnit.SECONDS);
+        }, UltracraftServerConfig.initialAutoSaveDelay, TimeUnit.SECONDS);
         //</editor-fold>
 
         WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
@@ -1325,7 +1325,7 @@ public class ServerWorld extends World {
          * @param globalPos the global position of the chunk to generate.
          */
         private void buildChunkAsync(ChunkPos globalPos) {
-            if (UltracraftServerConfig.get().debugWarnChunkBuildOverload && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
+            if (UltracraftServerConfig.debugWarnChunkBuildOverload && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
                 World.LOGGER.warn("Chunk building is being overloaded!");
             }
 

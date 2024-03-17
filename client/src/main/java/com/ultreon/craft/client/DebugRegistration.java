@@ -15,8 +15,18 @@ import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.debug.inspect.DefaultInspections;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 
+/**
+ * Debug registration for Ultracraft.
+ *
+ * @since 0.1.0
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ */
 public class DebugRegistration {
+    /**
+     * Registers auto fillers and formatters for inspection.
+     */
     public static void registerAutoFillers() {
+        // Register auto filler for ClientChunk class
         InspectionRoot.registerAutoFill(ClientChunk.class, node -> {
             node.createNode("mesh", value -> value.solidMesh);
             node.createNode("transparentMesh", value -> value.transparentMesh);
@@ -24,7 +34,10 @@ public class DebugRegistration {
             node.createNode("renderOffset", value -> value.renderOffset);
         });
 
+        // Register auto filler for ClientWorld class
         InspectionRoot.registerAutoFill(ClientWorld.class, node -> node.create("renderDistance", ClientWorld::getRenderDistance));
+
+        // Register auto filler for Graphics.DisplayMode class
         InspectionRoot.registerAutoFill(Graphics.DisplayMode.class, node -> {
             node.create("width", n -> n.width);
             node.create("height", n -> n.height);
@@ -32,12 +45,14 @@ public class DebugRegistration {
             node.create("bitsPerPixel", n -> n.bitsPerPixel);
         });
 
+        // Register auto filler for Graphics.Monitor class
         InspectionRoot.registerAutoFill(Graphics.Monitor.class, node -> {
             node.create("name", n -> n.name);
             node.create("x", n -> n.virtualX);
             node.create("y", n -> n.virtualY);
         });
 
+        // Register auto filler for Graphics.BufferFormat class
         InspectionRoot.registerAutoFill(Graphics.BufferFormat.class, node -> {
             node.create("red", n -> n.r);
             node.create("green", n -> n.g);
@@ -49,6 +64,7 @@ public class DebugRegistration {
             node.create("coverageSamples", n -> n.coverageSampling);
         });
 
+        // Register formatters for primitive types
         InspectionRoot.registerFormatter(boolean.class, element -> Boolean.toString(element));
         InspectionRoot.registerFormatter(void.class, element -> "void");
         InspectionRoot.registerFormatter(byte.class, element -> Byte.toString(element));
@@ -58,6 +74,9 @@ public class DebugRegistration {
         InspectionRoot.registerFormatter(float.class, element -> Float.toString(element));
         InspectionRoot.registerFormatter(double.class, element -> Double.toString(element));
         InspectionRoot.registerFormatter(char.class, element -> Character.toString(element));
+        InspectionRoot.registerFormatter(String.class, element -> "\"" + element + "\"");
+
+        // Register formatters for specific classes
         InspectionRoot.registerFormatter(String.class, element -> "\"" + element + "\"");
         InspectionRoot.registerFormatter(IntegratedServer.class, element -> "integratedServer");
         InspectionRoot.registerFormatter(ClientWorld.class, element -> "clientWorld");

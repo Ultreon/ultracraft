@@ -498,27 +498,6 @@ public class Renderer implements Disposable {
         return this;
     }
 
-    @Deprecated(forRemoval = true)
-    @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y) {
-        this.batch.setColor(this.blitColor.toGdx());
-        Texture tex = this.textureManager.getTexture(id);
-        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
-        return this;
-    }
-
-
-    @Deprecated(forRemoval = true)
-    @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, Color backgroundColor) {
-        this.setColor(backgroundColor);
-        Texture tex = this.textureManager.getTexture(id);
-        this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.blitColor.toGdx());
-        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
-        return this;
-    }
-
     @CanIgnoreReturnValue
     public Renderer blit(Identifier id, float x, float y, float width, float height, Color backgroundColor) {
         this.blit(id, x, y, width, height, 0.0F, 0.0F, backgroundColor);

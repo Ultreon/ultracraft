@@ -60,7 +60,7 @@ public class DedicatedServer extends UltracraftServer {
         Locale locale = Locale.of("en", "us");
 
         // Load the language resource from the file system
-        InputStream resourceAsStream = getClass().getResourceAsStream("/assets/ultracraft/languages/en_us.json");
+        InputStream resourceAsStream = getClass().getResourceAsStream("/assets/ultracraft/languages/main.json");
         if (resourceAsStream == null) {
             throw new RuntimeException("Could not load language file!");
 

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+@UnsafeApi
 public class CrashHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("Crash-Handler");
     private static final List<Consumer<CrashLog>> HANDLERS = new ArrayList<>();
@@ -34,7 +35,7 @@ public class CrashHandler {
      */
     public static void handleCrash(CrashLog crashLog) {
         // Save crash log to a file
-        File crashLogFile = new File("crash-reports", crashLog.getFileName());
+        File crashLogFile = new File("crash-reports", CrashLog.getFileName());
         crashLog.writeToFile(crashLogFile);
 
         try {

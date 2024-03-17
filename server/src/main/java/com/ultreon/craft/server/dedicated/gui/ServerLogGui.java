@@ -1,6 +1,5 @@
 package com.ultreon.craft.server.dedicated.gui;
 
-import com.ultreon.gameprovider.craft.JTextAreaAppender;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -8,9 +7,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class ServerLogGui extends JScrollPane {
     public ServerLogGui() {

@@ -11,7 +11,7 @@ public class ClientLifecycleEvents {
     public static final Event<ClientStopped> CLIENT_STOPPED = Event.create();
     @Deprecated
     public static final Event<ClientStopped> GAME_DISPOSED = CLIENT_STOPPED;
-    public static final Event<WindowClosed> WINDOW_CLOSED = Event.withResult();
+    public static final Event<WindowClosed> WINDOW_CLOSED = Event.create();
     @Deprecated(forRemoval = true, since = "0.1.0")
     public static final Event<Registration> REGISTER_ENTITY_MODELS = Event.create();
     @Deprecated(forRemoval = true, since = "0.1.0")
@@ -37,7 +37,7 @@ public class ClientLifecycleEvents {
 
     @FunctionalInterface
     public interface WindowClosed {
-        EventResult onWindowClose();
+        void onWindowClose();
     }
 
     @Deprecated(forRemoval = true, since = "0.1.0")

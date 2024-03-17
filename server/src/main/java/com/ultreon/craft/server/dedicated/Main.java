@@ -2,6 +2,7 @@ package com.ultreon.craft.server.dedicated;
 
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.ModInit;
+import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
@@ -46,7 +47,7 @@ public class Main {
     @ApiStatus.Internal
     public static void main(String[] args) throws IOException, InterruptedException {
         try {
-            ModLoadingContext.withinContext(FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE).get(), () -> {
+            ModLoadingContext.withinContext(FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE).orElseThrow(), () -> {
                 try {
                     run();
                 } catch (Exception e) {
@@ -137,6 +138,7 @@ public class Main {
 
     private static void run() throws InterruptedException {
         ServerConfig serverConfig = new ServerConfig();
+        new UltracraftServerConfig();
         if (!Files.exists(serverConfig.getConfigPath(), LinkOption.NOFOLLOW_LINKS)) {
             serverConfig.save();
 

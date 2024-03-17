@@ -12,10 +12,9 @@ public class Recipes {
         RecipeManager recipes = RecipeManager.get();
         Recipes.registerCraftingRecipes(recipes);
 
-        LoadingEvent.REGISTER_RECIPES.factory().onLoadRecipes(recipes);
+        LoadingEvent.LOAD_RECIPES.factory().onRecipeState(recipes);
 
         recipes.fireRecipeModifications();
-        recipes.freeze();
     }
 
     private static void registerCraftingRecipes(RecipeManager recipes) {

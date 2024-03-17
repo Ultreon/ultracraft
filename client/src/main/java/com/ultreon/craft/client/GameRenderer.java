@@ -33,7 +33,7 @@ public class GameRenderer {
     private FrameBuffer depthFbo;
     private FrameBuffer fbo;
     private final RenderContext context;
-    private final float cameraBop = 0.0f;
+    private float cameraBop = 0.0f;
 
     public GameRenderer(UltracraftClient client, ModelBatch modelBatch, RenderPipeline pipeline) {
         this.client = client;
@@ -82,11 +82,8 @@ public class GameRenderer {
                 quaternion.mul(new Quaternion(Vector3.X, rotation.y));
                 quaternion.conjugate();
 
-//                float genSpeed = 35.0f;
-//                float speed = (genSpeed / (17.5f - (cameraBop * 2.0f))) * (1 - (Math.max(Math.abs(rotation.y) - 45, 0)) / 45);
-//                cameraBop += Gdx.graphics.getDeltaTime() * (revert ? -speed : speed);
-//                if (cameraBop > 4.0f) revert = true;
-//                else if (cameraBop < -4.0f) revert = false;
+                // Add camera bop. Use easing and animate with cameraBop. Camera Bop is a sort of camera movement while walking.
+                float cameraBop = calculateCameraBop(deltaTime);
 
                 this.client.camera.up.set(0, 1, 0);
                 this.client.camera.up.rotate(Vector3.Y, rotation.x);
@@ -130,6 +127,25 @@ public class GameRenderer {
         renderer.popMatrix();
 
         renderer.end();
+    }
+
+    /**
+     * Calculates the camera bop movement based on the given deltaTime.
+     *
+     * @param deltaTime the time elapsed since the last frame
+     * @return the calculated camera bop value
+     */
+    private float calculateCameraBop(float deltaTime) {
+        float bop = this.cameraBop;
+        if (bop > 0) {
+            bop -= deltaTime * 2;
+            if (bop < 0) bop = 0;
+        } else if (bop < 0) {
+            bop += deltaTime * 2;
+            if (bop > 0) bop = 0;
+        }
+
+        return this.cameraBop = bop;
     }
 
     private void renderWorld() {

@@ -5,7 +5,7 @@ import com.ultreon.craft.config.crafty.ConfigInfo;
 import com.ultreon.craft.config.crafty.CraftyConfig;
 import com.ultreon.craft.config.crafty.RequiresRestart;
 
-@ConfigInfo(fileName = "ultreon-server")
+@ConfigInfo(fileName = "server")
 public class ServerConfig extends CraftyConfig {
     @ConfigEntry(path = "hosting.hostname", comment = "The hostname to use for the server.")
     @RequiresRestart

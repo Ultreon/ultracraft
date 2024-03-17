@@ -28,7 +28,6 @@ plugins {
     id "java-library"
 }
 
-version project_version
 group project_group // https://maven.apache.org/guides/mini/guide-naming-conventions.html
 
 //projectConfig {

@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Deprecated(forRemoval = true)
 public final class UcConfiguration<T> {
     private final FusionYAML yaml;
 

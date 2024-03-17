@@ -1,8 +1,4 @@
-package com.ultreon.craft;
-
-import kotlin.RequiresOptIn;
+package com.ultreon.craft
 
 @RequiresOptIn(message = "Unsafe API. Use with caution!")
-public @interface UnsafeApi {
-
-}
+annotation class UnsafeApi

@@ -15,6 +15,7 @@ public class CommonConstants {
     public static final String NAMESPACE = "ultracraft";
     public static final Gson GSON = new Gson();
     public static final Json5 JSON5 = Json5.builder(builder -> {
+        // Setup JSON5 options
         builder.prettyPrinting();
         builder.indentFactor(4);
         builder.allowInvalidSurrogate();

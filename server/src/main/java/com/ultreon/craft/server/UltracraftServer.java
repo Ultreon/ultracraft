@@ -24,6 +24,7 @@ import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CAddPlayerPacket;
 import com.ultreon.craft.network.packets.s2c.S2CRemovePlayerPacket;
+import com.ultreon.craft.recipe.RecipeManager;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.CacheablePlayer;
@@ -98,6 +99,7 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     private final GameRules gameRules = new GameRules();
     private final PermissionMap permissions = new PermissionMap();
     private final CommandSender consoleSender = new ConsoleCommandSender();
+    private final RecipeManager recipeManager;
 
     /**
      * Creates a new {@link UltracraftServer} instance.
@@ -114,8 +116,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.thread = new Thread(this, "server");
 
         this.connections = new ServerConnections(this);
-
-        UltracraftServerConfig.get();
 
         MapType worldData = new MapType();
         if (this.storage.exists("world.ubo")) {
@@ -146,6 +146,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         }
 
         this.resourceManager = new ResourceManager("data");
+
+        this.recipeManager = new RecipeManager(this);
+        this.recipeManager.load(this.resourceManager);
     }
 
     public static WatchManager getWatchManager() {
@@ -529,6 +532,15 @@ public abstract class UltracraftServer extends PollingExecutorService implements
         this.world.dispose();
 
         this.scheduler.shutdown();
+
+        this.recipeManager.unload();
+        this.cachedPlayers.invalidateAll();
+        this.players.forEach((UUID uuid, ServerPlayer player) -> {
+            player.connection.disconnect("Server already closed!");
+            this.cachedPlayers.invalidate(player.getName());
+        });
+        this.players.clear();
+        this.resourceManager.close();
     }
 
     /**
@@ -825,5 +837,9 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
     public ResourceManager getResourceManager() {
         return resourceManager;
+    }
+
+    public RecipeManager getRecipeManager() {
+        return this.recipeManager;
     }
 }

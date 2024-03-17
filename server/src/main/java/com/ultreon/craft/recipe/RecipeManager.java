@@ -19,13 +19,14 @@ import java.util.Collections;
 import java.util.List;
 
 public class RecipeManager {
-    private static final RecipeManager INSTANCE = new RecipeManager();
-    private final IdentityMap<RecipeType<?>, RecipeRegistry<Recipe>> registryMap = new IdentityMap<>();
+    private final UltracraftServer server;
+    private IdentityMap<RecipeType<?>, RecipeRegistry<Recipe>> registryMap = new IdentityMap<>();
 
-    private RecipeManager() { }
+    public RecipeManager(UltracraftServer server) {
+        this.server = server;
+    }
 
-    public void load(UltracraftServer server) {
-        ResourceManager resourceManager = server.getResourceManager();
+    public void load(ResourceManager resourceManager) {
         List<ResourceCategory> resourceCategory = resourceManager.getResourceCategory(RecipeRegistry.CATEGORY);
         for (ResourceCategory cat : resourceCategory) {
             for (StaticResource resource : cat.resources()) {
@@ -105,7 +106,7 @@ public class RecipeManager {
     }
 
     public static RecipeManager get() {
-        return RecipeManager.INSTANCE;
+        return UltracraftServer.get().getRecipeManager();
     }
 
     @SuppressWarnings("unchecked")
@@ -127,5 +128,16 @@ public class RecipeManager {
         for (RecipeType<?> type : Registries.RECIPE_TYPE.values()) {
             this.registryMap.get(type).freeze();
         }
+    }
+
+    public void unload() {
+        this.registryMap.clear();
+        this.registryMap = null;
+
+        LoadingEvent.UNLOAD_RECIPES.factory().onRecipeState(this);
+    }
+
+    public UltracraftServer getServer() {
+        return server;
     }
 }
