@@ -86,4 +86,6 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onAddEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline);
 
     void onEntityPipeline(int id, MapType pipeline);
+
+    void onCloseContainerMenu();
 }

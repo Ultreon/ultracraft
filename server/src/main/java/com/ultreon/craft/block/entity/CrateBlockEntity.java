@@ -1,7 +1,11 @@
 package com.ultreon.craft.block.entity;
 
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.menu.CrateMenu;
+import com.ultreon.craft.menu.Inventory;
+import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
@@ -66,6 +70,10 @@ public class CrateBlockEntity extends BlockEntity {
     }
 
     public void open(Player player) {
-        // TODO: Crate menu
+        player.openMenu(new CrateMenu(MenuTypes.CRATE, this.world, player, this.pos));
+    }
+
+    public void createMenu(MenuType<Inventory> type, World world, Entity entity, BlockPos pos) {
+
     }
 }

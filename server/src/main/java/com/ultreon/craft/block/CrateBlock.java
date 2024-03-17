@@ -24,13 +24,12 @@ public class CrateBlock extends EntityBlock {
     public UseResult use(@NotNull World world, @NotNull Player player, @NotNull Item item, @NotNull BlockPos pos) {
         super.use(world, player, item, pos);
 
-        if (world.isClientSide()) return UseResult.ALLOW;
-
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof CrateBlockEntity crate) {
+        if (blockEntity instanceof CrateBlockEntity crate && world.isClientSide()) {
             crate.open(player);
+            return UseResult.ALLOW;
         }
 
-        return UseResult.ALLOW;
+        return UseResult.SKIP;
     }
 }

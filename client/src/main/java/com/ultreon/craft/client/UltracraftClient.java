@@ -47,6 +47,7 @@ import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.debug.*;
 import com.ultreon.craft.client.gui.screens.*;
+import com.ultreon.craft.client.gui.screens.container.CrateScreen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.init.Fonts;
@@ -61,6 +62,7 @@ import com.ultreon.craft.client.item.ItemRenderer;
 import com.ultreon.craft.client.model.Json5ModelLoader;
 import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BakedModelRegistry;
+import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.network.ClientConnection;
@@ -894,6 +896,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
     private void registerMenuScreens() {
         MenuRegistry.registerScreen(MenuTypes.INVENTORY, InventoryScreen::new);
+        MenuRegistry.registerScreen(MenuTypes.CRATE, CrateScreen::new);
     }
 
     private void importModResources(ResourceManager resourceManager) {
@@ -2074,13 +2077,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.futures.add(future);
     }
 
-    public @NotNull BakedCubeModel getBakedBlockModel(BlockMetadata block) {
+    public @NotNull BlockModel getBakedBlockModel(BlockMetadata block) {
         return Objects.requireNonNull(this.bakedBlockModels.bakedModels().getOrDefault(block.getBlock(), List.of()))
                 .stream()
                 .filter(pair -> pair.getFirst().test(block))
                 .findFirst()
-                .map(Pair::getSecond)
-                .orElse(BakedCubeModel.DEFAULT);
+                .map(pair -> (BlockModel) pair.getSecond())
+                .orElseGet(() -> BlockModelRegistry.get(block));
     }
 
     /**
@@ -2114,12 +2117,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * If the player is already breaking a block, it stops the current process and starts a new one.
      */
     public void startBreaking() {
-        // If already breaking a block, stop the current process and start a new one
-        if (this.breaking != null) {
-            LOGGER.warn("Trying to start breaking when already breaking! Did you forget to call stopBreaking?");
-            this.stopBreaking();
-        }
-
         // Get the hit result and player
         HitResult hitResult = this.hitResult;
         LocalPlayer player = this.player;
@@ -2139,6 +2136,11 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             return;
         }
 
+        if (this.breaking != null) {
+            this.world.continueBreaking(new BlockPos(this.breaking), 1.0F, player);
+            return;
+        }
+
         // Start breaking the block and update the breaking position and block metadata
         this.world.startBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = hitResult.getPos();
@@ -2148,8 +2150,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public void stopBreaking() {
         HitResult hitResult = this.hitResult;
         LocalPlayer player = this.player;
-        if (hitResult == null || this.world == null) return;
-        if (player == null) return;
+        if (hitResult == null || this.world == null || player == null || this.breaking == null) return;
 
         this.world.stopBreaking(new BlockPos(hitResult.getPos()), player);
         this.breaking = null;

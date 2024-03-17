@@ -10,6 +10,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
+import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -211,7 +212,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onCloseContainerMenu() {
-        this.player.closeMenu();
+        this.server.execute(this.player::closeMenu);
     }
 
     public void onAbilities(AbilitiesPacket packet) {
@@ -230,6 +231,14 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onDropItem() {
         this.player.dropItem();
+    }
+
+    public void handleOpenMenu(PacketContext ctx, Identifier id, BlockPos pos) {
+        MenuType<?> menuType = Registries.MENU_TYPE.get(id);
+        ContainerMenu menu = menuType.create(this.player.getWorld(), this.player, pos);
+        if (menu == null) return;
+
+        this.server.execute(() -> this.player.openMenu(menu));
     }
 
 //    public void handleContainerClick(int slot, ContainerInteraction interaction) {

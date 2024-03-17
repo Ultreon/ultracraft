@@ -11,7 +11,7 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
-import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
+import com.ultreon.craft.network.packets.c2s.C2SCloseMenuPacket;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -44,6 +44,13 @@ public abstract class ContainerScreen extends Screen {
         //* Stub
     }
 
+    @Override
+    public boolean onClose(Screen next) {
+        boolean b = super.onClose(next);
+        if (b) this.player.closeMenu();
+        return b;
+    }
+
     public int left() {
         return (this.size.width - this.backgroundWidth()) / 2;
     }
@@ -66,6 +73,10 @@ public abstract class ContainerScreen extends Screen {
     @SuppressWarnings("GDXJavaFlushInsideLoop")
     protected void renderSlots(Renderer renderer, int mouseX, int mouseY) {
         for (var slot : this.menu.slots) {
+            if (slot == null) {
+                continue;
+            }
+
             this.renderSlot(renderer, mouseX, mouseY, slot);
         }
     }
@@ -144,6 +155,7 @@ public abstract class ContainerScreen extends Screen {
 
     protected @Nullable ItemSlot getSlotAt(int mouseX, int mouseY) {
         for (ItemSlot slot : this.menu.slots) {
+            if (slot == null) continue;
             if (slot.isWithinBounds(mouseX - this.left(), mouseY - this.top())) {
                 return slot;
             }
@@ -179,7 +191,7 @@ public abstract class ContainerScreen extends Screen {
     public void onClosed() {
         super.onClosed();
 
-        this.client.connection.send(new C2SCloseContainerMenuPacket());
+        this.player.closeMenu();
     }
 
     public void emitUpdate() {

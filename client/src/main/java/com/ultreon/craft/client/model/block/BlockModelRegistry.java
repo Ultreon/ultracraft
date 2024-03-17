@@ -37,7 +37,7 @@ public class BlockModelRegistry {
     }
 
     public static BlockModel get(BlockMetadata meta) {
-        return BlockModelRegistry.CUSTOM_REGISTRY.getOrDefault(meta, new ArrayList<>())
+        return BlockModelRegistry.CUSTOM_REGISTRY.getOrDefault(meta.getBlock(), new ArrayList<>())
                 .stream()
                 .filter(p -> p.getFirst().test(meta)).map(p -> p.getSecond().get())
                 .findFirst()

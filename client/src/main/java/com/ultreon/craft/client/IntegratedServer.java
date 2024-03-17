@@ -171,6 +171,13 @@ public class IntegratedServer extends UltracraftServer {
     }
 
     @Override
+    public void close() {
+        super.close();
+
+        this.getConnections().stop();
+    }
+
+    @Override
     protected void runTick() {
         this.client.pollServerTick();
 

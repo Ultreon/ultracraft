@@ -2,6 +2,7 @@ package com.ultreon.craft.client.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
@@ -13,13 +14,12 @@ import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
-import com.ultreon.craft.network.packets.c2s.C2SDropItemPacket;
-import com.ultreon.craft.network.packets.c2s.C2SHotbarIndexPacket;
-import com.ultreon.craft.network.packets.c2s.C2SOpenInventoryPacket;
-import com.ultreon.craft.network.packets.c2s.C2SPlayerMovePacket;
+import com.ultreon.craft.network.packets.c2s.*;
 import com.ultreon.craft.network.packets.s2c.C2SAbilitiesPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
+import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.libs.commons.v0.Mth;
@@ -32,7 +32,6 @@ import java.util.UUID;
 public class LocalPlayer extends ClientPlayer {
     private final UltracraftClient client = UltracraftClient.get();
     private final ClientWorld world;
-    public @Nullable ContainerMenu openMenu;
     private int oldSelected;
     private final ClientPermissionMap permissions = new ClientPermissionMap();
 
@@ -149,7 +148,7 @@ public class LocalPlayer extends ClientPlayer {
      * {@inheritDoc}
      * If the sound event is not null, it also plays the sound using the client.
      *
-     * @param sound The sound event to be played. Can be null.
+     * @param sound  The sound event to be played. Can be null.
      * @param volume The volume at which the sound should be played.
      */
     @Override
@@ -170,6 +169,7 @@ public class LocalPlayer extends ClientPlayer {
 
     /**
      * Updates the player's abilities based on the information received in the AbilitiesPacket.
+     *
      * @param packet The AbilitiesPacket containing the player's abilities information.
      */
     @Override
@@ -185,7 +185,26 @@ public class LocalPlayer extends ClientPlayer {
     }
 
     @Override
+    public void openMenu(@NotNull ContainerMenu menu) {
+        if (this.openMenu != null) {
+            return;
+        }
+
+        super.openMenu(menu);
+
+        this.client.connection.send(new C2SOpenMenuPacket(menu.getType().getId(), menu.getPos()));
+    }
+
+    @Override
+    public void closeMenu() {
+        super.closeMenu();
+
+        this.client.connection.send(new C2SCloseMenuPacket());
+    }
+
+    @Override
     public void openInventory() {
+        super.openInventory();
         this.client.connection.send(new C2SOpenInventoryPacket());
     }
 
@@ -193,7 +212,6 @@ public class LocalPlayer extends ClientPlayer {
     public @NotNull ClientWorld getWorld() {
         return this.world;
     }
-
 
     public void onHealthUpdate(float newHealth) {
         this.oldHealth = this.health;
@@ -205,9 +223,15 @@ public class LocalPlayer extends ClientPlayer {
         this.isDead = false;
     }
 
-    public void onOpenMenu(ContainerMenu menu) {
-        this.openMenu = menu;
-        this.client.showScreen(MenuRegistry.getScreen(menu));
+    public void onOpenMenu(MenuType<?> menuType) {
+        ContainerMenu openedBefore = openMenu;
+        if (openedBefore != null && menuType != openedBefore.getType()) {
+            CommonConstants.LOGGER.warn("Opened menu {} instead of {}", menuType, openMenu);
+        } else if (openedBefore == null) {
+            CommonConstants.LOGGER.warn("Opened server menu {} before opening any on client side", menuType);
+            openedBefore = menuType.create(this.world, this, this.getBlockPos());
+        }
+        this.client.showScreen(MenuRegistry.getScreen(openedBefore));
     }
 
     @Override

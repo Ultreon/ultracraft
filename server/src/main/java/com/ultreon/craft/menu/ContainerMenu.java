@@ -11,6 +11,7 @@ import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CMenuItemChanged;
+import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A class that holds a bunch of item slots.
@@ -39,7 +41,7 @@ public abstract class ContainerMenu {
     @ApiStatus.Internal
     public ItemSlot[] slots;
 
-    protected final List<Player> watching = new ArrayList<>();
+    protected final List<Player> watching = new CopyOnWriteArrayList<>();
     private @Nullable TextObject customTitle = null;
 
     /**
@@ -137,6 +139,10 @@ public abstract class ContainerMenu {
      * @param player the player to be removed
      */
     public void removeWatcher(Player player) {
+        if (!this.watching.contains(player)) {
+            UltracraftServer.LOGGER.warn("Player {} is not a watcher of {}", player, this);
+            return;
+        }
         this.watching.remove(player);
         if (this.watching.isEmpty()) {
             this.close();
@@ -229,5 +235,10 @@ public abstract class ContainerMenu {
      */
     public void setCustomTitle(@Nullable TextObject customTitle) {
         this.customTitle = customTitle;
+    }
+
+    @Override
+    public String toString() {
+        return "ContainerMenu[" + this.getType().getId() + "]";
     }
 }

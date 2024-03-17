@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Suppliers;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.Renderer;
@@ -31,11 +33,14 @@ import com.ultreon.craft.item.Items;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class ItemRenderer {
@@ -46,11 +51,12 @@ public class ItemRenderer {
     private final Material material;
     private final Quaternion quaternion = new Quaternion();
     private final Vector3 rotation = new Vector3(-30, 45, 0);
-    private final Vector3 position = new Vector3(0, 0, -100);
+    private final Vector3 position = new Vector3(0, 0, -1000);
     private final Vector3 scale = new Vector3(20, 20, 20);
     protected final Vector3 tmp = new Vector3();
     private final Map<Item, ItemModel> models = new HashMap<>();
     private final Map<Item, ModelInstance> modelsInstances = new HashMap<>();
+    private Cache<BlockMetadata, ModelInstance> blockModelCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 
     public ItemRenderer(UltracraftClient client) {
         this.client = client;
@@ -117,26 +123,35 @@ public class ItemRenderer {
             this.itemCam.zoom = 4.0f / guiScale;
             this.itemCam.far = 100000;
             this.itemCam.update();
-            BakedCubeModel bakedBlockModel = this.client.getBakedBlockModel(block);
-            if (bakedBlockModel == BakedCubeModel.DEFAULT) {
+            @NotNull BlockModel blockModel = this.client.getBakedBlockModel(block);
+            if (blockModel == BakedCubeModel.DEFAULT) {
                 renderCustomBlock(item, block, renderer, x, y);
                 return;
             }
-            this.batch.begin(this.itemCam);
-            Mesh mesh = bakedBlockModel.getMesh();
-            Renderable renderable = new Renderable();
-            renderable.meshPart.mesh = mesh;
-            renderable.meshPart.center.set(0F, 0F, 0F);
-            renderable.meshPart.offset = 0;
-            renderable.meshPart.size = mesh.getMaxVertices();
-            renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
-            renderable.material = this.material;
-            renderable.environment = this.environment;
-            renderable.worldTransform.set(this.position.cpy().add((x - (int) (this.client.getScaledWidth() / 2.0F)) * guiScale, -(-y + (int) (this.client.getScaledHeight() / 2.0F)) * guiScale, 100), this.quaternion, this.scale);
-            renderable.worldTransform.rotate(Vector3.X, this.rotation.x);
-            renderable.worldTransform.rotate(Vector3.Y, this.rotation.y);
-            this.batch.render(renderable);
-            this.batch.end();
+            if (blockModel instanceof BakedCubeModel bakedModel) {
+                this.batch.begin(this.itemCam);
+                Mesh mesh = bakedModel.getMesh();
+                Renderable renderable = new Renderable();
+                renderable.meshPart.mesh = mesh;
+                renderable.meshPart.center.set(0F, 0F, 0F);
+                renderable.meshPart.offset = 0;
+                renderable.meshPart.size = mesh.getMaxVertices();
+                renderable.meshPart.primitiveType = GL20.GL_TRIANGLES;
+                renderable.material = this.material;
+                renderable.environment = this.environment;
+                renderable.worldTransform.set(this.position.cpy().add((x - (int) (this.client.getScaledWidth() / 2.0F)) * guiScale, -(-y + (int) (this.client.getScaledHeight() / 2.0F)) * guiScale, 100), this.quaternion, this.scale);
+                renderable.worldTransform.rotate(Vector3.X, this.rotation.x);
+                renderable.worldTransform.rotate(Vector3.Y, this.rotation.y);
+                this.batch.render(renderable);
+                this.batch.end();
+            } else {
+                try {
+                    ModelInstance modelInstance = this.blockModelCache.get(block, () -> new ModelInstance(blockModel.getModel()));
+                    this.batch.render(modelInstance, this.environment);
+                } catch (ExecutionException e) {
+                    UltracraftClient.LOGGER.warn("Error occurred while caching block model:", e);
+                }
+            }
         });
     }
 
@@ -197,6 +212,12 @@ public class ItemRenderer {
                     fallbackModel(e);
                     return;
                 }
+
+                if (e instanceof BlockItem blockItem) {
+                    this.registerBlockModel(blockItem, () -> this.client.getBakedBlockModel(blockItem.createBlockMeta()));
+                    return;
+                }
+
                 this.registerModel(e, Objects.requireNonNullElseGet(load, () -> new FlatItemModel(e)));
             } catch (IOException ex) {
                 fallbackModel(e);

@@ -24,7 +24,9 @@ import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.s2c.S2CAddPlayerPacket;
 import com.ultreon.craft.network.packets.s2c.S2CRemovePlayerPacket;
+import com.ultreon.craft.recipe.CraftingRecipe;
 import com.ultreon.craft.recipe.RecipeManager;
+import com.ultreon.craft.recipe.Recipes;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.events.ServerLifecycleEvents;
 import com.ultreon.craft.server.player.CacheablePlayer;
@@ -149,6 +151,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
 
         this.recipeManager = new RecipeManager(this);
         this.recipeManager.load(this.resourceManager);
+
+        Recipes.init();
     }
 
     public static WatchManager getWatchManager() {

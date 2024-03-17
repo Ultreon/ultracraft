@@ -2,15 +2,15 @@ package com.ultreon.craft.network.packets.s2c;
 
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
+import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.network.server.InGameServerPacketHandler;
 
-public class S2CCloseContainerMenuPacket extends Packet<InGameServerPacketHandler> {
-    public S2CCloseContainerMenuPacket() {
+public class S2CCloseMenuPacket extends Packet<InGameClientPacketHandler> {
+    public S2CCloseMenuPacket() {
         super();
     }
 
-    public S2CCloseContainerMenuPacket(PacketBuffer buffer) {
+    public S2CCloseMenuPacket(PacketBuffer buffer) {
 
     }
 
@@ -20,7 +20,7 @@ public class S2CCloseContainerMenuPacket extends Packet<InGameServerPacketHandle
     }
 
     @Override
-    public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
+    public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
         handler.onCloseContainerMenu();
     }
 }

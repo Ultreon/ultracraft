@@ -30,7 +30,7 @@ import com.ultreon.craft.network.packets.AddPermissionPacket;
 import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
-import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
+import com.ultreon.craft.network.packets.c2s.C2SCloseMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
@@ -268,7 +268,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         var player = this.client.player;
 
         if (player != null) {
-            ContainerMenu openMenu = player.openMenu;
+            ContainerMenu openMenu = player.getOpenMenu();
             if (openMenu != null) {
                 openMenu.setItem(index, stack);
             }
@@ -309,11 +309,8 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         var menuType = Registries.MENU_TYPE.get(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
-        ContainerMenu o = menuType.create(this.client.world, player, null);
-        if (o != null) {
-            player.onOpenMenu(o);
-        } else {
-            this.client.connection.send(new C2SCloseContainerMenuPacket());
+        if (menuType != null) {
+            client.execute(() -> player.onOpenMenu(menuType));
         }
     }
 
@@ -421,6 +418,14 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     public void onEntityPipeline(int id, MapType pipeline) {
         if (this.client.world != null) {
             this.client.world.getEntity(id).onPipeline(pipeline);
+        }
+    }
+
+    @Override
+    public void onCloseContainerMenu() {
+        var player = this.client.player;
+        if (player != null) {
+            this.client.execute(player::closeMenu);
         }
     }
 

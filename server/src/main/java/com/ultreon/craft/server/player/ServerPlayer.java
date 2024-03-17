@@ -239,7 +239,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     }
 
     private void autoCloseMenu() {
-        this.connection.send(new S2CCloseContainerMenuPacket());
+        this.connection.send(new S2CCloseMenuPacket());
     }
 
     @Override
@@ -517,6 +517,12 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
      */
     @Override
     public void openMenu(@NotNull ContainerMenu menu) {
+        if (getOpenMenu() != null) {
+            UltracraftServer.LOGGER.warn("Player {} tried to open menu {} but it was already open!", this.name, menu.getType().getId());
+            this.closeMenu();
+            return;
+        }
+
         // Check if the menu open event is canceled, if so, return early
         if (MenuEvents.MENU_OPEN.factory().onMenuOpen(menu, this).isCanceled())
             return;
@@ -525,7 +531,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         super.openMenu(menu);
 
         // Send a packet to open the container menu
-        this.connection.send(new S2COpenContainerMenuPacket(this.inventory.getType().getId()));
+        this.connection.send(new S2COpenMenuPacket(menu.getType().getId()));
     }
 
     @Override
@@ -697,5 +703,4 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         return itemResult;
     }
-
 }

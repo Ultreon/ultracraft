@@ -1,6 +1,7 @@
 package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.entity.player.PlayerAbilities;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.MenuEvents;
@@ -38,7 +39,8 @@ public abstract class Player extends LivingEntity {
     public float crouchModifier = 0.5F;
     public final PlayerAbilities abilities = new PlayerAbilities();
     private boolean crouching = false;
-    @Nullable private ContainerMenu openMenu;
+    @Nullable
+    protected ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
     private final String name;
     private Gamemode gamemode = Gamemode.SURVIVAL;
@@ -258,13 +260,19 @@ public abstract class Player extends LivingEntity {
     }
 
     public void openMenu(ContainerMenu menu) {
-        if (this.openMenu != null) this.closeMenu();
+        if (this.openMenu != null) {
+            return;
+        }
 
         this.openMenu = menu;
+        this.openMenu.addWatcher(this);
     }
 
     public void closeMenu() {
-        if (this.openMenu == null) return;
+        if (this.openMenu == null) {
+            CommonConstants.LOGGER.warn("Tried to close menu that was not open", new RuntimeException());
+            return;
+        }
 
         if (this instanceof ServerPlayer serverPlayer)
             MenuEvents.MENU_CLOSE.factory().onMenuClose(this.openMenu, serverPlayer);

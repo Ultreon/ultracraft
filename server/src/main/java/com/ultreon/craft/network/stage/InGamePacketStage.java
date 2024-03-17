@@ -22,8 +22,9 @@ public class InGamePacketStage extends PacketStage {
         this.addServerBound(C2SBlockBreakPacket::new);
         this.addServerBound(C2SHotbarIndexPacket::new);
         this.addServerBound(C2SItemUsePacket::new);
-        this.addServerBound(C2SCloseContainerMenuPacket::new);
+        this.addServerBound(C2SCloseMenuPacket::new);
         this.addServerBound(C2SOpenInventoryPacket::new);
+        this.addServerBound(C2SOpenMenuPacket::new);
         this.addServerBound(C2SChatPacket::new);
         this.addServerBound(C2SCommandPacket::new);
         this.addServerBound(C2SRequestTabComplete::new);
@@ -48,8 +49,8 @@ public class InGamePacketStage extends PacketStage {
         this.addClientBound(S2CMenuCursorPacket::new);
         this.addClientBound(S2CBlockSetPacket::new);
         this.addClientBound(S2CBlockEntitySetPacket::new);
-        this.addClientBound(S2COpenContainerMenuPacket::new);
-        this.addClientBound(S2CCloseContainerMenuPacket::new);
+        this.addClientBound(S2COpenMenuPacket::new);
+        this.addClientBound(S2CCloseMenuPacket::new);
         this.addClientBound(S2CChatPacket::new);
         this.addClientBound(S2CCommandSyncPacket::new);
         this.addClientBound(S2CTabCompletePacket::new);

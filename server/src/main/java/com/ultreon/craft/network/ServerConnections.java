@@ -18,6 +18,7 @@ import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.util.concurrent.Future;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 /**
@@ -202,13 +204,13 @@ public class ServerConnections {
     public void stop() {
         this.running = false;
 
-        for (ChannelFuture future : this.channels) {
-            try {
-                future.channel().close().sync();
-                ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
-            } catch (InterruptedException ex) {
-                ServerConnections.LOGGER.warn("Failed to close channel", ex);
+        try {
+            Future<?> sync = ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
+            if (!sync.isSuccess()) {
+                ServerConnections.LOGGER.warn("Failed to shutdown server event loop group");
             }
+        } catch (InterruptedException ex) {
+            ServerConnections.LOGGER.warn("Failed to shutdown server event loop group due to interrupt", ex);
         }
     }
 

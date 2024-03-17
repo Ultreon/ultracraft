@@ -648,11 +648,12 @@ public class GreedyMesher implements Mesher {
 
             UltracraftClient client = UltracraftClient.get();
             this.renderer = BlockRendererRegistry.get(block.getBlock());
-            this.bakedBlockModel = client.getBakedBlockModel(block);
+            this.bakedBlockModel = (BakedCubeModel) client.getBakedBlockModel(block);
         }
 
         public void render(MeshBuilder builder) {
             LightLevelData lld = new LightLevelData(this.lightLevel, this.sunlightLevel);
+            if (this.bakedBlockModel == null) return;
             switch (this.side) {
                 case UP ->
                         this.renderer.renderTop(this.bakedBlockModel.top(), this.x1, this.y1, this.x2, this.y2, this.z + 1, lld, this.lightData, builder);
