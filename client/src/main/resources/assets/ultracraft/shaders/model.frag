@@ -2,8 +2,8 @@
 precision mediump float;
 #endif
 
-in vec4 v_color;
-in vec2 v_texCoords;
+varying vec4 v_color;
+varying vec2 v_texCoords;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_ssaoMap;
