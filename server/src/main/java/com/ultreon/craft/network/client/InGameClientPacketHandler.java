@@ -23,6 +23,7 @@ import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -59,7 +60,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onMenuCursorChanged(ItemStack cursor);
 
-    void onOpenContainerMenu(Identifier menuType);
+    void onOpenContainerMenu(Identifier menuType, List<ItemStack> items);
 
     void onAddPermission(AddPermissionPacket packet);
 

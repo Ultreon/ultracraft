@@ -40,6 +40,8 @@ public class CrateBlockEntity extends BlockEntity {
             itemData.add(stack.save());
         }
 
+        data.put("Items", itemData);
+
         return super.save(data);
     }
 
@@ -73,7 +75,4 @@ public class CrateBlockEntity extends BlockEntity {
         player.openMenu(new CrateMenu(MenuTypes.CRATE, this.world, player, this.pos));
     }
 
-    public void createMenu(MenuType<Inventory> type, World world, Entity entity, BlockPos pos) {
-
-    }
 }

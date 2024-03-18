@@ -11,7 +11,6 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
-import com.ultreon.craft.network.packets.c2s.C2SCloseMenuPacket;
 import com.ultreon.craft.network.packets.c2s.C2SMenuTakeItemPacket;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
@@ -200,5 +199,11 @@ public abstract class ContainerScreen extends Screen {
 
     public void onItemChanged(int slot, ItemStack newStack) {
         this.menu.slots[slot].setItem(newStack, false);
+    }
+
+    public void setup(List<ItemStack> items) {
+        for (int i = 0; i < items.size(); i++) {
+            this.menu.slots[i].setItem(items.get(i), false);
+        }
     }
 }

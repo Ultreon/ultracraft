@@ -30,7 +30,6 @@ import com.ultreon.craft.network.packets.AddPermissionPacket;
 import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
-import com.ultreon.craft.network.packets.c2s.C2SCloseMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
@@ -48,6 +47,7 @@ import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -305,12 +305,12 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onOpenContainerMenu(Identifier menuTypeId) {
+    public void onOpenContainerMenu(Identifier menuTypeId, List<ItemStack> items) {
         var menuType = Registries.MENU_TYPE.get(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
         if (menuType != null) {
-            client.execute(() -> player.onOpenMenu(menuType));
+            client.execute(() -> player.onOpenMenu(menuType, items));
         }
     }
 

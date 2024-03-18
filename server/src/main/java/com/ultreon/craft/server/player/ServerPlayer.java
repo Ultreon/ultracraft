@@ -531,7 +531,7 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
         super.openMenu(menu);
 
         // Send a packet to open the container menu
-        this.connection.send(new S2COpenMenuPacket(menu.getType().getId()));
+        this.connection.send(new S2COpenMenuPacket(menu.getType().getId(), Arrays.asList(menu.slots)));
     }
 
     @Override

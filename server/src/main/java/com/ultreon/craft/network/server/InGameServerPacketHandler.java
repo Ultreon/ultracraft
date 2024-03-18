@@ -235,10 +235,14 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void handleOpenMenu(PacketContext ctx, Identifier id, BlockPos pos) {
         MenuType<?> menuType = Registries.MENU_TYPE.get(id);
-        ContainerMenu menu = menuType.create(this.player.getWorld(), this.player, pos);
-        if (menu == null) return;
 
-        this.server.execute(() -> this.player.openMenu(menu));
+        this.server.execute(() -> {
+            ContainerMenu menu = menuType.create(this.player.getWorld(), this.player, pos);
+            if (menu == null) return;
+
+
+            this.player.openMenu(menu);
+        });
     }
 
 //    public void handleContainerClick(int slot, ContainerInteraction interaction) {

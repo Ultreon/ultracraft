@@ -15,6 +15,7 @@ public final class GameCommands {
         CommandRegistry.register(new GamemodeCommand());
         CommandRegistry.register(new TimeCommand());
         CommandRegistry.register(new PlayerCommand());
+        CommandRegistry.register(new ChunkCommand());
         CommandRegistry.register(new GiveCommand());
         CommandRegistry.register(new SummonCommand());
         CommandRegistry.register(new SummonItemCommand());

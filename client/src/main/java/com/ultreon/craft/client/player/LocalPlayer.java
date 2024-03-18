@@ -6,6 +6,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.screens.DeathScreen;
+import com.ultreon.craft.client.gui.screens.container.ContainerScreen;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.util.ControllerButton;
 import com.ultreon.craft.client.registry.MenuRegistry;
@@ -13,13 +14,13 @@ import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
 import com.ultreon.craft.network.packets.c2s.*;
 import com.ultreon.craft.network.packets.s2c.C2SAbilitiesPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
-import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.SoundEvent;
 import com.ultreon.libs.commons.v0.Mth;
@@ -27,6 +28,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public class LocalPlayer extends ClientPlayer {
@@ -223,7 +225,7 @@ public class LocalPlayer extends ClientPlayer {
         this.isDead = false;
     }
 
-    public void onOpenMenu(MenuType<?> menuType) {
+    public void onOpenMenu(MenuType<?> menuType, List<ItemStack> items) {
         ContainerMenu openedBefore = openMenu;
         if (openedBefore != null && menuType != openedBefore.getType()) {
             CommonConstants.LOGGER.warn("Opened menu {} instead of {}", menuType, openMenu);
@@ -231,7 +233,9 @@ public class LocalPlayer extends ClientPlayer {
             CommonConstants.LOGGER.warn("Opened server menu {} before opening any on client side", menuType);
             openedBefore = menuType.create(this.world, this, this.getBlockPos());
         }
-        this.client.showScreen(MenuRegistry.getScreen(openedBefore));
+        ContainerScreen screen = MenuRegistry.getScreen(openedBefore);
+        screen.setup(items);
+        this.client.showScreen(screen);
     }
 
     @Override

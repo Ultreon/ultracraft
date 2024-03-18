@@ -1,9 +1,12 @@
 package com.ultreon.craft.client.gui.screens.container;
 
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.CrateMenu;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
+
+import java.util.List;
 
 public class CrateScreen extends ContainerScreen {
     private static final int CONTAINER_SIZE = 40;
@@ -28,6 +31,11 @@ public class CrateScreen extends ContainerScreen {
     @Override
     public Identifier getBackground() {
         return CrateScreen.BACKGROUND;
+    }
+
+    @Override
+    public void setup(List<ItemStack> items) {
+        this.menu.setupClient(items);
     }
 
     public CrateMenu getMenu() {

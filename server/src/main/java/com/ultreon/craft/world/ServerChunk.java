@@ -104,9 +104,15 @@ public final class ServerChunk extends Chunk {
         MapType data = new MapType();
         MapType chunkData = new MapType();
         MapType biomeData = new MapType();
+        MapType blockEntitiesData = new MapType();
 
         this.storage.save(chunkData, BlockMetadata::save);
         this.biomeStorage.save(biomeData, Biome::save);
+
+        for (BlockEntity blockEntity : this.getBlockEntities()) {
+            blockEntity.save(blockEntitiesData);
+        }
+        data.put("BlockEntities", blockEntitiesData);
         data.put("Biomes", biomeData);
         data.put("Blocks", chunkData);
         data.putShortArray("HeightMap", this.heightMap.save());
