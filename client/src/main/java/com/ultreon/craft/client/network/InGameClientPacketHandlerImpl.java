@@ -14,6 +14,7 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
@@ -416,8 +417,12 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onEntityPipeline(int id, MapType pipeline) {
-        if (this.client.world != null) {
-            this.client.world.getEntity(id).onPipeline(pipeline);
+        ClientWorld world = this.client.world;
+        if (world != null) {
+            this.client.execute(() -> {
+                Entity entity = world.getEntity(id);
+                entity.onPipeline(pipeline);
+            });
         }
     }
 

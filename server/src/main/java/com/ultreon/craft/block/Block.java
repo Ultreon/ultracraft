@@ -5,6 +5,7 @@ import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
@@ -186,6 +187,18 @@ public class Block implements DataWriter<MapType> {
 
     public BlockMetadata onPlacedBy(World world, BlockPos blockPos, BlockMetadata blockMeta, Player player, ItemStack stack, CubicDirection direction) {
         return blockMeta;
+    }
+
+    public void update(World serverWorld, BlockPos offset, BlockMetadata meta) {
+        this.onPlace(serverWorld, offset, meta);
+    }
+
+    public boolean canBePlacedAt(World world, BlockPos blockPos, Player player, ItemStack stack, CubicDirection direction) {
+        return true;
+    }
+
+    public boolean canBeReplacedBy(UseItemContext context, BlockMetadata blockMetadata) {
+        return true;
     }
 
     public static class Properties {

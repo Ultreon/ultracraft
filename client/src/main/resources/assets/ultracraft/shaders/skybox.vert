@@ -10,6 +10,7 @@
 #define cameraPositionFlag
 #endif
 
+varying vec3 v_position;
 attribute vec3 a_position;
 uniform mat4 u_projViewTrans;
 
@@ -248,6 +249,7 @@ void main() {
     #endif
 
     gl_Position = u_projViewTrans * pos;
+    v_position = a_position;
 
     #ifdef shadowMapFlag
     vec4 spos = u_shadowMapProjViewTrans * pos;

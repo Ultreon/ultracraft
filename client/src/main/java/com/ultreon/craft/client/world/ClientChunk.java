@@ -18,6 +18,7 @@ import com.ultreon.craft.client.render.ModelObject;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.Biome;
@@ -61,7 +62,7 @@ public final class ClientChunk extends Chunk {
 
         blockEntities.forEach((blockPos, type) -> {
             if (type != null) {
-                this.setBlockEntity(blockPos, type.create(world, blockPos));
+                this.setBlockEntity(blockPos, type.create(world, blockPos.offset(pos)));
             }
         });
 
@@ -96,6 +97,8 @@ public final class ClientChunk extends Chunk {
             }
             this.tmp.setZero();
             this.tmp1.setZero();
+
+            this.client.connection.send(new C2SChunkStatusPacket(this.getPos(), Chunk.Status.UNLOADED));
         }
     }
 

@@ -33,7 +33,7 @@ public abstract class ContainerBlockEntity<T extends ContainerMenu> extends Bloc
         super.load(data);
 
         int i = 0;
-        for (MapType mapType : data.<MapType>getList("Items")) {
+        for (MapType mapType : data.<MapType>getList("Items").getValue()) {
             items[i] = ItemStack.load(mapType);
         }
     }

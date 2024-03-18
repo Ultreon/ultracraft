@@ -130,4 +130,15 @@ public enum CubicDirection {
             default -> throw new IllegalArgumentException();
         };
     }
+
+    public BlockPos getOffset() {
+        return switch (this) {
+            case UP -> new BlockPos(0, 1, 0);
+            case DOWN -> new BlockPos(0, -1, 0);
+            case WEST -> new BlockPos(-1, 0, 0);
+            case EAST -> new BlockPos(1, 0, 0);
+            case NORTH -> new BlockPos(0, 0, -1);
+            case SOUTH -> new BlockPos(0, 0, 1);
+        };
+    }
 }

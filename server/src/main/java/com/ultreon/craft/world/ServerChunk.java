@@ -8,8 +8,7 @@ import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.gen.biome.Biomes;
-import com.ultreon.data.types.ListType;
-import com.ultreon.data.types.MapType;
+import com.ultreon.data.types.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -68,16 +67,26 @@ public final class ServerChunk extends Chunk {
 
     public void load(MapType chunkData) {
         MapType extra = chunkData.getMap("Extra", new MapType());
-        this.original = chunkData.getBoolean("original");
-        this.heightMap.load(chunkData.getShortArray("HeightMap"));
-        this.lightMap.load(chunkData.getByteArray("LightMap"));
+        this.original = chunkData.getBoolean("original", this.original);
+
+        if (chunkData.<ShortArrayType>contains("HeightMap")) {
+            this.heightMap.load(chunkData.getShortArray("HeightMap"));
+        }
+
+        if (chunkData.<ByteArrayType>contains("LightMap")) {
+            this.lightMap.load(chunkData.getByteArray("LightMap"));
+        }
+
         this.modified = false;
 
-        ListType<MapType> blockEntityData = chunkData.getList("BlockEntities");
-        for (MapType blockEntityDatum : blockEntityData) {
-            BlockPos blockPos = new BlockPos(blockEntityDatum.getInt("x"), blockEntityDatum.getInt("y"), blockEntityDatum.getInt("z"));
-            BlockEntity blockEntity = BlockEntity.fullyLoad(world, blockPos, blockEntityDatum);
-            this.setBlockEntity(blockPos, blockEntity);
+        if (chunkData.<ListType<?>>contains("BlockEntities")) {
+            ListType<MapType> blockEntities = chunkData.getList("BlockEntities");
+
+            for (MapType data : blockEntities.getValue()) {
+                BlockPos blockPos = new BlockPos(data.getInt("x"), data.getInt("y"), data.getInt("z"));
+                BlockEntity blockEntity = BlockEntity.fullyLoad(world, blockPos, data);
+                this.setBlockEntity(World.toLocalBlockPos(blockPos), blockEntity);
+            }
         }
 
         WorldEvents.LOAD_CHUNK.factory().onLoadChunk(this, extra);
@@ -104,13 +113,16 @@ public final class ServerChunk extends Chunk {
         MapType data = new MapType();
         MapType chunkData = new MapType();
         MapType biomeData = new MapType();
-        MapType blockEntitiesData = new MapType();
+        ListType<MapType> blockEntitiesData = new ListType<>();
 
         this.storage.save(chunkData, BlockMetadata::save);
         this.biomeStorage.save(biomeData, Biome::save);
 
         for (BlockEntity blockEntity : this.getBlockEntities()) {
-            blockEntity.save(blockEntitiesData);
+            MapType blockEntityData = new MapType();
+            blockEntity.save(blockEntityData);
+
+            blockEntitiesData.add(blockEntityData);
         }
         data.put("BlockEntities", blockEntitiesData);
         data.put("Biomes", biomeData);

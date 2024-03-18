@@ -2145,7 +2145,7 @@ public class Renderer implements Disposable {
                     #endif
                                 
                     varying vec4 vColor;
-                    varying vec2 vTexCoord0;
+                    varying vec2 vTexCoord;
                                 
                     uniform sampler2D u_texture;
                     uniform vec2 iResolution;
@@ -2191,7 +2191,7 @@ public class Renderer implements Disposable {
 //    @Language("GLSL")
     final String GRID_FRAG =
                     """
-                    varying vec2 vTexCoords0;
+                    varying vec2 vTexCoord;
                     varying vec4 vColor;
                     uniform sampler2D u_texture;
                     uniform vec2 iResolution;
@@ -2242,7 +2242,7 @@ public class Renderer implements Disposable {
                       vec2 uv = gl_FragCoord.xy;
                       uv /= 24.0;
                       
-                      vec4 color = texture2D(u_texture, vTexCoords0);
+                      vec4 color = texture2D(u_texture, vTexCoord);
                       const float A = 0.0;
                       const float B = 0.15;
                       

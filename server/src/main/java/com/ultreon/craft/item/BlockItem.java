@@ -4,11 +4,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.state.BlockMetadata;
+import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.BlockEvents;
+import com.ultreon.craft.events.api.EventResult;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.craft.world.UseResult;
-import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import org.jetbrains.annotations.NotNull;
@@ -32,32 +34,58 @@ public class BlockItem extends Item {
     public UseResult use(UseItemContext useItemContext) {
         super.use(useItemContext);
 
-        World world = useItemContext.world();
-        ItemStack stack = useItemContext.stack();
-        Vec3i pos = useItemContext.result().getPos();
-        Vec3i next = useItemContext.result().getNext();
+        var world = useItemContext.world();
+        var stack = useItemContext.stack();
+        var pos = useItemContext.result().getPos();
+        var next = useItemContext.result().getNext();
+        var direction = useItemContext.result().direction;
+        var player = useItemContext.player();
+
         BlockPos blockPos = new BlockPos(next);
-        BlockEvents.ATTEMPT_BLOCK_PLACEMENT.factory().onAttemptBlockPlacement(useItemContext.player(), this.block.get(), blockPos, useItemContext.stack());
-        if (world.get(pos.x, pos.y, pos.z).isReplaceable()) {
-            if (!world.intersectEntities(this.getBlock().getBoundingBox(pos))) {
-                world.set(new BlockPos(pos), this.getBlock().onPlacedBy(world, new BlockPos(pos), createBlockMeta(), useItemContext.player(), useItemContext.stack(), useItemContext.result().direction));
-                stack.shrink(1);
-                return UseResult.ALLOW;
-            }
-            if (world instanceof ServerWorld serverWorld) serverWorld.update(pos);
+        EventResult eventResult = BlockEvents.ATTEMPT_BLOCK_PLACEMENT.factory()
+                .onAttemptBlockPlacement(player, this.block.get(), blockPos, stack);
+
+        if (eventResult.isCanceled()) return UseResult.DENY;
+
+        if (!block.get().canBePlacedAt(world, blockPos, player, stack, direction))
             return UseResult.DENY;
+
+        BlockMetadata oldBlock = world.get(pos.x, pos.y, pos.z);
+        return oldBlock.isReplaceable() && oldBlock.canBeReplacedBy(useItemContext)
+                ? replaceBlock(world, pos, player, stack, direction)
+                : placeBlock(world, next, blockPos, player, stack, direction);
+
+    }
+
+    @NotNull
+    private UseResult placeBlock(World world, Vec3i next, BlockPos blockPos, Player player, ItemStack stack, CubicDirection direction) {
+        if (world.intersectEntities(this.getBlock().getBoundingBox(next)))
+            return UseResult.DENY;
+
+        if (world.isClientSide()) {
+            var state = this.getBlock().onPlacedBy(world, blockPos, createBlockMeta(), player, stack, direction);
+            world.set(blockPos, state);
         }
 
-        if (!world.intersectEntities(this.getBlock().getBoundingBox(next))) {
-            world.set(blockPos, this.getBlock().onPlacedBy(world, blockPos, createBlockMeta(), useItemContext.player(), useItemContext.stack(), useItemContext.result().direction));
-            stack.shrink(1);
+        BlockEvents.BLOCK_PLACED.factory().onBlockPlaced(player, this.block.get(), blockPos, stack);
 
-            BlockEvents.BLOCK_PLACED.factory().onBlockPlaced(useItemContext.player(), this.block.get(), blockPos, useItemContext.stack());
+        stack.shrink(1);
+        return UseResult.ALLOW;
+    }
 
-            return UseResult.ALLOW;
+    @NotNull
+    private UseResult replaceBlock(World world, Vec3i vec, Player player, ItemStack stack, CubicDirection direction) {
+        if (world.intersectEntities(this.getBlock().getBoundingBox(vec)))
+            return UseResult.DENY;
+
+        if (world.isClientSide()) {
+            BlockPos blockPos = new BlockPos(vec);
+            var state = this.getBlock().onPlacedBy(world, blockPos, createBlockMeta(), player, stack, direction);
+            world.set(blockPos, state);
         }
-        if (world instanceof ServerWorld serverWorld) serverWorld.update(next);
-        return UseResult.DENY;
+
+        stack.shrink(1);
+        return UseResult.ALLOW;
     }
 
     @Override

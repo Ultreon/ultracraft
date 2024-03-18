@@ -8,6 +8,7 @@ import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.debug.DebugFlags;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
@@ -331,7 +332,12 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             case FAILED -> this.handleFailedChunk(pos);
             case SKIP -> this.skippedChunks.add(pos);
             case SUCCESS -> this.handleClientLoadChunk(pos);
-            case UNLOADED -> this.activeChunks.remove(pos);
+            case UNLOADED -> {
+                this.activeChunks.remove(pos);
+                this.skippedChunks.remove(pos);
+                this.pendingChunks.invalidate(pos);
+                this.failedChunks.invalidate(pos);
+            }
         }
 
         // Handle chunk load failure if the status is failed
@@ -702,5 +708,21 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             slot.update();
 
         return itemResult;
+    }
+
+    /**
+     * Called when a block is placed by the player on the client side.
+     * This is called from the packet when handled.
+     *
+     * @param x     the x-coordinate
+     * @param y     the y-coordinate
+     * @param z     the z-coordinate
+     * @param block the block to place
+     */
+    public void placeBlock(int x, int y, int z, BlockMetadata block) {
+        BlockPos blockPos = new BlockPos(x, y, z);
+        if (block == null || !this.world.isLoaded(blockPos) || !this.world.get(blockPos).isReplaceable()) return;
+
+        this.world.set(x, y, z, block, BlockFlags.SYNC | BlockFlags.UPDATE);
     }
 }

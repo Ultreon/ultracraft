@@ -3,13 +3,18 @@ package com.ultreon.craft.block.state;
 import com.ultreon.craft.UnsafeApi;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.BoundingBox;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.craft.world.ServerWorld;
+import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
 
@@ -218,5 +223,13 @@ public class BlockMetadata {
     @Override
     public int hashCode() {
         return Objects.hash(block, entries);
+    }
+
+    public void update(World serverWorld, BlockPos offset) {
+        this.block.update(serverWorld, offset, this);
+    }
+
+    public boolean canBeReplacedBy(UseItemContext context) {
+        return block.canBeReplacedBy(context, this);
     }
 }

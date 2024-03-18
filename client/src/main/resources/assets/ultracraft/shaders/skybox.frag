@@ -1,11 +1,11 @@
 uniform float x_color;
 uniform float z_color;
-varying vec3 a_position;
+varying vec3 v_position;
 
 void main()
 {
     // Normalize the position to getConfig values between 0 and 1
-    vec3 normalizedPosition = normalize(a_position);
+    vec3 normalizedPosition = normalize(v_position);
 
     // Create a gradient based on the x, y, and z coordinates
     vec3 gradient = vec3(normalizedPosition.x, x_color, normalizedPosition.z);

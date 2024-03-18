@@ -418,7 +418,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         // Initialize the render pipeline
         this.pipeline = deferDispose(new RenderPipeline(new MainRenderNode(), this.camera)
-                .node(new SkyboxNode())
+//                .node(new SkyboxNode())
                 .node(new CollectNode())
                 .node(new WorldDiffuseNode())
                 .node(new MainRenderNode()));

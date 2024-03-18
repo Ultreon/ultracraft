@@ -79,11 +79,12 @@ public class S2CChunkDataPacket extends Packet<InGameClientPacketHandler> {
     public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
         try {
             Map<BlockPos, BlockEntityType<?>> blockEntities = new HashMap<>();
+            int i = 0;
             for (Integer blockEntityPosition : this.blockEntityPositions) {
                 int x = (blockEntityPosition >> 20) & 0xF;
                 int y = (blockEntityPosition >> 4) & 0xFFFF;
                 int z = blockEntityPosition & 0xF;
-                blockEntities.put(new BlockPos(x, y, z).offset(this.pos), Registries.BLOCK_ENTITY_TYPE.byId(this.blockEntities.getInt(blockEntityPosition)));
+                blockEntities.put(World.toLocalBlockPos(x, y, z), Registries.BLOCK_ENTITY_TYPE.byId(this.blockEntities.getInt(i)));
             }
 
             handler.onChunkData(this.pos, this.storage, this.biomeStorage, blockEntities);

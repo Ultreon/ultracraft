@@ -245,6 +245,10 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         });
     }
 
+    public void onPlaceBlock(int x, int y, int z, BlockMetadata block) {
+        this.server.execute(() -> this.player.placeBlock(x, y, z, block));
+    }
+
 //    public void handleContainerClick(int slot, ContainerInteraction interaction) {
 //        ContainerMenu openMenu = player.getOpenMenu();
 //

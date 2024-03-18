@@ -53,9 +53,9 @@ public abstract class BlockEntity {
 
     public MapType save(MapType data) {
         data.putString("type", Objects.requireNonNull(type.getId()).toString());
-        data.putInt("posX", pos.x());
-        data.putInt("posY", pos.y());
-        data.putInt("posZ", pos.z());
+        data.putInt("x", pos.x());
+        data.putInt("y", pos.y());
+        data.putInt("z", pos.z());
         return data;
     }
 }

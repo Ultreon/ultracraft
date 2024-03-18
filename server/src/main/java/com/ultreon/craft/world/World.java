@@ -26,6 +26,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,6 +58,7 @@ public abstract class World implements ServerDisposable {
     public static final int REGION_SIZE = 32;
     public static final Identifier OVERWORLD = new Identifier("overworld");
     public static final float SEA_LEVEL = 64;
+    public static final int REGION_DATA_VERSION = 0;
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
 
@@ -240,9 +242,20 @@ public abstract class World implements ServerDisposable {
      * @return true if the block was successfully set, false otherwise
      */
     public boolean set(BlockPos blockPos, BlockMetadata state) {
+        return set(blockPos, state, BlockFlags.UPDATE | BlockFlags.SYNC);
+    }
+
+    /**
+     * Sets the block at the specified coordinates, with the given block type.
+     *
+     * @param blockPos the position
+     * @param state    the block state to set
+     * @return true if the block was successfully set, false otherwise
+     */
+    public boolean set(BlockPos blockPos, BlockMetadata state, int flags) {
         this.checkThread();
 
-        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), state);
+        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), state, flags);
     }
 
     /**
@@ -255,15 +268,7 @@ public abstract class World implements ServerDisposable {
      * @return true if the block was successfully set, false otherwise
      */
     public boolean set(int x, int y, int z, BlockMetadata block) {
-        this.checkThread();
-
-        BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
-
-        Chunk chunk = this.getChunkAt(x, y, z);
-        if (chunk == null) return false;
-
-        BlockPos cp = World.toLocalBlockPos(x, y, z);
-        return chunk.set(cp.x(), cp.y(), cp.z(), block);
+        return set(x, y, z, block, BlockFlags.UPDATE | BlockFlags.SYNC);
     }
 
     /**
@@ -842,6 +847,19 @@ public abstract class World implements ServerDisposable {
 
     public UUID getUID() {
         return this.uid;
+    }
+
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block,
+                                @MagicConstant(flagsFromClass = BlockFlags.class) int flags) {
+        this.checkThread();
+
+        BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
+
+        Chunk chunk = this.getChunkAt(x, y, z);
+        if (chunk == null) return false;
+
+        BlockPos cp = World.toLocalBlockPos(x, y, z);
+        return chunk.set(cp.x(), cp.y(), cp.z(), block);
     }
 
     public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
