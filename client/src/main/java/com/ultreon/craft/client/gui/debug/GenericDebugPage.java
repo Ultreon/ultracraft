@@ -108,7 +108,7 @@ public class GenericDebugPage implements DebugPage {
         }
 
         HitResult cursor = client.cursor;
-        if (cursor.isCollide()) {
+        if (cursor != null && cursor.isCollide()) {
             BlockMetadata block = cursor.blockMeta;
             if (block != null && !block.isAir()) {
                 context.right("Block", block);

@@ -554,7 +554,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             Gdx.graphics.setVSync(enableVsync);
 
             int fpsLimit = Config.fpsLimit;
-            if (fpsLimit >= 240) UltracraftClient.setFpsLimit(Integer.MAX_VALUE);
+            if (fpsLimit >= 240) UltracraftClient.setFpsLimit(240);
             else UltracraftClient.setFpsLimit(fpsLimit < 10 ? 60 : fpsLimit);
 
             this.renderer.resetGrid();
@@ -642,7 +642,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static Lwjgl3ApplicationConfiguration createConfig() {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.useVsync(false);
-        config.setForegroundFPS(0);
+        config.setForegroundFPS(120);
         config.setIdleFPS(10);
         config.setBackBufferConfig(8, 8, 8, 8, 8, 8, 0);
         config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL32, 4, 1);
