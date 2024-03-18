@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class CrateMenu extends InventoryAccessMenu {
+public class CrateMenu extends BlockContainerMenu {
     public final ItemSlot[][] crate = new ItemSlot[9][3];
     private final CrateBlockEntity blockEntity;
 
@@ -24,9 +24,36 @@ public class CrateMenu extends InventoryAccessMenu {
      * @param pos    the position where the menu is opened.
      */
     public CrateMenu(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable BlockPos pos) {
-        super(type, world, entity, pos, 76);
+        this(type, world, entity, CrateMenu.getBlockEntity(world, pos), pos);
+    }
 
-        this.blockEntity = this.getBlockEntity();
+    /**
+     * Returns the CrateBlockEntity at the specified position in the world.
+     *
+     * @param world the world in which to search for the CrateBlockEntity
+     * @param pos   the position of the CrateBlockEntity
+     * @return the CrateBlockEntity at the specified position, or null if not found
+     */
+    private static CrateBlockEntity getBlockEntity(@NotNull World world, @Nullable BlockPos pos) {
+        if (pos == null) return null;
+        BlockEntity blockEntity1 = world.getBlockEntity(pos);
+        if (!(blockEntity1 instanceof CrateBlockEntity crate)) return null;
+        return crate;
+    }
+
+    /**
+     * Creates a new {@link CrateMenu}
+     *
+     * @param type   the type of the menu.
+     * @param world  the world where the menu is opened in.
+     * @param entity the entity that opened the menu.
+     * @param pos    the position where the menu is opened.
+     */
+    public CrateMenu(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable CrateBlockEntity blockEntity, @Nullable BlockPos pos) {
+        super(type, world, entity, blockEntity, pos, 63);
+
+        this.blockEntity = blockEntity;
+
         this.build();
     }
 
@@ -40,7 +67,7 @@ public class CrateMenu extends InventoryAccessMenu {
         }
 
 
-        this.inventoryMenu(idx,0, 76);
+        this.inventoryMenu(idx, 0, 76);
     }
 
     @Override
@@ -55,16 +82,8 @@ public class CrateMenu extends InventoryAccessMenu {
         crate.set(index, slot.getItem());
     }
 
-    @Nullable
-    private CrateBlockEntity getBlockEntity() {
-        World world = this.getWorld();
-
-        BlockPos pos = this.getPos();
-        if (pos == null) return null;
-
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (!(blockEntity instanceof CrateBlockEntity crate)) return null;
-        return crate;
+    public @Nullable CrateBlockEntity getBlockEntity() {
+        return this.blockEntity;
     }
 
     public void setupClient(List<ItemStack> items) {

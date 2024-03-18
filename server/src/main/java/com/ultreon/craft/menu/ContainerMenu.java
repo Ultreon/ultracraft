@@ -21,7 +21,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -87,6 +86,9 @@ public abstract class ContainerMenu {
         return this.pos;
     }
 
+    /**
+     * Builds the menu and fills it with item slots.
+     */
     public abstract void build();
 
     public ItemSlot get(int index) {
@@ -94,6 +96,11 @@ public abstract class ContainerMenu {
         return this.slots[index];
     }
 
+    /**
+     * Called when an item is changed in the menu
+     *
+     * @param slot the slot that was changed
+     */
     protected void onItemChanged(ItemSlot slot) {
         for (Player player : this.watching) {
             if (player instanceof ServerPlayer serverPlayer) {
@@ -174,11 +181,15 @@ public abstract class ContainerMenu {
             if (player.getCursor().isEmpty()) {
                 // Split item from slot and put it in the cursor
                 ItemStack item = slot.getItem().split();
+                slot.update();
                 player.setCursor(item);
             } else {
                 // Transfer one item from cursor to slot
-                player.getCursor().transferTo(slot.getItem());
-                player.setCursor(player.getCursor());
+                int i = player.getCursor().transferTo(slot.getItem(), 1);
+                if (i == 0) {
+                    slot.update();
+                    player.setCursor(player.getCursor());
+                }
             }
             return;
         }
@@ -190,6 +201,7 @@ public abstract class ContainerMenu {
         if (!cursor.isEmpty() && cursor.sameItemSameData(slotItem)) {
             // Take item from cursor and put it in the slot, remaining items are left in the cursor.
             cursor.transferTo(slotItem, cursor.getCount());
+            slot.update();
             player.setCursor(player.getCursor());
             return;
         }
@@ -240,5 +252,30 @@ public abstract class ContainerMenu {
     @Override
     public String toString() {
         return "ContainerMenu[" + this.getType().getId() + "]";
+    }
+
+    public boolean hasViewers() {
+        return !this.watching.isEmpty();
+    }
+
+    public boolean isOnItsOwn() {
+        return this.watching.isEmpty();
+    }
+
+    @CanIgnoreReturnValue
+    protected int inventoryMenu(int idx, int offX, int offY) {
+        if (getEntity() instanceof Player player) {
+            for (int x = 0; x < 9; x++) {
+                this.addSlot(new RedirectItemSlot(idx++, player.inventory.hotbar[x], offX + x * 19 + 6, offY + 83));
+            }
+
+            for (int x = 0; x < 9; x++) {
+                for (int y = 0; y < 3; y++) {
+                    this.addSlot(new RedirectItemSlot(idx++, player.inventory.inv[x][y], offX + x * 19 + 6,  offY + y * 19 + 6));
+                }
+            }
+        }
+
+        return idx;
     }
 }

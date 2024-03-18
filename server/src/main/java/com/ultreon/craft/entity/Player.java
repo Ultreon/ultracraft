@@ -7,6 +7,7 @@ import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.MenuEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.CrateMenu;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
@@ -406,5 +407,11 @@ public abstract class Player extends LivingEntity {
         ItemStack copy = itemStack.copy();
         copy.setCount(1);
         this.drop(copy);
+    }
+
+    public void closeMenu(CrateMenu menu) {
+        if (this.openMenu == menu) {
+            this.closeMenu();
+        }
     }
 }
