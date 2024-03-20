@@ -2,7 +2,7 @@ package com.ultreon.craft.block.entity;
 
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.World;
 import com.ultreon.data.types.MapType;
@@ -37,7 +37,7 @@ public abstract class BlockEntity {
     }
 
     public static BlockEntity fullyLoad(World world, BlockPos pos, MapType mapType) {
-        ElementID type = ElementID.tryParse(mapType.getString("type"));
+        Identifier type = Identifier.tryParse(mapType.getString("type"));
         BlockEntityType<?> value = Registries.BLOCK_ENTITY_TYPE.getElement(type);
         return value.load(world, pos, mapType);
     }

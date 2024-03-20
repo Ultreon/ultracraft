@@ -1,12 +1,12 @@
 package com.ultreon.craft.text;
 
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class IconMap {
-    private static final ElementID CHAT_ICONS = new ElementID("chat_icons");
+    private static final Identifier CHAT_ICONS = new Identifier("chat_icons");
     private static final Map<String, FontTexture> MAPPING = new HashMap<>();
 
     public static FontTexture get(String name) {

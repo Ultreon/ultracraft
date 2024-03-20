@@ -8,7 +8,7 @@ import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.util.ValidationError;
 import com.ultreon.craft.world.gen.TreeData;
@@ -158,7 +158,7 @@ public abstract class Chunk implements ServerDisposable, ChunkAccess {
      * @return The decoded block data.
      */
     public static Block loadBlock(MapType data) {
-        @Nullable ElementID id = ElementID.parse(data.getString("id"));
+        @Nullable Identifier id = Identifier.parse(data.getString("id"));
         return Registries.BLOCK.getElement(id);
     }
 

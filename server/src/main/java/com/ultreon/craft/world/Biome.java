@@ -2,10 +2,10 @@ package com.ultreon.craft.world;
 
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.events.WorldEvents;
-import com.ultreon.craft.events.WorldLifecycleEvent;
+import com.ultreon.craft.events.WorldLifecycleEvents;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.biome.BiomeGenerator;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
@@ -44,7 +44,7 @@ public abstract class Biome {
     public final void buildLayers() {
         this.onBuildLayers(this.layers, this.features);
 
-        WorldLifecycleEvent.BIOME_LAYERS_BUILT.factory().onBiomeLayersBuilt(this, this.features);
+        WorldLifecycleEvents.BIOME_LAYERS_BUILT.factory().onBiomeLayersBuilt(this, this.layers, this.features);
     }
 
     protected abstract void onBuildLayers(List<TerrainLayer> layers, List<WorldGenFeature> features);
@@ -83,12 +83,12 @@ public abstract class Biome {
         return mapType;
     }
 
-    private ElementID getId() {
+    private Identifier getId() {
         return Registries.BIOME.getId(this);
     }
 
     public static Biome load(MapType mapType) {
-        return Registries.BIOME.getElement(ElementID.tryParse(mapType.getString("id", "plains")));
+        return Registries.BIOME.getElement(Identifier.tryParse(mapType.getString("id", "plains")));
     }
 
     public boolean isOcean() {

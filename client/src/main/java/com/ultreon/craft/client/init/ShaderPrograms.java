@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
@@ -20,13 +20,13 @@ public class ShaderPrograms {
     public static final ShaderProgram WORLD = ShaderPrograms.register("world");
 
     private static ShaderProgram register(String name) {
-        ElementID id = UltracraftClient.id(name);
+        Identifier id = UltracraftClient.id(name);
         ShaderProgram shader = ShaderPrograms.createShader(id);
         ShaderPrograms.REGISTRY.register(id, shader);
         return shader;
     }
 
-    public static ShaderProgram createShader(ElementID id) {
+    public static ShaderProgram createShader(Identifier id) {
         ResourceFileHandle vertexResource = new ResourceFileHandle(id.mapPath(s -> "shaders/" + s + ".vert"));
         ResourceFileHandle fragmentResource = new ResourceFileHandle(id.mapPath(s -> "shaders/" + s + ".frag"));
 

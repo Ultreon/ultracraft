@@ -1,14 +1,15 @@
 package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
-import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.entity.player.PlayerAbilities;
+import com.ultreon.craft.events.ItemEvents;
+import com.ultreon.craft.events.MenuEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
-import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.sound.event.SoundEvents;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Gamemode;
@@ -37,8 +38,7 @@ public abstract class Player extends LivingEntity {
     public float crouchModifier = 0.5F;
     public final PlayerAbilities abilities = new PlayerAbilities();
     private boolean crouching = false;
-    @Nullable
-    protected ContainerMenu openMenu;
+    @Nullable private ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
     private final String name;
     private Gamemode gamemode = Gamemode.SURVIVAL;
@@ -252,18 +252,16 @@ public abstract class Player extends LivingEntity {
     }
 
     public void openMenu(ContainerMenu menu) {
-        if (this.openMenu != null) {
-            this.closeMenu();
-        }
+        if (this.openMenu != null) this.closeMenu();
 
         this.openMenu = menu;
-        this.openMenu.addWatcher(this);
     }
 
     public void closeMenu() {
-        if (this.openMenu == null) {
-            return;
-        }
+        if (this.openMenu == null) return;
+
+        if (this instanceof ServerPlayer serverPlayer)
+            MenuEvents.MENU_CLOSE.factory().onMenuClose(this.openMenu, serverPlayer);
 
         this.openMenu.removeWatcher(this);
         this.openMenu = null;
@@ -378,6 +376,7 @@ public abstract class Player extends LivingEntity {
 
     public void drop(ItemStack itemStack) {
         this.world.drop(itemStack, this.getPosition());
+        ItemEvents.DROPPED.factory().onDropped(itemStack);
     }
 
     public void dropItem() {

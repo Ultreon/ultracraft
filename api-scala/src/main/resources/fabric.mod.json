@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "scala_lang",
+  "name": "Scala Language Provider",
+  "description": "Provides support for the Scala programming language.",
+  "version": "1.0.0",
+
+  "entrypoints": {
+    "init": [
+      "com.ultreon.craft.scala.ScalaApiMod"
+    ]
+  }
+}

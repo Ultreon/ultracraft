@@ -11,6 +11,7 @@ import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.api.events.ClientChunkEvents;
 import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.registry.BlockEntityModelRegistry;
@@ -133,6 +134,8 @@ public final class ClientChunk extends Chunk {
         }
 
         super.onUpdated();
+
+        ClientChunkEvents.REBUILT.factory().onClientChunkRebuilt(this);
     }
 
     @Override
@@ -146,6 +149,8 @@ public final class ClientChunk extends Chunk {
         }
         this.ready = true;
         this.clientWorld.updateChunkAndNeighbours(this);
+
+        ClientChunkEvents.BUILT.factory().onClientChunkRebuilt(this);
     }
 
     public Object getBounds() {

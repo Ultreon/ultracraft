@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import com.ultreon.craft.client.events.ClientChunkEvents;
 import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.render.ModelObject;
 import com.ultreon.craft.client.render.shader.OpenShaderProvider;

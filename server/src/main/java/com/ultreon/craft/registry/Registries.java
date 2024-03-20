@@ -8,7 +8,7 @@ import com.ultreon.craft.entity.damagesource.DamageSource;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.recipe.RecipeType;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.weather.Weather;
 import com.ultreon.craft.world.Biome;
 import com.ultreon.craft.world.SoundEvent;
@@ -35,7 +35,7 @@ public final class Registries {
     }
 
     @SafeVarargs
-    public static <T> Registry<T> create(ElementID id, T... typeGetter) {
+    public static <T> Registry<T> create(Identifier id, T... typeGetter) {
         Registry<T> registry = Registry.builder(id, typeGetter).build();
         Registries.REGISTRY.register(id, registry);
         return registry;

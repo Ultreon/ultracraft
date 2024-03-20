@@ -1,13 +1,10 @@
 package com.ultreon.craft.client;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
-import org.lwjgl.glfw.GLFW;
+import org.jetbrains.annotations.ApiStatus;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class GameWindow {
@@ -40,6 +37,7 @@ public class GameWindow {
         window.flash();
     }
 
+    @ApiStatus.Experimental
     public boolean isHovered() {
         PointerInfo pointerInfo = MouseInfo.getPointerInfo();
         Point location = pointerInfo.getLocation();

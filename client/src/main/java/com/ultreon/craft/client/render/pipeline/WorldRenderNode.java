@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.utils.Array;
-import com.ultreon.craft.client.ShaderContext;
+import com.ultreon.craft.client.render.ShaderContext;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.render.shader.OpenShaderProvider;

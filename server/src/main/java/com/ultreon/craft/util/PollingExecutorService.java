@@ -69,7 +69,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(task.call());
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    ElementID id = ((Task<?>) task).id();
+                    Identifier id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -96,7 +96,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(result);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    ElementID id = ((Task<?>) task).id();
+                    Identifier id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -123,7 +123,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(null);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    ElementID id = ((Task<?>) task).id();
+                    Identifier id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);
@@ -136,7 +136,7 @@ public class PollingExecutorService implements ExecutorService {
                 future.complete(null);
             } catch (Throwable throwable) {
                 if (task instanceof Task<?>) {
-                    ElementID id = ((Task<?>) task).id();
+                    Identifier id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
                 future.completeExceptionally(throwable);

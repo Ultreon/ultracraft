@@ -8,10 +8,10 @@ import com.ultreon.craft.api.commands.CommandContext;
 import com.ultreon.craft.api.commands.TabCompleting;
 import com.ultreon.craft.api.commands.perms.Permission;
 import com.ultreon.craft.debug.DebugFlags;
-import com.ultreon.craft.debug.Debugger;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.entity.damagesource.DamageSource;
+import com.ultreon.craft.events.MenuEvents;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.item.Items;
@@ -189,12 +189,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
         super.onMoved();
 
-        // Send the new position to the client.
-        if (this.world.getChunk(this.getChunkPos()) == null) {
-//            this.setPosition(this.ox, this.oy, this.oz);
-//            this.connection.send(new S2CPlayerSetPosPacket(this.getPosition()));
-        }
-
         // Set old position.
         this.ox = this.x;
         this.oy = this.y;
@@ -250,12 +244,13 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
             this.server.handleChunkLoadFailure(pos, "Chunk failed to load on client.");
     }
 
-    private boolean handleClientLoadChunk(@NotNull ChunkPos pos) {
+    private void handleClientLoadChunk(@NotNull ChunkPos pos) {
         this.setPosition(this.ox, this.oy, this.oz);
         if (DebugFlags.LOG_POSITION_RESET_ON_CHUNK_LOAD.enabled()) {
             Chat.sendInfo(this, "Position reset on chunk load.");
         }
-        return this.activeChunks.add(pos);
+
+        this.activeChunks.add(pos);
     }
 
     private void handleFailedChunk(@NotNull ChunkPos pos) {
@@ -376,6 +371,9 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
 
     @Override
     public void openMenu(@NotNull ContainerMenu menu) {
+        if (MenuEvents.MENU_OPEN.factory().onMenuOpen(menu, this).isCanceled())
+            return;
+
         super.openMenu(menu);
 
         this.connection.send(new S2COpenContainerMenuPacket(this.inventory.getType().getId()));

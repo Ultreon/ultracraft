@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DepthShader;
 import com.badlogic.gdx.graphics.g3d.utils.BaseShaderProvider;
-import com.ultreon.craft.client.ShaderContext;
+import com.ultreon.craft.client.render.ShaderContext;
 
 public class GameShaderProvider extends BaseShaderProvider {
     private DepthShader.Config config;

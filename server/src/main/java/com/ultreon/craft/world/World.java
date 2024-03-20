@@ -55,7 +55,7 @@ public abstract class World implements ServerDisposable {
     public static final int WORLD_DEPTH = 0;
     public static final Marker MARKER = MarkerFactory.getMarker("World");
     public static final int REGION_SIZE = 32;
-    public static final ElementID OVERWORLD = new ElementID("overworld");
+    public static final Identifier OVERWORLD = new Identifier("overworld");
     public static final float SEA_LEVEL = 64;
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);

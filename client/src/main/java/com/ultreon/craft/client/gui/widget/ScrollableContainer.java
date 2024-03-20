@@ -29,7 +29,7 @@ public class ScrollableContainer extends UIContainer<ScrollableContainer> {
     private Color backgroundColor = Color.argb(0x40000000);
 
     public ScrollableContainer(int x, int y, @IntRange(from = 0) int width, @IntRange(from = 0) int height) {
-        super(x, y, width, height);
+        super(width, height);
     }
 
     public ScrollableContainer(Position position, Size size) {
@@ -37,7 +37,7 @@ public class ScrollableContainer extends UIContainer<ScrollableContainer> {
     }
 
     public ScrollableContainer() {
-        super(0, 0, 400, 500);
+        super(400, 500);
     }
 
     public boolean isSelectable() {

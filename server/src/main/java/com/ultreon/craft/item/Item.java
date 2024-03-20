@@ -2,7 +2,7 @@ package com.ultreon.craft.item;
 
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.InteractResult;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.jetbrains.annotations.NotNull;
@@ -27,11 +27,11 @@ public class Item {
 
     @NotNull
     public String getTranslationId() {
-        ElementID id = this.getId();
+        Identifier id = this.getId();
         return id == null ? "ultracraft.item.air.name" : id.namespace() + ".item." + id.path() + ".name";
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return Registries.ITEM.getId(this);
     }
 

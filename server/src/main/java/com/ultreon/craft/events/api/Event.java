@@ -10,20 +10,46 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * An event that can be subscribed to and unsubscribed from.
+ *
+ * <h2>Example</h2>
+ * <pre>
+ * public class Events {
+ *     public static final Event&lt;TheEvent&gt; THE_EVENT = Event.create();
+ *
+ *     &#64;FunctionalInterface
+ *     public interface TheEvent {
+ *         void onTheEvent();
+ *     }
+ * }
+ * </pre>
+ *
+ * @param <T>
+ */
 public final class Event<T> {
     private final Factory<T> factory;
-    private final List<T> listeners = new ArrayList<>();
+    private final List<T> subscribers = new ArrayList<>();
 
     public Event(Factory<T> factory) {
         this.factory = factory;
     }
 
+    @Deprecated
     public void listen(T t) {
-        this.listeners.add(t);
+        this.subscribers.add(t);
+    }
+
+    public void subscribe(T t) {
+        this.subscribers.add(t);
+    }
+
+    public void unsubscribe(T t) {
+        this.subscribers.remove(t);
     }
 
     public T factory() {
-        return this.factory.create(this.listeners);
+        return this.factory.create(this.subscribers);
     }
 
     @SafeVarargs

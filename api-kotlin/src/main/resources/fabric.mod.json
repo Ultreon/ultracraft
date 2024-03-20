@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "kotlin_lang",
+  "name": "Kotlin Language Provider",
+  "description": "Provides support for the Kotlin programming language.",
+  "version": "1.0.0",
+
+  "entrypoints": {
+    "init": [
+      "com.ultreon.craft.kotlin.KotlinApiMod"
+    ]
+  }
+}

@@ -10,7 +10,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.resources.StaticResource;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Color;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,13 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TextureManager {
-
-    private final Map<ElementID, Texture> textures = new HashMap<>();
+    private final Map<Identifier, Texture> textures = new HashMap<>();
 
     private final ResourceManager resourceManager;
 
     @Deprecated
-    public static final StaticResource DEFAULT_TEX_RESOURCE = new StaticResource(TextureManager::createDefaultTex);
+    public static final StaticResource DEFAULT_TEX_RESOURCE = new StaticResource(new Identifier("missing_no"), TextureManager::createDefaultTex);
 
     public static final Texture DEFAULT_TEX = new Texture(TextureManager.createMissingNo());
     public static final TextureRegion DEFAULT_TEX_REG = new TextureRegion(TextureManager.DEFAULT_TEX, 0.0F, 0.0F, 1.0F, 1.0F);
@@ -77,7 +76,7 @@ public class TextureManager {
         return byteArrayInputStream;
     }
 
-    public Texture getTexture(ElementID id, Texture fallback) {
+    public Texture getTexture(Identifier id, Texture fallback) {
         Preconditions.checkNotNull(id, "id");
 
         if (!UltracraftClient.isOnMainThread()) {
@@ -95,11 +94,11 @@ public class TextureManager {
     }
 
     @NotNull
-    public Texture getTexture(ElementID id) {
+    public Texture getTexture(Identifier id) {
         return this.getTexture(id, TextureManager.DEFAULT_TEX);
     }
 
-    public boolean isTextureLoaded(ElementID id) {
+    public boolean isTextureLoaded(Identifier id) {
         if (this.frozen) return false;
 
         Preconditions.checkNotNull(id, "id");
@@ -110,7 +109,7 @@ public class TextureManager {
     @NotNull
     @NewInstance
     @CanIgnoreReturnValue
-    public Texture registerTexture(ElementID id) {
+    public Texture registerTexture(Identifier id) {
         if (this.frozen) return TextureManager.DEFAULT_TEX;
 
         Preconditions.checkNotNull(id, "id");
@@ -139,7 +138,7 @@ public class TextureManager {
 
     @NewInstance
     @CanIgnoreReturnValue
-    public Texture registerTextureFB(ElementID id, Texture fallback) {
+    public Texture registerTextureFB(Identifier id, Texture fallback) {
         if (this.frozen) return fallback;
 
         Preconditions.checkNotNull(id, "id");
@@ -167,7 +166,7 @@ public class TextureManager {
     }
 
     @CanIgnoreReturnValue
-    public Texture registerTexture(@NotNull ElementID id, @NotNull Texture texture) {
+    public Texture registerTexture(@NotNull Identifier id, @NotNull Texture texture) {
         if (this.frozen) return TextureManager.DEFAULT_TEX;
 
         Preconditions.checkNotNull(id, "id");

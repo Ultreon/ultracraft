@@ -1,20 +1,20 @@
 package com.ultreon.craft.world;
 
 import com.ultreon.craft.text.TextObject;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.Objects;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class DimensionInfo {
-    public static final DimensionInfo OVERWORLD = new DimensionInfo(new ElementID("overworld"));
-    private final ElementID id;
+    public static final DimensionInfo OVERWORLD = new DimensionInfo(new Identifier("overworld"));
+    private final Identifier id;
 
-    public DimensionInfo(ElementID id) {
+    public DimensionInfo(Identifier id) {
         this.id = id;
     }
 
-    public ElementID getId() {
+    public Identifier getId() {
         return this.id;
     }
 

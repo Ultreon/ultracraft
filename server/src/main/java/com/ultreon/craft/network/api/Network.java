@@ -5,7 +5,7 @@ import com.ultreon.craft.network.api.packet.ClientEndpoint;
 import com.ultreon.craft.network.api.packet.ModPacket;
 import com.ultreon.craft.network.api.packet.ServerEndpoint;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.NonExtendable
@@ -31,7 +31,7 @@ public abstract class Network {
 
     public final void init() {
         int id = 0;
-        this.channel = NetworkChannel.create(new ElementID(this.namespace(), this.channelName()));
+        this.channel = NetworkChannel.create(new Identifier(this.namespace(), this.channelName()));
 
         this.registerPackets(new PacketRegisterContext(this.channel, id));
     }
@@ -54,7 +54,7 @@ public abstract class Network {
 
     }
 
-    public final ElementID getId() {
-        return new ElementID(this.namespace(), this.channelName());
+    public final Identifier getId() {
+        return new Identifier(this.namespace(), this.channelName());
     }
 }

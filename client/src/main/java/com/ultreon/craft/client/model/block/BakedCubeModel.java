@@ -10,13 +10,13 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.texture.TextureManager;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 
 import java.util.Objects;
 
 public final class BakedCubeModel implements BlockModel {
-    public static final BakedCubeModel DEFAULT = new BakedCubeModel(new ElementID("block/default"), TextureManager.DEFAULT_TEX_REG);
-    private final ElementID resourceId;
+    public static final BakedCubeModel DEFAULT = new BakedCubeModel(new Identifier("block/default"), TextureManager.DEFAULT_TEX_REG);
+    private final Identifier resourceId;
     private final TextureRegion top;
     private final TextureRegion bottom;
     private final TextureRegion left;
@@ -32,21 +32,21 @@ public final class BakedCubeModel implements BlockModel {
     private final VertexInfo v10 = new VertexInfo();
     private final VertexInfo v11 = new VertexInfo();
 
-    public BakedCubeModel(ElementID resourceId, TextureRegion all) {
+    public BakedCubeModel(Identifier resourceId, TextureRegion all) {
         this(resourceId, all, all, all, all, all, all);
     }
 
-    public BakedCubeModel(ElementID resourceId, TextureRegion top, TextureRegion bottom,
+    public BakedCubeModel(Identifier resourceId, TextureRegion top, TextureRegion bottom,
                           TextureRegion left, TextureRegion right,
                           TextureRegion front, TextureRegion back) {
         this(resourceId, top, bottom, left, right, front, back, ModelProperties.builder().build());
     }
 
-    public BakedCubeModel(ElementID resourceId, TextureRegion all, ModelProperties properties) {
+    public BakedCubeModel(Identifier resourceId, TextureRegion all, ModelProperties properties) {
         this(resourceId, all, all, all, all, all, all, properties);
     }
 
-    public BakedCubeModel(ElementID resourceId, TextureRegion top, TextureRegion bottom,
+    public BakedCubeModel(Identifier resourceId, TextureRegion top, TextureRegion bottom,
                           TextureRegion left, TextureRegion right,
                           TextureRegion front, TextureRegion back, ModelProperties properties) {
         this.resourceId = resourceId;
@@ -208,7 +208,7 @@ public final class BakedCubeModel implements BlockModel {
     }
 
     @Override
-    public ElementID resourceId() {
+    public Identifier resourceId() {
         return resourceId;
     }
 

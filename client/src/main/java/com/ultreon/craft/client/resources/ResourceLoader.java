@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.UBJsonReader;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.model.ModelType;
 import com.ultreon.craft.resources.Resource;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import net.mgsx.gltf.loaders.glb.GLBLoader;
 import net.mgsx.gltf.loaders.gltf.GLTFLoader;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
@@ -31,7 +31,7 @@ public class ResourceLoader {
      * @param resource the static resource to load a model from.
      * @return the loaded model.
      */
-    public static SceneAsset loadGLTF(ElementID resource) {
+    public static SceneAsset loadGLTF(Identifier resource) {
         FileHandle file = UltracraftClient.resource(resource.mapPath(path -> "models/" + path));
 
         if (resource.path().endsWith(".glb")) return glbLoader.load(file, true);
@@ -60,7 +60,7 @@ public class ResourceLoader {
      * @param resource the static resource to load a model from.
      * @return the loaded model.
      */
-    public static Model loadG3D(ElementID resource) {
+    public static Model loadG3D(Identifier resource) {
         FileHandle file = UltracraftClient.resource(resource.mapPath(path -> "models/" + path));
 
         TextureProvider textureProvider = fileName -> {
