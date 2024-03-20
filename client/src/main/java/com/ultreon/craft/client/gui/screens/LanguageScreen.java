@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.gui.screens;
 
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.*;
 import com.ultreon.craft.client.gui.widget.Label;
 import com.ultreon.craft.client.gui.widget.SelectionList;
@@ -63,7 +64,7 @@ public class LanguageScreen extends Screen {
     }
 
     private void setLanguage(Locale locale) {
-        this.client.config.get().language = LanguageManager.INSTANCE.getLanguageID(locale);
-        this.client.config.save();
+        Config.language = LanguageManager.INSTANCE.getLanguageID(locale);
+        this.client.newConfig.save();
     }
 }

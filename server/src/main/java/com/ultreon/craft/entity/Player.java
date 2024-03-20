@@ -1,11 +1,13 @@
 package com.ultreon.craft.entity;
 
 import com.google.common.base.Preconditions;
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.entity.player.PlayerAbilities;
 import com.ultreon.craft.events.ItemEvents;
 import com.ultreon.craft.events.MenuEvents;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
+import com.ultreon.craft.menu.CrateMenu;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.network.packets.AbilitiesPacket;
@@ -38,7 +40,8 @@ public abstract class Player extends LivingEntity {
     public float crouchModifier = 0.5F;
     public final PlayerAbilities abilities = new PlayerAbilities();
     private boolean crouching = false;
-    @Nullable private ContainerMenu openMenu;
+    @Nullable
+    protected ContainerMenu openMenu;
     private ItemStack cursor = new ItemStack();
     private final String name;
     private Gamemode gamemode = Gamemode.SURVIVAL;
@@ -228,6 +231,12 @@ public abstract class Player extends LivingEntity {
         return data;
     }
 
+    /**
+     * Play a sound event and volume.
+     *
+     * @param sound The sound event to be played. Can be null.
+     * @param volume The volume at which the sound should be played.
+     */
     public void playSound(@Nullable SoundEvent sound, float volume) {
 
     }
@@ -252,13 +261,19 @@ public abstract class Player extends LivingEntity {
     }
 
     public void openMenu(ContainerMenu menu) {
-        if (this.openMenu != null) this.closeMenu();
+        if (this.openMenu != null) {
+            return;
+        }
 
         this.openMenu = menu;
+        this.openMenu.addWatcher(this);
     }
 
     public void closeMenu() {
-        if (this.openMenu == null) return;
+        if (this.openMenu == null) {
+            CommonConstants.LOGGER.warn("Tried to close menu that was not open", new RuntimeException());
+            return;
+        }
 
         if (this instanceof ServerPlayer serverPlayer)
             MenuEvents.MENU_CLOSE.factory().onMenuClose(this.openMenu, serverPlayer);
@@ -267,12 +282,18 @@ public abstract class Player extends LivingEntity {
         this.openMenu = null;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This also clamps the player's position to {@code -30000000..30000000}
+     * And other handling of invalid positions
+     */
     @Override
     protected void onMoved() {
         this.x = Mth.clamp(this.x, -30000000, 30000000);
         this.z = Mth.clamp(this.z, -30000000, 30000000);
 
-        if (this.y < -64) this.y = -64;
+        this.hurtFromVoid();
 
         super.onMoved();
     }
@@ -386,5 +407,11 @@ public abstract class Player extends LivingEntity {
         ItemStack copy = itemStack.copy();
         copy.setCount(1);
         this.drop(copy);
+    }
+
+    public void closeMenu(CrateMenu menu) {
+        if (this.openMenu == menu) {
+            this.closeMenu();
+        }
     }
 }

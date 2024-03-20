@@ -1,5 +1,10 @@
 package com.ultreon.craft.api.commands;
 
+/**
+ * Represents the message code for a command.
+ *
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ */
 public enum MessageCode {
     EMPTY("UC-0", 0),
     NO_PERMISSION("UC-2", 2),

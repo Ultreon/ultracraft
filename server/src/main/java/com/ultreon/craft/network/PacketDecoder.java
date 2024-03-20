@@ -1,6 +1,7 @@
 package com.ultreon.craft.network;
 
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.server.UltracraftServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -37,5 +38,10 @@ public class PacketDecoder extends ByteToMessageDecoder {
             return;
         }
         out.add(packet);
+
+        if (buffer.readableBytes() > 0) {
+            UltracraftServer.LOGGER.warn("PacketDecoder: " + buffer.readableBytes() + " bytes left in buffer! Packet class: " + packet.getClass().getName());
+            buffer.readBytes(buffer.readableBytes());
+        }
     }
 }

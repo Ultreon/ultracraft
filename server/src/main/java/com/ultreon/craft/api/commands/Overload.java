@@ -29,9 +29,20 @@ public class Overload {
         return this.params.equals(parameters);
     }
 
+    /**
+     * Checks if the command is valid for the given sender and command context.
+     *
+     * @param sender the command sender
+     * @param commandCtx the command context
+     * @param args the command arguments
+     * @return true if the command is valid, false otherwise
+     * @throws CommandParseException if an error occurs while parsing the command
+     */
     public boolean validFor(CommandSender sender, CommandContext commandCtx, String[] args) throws CommandParseException {
+        // Flag to track the validity of the command
         AtomicBoolean flag = new AtomicBoolean(true);
 
+        // Check if the command name matches the specified command context
         if (!this.spec.commandName().equals(commandCtx.name())) {
             return false;
         } else if (args.length == 0 && this.params.isEmpty()) {
@@ -42,11 +53,14 @@ public class Overload {
             return false;
         }
 
+        // Create a command reader context
         CommandReader context = new CommandReader(sender, commandCtx.name(), args);
+        // List to store parsed command parameters
         ArrayList<Object> local = new ArrayList<>();
+        // Atomic reference to store any command parse exception
         AtomicReference<CommandParseException> exception = new AtomicReference<>(null);
 
-        // Loop all arguments
+        // Loop through all command parameters
         for(CommandParameter param : this.params) {
             text: if (param instanceof CommandParameter.Text textParam) {
                 String[] text = textParam.getText();
@@ -82,13 +96,16 @@ public class Overload {
             }
         }
 
+        // Calculate the final result based on the flag and context state
         boolean flagResult = flag.get();
         boolean result = flagResult && context.isAtEndOfCmd();
 
+        // Get the command parse exception if any
         CommandParseException commandParseException = exception.get();
         if (commandParseException != null) {
             throw commandParseException;
         }
+        // Cache the parsed command parameters if the command is valid
         if (result) {
             this.objectCache = local;
         }
@@ -96,58 +113,85 @@ public class Overload {
         return result;
     }
 
-    public List<String> tabComplete(CommandSender sender, CommandContext commandCtx, String[] args, List<String> output) {
+    /**
+     * Tab complete the command based on the provided arguments and parameters.
+     *
+     * @param sender the command sender
+     * @param commandCtx the command context
+     * @param args the command arguments
+     * @param output the list of tab completions
+     * @return the list of tab completions
+     */
+    public List<String> tabComplete(CommandSender sender, CommandContext commandCtx, String[] args,
+                                    List<String> output) {
         if (!this.hasPermission(sender)) {
             return null;
         }
         CommandReader context = new CommandReader(sender, commandCtx.name(), args);
 
-        // Loop all arguments.
+        // Loop through all command parameters for tab completion.
         for (CommandParameter param : this.params) {
             AtomicBoolean cancel = new AtomicBoolean(false);
             AtomicBoolean no = new AtomicBoolean(false);
-            param.ifText(text -> {
-                try {
-                    String readied = context.readString();
-                    List<String> strings = TabCompleting.strings(new ArrayList<>(), readied, text);
-                    if (!context.isAtEndOfCmd()) {
-                        if (!Arrays.asList(text).contains(readied)) {
-                            no.set(true);
-                        }
-                    } else {
-                        output.addAll(strings);
-                        cancel.set(true);
-                    }
-                } catch (CommandParseException e) {
-                    UltracraftServer.LOGGER.error("Failed to parse command: ", e);
-                    cancel.set(true);
-                }
-            }).ifArgType(t -> {
-                List<String> res;
-                try {
-                    String[] completionArgs = Arrays.copyOfRange(args, context.getCurrent(), args.length);
-                    res = t.getCompleter().tabComplete(sender, commandCtx, context, completionArgs);
-                } catch (CommandParseException e) {
-                    output.clear();
-                    cancel.set(true);
-                    UltracraftServer.LOGGER.error("Failed to parse command: ", e);
-                    return;
-                }
-                if (context.isAtEndOfCmd()) {
-                    output.clear();
-                    output.addAll(res);
-                    cancel.set(true);
-                }
-            });
+            param.ifText(text -> handleText(output, text, context, no, cancel))
+                    .ifArgType(t -> handleArgType(sender, commandCtx, args, output, t, context, cancel));
 
+            // Check if the command is cancelled
             if (no.get()) {
                 return null;
             }
+
             if (cancel.get()) {
                 return output;
             }
         }
         return output;
+    }
+
+    private static void handleArgType(CommandSender sender, CommandContext commandCtx, String[] args, List<String> output, CommandParameter.ArgumentType t, CommandReader context, AtomicBoolean cancel) {
+        List<String> res;
+        try {
+            // Read the next argument
+            String[] completionArgs = Arrays.copyOfRange(args, context.getCurrent(), args.length);
+            res = t.getCompleter().tabComplete(sender, commandCtx, context, completionArgs);
+        } catch (CommandParseException e) {
+            // If an error occurs, clear the output
+            output.clear();
+            cancel.set(true);
+
+            // Log the error
+            UltracraftServer.LOGGER.error("Failed to parse command: ", e);
+            return;
+        }
+
+        // Check if the argument is at the end of the command
+        if (context.isAtEndOfCmd()) {
+            output.clear();
+            output.addAll(res);
+            cancel.set(true);
+        }
+    }
+
+    private static void handleText(List<String> output, String[] text, CommandReader context, AtomicBoolean no, AtomicBoolean cancel) {
+        try {
+            // Read the next argument
+            String readied = context.readString();
+            List<String> strings = TabCompleting.strings(new ArrayList<>(), readied, text);
+
+            // Check if the argument is at the end of the command
+            if (!context.isAtEndOfCmd()) {
+                if (!Arrays.asList(text).contains(readied)) {
+                    no.set(true);
+                }
+            } else {
+                // Add the tab completions
+                output.addAll(strings);
+                cancel.set(true);
+            }
+        } catch (CommandParseException e) {
+            UltracraftServer.LOGGER.error("Failed to parse command: ", e);
+            cancel.set(true);
+        }
     }
 
     public List<CommandParameter> args() {

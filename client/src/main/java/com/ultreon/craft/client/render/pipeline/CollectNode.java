@@ -7,8 +7,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.input.GameCamera;
-import com.ultreon.craft.client.player.LocalPlayer;
-import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import org.checkerframework.common.reflection.qual.NewInstance;
@@ -29,7 +27,7 @@ public class CollectNode extends RenderPipeline.RenderNode {
             LOGGER.warn("worldRenderer or localPlayer is null");
             return input;
         }
-        var position = localPlayer.getPosition();
+        var position = localPlayer.getPosition(client.partialTick);
         List<Entity> toSort = new ArrayList<>(world.getAllEntities());
         worldRenderer.collect(input, this.pool());
         toSort.sort((e1, e2) -> {

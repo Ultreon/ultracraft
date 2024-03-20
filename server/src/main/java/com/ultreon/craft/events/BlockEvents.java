@@ -1,6 +1,7 @@
 package com.ultreon.craft.events;
 
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.api.Event;
 import com.ultreon.craft.events.api.EventResult;
@@ -18,7 +19,7 @@ public class BlockEvents {
 
     @FunctionalInterface
     public interface SetBlock {
-        void onSetBlock(World world, BlockPos pos, Block block);
+        void onSetBlock(World world, BlockPos pos, BlockMetadata block);
     }
 
     @FunctionalInterface
@@ -33,11 +34,11 @@ public class BlockEvents {
 
     @FunctionalInterface
     public interface AttemptBlockRemoval {
-        EventResult onAttemptBlockRemoval(ServerPlayer player, Block removed, BlockPos pos, ItemStack stack);
+        EventResult onAttemptBlockRemoval(ServerPlayer player, BlockMetadata removed, BlockPos pos, ItemStack stack);
     }
 
     @FunctionalInterface
     public interface BlockRemoved {
-        void onBlockRemoved(ServerPlayer player, Block removed, BlockPos pos, ItemStack stack);
+        void onBlockRemoved(ServerPlayer player, BlockMetadata removed, BlockPos pos, ItemStack stack);
     }
 }

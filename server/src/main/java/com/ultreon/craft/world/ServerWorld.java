@@ -7,8 +7,8 @@ import com.google.common.collect.Queues;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.debug.WorldGenDebugContext;
@@ -17,9 +17,9 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.events.WorldEvents;
 import com.ultreon.craft.network.client.ClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
+import com.ultreon.craft.network.packets.s2c.S2CAddEntityPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockEntitySetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
-import com.ultreon.craft.network.packets.s2c.S2CAddEntityPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.server.UltracraftServer;
@@ -29,6 +29,7 @@ import com.ultreon.craft.world.gen.TerrainGenerator;
 import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
+import com.ultreon.data.DataIo;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.LongType;
 import com.ultreon.data.types.MapType;
@@ -37,9 +38,8 @@ import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.checkerframework.common.reflection.qual.NewInstance;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.intellij.lang.annotations.MagicConstant;
+import org.jetbrains.annotations.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.*;
@@ -61,8 +61,6 @@ public class ServerWorld extends World {
     private ScheduledFuture<?> saveSchedule;
     private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
     private static long chunkUnloads;
-    private static long chunkLoads;
-    private static long chunkSaves;
 
     private final TerrainGenerator terrainGen;
 
@@ -131,12 +129,14 @@ public class ServerWorld extends World {
         return ServerWorld.chunkUnloads;
     }
 
+    @Deprecated
     public static long getChunkLoads() {
-        return ServerWorld.chunkLoads;
+        return 0;
     }
 
+    @Deprecated
     public static long getChunkSaves() {
-        return ServerWorld.chunkSaves;
+        return 0;
     }
 
     public int getChunksToLoad() {
@@ -165,18 +165,54 @@ public class ServerWorld extends World {
         return true;
     }
 
+    /**
+     * Sets the block at the given position
+     *
+     * @param x     the x-coordinate
+     * @param y     the y-coordinate
+     * @param z     the z-coordinate
+     * @param block the block type to set
+     * @return true if the block was successfully set, false if setting the block failed
+     * @deprecated due to block setting changes, use {@link #set(int, int, int, BlockMetadata, int)} instead
+     * @see BlockFlags
+     */
     @Override
-    public boolean set(int x, int y, int z, @NotNull Block block) {
-        boolean isBlockSet = super.set(x, y, z, block);
-        block.onPlace(this, new BlockPos(x, y, z));
-        if (isBlockSet) {
-            this.update(x, y, z, block);
+    @Deprecated
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block) {
+        return set(x, y, z, block, BlockFlags.UPDATE | BlockFlags.SYNC);
+    }
+
+    /**
+     * Sets the block at the given position.
+     *
+     * @param x     the x-coordinate of the block in world space
+     * @param y     the y-coordinate of the block in world space
+     * @param z     the z-coordinate of the block in world space
+     * @param block the block type to set
+     * @param flags the flags to use when setting the block. Values are defined in {@link BlockFlags}
+     * @return true if the block was successfully set, false if setting the block failed
+     * @see BlockFlags
+     */
+    @Override
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block,
+                       @MagicConstant(flagsFromClass = BlockFlags.class) int flags) {
+        boolean isBlockSet = super.set(x, y, z, block, flags);
+        BlockPos blockPos = new BlockPos(x, y, z);
+        block.onPlace(this, blockPos);
+        if (~(flags & BlockFlags.SYNC) != 0) this.sync(x, y, z, block);
+        if (~(flags & BlockFlags.UPDATE) != 0) {
+            for (CubicDirection direction : CubicDirection.values()) {
+                BlockPos offset = blockPos.offset(direction);
+                BlockMetadata blockMetadata = this.get(offset);
+                blockMetadata.update(this, offset);
+            }
         }
+        
         return isBlockSet;
     }
 
     @Override
-    public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {
+    public void setBlockEntity(@NotNull BlockPos pos, @NotNull BlockEntity blockEntity) {
         super.setBlockEntity(pos, blockEntity);
 
         if (this.getBlockEntity(pos) == blockEntity) {
@@ -184,8 +220,8 @@ public class ServerWorld extends World {
         }
     }
 
-    private void update(int x, int y, int z, @NotNull Block block) {
-        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block.getRawId()));
+    private void sync(int x, int y, int z, BlockMetadata block) {
+        this.sendAllTracking(x, y, z, new S2CBlockSetPacket(new BlockPos(x, y, z), block));
     }
 
     public void sendAllTracking(int x, int y, int z, Packet<? extends ClientPacketHandler> packet) {
@@ -198,82 +234,156 @@ public class ServerWorld extends World {
         }
     }
 
+    /**
+     * Loads a chunk at the specified chunk position (x, z).
+     *
+     * @param pos The chunk position.
+     * @return The loaded chunk or null if loading failed.
+     */
     @Nullable
+    @NonBlocking
     @SuppressWarnings("UnusedReturnValue")
-    private Chunk loadChunk(ChunkPos pos) {
+    public Chunk loadChunk(ChunkPos pos) {
+        // Ensure this method is called from the correct thread
         this.checkThread();
 
+        // Load the chunk
         return this.loadChunk(pos.x(), pos.z());
     }
 
+    /**
+     * Loads a chunk at the specified global chunk position (x, z).
+     *
+     * @param x The x-coordinate of the chunk.
+     * @param z The z-coordinate of the chunk.
+     * @return The loaded chunk or null if loading failed.
+     */
     @Nullable
+    @NonBlocking
     public Chunk loadChunk(int x, int z) {
+        // Ensure this method is called from the correct thread
         this.checkThread();
 
+        // Load the chunk
         return this.loadChunk(x, z, false);
     }
 
+    /**
+     * Loads a chunk at the specified global chunk position (x, z), optionally overwriting an existing chunk.
+     *
+     * @param x         The x-coordinate of the chunk.
+     * @param z         The z-coordinate of the chunk.
+     * @param overwrite Whether to overwrite an existing chunk if present.
+     * @return The loaded chunk or null if loading failed.
+     * @throws IllegalStateError If the chunk is already active.
+     */
     @Nullable
+    @NonBlocking
     public ServerChunk loadChunk(int x, int z, boolean overwrite) {
+        // Ensure this method is called from the correct thread
         this.checkThread();
 
+        // Calculate global and local chunk positions
         var globalPos = new ChunkPos(x, z);
         var localPos = World.toLocalChunkPos(x, z);
 
         try {
+            // Check if there's an existing chunk at the global position
             var oldChunk = this.getChunk(globalPos);
             if (oldChunk != null && !overwrite) {
                 return oldChunk;
             }
 
+            // Get or open the region at the global position
             var region = this.getOrOpenRegionAt(globalPos);
             var chunk = region.openChunk(localPos, globalPos);
+
+            // Return null if the chunk couldn't be opened
             if (chunk == null) return null;
+
+            // Throw an error if the chunk is already active
             if (chunk.active) {
                 throw new IllegalStateError("Chunk is already active.");
             }
 
+            // Trigger chunk loaded event and track chunk loads
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
             ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
+            // Log and rethrow any exception that occurred during chunk loading
             World.LOGGER.error(World.MARKER, "Failed to load chunk " + globalPos + ":", e);
             throw e;
         }
     }
 
+    /**
+     * Loads a chunk at the specified global chunk position (x, z).
+     *
+     * @param pos The chunk position.
+     * @return The loaded chunk or null if loading failed.
+     */
     @Nullable
+    @Blocking
     @SuppressWarnings("UnusedReturnValue")
     private Chunk loadChunkNow(ChunkPos pos) {
+        // Ensure the method is called on the correct thread
         this.checkThread();
 
+        // Load the chunk
         return this.loadChunkNow(pos.x(), pos.z());
     }
 
+    /**
+     * Loads a chunk at the specified global chunk position (x, z).
+     *
+     * @param x The x-coordinate of the chunk.
+     * @param z The z-coordinate of the chunk.
+     * @return The loaded chunk or null if loading failed.
+     */
     @Nullable
+    @Blocking
     public Chunk loadChunkNow(int x, int z) {
+        // Ensure the method is called on the correct thread
         this.checkThread();
 
+        // Load the chunk
         return this.loadChunkNow(x, z, false);
     }
 
+    /**
+     * Loads a chunk synchronously at the specified global chunk position (x, z), optionally overwriting an existing chunk.
+     *
+     * @param x         The x-coordinate of the chunk.
+     * @param z         The z-coordinate of the chunk.
+     * @param overwrite Whether to overwrite an existing chunk if found.
+     * @return The loaded chunk or null if failed to load.
+     */
     @Nullable
+    @Blocking
     public ServerChunk loadChunkNow(int x, int z, boolean overwrite) {
+        // Ensure the method is called on the correct thread
         this.checkThread();
 
+        // Calculate global and local positions
         var globalPos = new ChunkPos(x, z);
         var localPos = World.toLocalChunkPos(x, z);
 
         try {
+            // Check if there is an existing chunk at the global position
             var oldChunk = this.getChunk(globalPos);
             if (oldChunk != null && !overwrite) {
                 return oldChunk;
             }
 
+            // Get or open the region at the global position
             var region = this.getOrOpenRegionAt(globalPos);
+
+            // Open the chunk at the local position within the region
             var chunk = region.openChunkNow(localPos, globalPos);
             if (chunk == null) {
+                // Handle failure to load chunk
                 this.server.handleChunkLoadFailure(globalPos, "Chunk not loaded on server.");
                 World.LOGGER.warn("Failed to load chunk {}!", globalPos);
                 return null;
@@ -282,28 +392,16 @@ public class ServerWorld extends World {
                 throw new IllegalStateError("Chunk is already active.");
             }
 
+            // Trigger CHUNK_LOADED event and update chunk load count
             WorldEvents.CHUNK_LOADED.factory().onChunkLoaded(this, globalPos, chunk);
             ValueTracker.setChunkLoads(ValueTracker.getChunkLoads() + 1);
 
             return chunk;
         } catch (Exception e) {
+            // Log and rethrow any exceptions that occur during chunk loading
             World.LOGGER.error(World.MARKER, "Failed to load chunk " + globalPos + ":", e);
             throw e;
         }
-    }
-
-    @Deprecated
-    private WorldGenInfo getWorldGenInfo(Vec3d pos) {
-        var needed = World.getChunksAround(this, pos);
-        var chunkPositionsToCreate = this.getChunksToLoad(needed, pos);
-        var chunkPositionsToRemove = this.getChunksToUnload(needed);
-
-        var data = new WorldGenInfo();
-        data.toLoad = chunkPositionsToCreate;
-        data.toRemove = chunkPositionsToRemove;
-        data.toUpdate = new ArrayList<>();
-        return data;
-
     }
 
     public void tick() {
@@ -496,23 +594,47 @@ public class ServerWorld extends World {
         return this.playTime;
     }
 
+    /**
+     * Check if the current thread is the server thread.
+     *
+     * @throws InvalidThreadException if the current thread is not the server thread.
+     */
     @Override
     protected void checkThread() {
         if (!UltracraftServer.isOnServerThread()) throw new InvalidThreadException("Should be on server thread.");
     }
 
+    /**
+     * Retrieves the chunk at the given position.
+     *
+     * @param pos The position of the chunk.
+     * @return The chunk at the given position, or null if not found.
+     */
     @Override
     public @Nullable ServerChunk getChunk(@NotNull ChunkPos pos) {
+        // Get the region at the specified position
         var region = this.regionStorage.getRegionAt(pos);
+        
+        // If the region is not found, return null
         if (region == null) return null;
+        
+        // Convert the chunk position to local coordinates
         var localPos = World.toLocalChunkPos(pos);
+        
+        // Get the chunk from the region
         var chunk = region.getChunk(localPos);
+        
+        // If the chunk is found, verify its position matches the expected position
         if (chunk != null) {
-            var foundAt = chunk.getPos();
+            ChunkPos foundAt = chunk.getPos();
+            
+            // If the positions don't match, throw a validation error
             if (!foundAt.equals(localPos)) {
                 throw new ValidationError("Chunk expected to be found at %s was found at %s instead.".formatted(pos, foundAt));
             }
         }
+        
+        // Return the chunk
         return chunk;
     }
 
@@ -613,6 +735,7 @@ public class ServerWorld extends World {
      *
      * @throws IOException when world loading fails.
      */
+    @Blocking
     @ApiStatus.Internal
     public void load() throws IOException {
         this.storage.createDir("players/");
@@ -623,7 +746,7 @@ public class ServerWorld extends World {
         //<editor-fold defaultstate="collapsed" desc="<<Loading: entities.ubo>>">
         if (this.storage.exists("entities.ubo")) {
             ListType<MapType> entityListData = this.storage.read("entities.ubo");
-            for (var entityData : entityListData) {
+            for (var entityData : entityListData.getValue()) {
                 var entity = Entity.loadFrom(this, entityData);
                 this.entitiesById.put(entity.getId(), entity);
             }
@@ -646,9 +769,9 @@ public class ServerWorld extends World {
                 } catch (Exception e) {
                     World.LOGGER.error(World.MARKER, "Failed to save world:", e);
                 }
-                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.get().autoSaveInterval, TimeUnit.SECONDS);
+                ServerWorld.this.saveSchedule = ServerWorld.this.server.schedule(this, UltracraftServerConfig.autoSaveInterval, TimeUnit.SECONDS);
             }
-        }, UltracraftServerConfig.get().initialAutoSaveDelay, TimeUnit.SECONDS);
+        }, UltracraftServerConfig.initialAutoSaveDelay, TimeUnit.SECONDS);
         //</editor-fold>
 
         WorldEvents.LOAD_WORLD.factory().onLoadWorld(this, this.storage);
@@ -662,11 +785,13 @@ public class ServerWorld extends World {
      * @param silent true to silence the logs.
      * @throws IOException when saving the world fails.
      */
+    @Blocking
     @ApiStatus.Internal
     public void save(boolean silent) throws IOException {
+        // Log saving world message if not silent
         if (!silent) World.LOGGER.info(World.MARKER, "Saving world: " + this.storage.getDirectory().getFileName());
 
-        //<editor-fold defaultstate="collapsed" desc="<<Saving: entities.ubo>>">
+        // Save entities data
         var entitiesData = new ListType<MapType>();
         for (var entity : this.entitiesById.values()) {
             if (entity instanceof Player) continue;
@@ -675,14 +800,12 @@ public class ServerWorld extends World {
             entitiesData.add(entityData);
         }
         this.storage.write(entitiesData, "entities.ubo");
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="<<Saving: world.ubo>>">
+        // Save world data
         MapType save = this.save(new MapType());
         this.storage.write(save, "world.ubo");
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="<<Saving: regions/>>">
+        // Save regions data
         for (var region : this.regionStorage.regions.values()) {
             try {
                 if (region.isDirty())
@@ -695,10 +818,11 @@ public class ServerWorld extends World {
                 region.dispose();
             }
         }
-        //</editor-fold>
 
+        // Trigger save world event
         WorldEvents.SAVE_WORLD.factory().onSaveWorld(this, this.storage);
 
+        // Log saved world message if not silent
         if (!silent) World.LOGGER.info(World.MARKER, "Saved world: " + this.storage.getDirectory().getFileName());
     }
 
@@ -707,6 +831,7 @@ public class ServerWorld extends World {
      *
      * @param region the region to save.
      */
+    @Blocking
     public void saveRegion(Region region) {
         this.saveRegion(region, true);
     }
@@ -717,6 +842,7 @@ public class ServerWorld extends World {
      * @param region  the region to save.
      * @param dispose true to also dispose the region.
      */
+    @Blocking
     public void saveRegion(Region region, boolean dispose) {
         var file = this.storage.regionFile(region.getPos());
         try (var stream = new GZIPOutputStream(new FileOutputStream(file, false), true)) {
@@ -739,59 +865,93 @@ public class ServerWorld extends World {
      * @return the future of the save function. Will return true if successful when finished.
      */
     @ApiStatus.Internal
+    @NonBlocking
     public CompletableFuture<Boolean> saveAsync(boolean silent) {
+        // Check if there is a save schedule running
         var saveSchedule = this.saveSchedule;
+
+        // If there is a save schedule running and it's not done, return the existing saveFuture if available
         if (saveSchedule != null && !saveSchedule.isDone()) {
             return this.saveFuture != null ? this.saveFuture : CompletableFuture.completedFuture(true);
         }
+
+        // If there is a save schedule running, cancel it
         if (saveSchedule != null) {
             saveSchedule.cancel(false);
         }
+
         try {
+            // Run the save operation asynchronously
             return this.saveFuture = CompletableFuture.supplyAsync(() -> {
                 try {
                     this.save(silent);
                     return true;
                 } catch (Exception e) {
+                    // Handle save error
                     this.server.handleWorldSaveError(e);
                     World.LOGGER.error(World.MARKER, "Failed to save world", e);
                     return false;
                 }
             }, this.saveExecutor);
         } catch (Exception e) {
+            // Log error if save operation fails
             World.LOGGER.error(World.MARKER, "Failed to save world", e);
             return CompletableFuture.completedFuture(false);
         }
     }
 
+    /**
+     * Gets or opens the region at the specified chunk position.
+     *
+     * @param chunkPos the chunk position to get or open the region at
+     * @return the region at the specified chunk position
+     */
     @NotNull
     private Region getOrOpenRegionAt(ChunkPos chunkPos) {
+        // Ensure this method is called from the correct thread
         this.checkThread();
 
+        // Calculate region coordinates
         var rx = chunkPos.x() / World.REGION_SIZE;
         var rz = chunkPos.z() / World.REGION_SIZE;
 
+        // Create a new region position
         var regionPos = new RegionPos(rx, rz);
+
+        // Get the map of regions
         var regions = this.regionStorage.regions;
+
+        // Check if the region already exists at the calculated position
         var oldRegion = regions.get(regionPos);
         if (oldRegion != null) {
             return oldRegion;
         }
 
+        // If the region does not exist, try to open it
         try {
             if (this.storage.regionExists(rx, rz)) {
                 return this.openRegion(rx, rz);
             }
         } catch (IOException e) {
+            // Log error if the region failed to load
             World.LOGGER.error("Region at %s,%s failed to load:".formatted(rx, rz), e);
         }
 
+        // Create a new region if it doesn't exist and add it to the regions map
         var region = new Region(this, regionPos);
         this.regionStorage.regions.put(regionPos, region);
 
         return region;
     }
 
+    /**
+     * Opens and loads a region from the specified coordinates.
+     *
+     * @param rx The x-coordinate of the region.
+     * @param rz The z-coordinate of the region.
+     * @return The loaded region.
+     * @throws IOException If an I/O error occurs.
+     */
     @NotNull
     private Region openRegion(int rx, int rz) throws IOException {
         var fileHandle = this.storage.regionFile(rx, rz);
@@ -878,7 +1038,7 @@ public class ServerWorld extends World {
         this.setSpawnPoint(spawnX, spawnZ);
     }
 
-    public void recordOutOfBounds(int x, int y, int z, Block block) {
+    public void recordOutOfBounds(int x, int y, int z, BlockMetadata block) {
         if (this.isOutOfWorldBounds(x, y, z)) {
             return;
         }
@@ -897,16 +1057,51 @@ public class ServerWorld extends World {
         chunkAt.setFast(World.toLocalBlockPos(x, y, z).vec(), block);
     }
 
+    /**
+     * Retrieve the TerrainGenerator object.
+     *
+     * @return the TerrainGenerator object
+     */
     public TerrainGenerator getTerrainGenerator() {
         return this.terrainGen;
     }
 
-    public void update(Vec3i pos) {
-        this.update(pos.x, pos.y, pos.z, this.get(pos.x, pos.y, pos.z));
+    /**
+     * Update the block at the given position.
+     *
+     * @param pos the position of the block
+     */
+    public void sync(Vec3i pos) {
+        this.sync(pos.x, pos.y, pos.z, this.get(pos.x, pos.y, pos.z));
     }
 
-    public void update(BlockPos pos) {
-        this.update(pos.x(), pos.y(), pos.z(), this.get(pos));
+    /**
+     * Update the block at the given position.
+     *
+     * @param pos the position of the block
+     */
+    public void sync(BlockPos pos) {
+        this.sync(pos.x(), pos.y(), pos.z(), this.get(pos));
+    }
+
+    /**
+     * Check if the chunk at the given position is loaded.
+     *
+     * @param blockPos the position of the block
+     * @return true if the chunk is loaded
+     */
+    public boolean isLoaded(BlockPos blockPos) {
+        return this.getChunkAt(blockPos) != null;
+    }
+
+    /**
+     * Check if the chunk at the given position is loaded.
+     *
+     * @param chunkPos the position of the chunk
+     * @return true if the chunk is loaded
+     */
+    public boolean isLoaded(ChunkPos chunkPos) {
+        return this.getChunk(chunkPos) != null;
     }
 
     /**
@@ -1174,7 +1369,7 @@ public class ServerWorld extends World {
          * @param globalPos the global position of the chunk to generate.
          */
         private void buildChunkAsync(ChunkPos globalPos) {
-            if (UltracraftServerConfig.get().debugWarnChunkBuildOverload && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
+            if (UltracraftServerConfig.debugWarnChunkBuildOverload && this.world.executor.getActiveCount() == this.world.executor.getMaximumPoolSize()) {
                 World.LOGGER.warn("Chunk building is being overloaded!");
             }
 
@@ -1341,16 +1536,15 @@ public class ServerWorld extends World {
         public void save(Region region, DataOutputStream stream, boolean dispose) throws IOException {
             var pos = region.pos();
 
-            // Write region metadata.
-            stream.writeInt(region.dataVersion);
-            stream.writeUTF(region.lastPlayedIn);
-            stream.writeInt(pos.x());
-            stream.writeInt(pos.z());
-            stream.writeInt(World.REGION_SIZE);
+            MapType mapType = new MapType();
+            mapType.putInt("dataVersion", region.dataVersion);
+            mapType.putString("lastPlayedIn", region.lastPlayedIn);
+            mapType.putInt("x", pos.x());
+            mapType.putInt("z", pos.z());
+            mapType.putInt("size", World.REGION_SIZE);
 
             // Write chunks to the region file.
-            var chunks = region.getChunks().stream().filter(ServerChunk::shouldSave).toList();
-            stream.writeShort(chunks.size());
+            var chunks = region.getChunks().stream().filter(serverChunk -> !serverChunk.isOriginal()).toList();
             var idx = 0;
             CommonConstants.LOGGER.info("Saving " + chunks.size() + " chunks in region " + pos);
             for (var chunk : chunks) {
@@ -1358,14 +1552,12 @@ public class ServerWorld extends World {
                     throw new IllegalArgumentException("Too many chunks in region!");
                 CommonConstants.LOGGER.info("Saving chunk " + chunk.getPos() + " in region " + pos);
                 var localChunkPos = World.toLocalChunkPos(chunk.getPos());
-                stream.writeByte(localChunkPos.x());
-                stream.writeByte(localChunkPos.z());
-                chunk.save().write(stream);
-                stream.flush();
+                mapType.put("c" + localChunkPos.x() + ";" + localChunkPos.z(), chunk.save());
                 idx++;
             }
 
-            stream.flush();
+            // Write region metadata.
+            DataIo.write(mapType, stream);
 
             // Dispose the region if requested.
             if (dispose) {
@@ -1384,23 +1576,41 @@ public class ServerWorld extends World {
          */
         public Region load(ServerWorld world, DataInputStream stream) throws IOException {
             // Read region metadata.
-            var dataVersion = stream.readInt();
-            var lastPlayedIn = stream.readUTF();
-            var x = stream.readInt();
-            var z = stream.readInt();
-            var regionSize = stream.readInt();
-            var worldOffsetX = x * World.REGION_SIZE;
-            var worldOffsetZ = z * World.REGION_SIZE;
+            MapType read = DataIo.read(stream);
+            int dataVersion = read.getInt("dataVersion");
+            String lastPlayedIn = read.getString("lastPlayedIn");
+            int x = read.getInt("x");
+            int z = read.getInt("z");
+            int size = read.getInt("size");
+            int worldOffsetX = x * World.REGION_SIZE;
+            int worldOffsetZ = z * World.REGION_SIZE;
+
+            if (dataVersion > World.REGION_DATA_VERSION)
+                throw new IllegalArgumentException("Unsupported region data version " + dataVersion);
+
+            if (dataVersion < 0)
+                throw new IllegalArgumentException("Invalid region data version " + dataVersion);
+
+//            var dataVersion = stream.readInt();
+//            var lastPlayedIn = stream.readUTF();
+//            var x = stream.readInt();
+//            var z = stream.readInt();
+//            var regionSize = stream.readInt();
+//            var worldOffsetX = x * World.REGION_SIZE;
+//            var worldOffsetZ = z * World.REGION_SIZE;
 
             // Read chunks from region file.
             Map<ChunkPos, ServerChunk> chunkMap = new HashMap<>();
-            var maxIdx = stream.readUnsignedShort();
             var regionPos = new RegionPos(x, z);
             var region = new Region(world, regionPos, chunkMap);
-            for (var idx = 0; idx < maxIdx; idx++) {
-                // Read local chunk pos.
-                var chunkX = stream.readUnsignedByte();
-                var chunkZ = stream.readUnsignedByte();
+            for (var key : read.keys()) {
+                if (!key.matches("c\\d+;\\d+")) {
+                    continue;
+                }
+
+                var parts = key.substring(1).split(";");
+                var chunkX = Integer.parseInt(parts[0]);
+                var chunkZ = Integer.parseInt(parts[1]);
 
                 // Validate chunk coordinates.
                 Preconditions.checkElementIndex(chunkX, World.REGION_SIZE, "Invalid chunk X position");
@@ -1410,7 +1620,9 @@ public class ServerWorld extends World {
                 var localChunkPos = new ChunkPos(chunkX, chunkZ);
 
                 // Load server chunk.
-                var chunk = ServerChunk.load(world, localChunkPos, MapType.read(stream), region);
+                MapType map = read.getMap(key);
+                if (map == null) continue;
+                var chunk = ServerChunk.load(world, localChunkPos, map, region);
                 chunkMap.put(localChunkPos, chunk);
             }
 
@@ -1468,13 +1680,13 @@ public class ServerWorld extends World {
         }
     }
 
-    public record RecordedChange(int x, int y, int z, Block block) {
+    public record RecordedChange(int x, int y, int z, BlockMetadata block) {
         public MapType save() {
             MapType mapType = new MapType();
             mapType.putInt("x", this.x);
             mapType.putInt("y", this.y);
             mapType.putInt("z", this.z);
-            mapType.putString("block", Objects.requireNonNull(Registries.BLOCK.getId(this.block)).toString());
+            mapType.put("block", this.block.save());
             return mapType;
         }
 
@@ -1494,11 +1706,11 @@ public class ServerWorld extends World {
         @Override
         public String toString() {
             return "RecordedChange{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    ", block=" + block.getId() +
-                    '}';
+                   "x=" + x +
+                   ", y=" + y +
+                   ", z=" + z +
+                   ", block=" + block +
+                   '}';
         }
     }
 }

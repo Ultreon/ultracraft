@@ -14,7 +14,7 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.render.EntityTextures;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
@@ -32,19 +32,11 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
 
         float xRot = clientPlayer.xRot;
         float yRot = clientPlayer.yRot;
-//        instance.getNode("left_arm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -(clientPlayer.bopZ + 3) / 3 + (clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, -(clientPlayer.bop + 3) / 3));
-//        instance.getNode("right_arm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (clientPlayer.bopZ + 3) / 3 + (-clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, (clientPlayer.bop + 3) / 3));
-//        instance.getNode("left_sleve").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -(clientPlayer.bopZ + 3) / 3 + (clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, -(clientPlayer.bop + 3) / 3));
-//        instance.getNode("right_sleve").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (clientPlayer.bopZ + 3) / 3 + (-clientPlayer.walkAnim * 2000 * localPlayer.getWalkingSpeed())).rotate(Vector3.Z, (clientPlayer.bop + 3) / 3));
-//        instance.getNode("left_leg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
-//        instance.getNode("right_leg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
-//        instance.getNode("left_pants").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, -clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
-//        instance.getNode("right_pants").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, clientPlayer.walkAnim * 3000 * localPlayer.getWalkingSpeed()));
 
-        instance.getNode("leg1").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
-        instance.getNode("leg2").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (-clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
-        instance.getNode("leg3").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (-clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
-        instance.getNode("leg4").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
+        instance.getNode("LeftLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
+        instance.getNode("RightLeg").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (-clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
+        instance.getNode("LeftArm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (-clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
+        instance.getNode("RightArm").rotation.idt().setFromMatrix(this.tmp.idt().rotate(Vector3.X, (float) (clientPlayer.walkAnim * 3000 * clientPlayer.getSpeed())));
 
         float duration = 0.15f;
         var walkAnim = clientPlayer.walkAnim;
@@ -88,14 +80,14 @@ public class PlayerRenderer extends LivingEntityRenderer<@NotNull Player> {
 
         instance.getNode("head").rotation.setFromMatrix(this.tmp.idt().rotate(Vector3.Y, player.xHeadRot - xRot).rotate(Vector3.X, yRot));
 //        instance.getNode("headwear").rotation.setFromMatrix(this.tmp.idt().rotate(Vector3.Y, player.xHeadRot - xRot).rotate(Vector3.X, yRot));
-        EntityRenderer.tmp0.set(localPlayer.getPosition());
+        EntityRenderer.tmp0.set(localPlayer.getPosition(client.partialTick));
         EntityRenderer.tmp0.sub(player.getPosition());
         instance.translate(0, -1.625, 0);
         instance.scale(1 / 125.0, 1 / 125.0, 1 / 125.0);
         instance.rotateY(xRot - 180);
 
         TextureManager textureManager = client.getTextureManager();
-        ElementID id = ElementID.parse("dynamic/player_skin/" + this.client.player.getUuid().toString().replace("-", ""));
+        Identifier id = Identifier.parse("dynamic/player_skin/" + this.client.player.getUuid().toString().replace("-", ""));
         if (!textureManager.isTextureLoaded(id)) {
             Texture localSkin = client.getSkinManager().getLocalSkin();
             if (localSkin != null) {

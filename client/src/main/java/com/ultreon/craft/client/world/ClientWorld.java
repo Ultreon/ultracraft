@@ -3,7 +3,9 @@ package com.ultreon.craft.client.world;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
@@ -11,6 +13,7 @@ import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakPacket;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
+import com.ultreon.craft.network.packets.c2s.C2SPlaceBlockPacket;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.world.*;
@@ -43,7 +46,7 @@ public final class ClientWorld extends World implements Disposable {
 
     @Override
     public int getRenderDistance() {
-        return this.client.config.get().renderDistance;
+        return Config.renderDistance;
     }
 
     @Override
@@ -121,7 +124,7 @@ public final class ClientWorld extends World implements Disposable {
         if (breakResult == BreakResult.BROKEN) {
             this.client.connection.send(new C2SBlockBreakingPacket(breaking, C2SBlockBreakingPacket.BlockStatus.STOP));
             this.client.connection.send(new C2SBlockBreakPacket(breaking));
-            this.set(breaking, Blocks.AIR);
+            this.set(breaking, Blocks.AIR.createMeta());
         }
         return breakResult;
     }
@@ -155,6 +158,29 @@ public final class ClientWorld extends World implements Disposable {
         return true;
     }
 
+    @Override
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block, int flags) {
+        if (!UltracraftClient.isOnMainThread()) {
+            return UltracraftClient.invokeAndWait(() -> this.set(x, y, z, block, flags));
+        }
+        boolean isBlockSet = super.set(x, y, z, block, flags);
+        BlockPos blockPos = new BlockPos(x, y, z);
+        if (~(flags & BlockFlags.SYNC) != 0) this.sync(x, y, z, block);
+        if (~(flags & BlockFlags.UPDATE) != 0) {
+            for (CubicDirection direction : CubicDirection.values()) {
+                BlockPos offset = blockPos.offset(direction);
+                BlockMetadata blockMetadata = this.get(offset);
+                blockMetadata.update(this, offset);
+            }
+        }
+
+        return isBlockSet;
+    }
+
+    private void sync(int x, int y, int z, BlockMetadata block) {
+        this.client.connection.send(new C2SPlaceBlockPacket(x, y, z, block));
+    }
+
     public void loadChunk(ChunkPos pos, ClientChunk data) {
         var chunk = UltracraftClient.invokeAndWait(() -> this.chunks.get(pos));
         if (chunk == null) chunk = data;
@@ -167,7 +193,7 @@ public final class ClientWorld extends World implements Disposable {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
             return;
         }
-        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.config.get().renderDistance) {
+        if (new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > Config.renderDistance) {
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
             return;
         }
@@ -196,12 +222,10 @@ public final class ClientWorld extends World implements Disposable {
                     Map.Entry<ChunkPos, ClientChunk> entry = iterator.next();
                     ChunkPos chunkPos = entry.getKey();
                     ClientChunk clientChunk = entry.getValue();
-                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > this.client.config.get().renderDistance) {
+                    if (new Vec2d(chunkPos.x(), chunkPos.z()).dst(player.getChunkPos().x(), player.getChunkPos().z()) > Config.renderDistance) {
                         iterator.remove();
                         clientChunk.dispose();
                         this.updateNeighbours(clientChunk);
-
-                        this.client.connection.send(new C2SChunkStatusPacket(chunkPos, Chunk.Status.UNLOADED));
                     }
                 }
             }

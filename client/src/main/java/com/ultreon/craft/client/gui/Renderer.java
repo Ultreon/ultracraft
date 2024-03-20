@@ -6,23 +6,31 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
+import com.badlogic.gdx.utils.Disposable;
+import com.crashinvaders.vfx.VfxManager;
+import com.crashinvaders.vfx.effects.GaussianBlurEffect;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.font.Font;
 import com.ultreon.craft.client.texture.TextureManager;
+import com.ultreon.craft.client.util.InvalidValueException;
 import com.ultreon.craft.text.ChatColor;
 import com.ultreon.craft.text.FormattedText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec4i;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import space.earlygrey.shapedrawer.JoinType;
@@ -45,7 +53,7 @@ import static com.ultreon.craft.client.UltracraftClient.id;
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 @SuppressWarnings("unused")
-public class Renderer {
+public class Renderer implements Disposable {
     private static final int TAB_WIDTH = 32;
     ////////////////////
     //     Fields     //
@@ -55,13 +63,24 @@ public class Renderer {
     private final Batch batch;
     private final ShapeDrawer shapes;
     private final TextureManager textureManager;
+    private final VfxManager vfxManager;
+    private final ShaderProgram blurShader;
+    private final ShaderProgram gridShader;
     private float strokeWidth = 1;
     private Font font;
     private final MatrixStack matrixStack;
     private Color blitColor = Color.rgb(0xffffff);
     private final Vector2 tmp2A = new Vector2();
     private final Vector3 tmp3A = new Vector3();
-    private GlStateStack glState = new GlStateStack();
+    private final GlStateStack glState = new GlStateStack();
+    private int width;
+    private int height;
+    private boolean blurred;
+
+    public static final int FBO_SIZE = 1024;
+
+    private FrameBuffer grid;
+    private float iTime;
 
     /**
      * @param shapes shape drawer instance from {@link UltracraftClient}
@@ -86,6 +105,38 @@ public class Renderer {
 
         // Projection matrix.
         this.matrixStack.onEdit = matrix -> shapes.getBatch().setTransformMatrix(matrix);
+
+
+        // VfxManager is a host for the effects.
+        // It captures rendering into internal off-screen buffer and applies a chain of defined effects.
+        // Off-screen buffers may have any pixel format; for this example, we will use RGBA8888.
+        vfxManager = new VfxManager(Format.RGBA8888);
+
+        // Create and add an effect.
+        // VfxEffect derivative classes serve as controllers for the effects.
+        // They provide public properties to configure and control them.
+        GaussianBlurEffect vfxBlur = new GaussianBlurEffect(GaussianBlurEffect.BlurType.Gaussian5x5b);
+
+        blurShader = new ShaderProgram(VERT, FRAG);
+        if (!blurShader.isCompiled()) {
+            System.err.println(blurShader.getLog());
+            System.exit(0);
+        }
+        if (!blurShader.getLog().isEmpty())
+            System.out.println(blurShader.getLog());
+
+        //setup uniforms for our shader
+        blurShader.bind();
+        blurShader.setUniformf("iBlurDirection", 0f, 0f);
+        blurShader.setUniformf("radius", 1f);
+
+        gridShader = new ShaderProgram(VERT, GRID_FRAG);
+        if (!gridShader.isCompiled()) {
+            System.err.println(gridShader.getLog());
+            System.exit(0);
+        }
+        if (!gridShader.getLog().isEmpty())
+            System.out.println(gridShader.getLog());
     }
 
     public MatrixStack getMatrixStack() {
@@ -101,7 +152,8 @@ public class Renderer {
     @CanIgnoreReturnValue
     public Renderer setColor(Color c) {
         if (c == null) return this;
-        if (this.font != null) this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
+        if (this.font != null)
+            this.font.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         this.shapes.setColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha() / 255f);
         return this;
     }
@@ -443,27 +495,6 @@ public class Renderer {
         this.batch.setColor(this.blitColor.toGdx());
         TextureRegion textureRegion = new TextureRegion(tex, 1 * u / texWidth, 1 * v / texHeight, 1 * (u + uWidth) / texWidth, 1 * (v + vHeight) / texHeight);
         this.batch.draw(textureRegion, x, y + height, width, -height);
-        return this;
-    }
-
-    @Deprecated(forRemoval = true)
-    @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y) {
-        this.batch.setColor(this.blitColor.toGdx());
-        Texture tex = this.textureManager.getTexture(id);
-        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
-        return this;
-    }
-
-
-    @Deprecated(forRemoval = true)
-    @CanIgnoreReturnValue
-    public Renderer blit(Identifier id, float x, float y, Color backgroundColor) {
-        this.setColor(backgroundColor);
-        Texture tex = this.textureManager.getTexture(id);
-        this.rect(x, y, tex.getWidth(), tex.getHeight());
-        this.batch.setColor(this.blitColor.toGdx());
-        this.batch.draw(tex, x, y + tex.getHeight(), tex.getWidth(), -tex.getHeight());
         return this;
     }
 
@@ -1989,7 +2020,11 @@ public class Renderer {
     public Renderer external(Runnable block) {
         boolean drawing = this.batch.isDrawing();
         if (drawing) this.batch.end();
-        block.run();
+        try {
+            block.run();
+        } catch (Exception e) {
+            UltracraftClient.LOGGER.warn("Failed to render model", e);
+        }
         if (drawing) this.batch.begin();
         return this;
     }
@@ -2023,15 +2058,15 @@ public class Renderer {
         this.shapes.polygon(vertices, thickness, JoinType.POINTY);
     }
 
-    public void renderFrame(int x, int y, int w , int h) {
+    public void renderFrame(int x, int y, int w, int h) {
         renderFrame(id("textures/gui/frame.png"), x, y, w, h, 0, 0, 4, 4, 12, 12);
     }
 
-    public void renderFrame(@NotNull Identifier texture, int x, int y, int w , int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight) {
+    public void renderFrame(@NotNull Identifier texture, int x, int y, int w, int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight) {
         renderFrame(texture, x, y, w, h, u, v, uvW, uvH, texWidth, texHeight, Color.WHITE);
     }
 
-    public void renderFrame(@NotNull Identifier texture, int x, int y, int w , int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight, @NotNull Color color) {
+    public void renderFrame(@NotNull Identifier texture, int x, int y, int w, int h, int u, int v, int uvW, int uvH, int texWidth, int texHeight, @NotNull Color color) {
         Texture handle = this.client.getTextureManager().getTexture(texture);
 
         w = Math.max(w, uvW * 2);
@@ -2062,11 +2097,13 @@ public class Renderer {
             this.batch.end();
         }
         this.batch.begin();
+
+        this.iTime = System.currentTimeMillis() / 1000f;
     }
 
     public void end() {
         if (!this.batch.isDrawing()) {
-            UltracraftClient.LOGGER.warn("Batch not drawin!", new Exception());
+            UltracraftClient.LOGGER.warn("Batch not drawing!", new Exception());
             return;
         }
         this.batch.end();
@@ -2077,5 +2114,386 @@ public class Renderer {
             UltracraftClient.LOGGER.warn("Batch still drawing");
             this.batch.end();
         }
+    }
+
+    @Language("GLSL")
+    final String VERT =
+            """
+                    attribute vec4 a_position;
+                    attribute vec4 a_color;
+                    attribute vec2 a_texCoord0;
+                    uniform mat4 u_projTrans;
+                                        
+                    varying vec4 vColor;
+                    varying vec2 vTexCoord;
+                                        
+                    void main() {
+                    	vColor = a_color;
+                    	vTexCoord = a_texCoord0;
+                    	gl_Position =  u_projTrans * a_position;
+                    }
+                    """;
+
+    @Language("GLSL")
+    final String FRAG =
+            """
+                    #version 130
+                                
+                    // Fragment shader
+                    #ifdef GL_ES
+                    precision mediump float;
+                    #endif
+                                
+                    varying vec4 vColor;
+                    varying vec2 vTexCoord;
+                                
+                    uniform sampler2D u_texture;
+                    uniform vec2 iResolution;
+                    uniform float iBlurRadius; // Radius of the blur
+                    uniform vec2 iBlurDirection; // Direction of the blur
+                                
+                    void main() {
+                      float Pi = 6.28318530718; // Pi*2
+                                
+                      // GAUSSIAN BLUR SETTINGS {{{
+                      float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+                      float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+                      float Size = iBlurRadius; // BLUR SIZE (Radius)
+                      // GAUSSIAN BLUR SETTINGS }}}
+                                
+                      vec2 Radius = Size/iResolution.xy;
+                                
+                      // Normalized pixel coordinates (from 0 to 1)
+                      vec2 uv = gl_FragCoord.xy/iResolution.xy;
+                      // Pixel colour
+                      vec4 color = texture(u_texture, uv);
+                                
+                      // Blur calculations
+                      for( float d=0.0; d<Pi; d+=Pi/Directions)
+                      {
+                        for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)
+                        {
+                          color += texture2D(u_texture, uv+vec2(cos(d),sin(d))*Radius*i);
+                        }
+                      }
+                      
+                      // Gamma correction
+                      float Gamma = 1.05;
+                      color.rgba = pow(color.rgba, vec4(1.0/Gamma));
+                                
+                      // Output to screen
+                      color /= Quality * Directions;
+                      gl_FragColor = color;
+                    }
+                    """;
+
+
+//    @Language("GLSL")
+    final String GRID_FRAG =
+                    """
+                    varying vec2 vTexCoord;
+                    varying vec4 vColor;
+                    uniform sampler2D u_texture;
+                    uniform vec2 iResolution;
+                    uniform vec3 hexagonColor;
+                    uniform float hexagonTransparency;
+                    
+                    float rng( in vec2 pos )
+                    {
+                        return fract(sin( pos.y + pos.x*78.233 )*43758.5453)*2.0 - 1.0;
+                    }
+                    
+                    float simplexValue1DPart(vec2 uv, float ix) {
+                        float x = uv.x - ix;
+                        float f = 1.0 - x * x;
+                        float f2 = f * f;
+                        float f3 = f * f2;
+                        return f3;
+                    }
+                    
+                    float simplexValue1D(vec2 uv) {
+                        vec2 iuv = floor(uv);   \s
+                        float n = simplexValue1DPart(uv, iuv.x);
+                        n += simplexValue1DPart(uv, iuv.x + 1.0);
+                        return rng(vec2(n * 2.0 - 1.0, 0.0));
+                    }
+                    
+                    float perlin( in float pos )
+                    {
+                        // Get node values
+                       \s
+                        float a = rng( vec2(floor(pos), 1.0) );
+                        float b = rng( vec2(ceil( pos), 1.0) );
+                       \s
+                        float a_x = rng( vec2(floor(pos), 2.0) );
+                        float b_x = rng( vec2(ceil( pos), 2.0) );
+                       \s
+                        a += a_x*fract(pos);
+                        b += b_x*(fract(pos)-1.0);
+                       \s
+                       \s
+                       \s
+                        // Interpolate values
+                       \s
+                        return a + (b-a)*smoothstep(0.0,1.0,fract(pos));
+                    }
+                    
+                    void main() {\s
+                      vec2 uv = gl_FragCoord.xy;
+                      uv /= 24.0;
+                      
+                      vec4 color = texture2D(u_texture, vTexCoord);
+                      const float A = 0.0;
+                      const float B = 0.15;
+                      
+                      float x = uv.x;
+                      float y = (uv.y) * (1.5 / 3.0);
+                      
+                      float val = (0.5 + 0.5 * x + 0.5 * y);
+                      
+                      float noise = perlin(val);
+                      if (noise > 0.1) {
+                          noise = -1.0;
+                      }
+                      
+                      noise = 1.0 - (noise + 1.0) / 2.0;
+                      
+                      color.rgb = vec3(1.0);
+                      color.a = color.a * (noise * (B - A)) + A;
+                      
+                      gl_FragColor = color;
+                    }
+                    """;
+
+    @ApiStatus.Experimental
+    public void blurred(Runnable block) {
+        blurred(true, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, Runnable block) {
+        blurred(radius, true, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(boolean grid, Runnable block) {
+        blurred(grid, 1, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, boolean grid, Runnable block) {
+        blurred(radius, grid, 1, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(boolean grid, int guiScale, Runnable block) {
+        blurred(Config.blurRadius, grid, guiScale, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float radius, boolean grid, int guiScale, Runnable block) {
+        blurred(1.0F, radius, grid, guiScale, block);
+    }
+
+    @ApiStatus.Experimental
+    public void blurred(float overlayOpacity, float radius, boolean grid, int guiScale, Runnable block) {
+        if (this.blurred) {
+            block.run();
+            return;
+        }
+
+        this.blurred = true;
+        try {
+            FrameBuffer blurTargetA = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+            FrameBuffer blurTargetB = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+            TextureRegion fboRegion = new TextureRegion(blurTargetA.getColorBufferTexture());
+
+            //Start rendering to an offscreen color buffer
+            blurTargetA.begin();
+
+            //before rendering, ensure we are using the default shader
+            batch.setShader(null);
+
+            batch.flush();
+
+            //render the batch contents to the offscreen buffer
+            this.flush();
+
+            block.run();
+
+            //finish rendering to the offscreen buffer
+            batch.flush();
+
+            //finish rendering to the offscreen buffer
+            blurTargetA.end();
+
+            //now let's start blurring the offscreen image
+            batch.setShader(blurShader);
+
+            //since we never called batch.end(), we should still be drawing
+            //which means are blurShader should now be in use
+
+            // set the shader uniforms
+            blurShader.setUniformf("iBlurDirection", 1f, 0f);
+            blurShader.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            blurShader.setUniformf("iBlurRadius", radius / guiScale);
+            blurShader.setUniformf("iTime", iTime);
+
+            //our first blur pass goes to target B
+            blurTargetB.begin();
+
+            //we want to render FBO target A into target B
+            fboRegion.setTexture(blurTargetA.getColorBufferTexture());
+
+            //draw the scene to target B with a horizontal blur effect
+            this.batch.setColor(1f, 1f, 1f, overlayOpacity);
+            batch.draw(fboRegion, 0, 0);
+
+            //flush the batch before ending the FBO
+            batch.flush();
+
+            //finish rendering target B
+            blurTargetB.end();
+
+            //now we can render to the screen using the vertical blur shader
+
+            //update the blur only along Y-axis
+            blurShader.setUniformf("iBlurDirection", 0f, 1f);
+
+            //update the resolution of the blur along Y-axis
+            blurShader.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+            //update the Y-axis blur radius
+            blurShader.setUniformf("radius", radius);
+
+            //draw target B to the screen with a vertical blur effect
+            fboRegion.setTexture(blurTargetB.getColorBufferTexture());
+            this.batch.setColor(1f, 1f, 1f, overlayOpacity);
+            batch.draw(fboRegion, 0, 0);
+
+            //reset to default shader without blurs
+            batch.setShader(null);
+
+            this.flush();
+
+            if (grid) {
+                //getConfig the texture for the hexagon grid
+                Texture colorBufferTexture = this.grid.getColorBufferTexture();
+
+                //render the grid to the screen
+                this.batch.setColor(1, 1, 1, 1);
+                blurred(32, false, 1, () -> {
+                    this.batch.setColor(1f, 1f, 1f, overlayOpacity);
+                    this.batch.draw(colorBufferTexture, 0, 0, (float) Gdx.graphics.getWidth() / guiScale, (float) Gdx.graphics.getHeight() / guiScale);
+                });
+            }
+
+            //dispose of the FBOs
+            blurTargetA.dispose();
+            blurTargetB.dispose();
+        } finally {
+            this.blurred = false;
+        }
+    }
+
+    public void blurred(Texture texture) {
+        if (this.blurred) {
+            return;
+        }
+
+        vfxManager.useAsInput(texture);
+        vfxManager.applyEffects();
+        vfxManager.renderToScreen(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        this.flush();
+    }
+
+    public void resize(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        // VfxManager manages internal off-screen buffers,
+        // which should always match the required viewport (whole screen in our case).
+        vfxManager.resize(width, height);
+
+        this.resizeGrid(width, height);
+    }
+
+    public void resetGrid() {
+        this.resizeGrid(width, height);
+    }
+
+    private void resizeGrid(int width, int height) {
+        if (width == 0 || height == 0) return;
+
+        if (grid != null) this.grid.dispose();
+
+        this.grid = new FrameBuffer(Format.RGBA8888, width, height, false);
+        this.grid.begin();
+        Gdx.gl.glClearColor(1, 1, 1, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        Color hexagonColor;
+        try {
+            String hexagonColorHex = Config.hexagonColor;
+            if (hexagonColorHex == null) hexagonColorHex = "#ffffff";
+            if (hexagonColorHex.length() > 7) hexagonColorHex = hexagonColorHex.substring(0, 7);
+            if (hexagonColorHex.length() < 7 && hexagonColorHex.length() > 4)
+                hexagonColorHex = hexagonColorHex.substring(0, 4);
+            if (hexagonColorHex.length() < 4) hexagonColorHex = "#ffffff";
+            hexagonColor = Color.hex(hexagonColorHex);
+        } catch (InvalidValueException e) {
+            hexagonColor = Color.WHITE;
+        }
+
+        float hexagonTransparency = Config.hexagonTransparency;
+
+        this.batch.begin();
+        this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        this.batch.setShader(gridShader);
+        this.gridShader.setUniformf("iResolution", width, height);
+//        this.gridShader.setUniformf("iColor", hexagonColor.getRed() / 255f, hexagonColor.getGreen() / 255f, hexagonColor.getBlue() / 255f, hexagonTransparency);
+
+        this.shapes.filledRectangle(0, 0, width, height, Color.WHITE.toGdx());
+
+        this.batch.setShader(null);
+        this.batch.end();
+        this.grid.end();
+
+        var old = this.grid;
+
+//        this.grid = new FrameBuffer(Format.RGBA8888, width, height, false);
+//        this.grid.begin();
+//        this.batch.begin();
+//        this.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//
+//        Gdx.gl.glClearColor(0, 0, 0, 0);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//
+//        this.batch.draw(old.getColorBufferTexture(), 0, 0, width, height);
+//        this.batch.flush();
+//
+//        this.batch.setShader(null);
+//        this.batch.end();
+//        this.grid.end();
+//
+//        old.dispose();
+    }
+
+    @Override
+    public void dispose() {
+        vfxManager.dispose();
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public boolean isBlurred() {
+        return blurred;
     }
 }

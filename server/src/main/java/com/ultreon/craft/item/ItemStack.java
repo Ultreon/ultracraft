@@ -6,6 +6,8 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.data.types.MapType;
+import de.marhali.json5.Json5Object;
+import de.marhali.json5.Json5Primitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,7 +63,7 @@ public class ItemStack {
         @Nullable Identifier id = Identifier.tryParse(data.getString("item"));
         if (id == null) return new ItemStack();
 
-        Item item = Registries.ITEM.getElement(id);
+        Item item = Registries.ITEM.get(id);
         if (item == null || item == Items.AIR) return new ItemStack();
 
         int count = data.getInt("count", 0);
@@ -69,6 +71,17 @@ public class ItemStack {
 
         MapType tag = data.getMap("Tag", new MapType());
         return new ItemStack(item, count, tag);
+    }
+
+    public static ItemStack deserialize(Json5Object asJson5Object) {
+        Item item = Registries.ITEM.get(Identifier.parse(asJson5Object.getAsJson5Object("item").getAsString()));
+        if (item == null) return new ItemStack();
+        Json5Primitive countJson = asJson5Object.getAsJson5Primitive("count");
+        if (countJson == null) return new ItemStack(item);
+        int count = countJson.getAsInt();
+        if (count <= 0) return new ItemStack();
+
+        return new ItemStack(item, count);
     }
 
     public MapType save() {

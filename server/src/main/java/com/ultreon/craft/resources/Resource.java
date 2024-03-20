@@ -1,5 +1,7 @@
 package com.ultreon.craft.resources;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -33,5 +35,12 @@ public interface Resource {
         byte[] bytes = this.loadOrGet();
         if (bytes == null) throw new IOException("Resource failed to load.");
         return new InputStreamReader(new ByteArrayInputStream(bytes));
+    }
+
+    default <T> T loadJson(Class<T> jsonObjectClass) {
+        byte[] bytes = this.loadOrGet();
+        if (bytes == null) throw new RuntimeException("Resource failed to load.");
+
+        return new GsonBuilder().create().fromJson(new String(bytes), jsonObjectClass);
     }
 }

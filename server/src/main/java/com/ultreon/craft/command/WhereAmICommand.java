@@ -1,7 +1,7 @@
 package com.ultreon.craft.command;
 
 import com.ultreon.craft.api.commands.*;
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
 import com.ultreon.craft.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,8 +12,8 @@ public class WhereAmICommand extends Command {
         this.data().aliases("whereAmI", "pos");
     }
 
-    @SubCommand
-    public @Nullable CommandOutput executeCoordsInWorld(CommandSender sender, CommandContext commandContext, String alias) {
+    @DefineCommand
+    public @Nullable CommandResult executeCoordsInWorld(CommandSender sender, CommandContext commandContext, String alias) {
         if (!(sender instanceof Entity entity)) return this.needEntity();
 
         return this.infoMessage("You are at %s".formatted(entity.getBlockPos()));

@@ -83,4 +83,18 @@ public record BlockPos(int x, int y, int z) {
     public BlockPos offset(ChunkPos pos) {
         return this.offset(pos.x() * World.CHUNK_SIZE, 0, pos.z() * World.CHUNK_SIZE);
     }
+
+    public BlockPos offset(CubicDirection direction) {
+        return this.offset(direction.getOffset());
+    }
+
+    public BlockPos offset(CubicDirection direction, int distance) {
+        BlockPos offset = direction.getOffset();
+
+        return this.offset(offset.x * distance, offset.y * distance, offset.z * distance);
+    }
+
+    private BlockPos offset(BlockPos offset) {
+        return this.offset(offset.x, offset.y, offset.z);
+    }
 }

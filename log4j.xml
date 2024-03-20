@@ -10,6 +10,11 @@
                     disableAnsi="false"/>
         </Console>
 
+        <JTextAreaAppender name="jtextarea-log" maxLines="100">
+            <PatternLayout>
+                <pattern>[%d{HH:mm:ss}] [%t/%level] (%logger) %msg%n</pattern>
+            </PatternLayout>
+        </JTextAreaAppender>
         <!--=======================-->
         <!--    Normal log file    -->
         <!--=======================-->

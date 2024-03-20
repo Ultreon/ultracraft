@@ -21,7 +21,7 @@ public class GameShaderProvider extends BaseShaderProvider {
         if (!shader.canRender(renderable)) throw new IllegalStateException("Shader cannot render");
         return shader;
 
-//        ShaderMode mode = ShaderContext.get();
+//        ShaderMode mode = ShaderContext.getConfig();
 //        if (mode == ShaderMode.DEPTH) {
 //            return new DepthShader(renderable, this.config);
 //        }

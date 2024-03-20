@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.Renderer;
 import com.ultreon.craft.text.*;
 import com.ultreon.craft.util.Color;
@@ -87,7 +88,7 @@ public class Font implements Disposable {
         renderer.scale(scale, scale);
         if (shadow) {
             float shadowX = x;
-            if (this.client.config.get().personalisation.diagonalFontShadow) shadowX += 1;
+            if (Config.diagonalFontShadow) shadowX += 1;
             this.draw(renderer, font, color.darker().darker(), batch, text, shadowX, y / scale + 1, bold, italic, underlined, strikethrough, scale);
         }
 

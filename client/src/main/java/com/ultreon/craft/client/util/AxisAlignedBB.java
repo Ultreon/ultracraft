@@ -2,6 +2,7 @@ package com.ultreon.craft.client.util;
 
 import com.badlogic.gdx.math.Vector3;
 
+@Deprecated(forRemoval = true)
 public class AxisAlignedBB {
     public final float minX;
     public final float minY;

@@ -17,13 +17,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class Inventory extends ContainerMenu {
+    public static final int MAX_SLOTS = 36;
+
     public final ItemSlot[] hotbar = new ItemSlot[9];
     public final ItemSlot[][] inv = new ItemSlot[9][3];
 
     private final Player holder;
 
     public Inventory(@NotNull MenuType<?> type, @NotNull World world, @NotNull Entity entity, @Nullable BlockPos pos) {
-        super(type, world, entity, pos, 36);
+        super(type, world, entity, pos, MAX_SLOTS);
 
         if (!(entity instanceof Player player)) {
             throw new IllegalArgumentException("Entity must be a player!");

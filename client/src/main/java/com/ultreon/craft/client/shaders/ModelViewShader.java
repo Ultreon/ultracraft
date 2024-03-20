@@ -13,7 +13,7 @@ import com.ultreon.craft.client.world.ClientWorld;
 
 public class ModelViewShader extends DefaultShader {
     private final static Attributes tmpAttributes = new Attributes();
-    private static String version = "330 core";
+    private static String version = "330";
     public final int u_globalSunlight;
 
     public ModelViewShader(final Renderable renderable) {

@@ -1,5 +1,6 @@
 package com.ultreon.craft.client.model.block;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
@@ -85,6 +86,66 @@ public final class CubeModel {
             TextureRegion rightTex = texture.get(this.right);
             TextureRegion frontTex = texture.get(this.front);
             TextureRegion backTex = texture.get(this.back);
+
+            switch (this.properties.rotation) {
+                case NORTH -> {
+
+                }
+
+                case EAST -> {
+                    frontTex = texture.get(this.left);
+                    backTex = texture.get(this.right);
+                    leftTex = texture.get(this.back);
+                    rightTex = texture.get(this.front);
+
+                    // Rotate top and bottom tex
+                    topTex = rotate(topTex, 1);
+                    bottomTex = rotate(bottomTex, 1);
+                }
+
+                case SOUTH -> {
+                    frontTex = texture.get(this.back);
+                    backTex = texture.get(this.front);
+                    leftTex = texture.get(this.right);
+                    rightTex = texture.get(this.left);
+
+                    // Rotate top and bottom tex
+                    topTex = rotate(topTex, 2);
+                    bottomTex = rotate(bottomTex, 2);
+                }
+
+                case WEST -> {
+                    frontTex = texture.get(this.right);
+                    backTex = texture.get(this.left);
+                    leftTex = texture.get(this.front);
+                    rightTex = texture.get(this.back);
+
+                    // Rotate top and bottom tex
+                    topTex = rotate(topTex, 3);
+                    bottomTex = rotate(bottomTex, 3);
+                }
+
+                case UP -> {
+                    frontTex = texture.get(this.top);
+                    backTex = texture.get(this.bottom);
+                    leftTex = texture.get(this.left);
+                    rightTex = texture.get(this.right);
+
+                    leftTex = rotate(leftTex, 1);
+                    rightTex = rotate(rightTex, 1);
+                }
+
+                case DOWN -> {
+                    frontTex = texture.get(this.bottom);
+                    backTex = texture.get(this.top);
+                    leftTex = texture.get(this.left);
+                    rightTex = texture.get(this.right);
+
+                    leftTex = rotate(leftTex, 3);
+                    rightTex = rotate(rightTex, 3);
+                }
+            }
+
             BakedCubeModel baked = new BakedCubeModel(
                     resourceId,
                     topTex, bottomTex,
@@ -100,6 +161,13 @@ public final class CubeModel {
 
             throw new ApplicationCrash(crashLog);
         }
+    }
+
+    private TextureRegion rotate(TextureRegion region, int ticks) {
+        Texture texture = region.getTexture();
+        return switch (ticks) {
+            default -> new TextureRegion(texture, region.getU(), region.getV(), region.getU2(), region.getV2());
+        };
     }
 
     @NotNull

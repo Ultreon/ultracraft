@@ -1,34 +1,34 @@
 package com.ultreon.craft.network.packets.s2c;
 
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.InGameClientPacketHandler;
 import com.ultreon.craft.network.packets.Packet;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.world.BlockPos;
 
 public class S2CBlockSetPacket extends Packet<InGameClientPacketHandler> {
     private final BlockPos pos;
-    private final int blockId;
+    private final BlockMetadata blockMeta;
 
-    public S2CBlockSetPacket(BlockPos pos, int blockId) {
+    public S2CBlockSetPacket(BlockPos pos, BlockMetadata blockMeta) {
         this.pos = pos;
-        this.blockId = blockId;
+        this.blockMeta = blockMeta;
     }
 
     public S2CBlockSetPacket(PacketBuffer buffer) {
         this.pos = buffer.readBlockPos();
-        this.blockId = buffer.readVarInt();
+        this.blockMeta = buffer.readBlockMeta();
     }
 
     @Override
     public void toBytes(PacketBuffer buffer) {
         buffer.writeBlockPos(this.pos);
-        buffer.writeVarInt(this.blockId);
+        buffer.writeBlockMeta(this.blockMeta);
     }
 
     @Override
     public void handle(PacketContext ctx, InGameClientPacketHandler handler) {
-        handler.onBlockSet(this.pos, Registries.BLOCK.byId(this.blockId));
+        handler.onBlockSet(this.pos, this.blockMeta);
     }
 }

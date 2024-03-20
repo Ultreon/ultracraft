@@ -1,14 +1,11 @@
 package com.ultreon.craft.client.gui.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.gui.GuiBuilder;
 import com.ultreon.craft.client.gui.Position;
-import com.ultreon.craft.client.gui.screens.options.OptionsScreen;
 import com.ultreon.craft.client.gui.screens.settings.SettingsScreen;
 import com.ultreon.craft.client.gui.widget.TextButton;
-import com.ultreon.craft.client.input.DesktopInput;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.world.ServerWorld;
 

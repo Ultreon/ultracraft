@@ -23,7 +23,7 @@ public class DeferredElement<T> implements Supplier<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T get() {
-        return (T) this.registry.getElement(this.identifier);
+        return (T) this.registry.get(this.identifier);
     }
 
     public Identifier id() {

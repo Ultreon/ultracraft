@@ -26,9 +26,9 @@ public class Carver {
         for (int y = chunk.getOffset().y + 1; y < chunk.getOffset().y + CHUNK_HEIGHT; y++) {
             if (y <= groundPos) {
                 double noise = this.caveNoise.evaluateNoise((chunk.getOffset().x + x) / 16f, y / 16f, (chunk.getOffset().z + z) / 16f);
-                chunk.set(x, y, z, noise == 1.0 ? Blocks.CAVE_AIR : Blocks.STONE);
+                chunk.set(x, y, z, noise == 1.0 ? Blocks.CAVE_AIR.createMeta() : Blocks.STONE.createMeta());
             } else {
-                chunk.set(x, y, z, Blocks.AIR);
+                chunk.set(x, y, z, Blocks.AIR.createMeta());
             }
         }
 

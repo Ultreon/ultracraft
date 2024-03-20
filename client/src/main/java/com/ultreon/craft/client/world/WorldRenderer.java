@@ -19,10 +19,11 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.badlogic.gdx.utils.Pool;
 import com.google.common.base.Preconditions;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.DisposableContainer;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.imgui.ImGuiOverlay;
 import com.ultreon.craft.client.model.EntityModelInstance;
 import com.ultreon.craft.client.model.WorldRenderContextImpl;
@@ -37,8 +38,8 @@ import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.craft.world.World;
@@ -132,7 +133,7 @@ public final class WorldRenderer implements DisposableContainer {
             breakingTexRegions.set(i, textureRegion);
         }
 
-        var boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0);
+        var boundingBox = Blocks.STONE.getBoundingBox(0, 0, 0, Blocks.STONE.createMeta());
         float v = 0.001f;
         boundingBox.set(boundingBox);
         boundingBox.min.sub(v);
@@ -262,7 +263,7 @@ public final class WorldRenderer implements DisposableContainer {
         if (gameCursor != null && gameCursor.isCollide() && !this.client.hideHud && !player.isSpectator()) {
             UltracraftClient.PROFILER.section("cursor", () -> {
                 Vec3i pos = gameCursor.getPos();
-                Vec3f renderOffsetC = pos.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f();
+                Vec3f renderOffsetC = pos.d().sub(player.getPosition(client.partialTick).add(0, player.getEyeHeight(), 0)).f();
 
                 this.cursor.meshPart.id = OUTLINE_CURSOR_ID;
                 this.cursor.worldTransform.setToTranslation(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
@@ -272,7 +273,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         UltracraftClient.PROFILER.section("(Local Player)", () -> {
             LocalPlayer localPlayer = this.client.player;
-            if (localPlayer == null || (!this.client.isInThirdPerson() && this.client.config.get().accessibility.hideFirstPersonPlayer)) return;
+            if (localPlayer == null || (!this.client.isInThirdPerson() && Config.hideFirstPersonPlayer)) return;
 
             this.collectEntity(localPlayer, output, renderablePool);
         });
@@ -304,7 +305,7 @@ public final class WorldRenderer implements DisposableContainer {
             }
 
             Vec3i chunkOffset = chunk.getOffset();
-            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition().add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
+            Vec3f renderOffsetC = chunkOffset.d().sub(player.getPosition(client.partialTick).add(0, player.getEyeHeight(), 0)).f().div(WorldRenderer.SCALE);
             chunk.renderOffset.set(renderOffsetC.x, renderOffsetC.y, renderOffsetC.z);
             if (!this.client.camera.frustum.boundsInFrustum(chunk.renderOffset.cpy().add(WorldRenderer.HALF_CHUNK_DIMENSIONS), WorldRenderer.CHUNK_DIMENSIONS)) {
                 continue;
@@ -385,7 +386,7 @@ public final class WorldRenderer implements DisposableContainer {
                 this.tmp.set(chunk.renderOffset);
                 this.tmp.add(key.x(), key.y(), key.z());
 
-                Block value = entry.getValue();
+                BlockMetadata value = entry.getValue();
                 BlockModel blockModel = BlockModelRegistry.get(value);
                 if (blockModel != null) {
                     blockModel.render(this.tmp, output, renderablePool);

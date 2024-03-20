@@ -13,7 +13,7 @@ public class C2SLoginPacket extends Packet<LoginServerPacketHandler> {
     }
 
     public C2SLoginPacket(PacketBuffer buffer) {
-        this.name = buffer.readUTF(20);
+        this.name = buffer.readString(20);
     }
 
     @Override

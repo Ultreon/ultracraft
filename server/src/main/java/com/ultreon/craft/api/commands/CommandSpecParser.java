@@ -13,6 +13,8 @@ import java.util.Objects;
 import static com.ultreon.craft.server.util.Utils.reprChar;
 
 /**
+ * Command overload specification parser.
+ *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
 class CommandSpecParser {

@@ -19,7 +19,7 @@ public class S2CPlayerHurtPacket extends Packet<InGameClientPacketHandler> {
 
     public S2CPlayerHurtPacket(PacketBuffer buffer) {
         this.damage = buffer.readFloat();
-        var source = Registries.DAMAGE_SOURCE.getElement(buffer.readId());
+        var source = Registries.DAMAGE_SOURCE.get(buffer.readId());
         if (source == null) {
             source = DamageSource.NOTHING;
         }

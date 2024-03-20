@@ -1,10 +1,18 @@
 package com.ultreon.craft.api.commands;
 
+import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.server.UltracraftServer;
 
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * Represents an argument mismatch exception.
+ * Used to indicate that an argument mismatch has occurred in a {@link Command}.
+ * This generally means that the number of arguments or the types provided does not match the method signature.
+ * <p>
+ * Always check your arguments before making a command :wink:
+ */
 public class CommandArgumentMismatch extends IllegalArgumentException {
     private final Class<?>[] parameterTypes;
     private final ArrayList<Object> callArgs;
@@ -34,7 +42,7 @@ public class CommandArgumentMismatch extends IllegalArgumentException {
         try {
             sw.close();
         } catch (IOException e) {
-            UltracraftServer.LOGGER.error("Failed to dump command mismatch: ", e);
+            CommonConstants.LOGGER.error("Failed to dump command mismatch: ", e);
         }
         return string;
     }
@@ -43,7 +51,7 @@ public class CommandArgumentMismatch extends IllegalArgumentException {
         try {
             writer.write(this.dumps());
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to dump command mismatch: ", ioException);
         }
     }
 
@@ -51,7 +59,7 @@ public class CommandArgumentMismatch extends IllegalArgumentException {
         try {
             outputStream.write(this.dumps().getBytes());
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to dump command mismatch: ", ioException);
         }
     }
 
@@ -59,7 +67,7 @@ public class CommandArgumentMismatch extends IllegalArgumentException {
         try (FileWriter fileWriter = new FileWriter(file, false)) {
             fileWriter.write(this.dumps());
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            CommonConstants.LOGGER.error("Failed to dump command mismatch: ", ioException);
         }
     }
 }

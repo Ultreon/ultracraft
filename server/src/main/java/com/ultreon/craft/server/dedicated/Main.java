@@ -1,19 +1,25 @@
 package com.ultreon.craft.server.dedicated;
 
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.ModInit;
+import com.ultreon.craft.config.UltracraftServerConfig;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.server.dedicated.gui.DedicatedServerGui;
 import com.ultreon.craft.text.LanguageBootstrap;
+import com.ultreon.craft.util.ModLoadingContext;
+import com.ultreon.libs.datetime.v0.Duration;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.LinkOption;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -41,34 +47,36 @@ public class Main {
     @ApiStatus.Internal
     public static void main(String[] args) throws IOException, InterruptedException {
         try {
+            ModLoadingContext.withinContext(FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE).orElseThrow(), () -> {
+                try {
+                    run();
+                } catch (Exception e) {
+                    throw new AssertionError(e);
+                }
+            });
+
             // Invoke FabricMC entrypoint for dedicated server.
-            FabricLoader.getInstance().invokeEntrypoints("dedicated-server", DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
+            FabricLoader loader = FabricLoader.getInstance();
+            loader.invokeEntrypoints(ModInit.ENTRYPOINT_KEY, ModInit.class, ModInit::onInitialize);
+            loader.invokeEntrypoints(DedicatedServerModInit.ENTRYPOINT_KEY, DedicatedServerModInit.class, DedicatedServerModInit::onInitialize);
 
             LanguageBootstrap.bootstrap.set((path, args1) -> server != null ? server.handleTranslation(path, args1) : path);
 
             Main.serverLoader = new ServerLoader();
             Main.serverLoader.load();
 
-            // First-initialize the server configuration.
-            Yaml yaml = new Yaml();
-            Path configPath = Path.of("server_config.yml");
-            if (Files.notExists(configPath)) {
-                Files.writeString(configPath, yaml.dumpAsMap(new ServerConfig()));
-                Main.LOGGER.info("First-initialization finished, set up your config in server_config.json and restart the server.");
-                Main.LOGGER.info("We will wait 10 seconds so you would be able to stop the server for configuration.");
-                Thread.sleep(10000);
-            }
-
-            // Read the server configuration file.
-            ServerConfig config = yaml.loadAs(Files.readString(configPath), ServerConfig.class);
-
             // Start the server.
             @SuppressWarnings("InstantiationOfUtilityClass") InspectionRoot<Main> inspection = new InspectionRoot<>(new Main());
-            Main.server = new DedicatedServer(config, inspection);
+            Main.server = new DedicatedServer(inspection);
             Main.server.start();
 
             // Handle server console commands.
             Scanner scanner = new Scanner(System.in);
+
+            SwingUtilities.invokeLater(() -> {
+                DedicatedServerGui gui = new DedicatedServerGui();
+                gui.setVisible(true);
+            });
 
             while (!Main.server.isTerminated()) {
                 // Read command from the server console.
@@ -106,5 +114,46 @@ public class Main {
     @ApiStatus.Internal
     public static DedicatedServer getServer() {
         return Main.server;
+    }
+
+    private static void waitForKey() {
+        while (true) {
+            try {
+                if (System.in.read() != -1) {
+                    System.exit(1);
+                    break;
+                }
+
+                Thread.sleep(50);
+            } catch (IOException e) {
+                LOGGER.warn("Failed to read from stdin", e);
+                break;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOGGER.warn("Failed to sleep", e);
+                break;
+            }
+        }
+    }
+
+    private static void run() throws InterruptedException {
+        ServerConfig serverConfig = new ServerConfig();
+        new UltracraftServerConfig();
+        if (!Files.exists(serverConfig.getConfigPath(), LinkOption.NOFOLLOW_LINKS)) {
+            serverConfig.save();
+
+            Main.LOGGER.info("First-initialization finished, set up your config in server_config.json5 and restart the server.");
+            Main.LOGGER.info("We will wait 10 seconds so you would be able to stop the server for configuration.");
+
+            Thread thread = new Thread(Main::waitForKey);
+            thread.start();
+
+            Duration.ofSeconds(10).sleep();
+
+            thread.interrupt();
+            thread.join();
+        } else {
+            serverConfig.load();
+        }
     }
 }

@@ -13,11 +13,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifier, T> {
+    public static final String CATEGORY = "recipe";
     private final OrderedMap<Identifier, T> keyMap = new OrderedMap<>();
     private final OrderedMap<T, Identifier> valueMap = new OrderedMap<>();
+    private final Class<T> type;
+    private boolean frozen = false;
 
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
     public RecipeRegistry(T... typeGetter) {
-
+        this.type = (Class<T>) typeGetter.getClass().getComponentType();
     }
 
     @Override
@@ -27,6 +32,8 @@ public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifie
 
     @Override
     public void register(Identifier key, T val) {
+        if (this.frozen) throw new IllegalStateException("Registry is frozen");
+
         this.keyMap.put(key, val);
         this.valueMap.put(val, key);
     }
@@ -56,5 +63,21 @@ public class RecipeRegistry<T extends Recipe> extends AbstractRegistry<Identifie
 
     public Identifier getKey(T recipe) {
         return this.valueMap.get(recipe);
+    }
+
+    public T removeRecipe(Identifier id) {
+        if (this.frozen) throw new IllegalStateException("Registry is frozen");
+
+        T recipe = this.keyMap.remove(id);
+        this.valueMap.remove(recipe);
+        return recipe;
+    }
+
+    public void freeze() {
+        this.frozen = true;
+    }
+
+    public Class<T> getType() {
+        return type;
     }
 }

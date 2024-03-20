@@ -118,12 +118,10 @@ public class ScrollableContainer extends UIContainer<ScrollableContainer> {
     @Override
     public boolean mouseDrag(int x, int y, int dragX, int dragY, int pointer) {
         @Nullable Widget widgetAt = this.getWidgetAt(x, y);
-        x -= this.pos.x + this.innerXOffset;
-        y -= this.pos.y + this.innerYOffset;
         dragX -= this.pos.x + this.innerXOffset;
         dragY -= this.pos.y + this.innerYOffset;
         if (widgetAt != null)
-            return widgetAt.mouseDrag(x - widgetAt.getX(), y - widgetAt.getY(), x -  dragX, y - dragY, pointer);
+            return widgetAt.mouseDrag(x, y, dragX, dragY, pointer);
         return super.mouseDrag(x, y, dragX, dragY, pointer);
     }
 

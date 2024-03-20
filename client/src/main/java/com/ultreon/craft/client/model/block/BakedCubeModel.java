@@ -196,7 +196,7 @@ public final class BakedCubeModel implements BlockModel {
     private void finishRect(TextureRegion region, MeshBuilder builder) {
         this.v00.setUV(region.getU2(), region.getV2());
         this.v01.setUV(region.getU2(), region.getV());
-        this.v10.setUV(region.getU(), region.getV());
+        this.v01.setUV(region.getU(), region.getV());
         this.v11.setUV(region.getU(), region.getV2());
 
         builder.rect(this.v00, this.v01, this.v10, this.v11);

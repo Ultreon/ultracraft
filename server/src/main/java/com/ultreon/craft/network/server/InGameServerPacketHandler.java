@@ -3,15 +3,16 @@ package com.ultreon.craft.network.server;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Attribute;
 import com.ultreon.craft.events.BlockEvents;
 import com.ultreon.craft.events.PlayerEvents;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.ContainerMenu;
 import com.ultreon.craft.menu.ItemSlot;
+import com.ultreon.craft.menu.MenuType;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.NetworkChannel;
 import com.ultreon.craft.network.PacketContext;
@@ -28,8 +29,8 @@ import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.HitResult;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.*;
 import net.fabricmc.api.EnvType;
 
@@ -42,6 +43,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     private final ServerPlayer player;
     private final Connection connection;
     private final PacketContext context;
+    private boolean disconnected;
 
     public InGameServerPacketHandler(UltracraftServer server, ServerPlayer player, Connection connection) {
         this.server = server;
@@ -66,7 +68,8 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         Connection.LOGGER.info("Player {} disconnected: {}", this.player.getName(), message);
         PlayerEvents.PLAYER_LEFT.factory().onPlayerLeft(this.player);
 
-        this.connection.closeAll();
+        this.disconnected = true;
+        this.connection.setReadOnly();
     }
 
     @Override
@@ -78,6 +81,11 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     @Override
     public PacketContext context() {
         return this.context;
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return this.disconnected;
     }
 
     @Override
@@ -121,7 +129,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     public void onBlockBreaking(BlockPos pos, C2SBlockBreakingPacket.BlockStatus status) {
         this.server.submit(() -> {
             ServerWorld world = this.player.getWorld();
-            Block block = world.get(pos);
+            BlockMetadata block = world.get(pos);
             float efficiency = 1.0F;
             ItemStack stack = this.player.getSelectedItem();
             Item item = stack.getItem();
@@ -160,19 +168,19 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         UltracraftServer.invoke(() -> {
             if (Math.abs(pos.vec().d().add(1).dst(this.player.getPosition())) > this.player.getAttributes().get(Attribute.BLOCK_REACH)
                     || this.player.blockBrokenTick) {
-                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), Registries.BLOCK.getRawId(world.get(pos))));
+                world.sendAllTracking(pos.x(), pos.y(), pos.z(), new S2CBlockSetPacket(new BlockPos(pos.x(), pos.y(), pos.z()), world.get(pos)));
                 return;
             }
 
-            Block original = world.get(pos);
+            BlockMetadata original = world.get(pos);
             ItemStack stack = this.player.getSelectedItem();
-            Block block = world.get(pos);
+            BlockMetadata block = world.get(pos);
 
             if (BlockEvents.ATTEMPT_BLOCK_REMOVAL.factory().onAttemptBlockRemoval(this.player, original, pos, stack).isCanceled()) {
                 return;
             }
 
-            world.set(pos, Blocks.AIR);
+            world.set(pos, Blocks.AIR.createMeta());
 
             BlockEvents.BLOCK_REMOVED.factory().onBlockRemoved(this.player, original, pos, stack);
 
@@ -200,12 +208,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
         if (item == null) return;
 
-        UltracraftServer.invoke(() -> {
-            InteractResult result = item.use(new UseItemContext(player.getWorld(), player, hitResult, stack));
-            if (result == InteractResult.DENY) {
-                slot.update();
-            }
-        });
+        UltracraftServer.invoke(() -> player.useItem(hitResult, stack, slot));
     }
 
     public void onOpenInventory() {
@@ -213,7 +216,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onCloseContainerMenu() {
-        this.player.closeMenu();
+        this.server.execute(this.player::closeMenu);
     }
 
     public void onAbilities(AbilitiesPacket packet) {
@@ -232,6 +235,22 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
 
     public void onDropItem() {
         this.player.dropItem();
+    }
+
+    public void handleOpenMenu(PacketContext ctx, Identifier id, BlockPos pos) {
+        MenuType<?> menuType = Registries.MENU_TYPE.get(id);
+
+        this.server.execute(() -> {
+            ContainerMenu menu = menuType.create(this.player.getWorld(), this.player, pos);
+            if (menu == null) return;
+
+
+            this.player.openMenu(menu);
+        });
+    }
+
+    public void onPlaceBlock(int x, int y, int z, BlockMetadata block) {
+        this.server.execute(() -> this.player.placeBlock(x, y, z, block));
     }
 
 //    public void handleContainerClick(int slot, ContainerInteraction interaction) {

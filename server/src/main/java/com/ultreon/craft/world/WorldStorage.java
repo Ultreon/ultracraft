@@ -145,7 +145,7 @@ public final class WorldStorage {
      * @throws IOException if an I/O error occurs.
      */
     public boolean regionExists(int x, int z) throws IOException {
-        return this.exists("regions/" + x + "." + z + ".ucregion");
+        return this.exists("regions/" + x + "." + z + ".ubo");
     }
 
     /**
@@ -156,7 +156,7 @@ public final class WorldStorage {
      * @return the region file.
      */
     public File regionFile(int x, int z) {
-        return this.directory.resolve("regions/" + x + "." + z + ".ucregion").toFile();
+        return this.directory.resolve("regions/" + x + "." + z + ".ubo").toFile();
     }
 
     /**

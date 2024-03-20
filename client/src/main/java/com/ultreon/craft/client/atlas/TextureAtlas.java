@@ -30,7 +30,7 @@ public class TextureAtlas implements Disposable {
         return textureRegion;
     }
 
-    public TextureRegion getEmissive(ElementID id) {
+    public TextureRegion getEmissive(Identifier id) {
         if (id == null) return null;
         TextureOffset textureOffset = this.uvMap.get(id);
         if (textureOffset == null) return null;

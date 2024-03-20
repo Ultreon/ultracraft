@@ -1,8 +1,10 @@
 package com.ultreon.craft.command;
 
 import com.ultreon.craft.api.commands.*;
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
+import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -14,32 +16,57 @@ public class TeleportCommand extends Command {
         this.data().aliases("teleport", "tp");
     }
 
-    @SubCommand("coords <position>")
-    public @Nullable CommandOutput executeCoords(CommandSender sender, CommandContext commandContext, String alias, Vec3d position) {
-        if (!(sender instanceof Player player)) return this.needPlayer();
+    @DefineCommand("at <position>")
+    public @Nullable CommandResult executeCoords(CommandSender sender, CommandContext commandContext, String alias, Vec3d position) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
 
-        player.setPosition(position);
+        player.teleportTo(position);
 
         return this.successMessage("Teleported to " + position);
     }
 
-    @SubCommand("coords <position> <world>")
-    public @Nullable CommandOutput executeCoordsInWorld(CommandSender sender, CommandContext commandContext, String alias, Vec3d position, ServerWorld world) {
-        if (!(sender instanceof Player player)) return this.needPlayer();
+    @DefineCommand("at <position> <world>")
+    public @Nullable CommandResult executeCoordsInWorld(CommandSender sender, CommandContext commandContext, String alias, Vec3d position, ServerWorld world) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
 
-        player.getWorld().despawn(player);
-        player.setPosition(position);
-        world.spawn(player);
+        player.teleportDimension(position, world);
 
-        return this.successMessage("Teleported to " + position + " at " + world.getDimension().getName());
+        return this.successMessage("Teleported to " + position + " in " + world.getDimension().getName());
     }
 
-    @SubCommand("relative <position>")
-    public @Nullable CommandOutput executeRelative(CommandSender sender, CommandContext commandContext, String alias, Vec3d offset) {
-        if (!(sender instanceof Player player)) return this.needPlayer();
+    @DefineCommand("relative <position>")
+    public @Nullable CommandResult executeRelative(CommandSender sender, CommandContext commandContext, String alias, Vec3d offset) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
 
-        player.setPosition(player.getPosition().add(offset));
+        player.teleportTo(player.getPosition().add(offset));
 
         return this.successMessage("Teleported to " + player.getPosition());
+    }
+
+    @DefineCommand("relative <position> <world>")
+    public @Nullable CommandResult executeRelativeInWorld(CommandSender sender, CommandContext commandContext, String alias, Vec3d offset, ServerWorld world) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
+
+        player.teleportDimension(player.getPosition().add(offset), world);
+
+        return this.successMessage("Teleported to " + player.getPosition() + " in " + world.getDimension().getName());
+    }
+
+    @DefineCommand("to <player>")
+    public @Nullable CommandResult executePlayer(CommandSender sender, CommandContext commandContext, String alias, Player target) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
+
+        player.teleportTo(target);
+
+        return this.successMessage("Teleported to " + target.getName());
+    }
+
+    @DefineCommand("entity <entity> to <player>")
+    public @Nullable CommandResult executeEntity(CommandSender sender, CommandContext commandContext, String alias, Entity source, Player target) {
+        if (!(sender instanceof ServerPlayer player)) return this.needPlayer();
+
+        source.teleportTo(target);
+
+        return this.successMessage("Teleported " + source.getName() + " to " + target.getName());
     }
 }

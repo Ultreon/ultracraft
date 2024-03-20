@@ -22,6 +22,11 @@ public class MenuType<T extends ContainerMenu> {
         return Registries.MENU_TYPE.getId(this);
     }
 
+    @Override
+    public String toString() {
+        return "MenuType[" + this.getId() + "]";
+    }
+
     public interface MenuBuilder<T extends ContainerMenu> {
         @Nullable T create(MenuType<T> menuType, World world, Entity entity, @Nullable BlockPos pos);
     }

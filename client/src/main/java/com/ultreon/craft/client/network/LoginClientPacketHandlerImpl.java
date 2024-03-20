@@ -2,6 +2,8 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientPlayerEvents;
+import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
+import com.ultreon.craft.client.gui.screens.MessageScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.rpc.GameActivity;
 import com.ultreon.craft.client.world.ClientWorld;
@@ -10,12 +12,14 @@ import com.ultreon.craft.entity.EntityTypes;
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.client.LoginClientPacketHandler;
+import com.ultreon.craft.text.TextObject;
 
 import java.util.UUID;
 
 public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
     private final UltracraftClient client = UltracraftClient.get();
     private final Connection connection;
+    private boolean disconnected;
 
     public LoginClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -49,7 +53,10 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
 
     @Override
     public void onDisconnect(String message) {
+        this.disconnected = true;
         this.connection.closeAll();
+
+        this.client.showScreen(new DisconnectedScreen(message, !this.connection.isMemoryConnection()));
     }
 
     @Override
@@ -65,5 +72,10 @@ public class LoginClientPacketHandlerImpl implements LoginClientPacketHandler {
     @Override
     public boolean isAsync() {
         return false;
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return disconnected;
     }
 }

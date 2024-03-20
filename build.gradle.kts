@@ -6,6 +6,8 @@ import org.jetbrains.gradle.ext.settings
 import java.lang.System.getenv
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 //file:noinspection GroovyUnusedCatchParameter
 buildscript {
@@ -48,7 +50,8 @@ apply(plugin = "java-library")
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 apply(plugin = "gameutils")
 
-val gameVersion = "0.1.0"
+//val gameVersion = "0.1.0"
+val gameVersion = "0.1.0+snapshot." + DateTimeFormatter.ofPattern("yyyy.MM.dd.HH.mm").format(LocalDateTime.now())
 val ghBuildNumber: String? = getenv("GH_BUILD_NUMBER")
 
 //********************************//
@@ -60,7 +63,7 @@ extensions.configure<GameUtilsExt> {
     projectVersion =
         if (ghBuildNumber != null) "$gameVersion+build.$ghBuildNumber"
         else gameVersion
-    projectGroup = "com.ultreon.craft"
+    projectGroup = "com.github.Ultreon.ultracraft"
     projectId = "ultracraft"
     production = true
 
@@ -113,6 +116,7 @@ beforeEvaluate {
         // Projects
         configurations["implementation"](project(":client"))
         configurations["implementation"](project(":desktop"))
+        configurations["implementation"](project(":gameprovider"))
     }
 }
 
@@ -192,7 +196,6 @@ afterEvaluate {
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx/${project.property("gdx_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-ai/${project.property("ai_version")}",
             "https://javadoc.io/doc/com.badlogicgames.gdx/gdx-backend-lwjgl3/${project.property("gdx_version")}",
-            "https://javadoc.io/doc/io.github.spair/imgui-java-binding/${project.property("imgui_version")}",
             "https://javadoc.io/doc/io.netty/netty-buffer/${project.property("netty_version")}",
             "https://javadoc.io/doc/io.netty/netty-codec-socks/${project.property("netty_version")}",
             "https://javadoc.io/doc/io.netty/netty-common/${project.property("netty_version")}",

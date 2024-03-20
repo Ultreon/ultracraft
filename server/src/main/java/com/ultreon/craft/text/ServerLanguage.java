@@ -17,8 +17,6 @@ public class ServerLanguage {
     }
 
     public String get(String path, Object... args) {
-        String[] split = path.split("/");
-
         String s = this.languageMap.get(path);
         return s == null ? null : String.format(s, args);
     }

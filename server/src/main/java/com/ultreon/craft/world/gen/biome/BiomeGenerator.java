@@ -45,7 +45,7 @@ public class BiomeGenerator implements ServerDisposable {
         BiomeGenerator.setRecordedChanges(chunk, x, z, recordedChanges);
 
         BiomeGenerator.updateLightMap(chunk, x, z, lightMap);
-        chunk.set(x, chunk.getOffset().y, z, Blocks.VOIDGUARD);
+        chunk.set(x, chunk.getOffset().y, z, Blocks.VOIDGUARD.createMeta());
 
         return chunk;
     }

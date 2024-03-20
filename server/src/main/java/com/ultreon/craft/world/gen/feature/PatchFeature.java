@@ -61,7 +61,7 @@ public class PatchFeature extends WorldGenFeature {
 
         for (int y = height; y > height - this.depth; y--) {
             float value = (float) this.baseNoise.eval(chunk.getOffset().x + x, y, chunk.getOffset().z + z);
-            if (value < this.threshold && chunk.set(x, y, z, this.patchBlock)) {
+            if (value < this.threshold && chunk.set(x, y, z, this.patchBlock.createMeta())) {
                 return true;
             }
         }

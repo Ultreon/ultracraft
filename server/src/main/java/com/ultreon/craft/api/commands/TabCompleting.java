@@ -332,7 +332,7 @@ public class TabCompleting {
 
     }
 
-    public static final void addIfStartsWith(@NotNull Collection<String> list, @NotNull UUID uuid, @NotNull String startsWith) {
+    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull UUID uuid, @NotNull String startsWith) {
         Preconditions.checkNotNull(list, "list");
         Preconditions.checkNotNull(uuid, "uuid");
         Preconditions.checkNotNull(startsWith, "startsWith");
@@ -348,7 +348,7 @@ public class TabCompleting {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(startsWith, "startsWith");
 
-        if (id.namespace().startsWith(startsWith)) {
+        if (id.path().startsWith(startsWith)) {
             list.add(id.toString());
         } else {
             if (id.toString().startsWith(startsWith)) {
@@ -357,7 +357,7 @@ public class TabCompleting {
         }
     }
 
-    public static final void addIfStartsWith(@NotNull Collection<String> list, @NotNull Object obj, @NotNull String startsWith) {
+    public static void addIfStartsWith(@NotNull Collection<String> list, @NotNull Object obj, @NotNull String startsWith) {
         Preconditions.checkNotNull(list, "list");
         Preconditions.checkNotNull(obj, "obj");
         Preconditions.checkNotNull(startsWith, "startsWith");

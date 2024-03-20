@@ -2,7 +2,6 @@ package com.ultreon.craft.client.network;
 
 import com.ultreon.craft.network.Connection;
 import com.ultreon.craft.network.api.PacketDestination;
-import com.ultreon.craft.network.packets.c2s.C2SKeepAlivePacket;
 import com.ultreon.craft.network.packets.c2s.C2SPingPacket;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -13,6 +12,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
@@ -20,13 +20,31 @@ import java.net.SocketAddress;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
+/**
+ * Client side connection management.
+ *
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ * @since 0.1.0
+ * @see Connection
+ */
 public class ClientConnection implements Runnable {
     private final SocketAddress address;
 
+    /**
+     * Creates a new client-side connection
+     *
+     * @param address the address to connect to
+     */
     public ClientConnection(SocketAddress address) {
         this.address = address;
     }
 
+    /**
+     * Connects to a local memory server
+     *
+     * @param address the address to connect to
+     * @return the connection
+     */
     public static Connection connectToLocalServer(SocketAddress address) {
         Connection connection = new Connection(PacketDestination.SERVER);
         new Bootstrap()
@@ -38,6 +56,13 @@ public class ClientConnection implements Runnable {
         return connection;
     }
 
+    /**
+     * Connects to an external server using the provided address.
+     *
+     * @param inetSocketAddress the address to connect to
+     * @param connection        the connection to use
+     * @return the channel's future
+     */
     public static ChannelFuture connectTo(InetSocketAddress inetSocketAddress, Connection connection) {
         Class<? extends SocketChannel> channelClass;
         Supplier<? extends EventLoopGroup> group;
@@ -66,7 +91,12 @@ public class ClientConnection implements Runnable {
         }
     }
 
+    /**
+     * Starts the connection
+     * NOTE: Internal API
+     */
     @Override
+    @ApiStatus.Internal
     public void run() {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -108,8 +138,9 @@ public class ClientConnection implements Runnable {
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
             channel.config().setRecvByteBufAllocator(new AdaptiveRecvByteBufAllocator(64, 1024, 2097152));
 
-            ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
+            ChannelPipeline pipeline = channel.pipeline();
             this.connection.setup(pipeline);
+            pipeline.addLast("read_timeout", new ReadTimeoutHandler(30));
             this.connection.setupPacketHandler(pipeline);
             this.connection.setHandler(new LoginClientPacketHandlerImpl(this.connection));
         }

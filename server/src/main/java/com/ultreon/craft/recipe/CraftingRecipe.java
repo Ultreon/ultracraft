@@ -3,7 +3,11 @@ package com.ultreon.craft.recipe;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.Inventory;
 import com.ultreon.craft.menu.ItemSlot;
+import com.ultreon.craft.util.Identifier;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,7 +72,22 @@ public record CraftingRecipe(List<ItemStack> ingredients, ItemStack result) impl
     }
 
     @Override
-    public RecipeType getType() {
+    public RecipeType<CraftingRecipe> getType() {
         return RecipeType.CRAFTING;
+    }
+
+    public static CraftingRecipe deserialize(Identifier identifier, Json5Object object) {
+        List<ItemStack> ingredients = new ArrayList<>();
+
+        for (Json5Element json5Element : object.getAsJson5Array("ingredients")) {
+            Json5Object asJson5Object = json5Element.getAsJson5Object();
+            ItemStack itemStack = ItemStack.deserialize(asJson5Object);
+
+            ingredients.add(itemStack);
+        }
+
+        ItemStack result = ItemStack.deserialize(object.getAsJson5Object("result"));
+
+        return new CraftingRecipe(ingredients, result);
     }
 }

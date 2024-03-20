@@ -16,7 +16,7 @@ public class UndergroundTerrainLayer extends TerrainLayer {
     @Override
     public boolean handle(World world, Chunk chunk, int x, int y, int z, int height) {
         if (y <= height - offset) {
-            chunk.set(x, y, z, block);
+            chunk.set(x, y, z, block.createMeta());
             return true;
         }
         return false;

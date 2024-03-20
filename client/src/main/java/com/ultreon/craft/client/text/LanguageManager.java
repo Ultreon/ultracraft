@@ -41,7 +41,9 @@ public class LanguageManager {
         List<byte[]> assets = resourceManager.getAllDataById(id.withPath(newPath));
         Map<String, String> languageMap = new HashMap<>();
         for (byte[] asset : assets) {
-            JsonObject object = gson.fromJson(new StringReader(new String(asset, StandardCharsets.UTF_8)), JsonObject.class);
+            String s = new String(asset, StandardCharsets.UTF_8);
+            System.out.println("s = " + s);
+            JsonObject object = gson.fromJson(new StringReader(s), JsonObject.class);
             this.loadFile(languageMap, object);
         }
 

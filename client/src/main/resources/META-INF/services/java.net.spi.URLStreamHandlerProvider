@@ -5,3 +5,4 @@ com.ultreon.craft.client.uri.GdxInternalUrlHandler
 com.ultreon.craft.client.uri.GdxLocalUrlHandler
 com.ultreon.craft.client.uri.MemoryUrlHandler
 com.ultreon.craft.client.uri.ResourceUrlHandler
+com.ultreon.craft.client.uri.DataUrlHandler

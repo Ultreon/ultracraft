@@ -10,26 +10,20 @@ import com.ultreon.libs.functions.v0.misc.ThrowingSupplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ResourceManager {
-    protected final List<com.ultreon.craft.resources.ResourcePackage> resourcePackages = new ArrayList<>();
+public class ResourceManager implements Closeable {
+    protected final List<ResourcePackage> resourcePackages = new ArrayList<>();
     public static Logger logger = (level, msg, t) -> {};
     private final String root;
 
@@ -48,7 +42,7 @@ public class ResourceManager {
 
     @Nullable
     public Resource getResource(Identifier entry) {
-        for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
+        for (ResourcePackage resourcePackage : this.resourcePackages) {
             if (resourcePackage.has(entry)) {
                 return resourcePackage.get(entry);
             }
@@ -105,8 +99,11 @@ public class ResourceManager {
         assert file.isDirectory();
 
         try {
-            // Prepare (entry -> resource) mappings/
+            // Prepare (entry -> resource) mappings
             Map<Identifier, StaticResource> map = new HashMap<>();
+
+            // Resource categories
+            Map<String, ResourceCategory> categories = new HashMap<>();
 
             // Get assets directory.
             File assets = new File(file, this.root + "/");
@@ -157,13 +154,20 @@ public class ResourceManager {
                             ThrowingSupplier<InputStream, IOException> sup = () -> Files.newInputStream(asset.toPath());
                             StaticResource resource = new StaticResource(entry, sup);
 
+                            String path = entry.path();
+                            String[] split = path.split("/");
+                            String category = split[0];
+                            if (split.length > 1) {
+                                categories.computeIfAbsent(category, ResourceCategory::new).set(entry, resource);
+                            }
+
                             // Add resource mapping for (entry -> resource).
                             map.put(entry, resource);
                         }
                     }
                 }
 
-                this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
+                this.resourcePackages.add(new ResourcePackage(map, categories));
             }
         } catch (IOException e) {
             CommonConstants.LOGGER.error("Failed to load resource package: " + file.getAbsolutePath(), e);
@@ -174,6 +178,9 @@ public class ResourceManager {
         // Check for .jar files.
         // Prepare (entry -> resource) mappings.
         Map<Identifier, StaticResource> map = new HashMap<>();
+
+        // Resource categories
+        Map<String, ResourceCategory> categories = new HashMap<>();
 
         // Create jar file instance from file.
         try {
@@ -187,7 +194,7 @@ public class ResourceManager {
 
                 // Check if it isn't a directory, because we want a file.
                 if (!entry.isDirectory()) {
-                    this.addEntry(map, name, sup);
+                    this.addEntry(map, categories, name, sup);
                 }
                 stream.closeEntry();
             }
@@ -195,12 +202,12 @@ public class ResourceManager {
             CommonConstants.LOGGER.error("Failed to load resource package: " + filePath, e);
         }
 
-        this.resourcePackages.add(new com.ultreon.craft.resources.ResourcePackage(map));
+        this.resourcePackages.add(new ResourcePackage(map, categories));
 
         stream.close();
     }
 
-    private void addEntry(Map<Identifier, StaticResource> map, String name, ThrowingSupplier<InputStream, IOException> sup) {
+    private void addEntry(Map<Identifier, StaticResource> map, Map<String, ResourceCategory> categories, String name, ThrowingSupplier<InputStream, IOException> sup) {
         String[] splitPath = name.split("/", 3);
 
         if (splitPath.length >= 3) {
@@ -214,6 +221,13 @@ public class ResourceManager {
 
                 // Resource
                 StaticResource resource = new StaticResource(entry, sup);
+
+                // Category
+                String[] split = path.split("/");
+                String category = split[0];
+                if (split.length > 1) {
+                    categories.computeIfAbsent(category, ResourceCategory::new).set(entry, resource);
+                }
 
                 try {
 
@@ -229,7 +243,7 @@ public class ResourceManager {
     @NotNull
     public List<byte[]> getAllDataByPath(@NotNull String path) {
         List<byte[]> data = new ArrayList<>();
-        for (com.ultreon.craft.resources.ResourcePackage resourcePackage : this.resourcePackages) {
+        for (ResourcePackage resourcePackage : this.resourcePackages) {
             Map<Identifier, StaticResource> identifierResourceMap = resourcePackage.mapEntries();
             for (Map.Entry<Identifier, StaticResource> entry : identifierResourceMap.entrySet()) {
                 if (entry.getKey().path().equals(path)) {
@@ -263,5 +277,29 @@ public class ResourceManager {
 
     public String getRoot() {
         return this.root;
+    }
+
+    public List<ResourceCategory> getResourceCategory(String category) {
+        return this.resourcePackages.stream().map(resourcePackage -> {
+            if (!resourcePackage.hasCategory(category)) {
+                return null;
+            }
+
+            return resourcePackage.getCategory(category);
+        }).filter(Objects::nonNull).toList();
+    }
+
+    public List<ResourcePackage> getResourcePackages() {
+        return Collections.unmodifiableList(this.resourcePackages);
+    }
+
+    public List<ResourceCategory> getResourceCategories() {
+        return this.resourcePackages.stream().flatMap(resourcePackage -> resourcePackage.getCategories().stream()).toList();
+    }
+
+    public void close() {
+        for (ResourcePackage resourcePackage : this.resourcePackages) {
+            resourcePackage.close();
+        }
     }
 }

@@ -3,9 +3,9 @@ package com.ultreon.craft.world;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.entity.BlockEntity;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.entity.DroppedItem;
@@ -26,6 +26,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,6 +58,7 @@ public abstract class World implements ServerDisposable {
     public static final int REGION_SIZE = 32;
     public static final Identifier OVERWORLD = new Identifier("overworld");
     public static final float SEA_LEVEL = 64;
+    public static final int REGION_DATA_VERSION = 0;
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(World.class);
 
@@ -102,9 +104,9 @@ public abstract class World implements ServerDisposable {
                 ChunkPos chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, 0, z));
                 toCreate.add(chunkPos);
                 if (x >= pos.x - World.CHUNK_SIZE
-                        && x <= pos.x + World.CHUNK_SIZE
-                        && z >= pos.z - World.CHUNK_SIZE
-                        && z <= pos.z + World.CHUNK_SIZE) {
+                    && x <= pos.x + World.CHUNK_SIZE
+                    && z >= pos.z - World.CHUNK_SIZE
+                    && z <= pos.z + World.CHUNK_SIZE) {
                     for (int y = -World.CHUNK_HEIGHT; y >= pos.y - World.CHUNK_HEIGHT * 2; y -= World.CHUNK_HEIGHT) {
                         chunkPos = Utils.chunkPosFromBlockCoords(new Vec3d(x, y, z));
                         toCreate.add(chunkPos);
@@ -236,13 +238,24 @@ public abstract class World implements ServerDisposable {
      * Sets the block at the specified coordinates, with the given block type.
      *
      * @param blockPos the position
-     * @param block    the block type to set
+     * @param state    the block state to set
      * @return true if the block was successfully set, false otherwise
      */
-    public boolean set(BlockPos blockPos, Block block) {
+    public boolean set(BlockPos blockPos, BlockMetadata state) {
+        return set(blockPos, state, BlockFlags.UPDATE | BlockFlags.SYNC);
+    }
+
+    /**
+     * Sets the block at the specified coordinates, with the given block type.
+     *
+     * @param blockPos the position
+     * @param state    the block state to set
+     * @return true if the block was successfully set, false otherwise
+     */
+    public boolean set(BlockPos blockPos, BlockMetadata state, int flags) {
         this.checkThread();
 
-        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), block);
+        return this.set(blockPos.x(), blockPos.y(), blockPos.z(), state, flags);
     }
 
     /**
@@ -254,16 +267,8 @@ public abstract class World implements ServerDisposable {
      * @param block the block type to set
      * @return true if the block was successfully set, false otherwise
      */
-    public boolean set(int x, int y, int z, Block block) {
-        this.checkThread();
-
-        BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
-
-        Chunk chunk = this.getChunkAt(x, y, z);
-        if (chunk == null) return false;
-
-        BlockPos cp = World.toLocalBlockPos(x, y, z);
-        return chunk.set(cp.x(), cp.y(), cp.z(), block);
+    public boolean set(int x, int y, int z, BlockMetadata block) {
+        return set(x, y, z, block, BlockFlags.UPDATE | BlockFlags.SYNC);
     }
 
     /**
@@ -272,7 +277,7 @@ public abstract class World implements ServerDisposable {
      * @param pos the position
      * @return the block at the specified coordinates
      */
-    public Block get(BlockPos pos) {
+    public BlockMetadata get(BlockPos pos) {
         this.checkThread();
 
         return this.get(pos.x(), pos.y(), pos.z());
@@ -286,12 +291,13 @@ public abstract class World implements ServerDisposable {
      * @param z the z-coordinate
      * @return the block at the specified coordinates
      */
-    public Block get(int x, int y, int z) {
+    public BlockMetadata get(int x, int y, int z) {
         this.checkThread();
 
         Chunk chunkAt = this.getChunkAt(x, y, z);
-        if (chunkAt == null) return Blocks.AIR;
-        if (!chunkAt.ready) return Blocks.AIR;
+        BlockPos blockPos = new BlockPos(x, y, z);
+        if (chunkAt == null) return Blocks.AIR.createMeta();
+        if (!chunkAt.ready) return Blocks.AIR.createMeta();
 
         BlockPos cp = World.toLocalBlockPos(x, y, z);
         return chunkAt.getFast(cp.x(), cp.y(), cp.z());
@@ -400,14 +406,14 @@ public abstract class World implements ServerDisposable {
 
     public boolean isOutOfWorldBounds(BlockPos pos) {
         return pos.y() < World.WORLD_DEPTH || pos.y() >= World.WORLD_HEIGHT
-                || pos.x() < -30000000 || pos.x() > 30000000
-                || pos.z() < -30000000 || pos.z() > 30000000;
+               || pos.x() < -30000000 || pos.x() > 30000000
+               || pos.z() < -30000000 || pos.z() > 30000000;
     }
 
     public boolean isOutOfWorldBounds(int x, int y, int z) {
         return y < World.WORLD_DEPTH || y >= World.WORLD_HEIGHT - 1
-                || x < -30000000 || x > 30000000
-                || z < -30000000 || z > 30000000;
+               || x < -30000000 || x > 30000000
+               || z < -30000000 || z > 30000000;
     }
 
     /**
@@ -428,11 +434,11 @@ public abstract class World implements ServerDisposable {
         return 0;
     }
 
-    public void setColumn(int x, int z, Block block) {
+    public void setColumn(int x, int z, BlockMetadata block) {
         this.setColumn(x, z, World.CHUNK_HEIGHT, block);
     }
 
-    public void setColumn(int x, int z, int maxY, Block block) {
+    public void setColumn(int x, int z, int maxY, BlockMetadata block) {
         if (this.getChunkAt(x, maxY, z) == null) return;
 
         // FIXME optimize
@@ -452,10 +458,10 @@ public abstract class World implements ServerDisposable {
      * @param depth  the depth of the 3D area
      * @param block  the block to be set in the specified area
      * @return a {@link CompletableFuture} representing the asynchronous operation
-     * @see #set(int, int, int, Block)
-     * @see #setColumn(int, int, Block)
+     * @see #set(int, int, int, BlockMetadata)
+     * @see #setColumn(int, int, BlockMetadata)
      */
-    public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, Block block) {
+    public CompletableFuture<Void> set(int x, int y, int z, int width, int height, int depth, BlockMetadata block) {
         return CompletableFuture.runAsync(() -> {
             int curX = x, curY = y, curZ = z;
             int startX = Math.max(curX, 0);
@@ -518,12 +524,29 @@ public abstract class World implements ServerDisposable {
         return entity;
     }
 
+    /**
+     * Spawns an entity with the given spawn data.
+     *
+     * @param entity The entity to spawn
+     * @param spawnData The data for spawning the entity
+     * @return The spawned entity
+     */
     public <T extends Entity> T spawn(T entity, MapType spawnData) {
+        // Check if entity is not null
         Preconditions.checkNotNull(entity, "Cannot spawn null entity");
-        Preconditions.checkNotNull(entity, "Cannot entity with nul spawn data");
+
+        // Check if spawn data is not null
+        Preconditions.checkNotNull(spawnData, "Cannot spawn entity with null spawn data");
+
+        // Set the entity ID
         this.setEntityId(entity);
+
+        // Prepare the entity for spawn
         entity.onPrepareSpawn(spawnData);
+
+        // Add the entity to the map of entities by ID
         this.entitiesById.put(entity.getId(), entity);
+
         return entity;
     }
 
@@ -541,10 +564,20 @@ public abstract class World implements ServerDisposable {
         return this.curId++;
     }
 
+    /**
+     * Despawns an entity.
+     *
+     * @param entity the entity to despawn
+     */
     public void despawn(Entity entity) {
         this.entitiesById.remove(entity.getId());
     }
 
+    /**
+     * Despawns the entity from the entitiesById map.
+     *
+     * @param id The ID of the entity to be removed.
+     */
     public void despawn(int id) {
         this.entitiesById.remove(id);
     }
@@ -572,7 +605,7 @@ public abstract class World implements ServerDisposable {
         for (int x = xMin; x <= xMax; x++) {
             for (int y = yMin; y <= yMax; y++) {
                 for (int z = zMin; z <= zMax; z++) {
-                    Block block = this.get(x, y, z);
+                    BlockMetadata block = this.get(x, y, z);
                     if (block.hasCollider() && (!collideFluid || block.isFluid())) {
                         BoundingBox blockBox = block.getBoundingBox(x, y, z);
                         if (blockBox.intersects(box)) {
@@ -613,15 +646,20 @@ public abstract class World implements ServerDisposable {
      * Fills the crash log with information about the world.
      * <p style="color: red;">NOTE: Internal API!</p>
      *
-     * @param crashLog the crash log.
+     * @param crashLog the crash log
      */
     @ApiStatus.Internal
     public void fillCrashInfo(CrashLog crashLog) {
+        // Create a new CrashCategory for world details
         CrashCategory cat = new CrashCategory("World Details");
+        // Add total chunks information to the crash category
         cat.add("Total chunks", this.totalChunks); // Too many chunks?
+        // Add rendered chunks information to the crash category
         cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
+        // Add seed information to the crash category
         cat.add("Seed", this.seed); // For weird world generation glitches
 
+        // Add the world details category to the crash log
         crashLog.addCategory(cat);
     }
 
@@ -663,7 +701,7 @@ public abstract class World implements ServerDisposable {
         Chunk chunk = this.getChunkAt(breaking);
         if (chunk == null) return BreakResult.FAILED;
         BlockPos localBlockPos = World.toLocalBlockPos(breaking);
-        Block block = this.get(breaking);
+        BlockMetadata block = this.get(breaking);
 
         if (block.isAir()) return BreakResult.FAILED;
 
@@ -724,7 +762,7 @@ public abstract class World implements ServerDisposable {
         int z = pos.z();
 
         return this.spawnPoint.x - 1 <= x && this.spawnPoint.x + 1 >= x &&
-                this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
+               this.spawnPoint.z - 1 <= z && this.spawnPoint.z + 1 >= z;
     }
 
     /**
@@ -809,6 +847,19 @@ public abstract class World implements ServerDisposable {
 
     public UUID getUID() {
         return this.uid;
+    }
+
+    public boolean set(int x, int y, int z, @NotNull BlockMetadata block,
+                                @MagicConstant(flagsFromClass = BlockFlags.class) int flags) {
+        this.checkThread();
+
+        BlockEvents.SET_BLOCK.factory().onSetBlock(this, new BlockPos(x, y, z), block);
+
+        Chunk chunk = this.getChunkAt(x, y, z);
+        if (chunk == null) return false;
+
+        BlockPos cp = World.toLocalBlockPos(x, y, z);
+        return chunk.set(cp.x(), cp.y(), cp.z(), block);
     }
 
     public void setBlockEntity(BlockPos pos, BlockEntity blockEntity) {

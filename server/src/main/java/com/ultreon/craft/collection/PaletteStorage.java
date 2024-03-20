@@ -1,12 +1,15 @@
 package com.ultreon.craft.collection;
 
+import com.google.common.base.Preconditions;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.server.ServerDisposable;
 import com.ultreon.craft.ubo.DataKeys;
 import com.ultreon.data.types.ListType;
 import com.ultreon.data.types.MapType;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -29,18 +32,27 @@ import java.util.stream.Collectors;
 @NotThreadSafe
 @ApiStatus.Experimental
 public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
+    private final D defaultValue;
     private short[] palette;
     private List<D> data = new LinkedList<>();
     private int paletteCounter = 0;
 
-    public PaletteStorage(int size) {
+    public PaletteStorage(D defaultValue, int size) {
+        this.defaultValue = defaultValue;
+
         this.palette = new short[size];
         Arrays.fill(this.palette, (short) -1);
     }
 
-    public PaletteStorage(short[] palette, List<D> data) {
+    public PaletteStorage(D defaultValue, short[] palette, List<D> data) {
+        this.defaultValue = defaultValue;
         this.palette = palette;
         this.data = data;
+    }
+
+    public PaletteStorage(D defaultValue, PacketBuffer buffer, Function<PacketBuffer, D> decoder) {
+        this(defaultValue, 0);
+        this.read(buffer, decoder);
     }
 
     @Override
@@ -60,6 +72,10 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
         var data = inputData.<MapType>getList(DataKeys.PALETTE_DATA);
         for (MapType entryData : data.getValue()) {
             D entry = decoder.apply(entryData);
+            if (entry == null) {
+                this.data.add(this.defaultValue);
+                continue;
+            }
             this.data.add(entry);
         }
 
@@ -68,25 +84,27 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
 
     @Override
     public void write(PacketBuffer buffer, BiConsumer<PacketBuffer, D> encoder) {
-        buffer.writeInt(this.data.size());
+        buffer.writeMedium(this.data.size());
         for (D entry : this.data) if (entry != null) encoder.accept(buffer, entry);
-        buffer.writeInt(this.palette.length);
+        buffer.writeMedium(this.palette.length);
         for (short v : this.palette) buffer.writeShort(v);
     }
 
     @Override
     public void read(PacketBuffer buffer, Function<PacketBuffer, D> decoder) {
         var data = new ArrayList<D>();
-        var dataSize = buffer.readInt();
+        var dataSize = buffer.readMedium();
         for (int i = 0; i < dataSize; i++) {
             data.add(decoder.apply(buffer));
         }
         this.data = data;
 
-        short[] palette = new short[buffer.readInt()];
+        short[] palette = new short[buffer.readMedium()];
         for (int i = 0; i < palette.length; i++) {
             palette[i] = buffer.readShort();
         }
+
+        this.palette = palette;
     }
 
     @Override
@@ -100,18 +118,25 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
 
         short setIdx = (short) this.data.indexOf(value);
         if (setIdx == -1) {
-            setIdx = this.add(value);
+            setIdx = this.add(idx, value);
         }
         this.palette[idx] = setIdx;
 
-        if (old >= 0 && !ArrayUtils.contains(this.palette, old)) {
-            this.data.remove(old);
+        if (old < 0 || ArrayUtils.contains(this.palette, old))
+            return false;
 
-            // Update paletteMap entries for indices after the removed one
-            for (int i = idx; i < this.palette.length; i++) {
-                int oldValue = this.palette[i];
-                this.palette[i] = (short) (oldValue - 1);
-            }
+        int i1 = ListUtils.indexOf(this.data, object -> Objects.equals(object, value));
+        if (i1 >= 0) {
+            this.data.set(old, value);
+            return false;
+        }
+
+        this.data.remove(old);
+
+        // Update paletteMap entries for indices after the removed one
+        for (int i = 0; i < this.palette.length; i++) {
+            int oldValue = this.palette[i];
+            this.palette[i] = (short) (oldValue - 1);
         }
         return false;
     }
@@ -122,21 +147,26 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
 
     public D direct(int dataIdx) {
         if (dataIdx >= 0 && dataIdx < this.data.size()) {
-            return this.data.get(dataIdx);
+            D d = this.data.get(dataIdx);
+            return d != null ? d : this.defaultValue;
         }
-        return null; // Or throw an exception if you prefer
+
+        throw new IndexOutOfBoundsException("Palette index out of bounds: " + dataIdx);
     }
 
-    public short add(D value) {
+    public short add(int idx, D value) {
+        Preconditions.checkNotNull(value, "value");
+
         short dataIdx = (short) (this.data.size());
         this.data.add(value);
-        this.palette[this.paletteCounter] = dataIdx;
+        this.palette[idx] = dataIdx;
         return dataIdx;
     }
 
     public void remove(int idx) {
         if (idx >= 0 && idx < this.data.size()) {
             int dataIdx = this.toDataIdx(idx);
+            if (dataIdx < 0) return;
             this.data.remove(dataIdx);
             this.palette[idx] = -1;
             this.paletteCounter--;
@@ -159,13 +189,16 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
     @Override
     public D get(int idx) {
         short paletteIdx = this.toDataIdx(idx);
-        return paletteIdx < 0 ? null : this.direct(paletteIdx);
+        return paletteIdx < 0 ? this.defaultValue : this.direct(paletteIdx);
     }
 
     @Override
-    public <R> Storage<R> map(Function<D, R> o, Class<R> clazz) {
-        var data = this.data.stream().map(o).collect(Collectors.toList());
-        return new PaletteStorage<>(this.palette, data);
+    public <R> Storage<R> map(@NotNull R defaultValue, @NotNull Function<@NotNull D, @NotNull R> mapper) {
+        Preconditions.checkNotNull(defaultValue, "defaultValue");
+        Preconditions.checkNotNull(mapper, "mapper");
+
+        var data = this.data.stream().map(mapper).collect(Collectors.toList());
+        return new PaletteStorage<>(defaultValue, this.palette, data);
     }
 
     public short[] getPalette() {
@@ -179,6 +212,9 @@ public class PaletteStorage<D> implements ServerDisposable, Storage<D> {
     public void set(short[] palette, List<D> data) {
         if (this.palette.length != palette.length)
             throw new IllegalArgumentException("Palette length must be equal.");
+
+        if (this.data.contains(null))
+            throw new IllegalArgumentException("Data cannot contain null values.");
 
         this.palette = palette;
         this.data = data;

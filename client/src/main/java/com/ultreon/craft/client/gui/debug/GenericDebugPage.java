@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.gui.debug;
 
 import com.badlogic.gdx.graphics.Mesh;
-import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.IntegratedServer;
 import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.client.world.ChunkMesh;
@@ -37,6 +37,11 @@ public class GenericDebugPage implements DebugPage {
         if (integratedServer != null) {
             context.left("Integrated Server")
                     .left("Server TPS", integratedServer.getCurrentTps())
+                    .left("Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent())
+                    .left();
+        } else {
+            context.left("Server Connection")
+                    .left("Server TPS", "N/A (Coming Soon!)")
                     .left("Packets", "rx = " + Connection.getPacketsReceived() + ", tx = " + Connection.getPacketsSent())
                     .left();
         }
@@ -103,10 +108,10 @@ public class GenericDebugPage implements DebugPage {
         }
 
         HitResult cursor = client.cursor;
-        if (cursor.isCollide()) {
-            Block block = cursor.block;
+        if (cursor != null && cursor.isCollide()) {
+            BlockMetadata block = cursor.blockMeta;
             if (block != null && !block.isAir()) {
-                context.right("Block", Registries.BLOCK.getId(block));
+                context.right("Block", block);
             }
         }
     }

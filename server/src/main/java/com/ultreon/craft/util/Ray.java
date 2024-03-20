@@ -17,6 +17,7 @@
 package com.ultreon.craft.util;
 
 import com.ultreon.craft.network.PacketBuffer;
+import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
 import java.io.Serializable;
@@ -122,5 +123,9 @@ public class Ray implements Serializable {
 		result = prime * result + this.direction.hashCode();
 		result = prime * result + this.origin.hashCode();
 		return result;
+	}
+
+	public CubicDirection getDirection() {
+		return CubicDirection.fromVec3d(this.direction);
 	}
 }

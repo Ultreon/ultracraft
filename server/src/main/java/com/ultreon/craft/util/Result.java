@@ -79,22 +79,30 @@ public class Result<T> {
 
     @Contract("!null -> !null")
     public T getValueOr(T other) {
-        T value = this.ok.value;
+        Ok<T> ok = this.ok;
+        if (ok == null) return other;
+        T value = ok.value;
         return value == null ? other : value;
     }
 
     public Throwable getFailureOr(Throwable other) {
-        Throwable value = this.failure.throwable;
+        Failure failure = this.failure;
+        if (failure == null) return other;
+        Throwable value = failure.throwable;
         return value == null ? other : value;
     }
 
     public T getValueOrGet(Supplier<? extends T> other) {
-        T value = this.ok.value;
+        Ok<T> ok = this.ok;
+        if (ok == null) return other.get();
+        T value = ok.value;
         return value == null ? other.get() : value;
     }
 
     public Throwable getFailureOrGet(Supplier<? extends Throwable> other) {
-        Throwable value = this.failure.throwable;
+        Failure failure = this.failure;
+        if (failure == null) return other.get();
+        Throwable value = failure.throwable;
         return value == null ? other.get() : value;
     }
 

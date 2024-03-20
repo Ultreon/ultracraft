@@ -1,7 +1,7 @@
 package com.ultreon.craft.network.client;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.collection.Storage;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
@@ -23,6 +23,7 @@ import com.ultreon.craft.world.ChunkPos;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onChunkCancel(ChunkPos pos);
 
-    void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities);
+    void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities);
 
     void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos);
 
@@ -51,7 +52,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onRemovePlayer(UUID u);
 
-    void onBlockSet(BlockPos pos, Block block);
+    void onBlockSet(BlockPos pos, BlockMetadata block);
 
     void onMenuItemChanged(int index, ItemStack stack);
 
@@ -59,7 +60,7 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
 
     void onMenuCursorChanged(ItemStack cursor);
 
-    void onOpenContainerMenu(Identifier menuType);
+    void onOpenContainerMenu(Identifier menuType, List<ItemStack> items);
 
     void onAddPermission(AddPermissionPacket packet);
 
@@ -86,4 +87,6 @@ public interface InGameClientPacketHandler extends ClientPacketHandler {
     void onAddEntity(int id, EntityType<?> type, Vec3d position, MapType pipeline);
 
     void onEntityPipeline(int id, MapType pipeline);
+
+    void onCloseContainerMenu();
 }

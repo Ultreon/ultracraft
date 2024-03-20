@@ -13,7 +13,7 @@ public class RemovePermissionPacket extends Packet<InGameClientPacketHandler> {
     }
 
     public RemovePermissionPacket(PacketBuffer buffer) {
-        this.permission = new Permission(buffer.readUTF(128));
+        this.permission = new Permission(buffer.readString(128));
     }
 
     @Override

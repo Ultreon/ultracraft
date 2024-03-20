@@ -8,7 +8,9 @@ import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.world.ClientChunk;
+import com.ultreon.craft.client.world.ClientWorld;
 
 public class WorldShader extends DefaultShader {
     private final static Attributes tmpAttributes = new Attributes();
@@ -48,14 +50,11 @@ public class WorldShader extends DefaultShader {
         public final static Setter globalSunlight = new LocalSetter() {
             @Override
             public void set (BaseShader shader, int inputID, Renderable renderable, Attributes combinedAttributes) {
-                if (renderable != null) {
-                    if (renderable.userData instanceof ClientChunk clientChunk) {
-                        shader.set(inputID, clientChunk.getWorld().getGlobalSunlight());
-                    } else {
-                        shader.set(inputID, 1.0f);
-                    }
+                ClientWorld world = UltracraftClient.get().world;
+                if (world != null) {
+                    shader.set(inputID, world.getGlobalSunlight());
                 } else {
-                    shader.set(inputID, 1.0f);
+                    shader.set(inputID, 0);
                 }
             }
         };

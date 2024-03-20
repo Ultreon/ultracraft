@@ -44,6 +44,7 @@ public class RenderPipeline implements Disposable {
         return this;
     }
 
+    @SuppressWarnings("GDXJavaFlushInsideLoop") // We need to flush before the next node.
     public void render(ModelBatch modelBatch) {
         ClientWorld world = UltracraftClient.get().world;
         if (world != null) {

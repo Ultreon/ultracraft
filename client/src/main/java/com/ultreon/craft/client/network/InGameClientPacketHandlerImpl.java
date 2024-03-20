@@ -1,15 +1,11 @@
 package com.ultreon.craft.client.network;
 
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntityType;
-import com.ultreon.craft.client.IntegratedServer;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientChunkEvents;
 import com.ultreon.craft.client.api.events.ClientPlayerEvents;
-import com.ultreon.craft.client.gui.screens.ChatScreen;
-import com.ultreon.craft.client.gui.screens.DisconnectedScreen;
-import com.ultreon.craft.client.gui.screens.Screen;
-import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
+import com.ultreon.craft.client.gui.screens.*;
 import com.ultreon.craft.client.gui.screens.container.ContainerScreen;
 import com.ultreon.craft.client.gui.screens.container.InventoryScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
@@ -18,6 +14,7 @@ import com.ultreon.craft.client.world.ClientChunk;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.menu.ContainerMenu;
@@ -34,11 +31,11 @@ import com.ultreon.craft.network.packets.AddPermissionPacket;
 import com.ultreon.craft.network.packets.InitialPermissionsPacket;
 import com.ultreon.craft.network.packets.RemovePermissionPacket;
 import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
-import com.ultreon.craft.network.packets.c2s.C2SCloseContainerMenuPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPlayerHurtPacket;
 import com.ultreon.craft.network.packets.s2c.S2CTimePacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
+import com.ultreon.craft.util.ExitCodes;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.util.Gamemode;
 import com.ultreon.craft.world.Biome;
@@ -51,6 +48,7 @@ import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -61,6 +59,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     private final PacketContext context;
     private final UltracraftClient client = UltracraftClient.get();
     private long ping = 0;
+    private boolean disconnected;
 
     public InGameClientPacketHandlerImpl(Connection connection) {
         this.connection = connection;
@@ -115,25 +114,37 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onChunkData(ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
-        LocalPlayer player = this.client.player;
-        if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.get()*/) {
-            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
-            return;
-        }
-
-        CompletableFuture.runAsync(() -> {
-            ClientWorld world = this.client.world;
-
-            if (world == null) {
-                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+    public void onChunkData(ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+        try {
+            LocalPlayer player = this.client.player;
+            if (player == null/* || new Vec2d(pos.x(), pos.z()).dst(new Vec2d(player.getChunkPos().x(), player.getChunkPos().z())) > this.client.settings.renderDistance.getConfig()*/) {
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SKIP));
                 return;
             }
 
-            ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
-            ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
-            world.loadChunk(pos, data);
-        }, this.client.chunkLoadingExecutor);
+            CompletableFuture.runAsync(() -> {
+                ClientWorld world = this.client.world;
+
+                if (world == null) {
+                    this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                    return;
+                }
+
+                ClientChunk data = new ClientChunk(world, pos, storage, biomeStorage, blockEntities);
+                ClientChunkEvents.RECEIVED.factory().onClientChunkReceived(data);
+                world.loadChunk(pos, data);
+            }, this.client.chunkLoadingExecutor).exceptionally(throwable -> {
+                this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+                UltracraftClient.LOGGER.error("Failed to load chunk:", throwable);
+                return null;
+            });
+        } catch (Exception e) {
+            this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.FAILED));
+            UltracraftClient.LOGGER.error("Hard error while loading chunk:", e);
+            UltracraftClient.LOGGER.debug("What, why? Pls no!!!");
+
+            Runtime.getRuntime().halt(ExitCodes.FATAL_ERROR);
+        }
     }
 
     @Override
@@ -162,6 +173,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
         }
 
         this.client.connection.closeAll();
+        this.disconnected = true;
 
         this.client.submit(() -> {
             this.client.renderWorld = false;
@@ -195,10 +207,12 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
                 }
             }
 
-            IntegratedServer server = this.client.getSingleplayerServer();
-            server.shutdown();
+            if (this.client.integratedServer != null) {
+                this.client.integratedServer.shutdown();
+                this.client.integratedServer = null;
+            }
 
-            this.client.showScreen(new DisconnectedScreen(message));
+            this.client.showScreen(new DisconnectedScreen(message, !this.connection.isMemoryConnection()));
         });
     }
 
@@ -229,7 +243,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onPlaySound(Identifier sound, float volume) {
-        this.client.playSound(Registries.SOUND_EVENT.getElement(sound), volume);
+        this.client.playSound(Registries.SOUND_EVENT.get(sound), volume);
     }
 
     @Override
@@ -243,7 +257,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onBlockSet(BlockPos pos, Block block) {
+    public void onBlockSet(BlockPos pos, BlockMetadata block) {
         ClientWorld world = this.client.world;
         if (this.client.world != null) {
             this.client.submit(() -> world.set(pos, block));
@@ -292,15 +306,12 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     }
 
     @Override
-    public void onOpenContainerMenu(Identifier menuTypeId) {
-        var menuType = Registries.MENU_TYPE.getElement(menuTypeId);
+    public void onOpenContainerMenu(Identifier menuTypeId, List<ItemStack> items) {
+        var menuType = Registries.MENU_TYPE.get(menuTypeId);
         LocalPlayer player = this.client.player;
         if (player == null) return;
-        ContainerMenu o = menuType.create(this.client.world, player, null);
-        if (o != null) {
-            player.onOpenMenu(o);
-        } else {
-            this.client.connection.send(new C2SCloseContainerMenuPacket());
+        if (menuType != null) {
+            client.execute(() -> player.onOpenMenu(menuType, items));
         }
     }
 
@@ -409,8 +420,25 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onEntityPipeline(int id, MapType pipeline) {
-        if (this.client.world != null) {
-            this.client.world.getEntity(id).onPipeline(pipeline);
+        ClientWorld world = this.client.world;
+        if (world != null) {
+            this.client.execute(() -> {
+                Entity entity = world.getEntity(id);
+                entity.onPipeline(pipeline);
+            });
         }
+    }
+
+    @Override
+    public void onCloseContainerMenu() {
+        var player = this.client.player;
+        if (player != null) {
+            this.client.execute(player::closeMenu);
+        }
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return disconnected;
     }
 }

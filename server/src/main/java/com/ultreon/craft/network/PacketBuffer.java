@@ -2,6 +2,7 @@ package com.ultreon.craft.network;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.item.ItemStack;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Identifier;
@@ -37,7 +38,7 @@ public class PacketBuffer extends ByteBuf {
         this.buf = buf;
     }
 
-    public String readUTF(int max) {
+    public String readString(int max) {
         if (max < 0) throw new IllegalArgumentException(CommonConstants.EX_INVALID_DATA);
         int len = this.readVarInt();
         if (len > max) throw new PacketOverflowException("string", len, max);
@@ -72,8 +73,8 @@ public class PacketBuffer extends ByteBuf {
     }
 
     public Identifier readId() {
-        var location = this.readUTF(100);
-        var path = this.readUTF(200);
+        var location = this.readString(100);
+        var path = this.readString(200);
         return new Identifier(location, path);
     }
 
@@ -1626,5 +1627,13 @@ public class PacketBuffer extends ByteBuf {
 
     public <T extends Enum<T>> T readEnum(T fallback) {
         return EnumUtils.byOrdinal(this.readVarInt(), fallback);
+    }
+
+    public BlockMetadata readBlockMeta() {
+        return BlockMetadata.read(this);
+    }
+
+    public void writeBlockMeta(BlockMetadata blockMeta) {
+        blockMeta.write(this);
     }
 }

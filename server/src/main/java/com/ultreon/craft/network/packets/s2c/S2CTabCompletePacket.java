@@ -16,7 +16,7 @@ public class S2CTabCompletePacket extends Packet<InGameClientPacketHandler> {
     }
 
     public S2CTabCompletePacket(PacketBuffer buffer) {
-        this.options = buffer.readList(buf -> buf.readUTF(64));
+        this.options = buffer.readList(buf -> buf.readString(64));
     }
 
     @Override

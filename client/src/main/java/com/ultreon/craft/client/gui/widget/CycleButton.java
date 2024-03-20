@@ -10,6 +10,7 @@ import com.ultreon.craft.text.MutableText;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.Mth;
+import org.apache.commons.lang3.ArrayUtils;
 import org.checkerframework.common.value.qual.IntRange;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +19,7 @@ import java.util.function.Supplier;
 
 import static com.ultreon.craft.client.UltracraftClient.id;
 
-public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
+public class CycleButton<T> extends Button<CycleButton<T>> {
     private @Nullable TextObject label = null;
     private final TextComponent text;
     private final ColorComponent textColor;
@@ -145,7 +146,7 @@ public class CycleButton<T extends Enum<T>> extends Button<CycleButton<T>> {
     }
 
     public CycleButton<T> value(T o) {
-        this.cur = o.ordinal();
+        this.cur = Mth.clamp(ArrayUtils.indexOf(this.values, o), 0, this.values.length - 1);
         return this;
     }
 

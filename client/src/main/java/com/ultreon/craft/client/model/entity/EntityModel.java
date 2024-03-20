@@ -12,7 +12,7 @@ import com.ultreon.craft.entity.Entity;
 import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 
 public abstract class EntityModel<T extends Entity> {
-    public final Model finish(EntityTextures textures) {
+    public Model finish(EntityTextures textures) {
         ModelBuilder builder = new ModelBuilder();
         builder.begin();
         this.build(builder, textures);

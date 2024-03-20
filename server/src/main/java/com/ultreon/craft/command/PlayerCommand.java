@@ -1,9 +1,8 @@
 package com.ultreon.craft.command;
 
 import com.ultreon.craft.api.commands.*;
-import com.ultreon.craft.api.commands.output.CommandOutput;
+import com.ultreon.craft.api.commands.output.CommandResult;
 import com.ultreon.craft.api.ubo.UboFormatter;
-import com.ultreon.craft.entity.LivingEntity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.data.types.MapType;
@@ -16,8 +15,8 @@ public class PlayerCommand extends Command {
         this.data().aliases("player", "person");
     }
 
-    @SubCommand("dump-data <player>")
-    public @Nullable CommandOutput executeDumpData(CommandSender sender, CommandContext commandContext, String alias, Player player) {
+    @DefineCommand("dump-data <player>")
+    public @Nullable CommandResult executeDumpData(CommandSender sender, CommandContext commandContext, String alias, Player player) {
         MapType save = player.save(new MapType());
 
         TextObject formatted = UboFormatter.format(save);

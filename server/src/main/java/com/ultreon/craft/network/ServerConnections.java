@@ -18,6 +18,7 @@ import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.util.concurrent.Future;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -26,34 +27,71 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
+/**
+ * Connections for the server.
+ *
+ * @author <a href="https://github.com/XyperCode">XyperCode</a>
+ * @since 0.1.0
+ * @see Connection
+ */
 public class ServerConnections {
     private static final Map<Identifier, NetworkChannel> CHANNELS = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerConnections.class);
     private final UltracraftServer server;
     private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
 
+    /**
+     * Generic server event groups for all platforms
+     */
     public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(ServerConnections::createServerEventGroup);
+
+    /**
+     * Epoll server event groups for Linux
+     */
     public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(ServerConnections::createEpollEventGroup);
     final List<Connection> connections = new ArrayList<>();
     private boolean running;
 
+    /**
+     * Constructs a new {@link ServerConnections} for the specified {@link UltracraftServer}.
+     *
+     * @param server the server to host.
+     */
     public ServerConnections(UltracraftServer server) {
         this.server = server;
         this.running = true;
     }
 
+    /**
+     * Registers a new channel.
+     *
+     * @param id the identifier of the channel
+     * @return the new channel
+     */
     public static NetworkChannel registerChannel(Identifier id) {
         NetworkChannel channel = NetworkChannel.create(id);
         ServerConnections.CHANNELS.put(id, channel);
         return channel;
     }
 
+    /**
+     * Get all registered network channels.
+     *
+     * @return the collection of network channels
+     */
     public static Collection<NetworkChannel> getChannels() {
         return Collections.unmodifiableCollection(ServerConnections.CHANNELS.values());
     }
 
+    /**
+     * Get a channel by its identifier.
+     *
+     * @param identifier the identifier
+     * @return the channel or {@code null} if not found
+     */
     public static NetworkChannel getChannel(Identifier identifier) {
         return ServerConnections.CHANNELS.get(identifier);
     }
@@ -66,6 +104,11 @@ public class ServerConnections {
         return new EpollEventLoopGroup(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), new ThreadFactoryBuilder().setNameFormat("Netty Epoll Server IO #%d").build());
     }
 
+    /**
+     * Starts a memory server using the provided configuration.
+     *
+     * @return the local address of the started memory server
+     */
     public SocketAddress startMemoryServer() {
         ChannelFuture channelFuture;
 
@@ -83,6 +126,12 @@ public class ServerConnections {
         return channelFuture.channel().localAddress();
     }
 
+    /**
+     * Starts a TCP server at the specified address and port.
+     *
+     * @param address the IP address to bind the server to, or null to bind to all available network interfaces
+     * @param port    the port number to listen on
+     */
     public void startTcpServer(@Nullable InetAddress address, int port) {
         synchronized (this.channels) {
             Class<? extends ServerChannel> clazz;
@@ -143,6 +192,11 @@ public class ServerConnections {
         }
     }
 
+    /**
+     * Get the server instance.
+     *
+     * @return the server instance
+     */
     public UltracraftServer getServer() {
         return this.server;
     }
@@ -150,16 +204,21 @@ public class ServerConnections {
     public void stop() {
         this.running = false;
 
-        for (ChannelFuture future : this.channels) {
-            try {
-                future.channel().close().sync();
-                ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
-            } catch (InterruptedException ex) {
-                ServerConnections.LOGGER.warn("Failed to close channel", ex);
+        try {
+            Future<?> sync = ServerConnections.SERVER_EVENT_GROUP.get().shutdownGracefully().sync();
+            if (!sync.isSuccess()) {
+                ServerConnections.LOGGER.warn("Failed to shutdown server event loop group");
             }
+        } catch (InterruptedException ex) {
+            ServerConnections.LOGGER.warn("Failed to shutdown server event loop group due to interrupt", ex);
         }
     }
 
+    /**
+     * Check if the server is running.
+     *
+     * @return {@code true} if the server is running, {@code false} otherwise
+     */
     public boolean isRunning() {
         return this.running;
     }
@@ -180,10 +239,11 @@ public class ServerConnections {
 
             }
 
-            ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
+            ChannelPipeline pipeline = channel.pipeline();
             Connection connection = new Connection(PacketDestination.CLIENT);
             ServerConnections.this.connections.add(connection);
             connection.setup(pipeline);
+            pipeline.addLast("timeout", new ReadTimeoutHandler(30));
             connection.setupPacketHandler(pipeline);
             connection.setHandler(new LoginServerPacketHandler(ServerConnections.this.server, connection));
         }

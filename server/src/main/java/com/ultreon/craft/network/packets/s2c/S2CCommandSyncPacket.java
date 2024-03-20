@@ -15,7 +15,7 @@ public class S2CCommandSyncPacket extends Packet<InGameClientPacketHandler> {
     }
 
     public S2CCommandSyncPacket(PacketBuffer buffer) {
-        this.commands = buffer.readList(buf -> buf.readUTF(64));
+        this.commands = buffer.readList(buf -> buf.readString(64));
     }
 
     @Override

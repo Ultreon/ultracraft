@@ -9,29 +9,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Selections {
-    private Player _player = null;
-    private Entity _entity = null;
+    private Player player = null;
+    private Entity entity = null;
     private ServerWorld world = null;
     private ServerChunk chunk = null;
     protected PositionCommand.PositionSelection positions = new PositionCommand.PositionSelection();
     private static Map<CommandSender, Selections> selections = new HashMap<>();
 
     public Player getPlayer() {
-        return this._player;
+        return player;
     }
 
     public void setPlayer(Player player) {
-        this._player = player;
-        this._entity = player;
+        this.player = player;
+        this.entity = player;
     }
 
     public Entity getEntity() {
-        return this._entity;
+        return entity;
     }
 
     public void setEntity(Entity entity) {
-        this._player = (entity instanceof Player) ? (Player) entity : null;
-        this._entity = entity;
+        this.player = (entity instanceof Player) ? (Player) entity : null;
+        this.entity = entity;
     }
 
     public static Selections get(CommandSender sender) {
@@ -42,5 +42,21 @@ public class Selections {
             selections.put(sender, select);
             return select;
         }
+    }
+
+    public ServerWorld getWorld() {
+        return world;
+    }
+
+    public void setWorld(ServerWorld world) {
+        this.world = world;
+    }
+
+    public ServerChunk getChunk() {
+        return chunk;
+    }
+
+    public void setChunk(ServerChunk chunk) {
+        this.chunk = chunk;
     }
 }

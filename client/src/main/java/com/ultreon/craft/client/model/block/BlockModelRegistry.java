@@ -5,24 +5,27 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
-import com.ultreon.craft.client.api.model.JsonModel;
-import com.ultreon.craft.client.api.model.JsonModelLoader;
+import com.ultreon.craft.client.model.model.Json5Model;
+import com.ultreon.craft.client.model.model.Json5ModelLoader;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
+import com.ultreon.libs.commons.v0.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class BlockModelRegistry {
-    private static final Map<Block, Supplier<CubeModel>> REGISTRY = new HashMap<>();
-    private static final Map<Block, Supplier<BlockModel>> CUSTOM_REGISTRY = new HashMap<>();
+    private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<CubeModel>>>> REGISTRY = new HashMap<>();
+    private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>> CUSTOM_REGISTRY = new HashMap<>();
     private static final Set<Identifier> TEXTURES = new HashSet<>();
-    private static final Map<Block, BlockModel> FINISHED_REGISTRY = new HashMap<>();
+    private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>> FINISHED_REGISTRY = new HashMap<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>>();
 
     static {
         BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking1"));
@@ -33,30 +36,34 @@ public class BlockModelRegistry {
         BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking6"));
     }
 
-    public static BlockModel get(Block block) {
-        return BlockModelRegistry.CUSTOM_REGISTRY.getOrDefault(block, () -> null).get();
+    public static BlockModel get(BlockMetadata meta) {
+        return BlockModelRegistry.CUSTOM_REGISTRY.getOrDefault(meta.getBlock(), new ArrayList<>())
+                .stream()
+                .filter(p -> p.getFirst().test(meta)).map(p -> p.getSecond().get())
+                .findFirst()
+                .orElse(null);
     }
 
-    public static void register(Block block, CubeModel model) {
-        BlockModelRegistry.REGISTRY.put(block, () -> model);
+    public static void register(Block block, Predicate<BlockMetadata> predicate, CubeModel model) {
+        BlockModelRegistry.REGISTRY.computeIfAbsent(block, key -> new ArrayList<>()).add(new Pair<>(predicate, () -> model));
     }
 
-    public static void registerCustom(Block block, Supplier<BlockModel> model) {
-        BlockModelRegistry.CUSTOM_REGISTRY.put(block, Suppliers.memoize(model::get));
+    public static void registerCustom(Block block, Predicate<BlockMetadata> predicate, Supplier<BlockModel> model) {
+        BlockModelRegistry.CUSTOM_REGISTRY.computeIfAbsent(block, key -> new ArrayList<>()).add(new Pair<>(predicate, Suppliers.memoize(model::get)));
     }
 
-    public static void register(Supplier<Block> block, Supplier<CubeModel> model) {
-        BlockModelRegistry.REGISTRY.put(block.get(), model);
+    public static void register(Supplier<Block> block, Predicate<BlockMetadata> predicate, Supplier<CubeModel> model) {
+        BlockModelRegistry.REGISTRY.computeIfAbsent(block.get(), key -> new ArrayList<>()).add(new Pair<>(predicate, Suppliers.memoize(model::get)));
     }
 
     public static void registerDefault(Block block) {
         Identifier key = Registries.BLOCK.getId(block);
         Preconditions.checkNotNull(key, "Block is not registered");
-        BlockModelRegistry.register(block, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
+        BlockModelRegistry.register(block, meta -> true, CubeModel.of(key.mapPath(path -> "blocks/" + path)));
     }
 
     public static void registerDefault(Supplier<Block> block) {
-        BlockModelRegistry.register(block, Suppliers.memoize(() -> {
+        BlockModelRegistry.register(block, meta -> true, Suppliers.memoize(() -> {
             Identifier key = Registries.BLOCK.getId(block.get());
             Preconditions.checkNotNull(key, "Block is not registered");
             return CubeModel.of(key.mapPath(path -> "blocks/" + path));
@@ -66,9 +73,7 @@ public class BlockModelRegistry {
     public static TextureAtlas stitch(TextureManager textureManager) {
         TextureStitcher stitcher = new TextureStitcher(UltracraftClient.id("block"));
 
-        for (Supplier<CubeModel> value : BlockModelRegistry.REGISTRY.values()) {
-            BlockModelRegistry.TEXTURES.addAll(value.get().all());
-        }
+        BlockModelRegistry.REGISTRY.values().stream().flatMap(Collection::stream).map(pair -> pair.getSecond().get().all()).forEach(BlockModelRegistry.TEXTURES::addAll);
 
         final int breakStages = 6;
 
@@ -91,27 +96,43 @@ public class BlockModelRegistry {
     }
 
     public static BakedModelRegistry bake(TextureAtlas atlas) {
-        ImmutableMap.Builder<Block, BakedCubeModel> bakedModels = new ImmutableMap.Builder<>();
-        BlockModelRegistry.REGISTRY.forEach((block, model) -> bakedModels.put(block, model.get().bake(block.getId(), atlas)));
+        ImmutableMap.Builder<Block, List<Pair<Predicate<BlockMetadata>, BakedCubeModel>>> bakedModels = new ImmutableMap.Builder<>();
+        BlockModelRegistry.REGISTRY.forEach((block, models) -> {
+            List<Pair<Predicate<BlockMetadata>, BakedCubeModel>> modelList = new ArrayList<>();
+            for (var modelPair : models) {
+                var predicate = modelPair.getFirst();
+                var model = modelPair.getSecond();
+                BakedCubeModel baked = model.get().bake(block.getId(), atlas);
+
+                modelList.add(new Pair<>(predicate, baked));
+            }
+            bakedModels.put(block, modelList);
+        });
 
         return new BakedModelRegistry(atlas, bakedModels.build());
     }
 
     public static void bakeJsonModels(UltracraftClient client) {
         for (var entry : CUSTOM_REGISTRY.entrySet()) {
-            BlockModel model = entry.getValue().get();
-            UltracraftClient.invokeAndWait(() -> model.load(client));
-            FINISHED_REGISTRY.put(entry.getKey(), model);
+            List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>> models = new ArrayList<>();
+            for (var pair : entry.getValue()) {
+                BlockModel model = pair.getSecond().get();
+                UltracraftClient.invokeAndWait(() -> model.load(client));
+                models.add(new Pair<>(pair.getFirst(), Suppliers.memoize(() -> model)));
+            }
+            FINISHED_REGISTRY.put(entry.getKey(), models);
         }
     }
 
-    public static void load(JsonModelLoader loader) {
+    public static void load(Json5ModelLoader loader) {
         for (Block value : Registries.BLOCK.values()) {
             if (!REGISTRY.containsKey(value)) {
                 try {
-                    JsonModel load = loader.load(value);
+                    Json5Model load = loader.load(value);
                     if (load != null) {
-                        CUSTOM_REGISTRY.put(value, () -> load);
+                        CUSTOM_REGISTRY.computeIfAbsent(value, key -> new ArrayList<>()).add(new Pair<>(meta -> true, () -> load));
+
+                        load.getOverrides().cellSet().forEach((cell) -> CUSTOM_REGISTRY.computeIfAbsent(value, key -> new ArrayList<>()).add(new Pair<>(meta -> meta.getEntryUnsafe(cell.getRowKey()).equals(cell.getColumnKey()), cell::getValue)));
                     } else if (value.doesRender()) {
                         BlockModelRegistry.registerDefault(value);
                     }

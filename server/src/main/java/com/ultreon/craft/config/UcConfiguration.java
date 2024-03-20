@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Deprecated(forRemoval = true)
 public final class UcConfiguration<T> {
     private final FusionYAML yaml;
 
@@ -46,7 +47,7 @@ public final class UcConfiguration<T> {
     @NotNull
     private static FusionYAML.Builder getBuilder() {
         FusionYAML.Builder builder = new FusionYAML.Builder().flowStyle(DumperOptions.FlowStyle.BLOCK).onlyExposed(true);
-        builder.addTypeAdapter(new ElementIDAdapter(), Identifier.class);
+        builder.addTypeAdapter(new IdentifierAdapter(), Identifier.class);
         return builder;
     }
 
@@ -76,19 +77,23 @@ public final class UcConfiguration<T> {
             CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             return;
         } catch (Exception e) {
+            CommonConstants.LOGGER.error(CommonConstants.EX_FAILED_TO_LOAD_CONFIG, e);
             this.object = object;
             this.save();
             return;
         }
 
         if (this.object == null) {
+            CommonConstants.LOGGER.warn("Config file {} was empty", this.configPath);
             this.object = object;
             this.save();
         }
 
         if (!existed) {
+            CommonConstants.LOGGER.info("Config file {} was created", this.configPath);
             this.save();
         } else {
+            CommonConstants.LOGGER.info("Config file {} was loaded", this.configPath);
             this.reload(false);
             this.save();
         }
@@ -163,7 +168,7 @@ public final class UcConfiguration<T> {
         void onReload();
     }
 
-    private static class ElementIDAdapter extends TypeAdapter<Identifier> {
+    private static class IdentifierAdapter extends TypeAdapter<Identifier> {
         @Override
         public YamlElement serialize(Identifier obj, Type type) {
             if (obj == null) {

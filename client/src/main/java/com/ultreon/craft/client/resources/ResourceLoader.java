@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.UBJsonReader;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.api.model.ModelType;
+import com.ultreon.craft.client.model.model.ModelType;
 import com.ultreon.craft.resources.Resource;
 import com.ultreon.craft.util.Identifier;
 import net.mgsx.gltf.loaders.glb.GLBLoader;

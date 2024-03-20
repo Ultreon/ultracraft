@@ -1,0 +1,286 @@
+{
+  /*
+   Created using Blockbench!
+   Made by: MincraftEinstein
+   File name: crate.json5
+   */
+
+  // Define parent model
+  parent: "ultracraft:base/cube",
+
+  // Define textures
+  textures: {
+    "0": "ultracraft:blocks/planks",
+    "1": "ultracraft:blocks/crate_frame"
+  },
+
+  // Define elements
+  elements: [
+    {
+      name: "box",
+      from: [1, 1, 1],
+      to: [15, 15, 15],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [1, 1, 15, 15], texture: "#0"},
+        east: {uv: [1, 1, 15, 15], texture: "#0"},
+        south: {uv: [1, 1, 15, 15], texture: "#0"},
+        west: {uv: [1, 1, 15, 15], texture: "#0"},
+        up: {uv: [1, 1, 15, 15], texture: "#0"},
+        down: {uv: [1, 1, 15, 15], texture: "#0"}
+      }
+    },
+    {
+      name: "v_frame1",
+      from: [0, 0, 0],
+      to: [2, 16, 2],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [14, 0, 16, 16], texture: "#1"},
+        east: {uv: [0, 0, 2, 16], texture: "#1"},
+        south: {uv: [0, 0, 2, 16], texture: "#1"},
+        west: {uv: [0, 0, 2, 16], texture: "#1"},
+        up: {uv: [0, 0, 2, 2], texture: "#1"},
+        down: {uv: [0, 14, 2, 16], texture: "#1"}
+      }
+    },
+    {
+      name: "v_frame2",
+      from: [0, 0, 14],
+      to: [2, 16, 16],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 16], texture: "#1"},
+        east: {uv: [0, 0, 2, 16], texture: "#1"},
+        south: {uv: [0, 0, 2, 16], texture: "#1"},
+        west: {uv: [14, 0, 16, 16], texture: "#1"},
+        up: {uv: [0, 14, 2, 16], texture: "#1"},
+        down: {uv: [0, 0, 2, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "v_frame3",
+      from: [14, 0, 14],
+      to: [16, 16, 16],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 16], texture: "#1"},
+        east: {uv: [0, 0, 2, 16], texture: "#1"},
+        south: {uv: [14, 0, 16, 16], texture: "#1"},
+        west: {uv: [0, 0, 2, 16], texture: "#1"},
+        up: {uv: [14, 14, 16, 16], texture: "#1"},
+        down: {uv: [14, 0, 16, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "v_frame4",
+      from: [14, 0, 0],
+      to: [16, 16, 2],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 16], texture: "#1"},
+        east: {uv: [14, 0, 16, 16], texture: "#1"},
+        south: {uv: [0, 0, 2, 16], texture: "#1"},
+        west: {uv: [0, 0, 2, 16], texture: "#1"},
+        up: {uv: [14, 0, 16, 2], texture: "#1"},
+        down: {uv: [14, 14, 16, 16], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame1",
+      from: [2, 14, 0],
+      to: [14, 16, 2],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [2, 0, 14, 2], texture: "#1"},
+        east: {uv: [0, 0, 2, 2], texture: "#1"},
+        south: {uv: [0, 0, 12, 2], texture: "#1"},
+        west: {uv: [0, 0, 2, 2], texture: "#1"},
+        up: {uv: [2, 0, 14, 2], texture: "#1"},
+        down: {uv: [0, 0, 12, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame2",
+      from: [2, 14, 14],
+      to: [14, 16, 16],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 12, 2], texture: "#1"},
+        east: {uv: [0, 0, 2, 2], texture: "#1"},
+        south: {uv: [2, 0, 14, 2], texture: "#1"},
+        west: {uv: [0, 0, 2, 2], texture: "#1"},
+        up: {uv: [2, 14, 14, 16], texture: "#1"},
+        down: {uv: [0, 0, 12, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame3",
+      from: [2, 0, 14],
+      to: [14, 2, 16],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 12, 2], texture: "#1"},
+        east: {uv: [0, 0, 2, 2], texture: "#1"},
+        south: {uv: [2, 14, 14, 16], texture: "#1"},
+        west: {uv: [0, 0, 2, 2], texture: "#1"},
+        up: {uv: [0, 0, 12, 2], texture: "#1"},
+        down: {uv: [2, 0, 14, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame4",
+      from: [2, 0, 0],
+      to: [14, 2, 2],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [2, 14, 14, 16], texture: "#1"},
+        east: {uv: [0, 0, 2, 2], texture: "#1"},
+        south: {uv: [0, 0, 12, 2], texture: "#1"},
+        west: {uv: [0, 0, 2, 2], texture: "#1"},
+        up: {uv: [0, 0, 12, 2], texture: "#1"},
+        down: {uv: [2, 14, 14, 16], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame5",
+      from: [0, 0, 2],
+      to: [2, 2, 14],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 2], texture: "#1"},
+        east: {uv: [0, 0, 12, 2], texture: "#1"},
+        south: {uv: [0, 0, 2, 2], texture: "#1"},
+        west: {uv: [2, 14, 14, 16], texture: "#1"},
+        up: {uv: [0, 0, 2, 12], texture: "#1"},
+        down: {uv: [0, 2, 2, 14], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame6",
+      from: [0, 14, 2],
+      to: [2, 16, 14],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 2], texture: "#1"},
+        east: {uv: [0, 0, 12, 2], texture: "#1"},
+        south: {uv: [0, 0, 2, 2], texture: "#1"},
+        west: {uv: [2, 0, 14, 2], texture: "#1"},
+        up: {uv: [0, 2, 2, 14], texture: "#1"},
+        down: {uv: [0, 0, 2, 12], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame7",
+      from: [14, 14, 2],
+      to: [16, 16, 14],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 2], texture: "#1"},
+        east: {uv: [2, 0, 14, 2], texture: "#1"},
+        south: {uv: [0, 0, 2, 2], texture: "#1"},
+        west: {uv: [0, 0, 12, 2], texture: "#1"},
+        up: {uv: [14, 2, 16, 14], texture: "#1"},
+        down: {uv: [0, 0, 2, 12], texture: "#1"}
+      }
+    },
+    {
+      name: "h_frame8",
+      from: [14, 0, 2],
+      to: [16, 2, 14],
+      rotation: {angle: 0, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 2], texture: "#1"},
+        east: {uv: [2, 14, 14, 16], texture: "#1"},
+        south: {uv: [0, 0, 2, 2], texture: "#1"},
+        west: {uv: [0, 0, 12, 2], texture: "#1"},
+        up: {uv: [0, 0, 2, 12], texture: "#1"},
+        down: {uv: [14, 2, 16, 14], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame1",
+      from: [7, -1, 0.5],
+      to: [9, 17, 1],
+      rotation: {angle: -45, axis: "z", origin: [8, 8, 8]},
+      faces: {
+        north: {uv: [2, 0, 0, 16], texture: "#1"},
+        east: {uv: [1, 0, 1.5, 16], texture: "#1"},
+        south: {uv: [0, 0, 2, 16], texture: "#1"},
+        west: {uv: [0, 0, 0.5, 16], texture: "#1"},
+        up: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        down: {uv: [0, 0, 2, 0.5], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame2",
+      from: [0.5, -1, 7],
+      to: [1, 17, 9],
+      rotation: {angle: -45, axis: "x", origin: [8, 8, 8]},
+      faces: {
+        north: {uv: [1, 0, 1.5, 16], texture: "#1"},
+        east: {uv: [0, 0, 2, 16], texture: "#1"},
+        south: {uv: [0, 0, 0.5, 16], texture: "#1"},
+        west: {uv: [2, 0, 0, 16], texture: "#1"},
+        up: {uv: [0, 0, 0.5, 2], texture: "#1"},
+        down: {uv: [0, 0, 0.5, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame3",
+      from: [7, -1, 15],
+      to: [9, 17, 15.5],
+      rotation: {angle: 45, axis: "z", origin: [8, 8, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 16], texture: "#1"},
+        east: {uv: [0, 0, 0.5, 16], texture: "#1"},
+        south: {uv: [2, 0, 0, 16], texture: "#1"},
+        west: {uv: [1, 0, 1.5, 16], texture: "#1"},
+        up: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        down: {uv: [0, 0, 2, 0.5], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame4",
+      from: [15, -1, 7],
+      to: [15.5, 17, 9],
+      rotation: {angle: 45, axis: "x", origin: [8, 8, 8]},
+      faces: {
+        north: {uv: [0, 0, 0.5, 16], texture: "#1"},
+        east: {uv: [2, 0, 0, 16], texture: "#1"},
+        south: {uv: [1, 0, 1.5, 16], texture: "#1"},
+        west: {uv: [0, 0, 2, 16], texture: "#1"},
+        up: {uv: [0, 0, 0.5, 2], texture: "#1"},
+        down: {uv: [0, 0, 0.5, 2], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame5",
+      from: [7, 15, -1],
+      to: [9, 15.5, 17],
+      rotation: {angle: 45, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        east: {uv: [0, 1, 16, 1.5], texture: "#1"},
+        south: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        west: {uv: [0, 0, 16, 0.5], texture: "#1"},
+        up: {uv: [0, 0, 2, 16], texture: "#1"},
+        down: {uv: [0, 0, 2, 16], texture: "#1"}
+      }
+    },
+    {
+      name: "d_frame6",
+      from: [7, 0.5, -1],
+      to: [9, 1, 17],
+      rotation: {angle: -45, axis: "y", origin: [8, 0, 8]},
+      faces: {
+        north: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        east: {uv: [0, 1, 16, 1.5], texture: "#1"},
+        south: {uv: [0, 0, 2, 0.5], texture: "#1"},
+        west: {uv: [0, 0, 16, 0.5], texture: "#1"},
+        up: {uv: [0, 0, 2, 16], texture: "#1"},
+        down: {uv: [0, 0, 2, 16], texture: "#1"}
+      }
+    }
+  ]
+}

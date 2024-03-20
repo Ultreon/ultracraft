@@ -59,9 +59,12 @@ tasks.register('runClient', JavaExec) {
     workingDir "$rootProject.projectDir/run/client/main/"
 }
 
-archivesBaseName = archives_base_name + "-gameprovider"
-
+group = project_group
 def packageVersion = "1.0.0"
+
+base {
+    archivesName = archives_base_name + "-gameprovider"
+}
 
 java {
     withSourcesJar()
@@ -214,6 +217,8 @@ jar {
         println "DESKTOP FILE: ${file("${project(":desktop")buildDir}/libs/").list().toArrayString()}"
         println "GAMEPROVIDER FILE: ${file("${project(":gameprovider")buildDir}/libs/").list().toArrayString()}"
     }
+
+    archiveBaseName = base.archivesBaseName
 }
 
 tasks.create('prepareRun', {

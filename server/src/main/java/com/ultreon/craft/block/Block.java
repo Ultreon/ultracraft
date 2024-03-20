@@ -1,9 +1,11 @@
 package com.ultreon.craft.block;
 
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
+import com.ultreon.craft.item.UseItemContext;
 import com.ultreon.craft.item.tool.ToolType;
 import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.registry.Registries;
@@ -22,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Block implements DataWriter<MapType> {
     private final boolean transparent;
@@ -78,7 +81,7 @@ public class Block implements DataWriter<MapType> {
         return this.fluid;
     }
 
-    public BoundingBox getBoundingBox(int x, int y, int z) {
+    public BoundingBox getBoundingBox(int x, int y, int z, BlockMetadata blockMetadata) {
         return new BoundingBox(new Vec3d(x, y, z), new Vec3d(x + 1, y + 1, z + 1));
     }
 
@@ -87,7 +90,7 @@ public class Block implements DataWriter<MapType> {
     }
 
     public BoundingBox getBoundingBox(Vec3i posNext) {
-        return this.getBoundingBox(posNext.x, posNext.y, posNext.z);
+        return this.getBoundingBox(posNext.x, posNext.y, posNext.z, this.createMeta());
     }
 
     @Override
@@ -100,12 +103,12 @@ public class Block implements DataWriter<MapType> {
     public static Block load(MapType data) {
         Identifier id = Identifier.tryParse(data.getString("id"));
         if (id == null) return Blocks.AIR;
-        Block block = Registries.BLOCK.getElement(id);
+        Block block = Registries.BLOCK.get(id);
         return block == null ? Blocks.AIR : block;
     }
 
-    public InteractResult use(@NotNull World world, @NotNull Player player, @NotNull BlockPos pos) {
-        return InteractResult.SKIP;
+    public UseResult use(@NotNull World world, @NotNull Player player, @NotNull Item item, @NotNull BlockPos pos) {
+        return UseResult.SKIP;
     }
 
     public void write(PacketBuffer buffer) {
@@ -139,7 +142,7 @@ public class Block implements DataWriter<MapType> {
         return this.toolRequired;
     }
 
-    public LootGenerator getLootGen() {
+    public LootGenerator getLootGen(BlockMetadata blockMetadata) {
         return this.lootGen;
     }
 
@@ -170,12 +173,32 @@ public class Block implements DataWriter<MapType> {
         return this.replaceable;
     }
 
-    public boolean shouldOcclude(BlockFace face, Chunk chunk, int x, int y, int z) {
+    public boolean shouldOcclude(CubicDirection face, Chunk chunk, int x, int y, int z) {
         return this.occlude;
     }
 
-    public void onPlace(World world, BlockPos pos) {
+    public void onPlace(World world, BlockPos pos, BlockMetadata blockMetadata) {
         // Used in implementations
+    }
+
+    public BlockMetadata createMeta() {
+        return new BlockMetadata(this, Collections.emptyMap());
+    }
+
+    public BlockMetadata onPlacedBy(World world, BlockPos blockPos, BlockMetadata blockMeta, Player player, ItemStack stack, CubicDirection direction) {
+        return blockMeta;
+    }
+
+    public void update(World serverWorld, BlockPos offset, BlockMetadata meta) {
+        this.onPlace(serverWorld, offset, meta);
+    }
+
+    public boolean canBePlacedAt(World world, BlockPos blockPos, Player player, ItemStack stack, CubicDirection direction) {
+        return true;
+    }
+
+    public boolean canBeReplacedBy(UseItemContext context, BlockMetadata blockMetadata) {
+        return true;
     }
 
     public static class Properties {

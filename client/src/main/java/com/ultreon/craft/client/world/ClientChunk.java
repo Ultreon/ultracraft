@@ -7,9 +7,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.entity.BlockEntity;
 import com.ultreon.craft.block.entity.BlockEntityType;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientChunkEvents;
 import com.ultreon.craft.client.init.Shaders;
@@ -19,6 +19,7 @@ import com.ultreon.craft.client.render.ModelObject;
 import com.ultreon.craft.client.render.meshing.GreedyMesher;
 import com.ultreon.craft.client.util.RenderableArray;
 import com.ultreon.craft.collection.Storage;
+import com.ultreon.craft.network.packets.c2s.C2SChunkStatusPacket;
 import com.ultreon.craft.util.InvalidThreadException;
 import com.ultreon.craft.util.PosOutOfBoundsException;
 import com.ultreon.craft.world.Biome;
@@ -40,7 +41,7 @@ public final class ClientChunk extends Chunk {
     public volatile boolean dirty;
     public boolean initialized = false;
     private final UltracraftClient client = UltracraftClient.get();
-    private final Map<BlockPos, Block> customRendered = new HashMap<>();
+    private final Map<BlockPos, BlockMetadata> customRendered = new HashMap<>();
     private final Map<BlockPos, ModelInstance> models = new HashMap<>();
     public boolean immediateRebuild = false;
     private final Vector3 tmp = new Vector3();
@@ -50,18 +51,18 @@ public final class ClientChunk extends Chunk {
      * @deprecated Use {@link #ClientChunk(ClientWorld, ChunkPos, Storage, Storage, Map)} instead
      */
     @Deprecated(since = "0.1.0", forRemoval = true)
-    public ClientChunk(ClientWorld world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+    public ClientChunk(ClientWorld world, int ignoredSize, int ignoredHeight, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         this(world, pos, storage, biomeStorage, blockEntities);
     }
 
-    public ClientChunk(ClientWorld world, ChunkPos pos, Storage<Block> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
+    public ClientChunk(ClientWorld world, ChunkPos pos, Storage<BlockMetadata> storage, Storage<Biome> biomeStorage, Map<BlockPos, BlockEntityType<?>> blockEntities) {
         super(world, pos, storage, biomeStorage);
         this.clientWorld = world;
         this.active = false;
 
         blockEntities.forEach((blockPos, type) -> {
             if (type != null) {
-                this.setBlockEntity(blockPos, type.create(world, blockPos));
+                this.setBlockEntity(blockPos, type.create(world, blockPos.offset(pos)));
             }
         });
 
@@ -96,11 +97,13 @@ public final class ClientChunk extends Chunk {
             }
             this.tmp.setZero();
             this.tmp1.setZero();
+
+            this.client.connection.send(new C2SChunkStatusPacket(this.getPos(), Chunk.Status.UNLOADED));
         }
     }
 
     @Override
-    public Block getFast(int x, int y, int z) {
+    public BlockMetadata getFast(int x, int y, int z) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
@@ -109,7 +112,7 @@ public final class ClientChunk extends Chunk {
     }
 
     @Override
-    public boolean setFast(int x, int y, int z, Block block) {
+    public boolean setFast(int x, int y, int z, BlockMetadata block) {
         if (!UltracraftClient.isOnMainThread()) {
             throw new InvalidThreadException(CommonConstants.EX_NOT_ON_RENDER_THREAD);
         }
@@ -157,7 +160,7 @@ public final class ClientChunk extends Chunk {
         return null;
     }
 
-    public Map<BlockPos, Block> getCustomRendered() {
+    public Map<BlockPos, BlockMetadata> getCustomRendered() {
         return this.customRendered;
     }
 

@@ -12,8 +12,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.block.Block;
+import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.client.Constants;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.screens.Screen;
 import com.ultreon.craft.client.input.util.*;
 import com.ultreon.craft.debug.Debugger;
@@ -27,6 +29,7 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.util.HitResult;
 import com.ultreon.craft.util.Ray;
 import com.ultreon.craft.world.BlockPos;
+import com.ultreon.craft.world.UseResult;
 import com.ultreon.craft.world.World;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
@@ -68,6 +71,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     protected HitResult hitResult;
     private static final Set<ControllerButton> BUTTONS_DOWN = new HashSet<>();
     private static final Set<ControllerButton> BUTTONS_JUST_PRESSED = new HashSet<>();
+    private long itemUseCooldown;
 
     protected GameInput(UltracraftClient client, Camera camera) {
         this.client = client;
@@ -167,8 +171,8 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     public void update(float deltaTime) {
         if (this.client.isPlaying()) {
             Player player = this.client.player;
-            if (player != null && this.isControllerConnected()) {
-                this.updateController(deltaTime, player);
+            if (player != null) {
+                this.updatePlayer(deltaTime, player);
             }
         }
 
@@ -184,7 +188,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         }
     }
 
-    private void updateController(float deltaTime, Player player) {
+    private void updatePlayer(float deltaTime, Player player) {
         Joystick joystick = GameInput.JOYSTICKS.get(JoystickType.RIGHT);
 
         float deltaX = joystick.x * deltaTime * Constants.CTRL_CAMERA_SPEED;
@@ -243,7 +247,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
     private void updateInGame(Player player, @NotNull World world) {
         HitResult hitResult = world.rayCast(new Ray(player.getPosition().add(0, player.getEyeHeight(), 0), player.getLookVector()));
         Vec3i pos = hitResult.getPos();
-        Block block = world.get(new BlockPos(pos));
+        BlockMetadata block = world.get(pos.x, pos.y, pos.z);
         if (!hitResult.isCollide() || block == null || block.isAir()) return;
 
         this.updateControllerBlockBreak();
@@ -276,13 +280,38 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
         }
     }
 
-    public void useItem(Player player, World world, HitResult hitResult) {
+    @CanIgnoreReturnValue
+    public UseResult useItem(Player player, World world, HitResult hitResult) {
+        if (this.itemUseCooldown > System.currentTimeMillis())
+            return UseResult.DENY;
+
+        UseResult useResult = useItem0(player, world, hitResult);
+        this.itemUseCooldown = System.currentTimeMillis() + 1000;
+
+        return useResult;
+    }
+
+    private UseResult useItem0(Player player, World world, HitResult hitResult) {
         ItemStack stack = player.getSelectedItem();
         UseItemContext context = new UseItemContext(world, player, hitResult, stack);
         Item item = stack.getItem();
         ItemEvents.USE.factory().onUseItem(item, context);
         this.client.connection.send(new C2SItemUsePacket(hitResult));
-        item.use(context);
+
+        UseItemContext ctx = new UseItemContext(world, player, hitResult, stack);
+        HitResult result = ctx.result();
+        if (result == null)
+            return UseResult.SKIP;
+
+        Block block = result.block;
+        if (block != null && !block.isAir()) {
+            UseResult blockResult = block.use(ctx.world(), ctx.player(), stack.getItem(), new BlockPos(result.getPos()));
+
+            if (blockResult == UseResult.DENY || blockResult == UseResult.ALLOW)
+                return blockResult;
+        }
+
+        return stack.getItem().use(ctx);
     }
 
     public boolean isControllerConnected() {
@@ -310,7 +339,7 @@ public abstract class GameInput implements InputProcessor, ControllerListener, D
 
     @CanIgnoreReturnValue
     public static boolean startVibration(int duration, float strength) {
-        if (!UltracraftClient.get().config.get().accessibility.vibration) return false;
+        if (!Config.vibration) return false;
 
         Controller current = Controllers.getCurrent();
         if (current == null) return false;

@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.entity.Entity;
-import com.ultreon.craft.util.ElementID;
+import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 
@@ -95,7 +95,7 @@ public class EntityModelInstance<T extends Entity> {
         context.render(model);
     }
 
-    public void setTextures(ElementID textureLocation) {
+    public void setTextures(Identifier textureLocation) {
         TextureManager textureManager = UltracraftClient.get().getTextureManager();
         TextureAttribute diffuseTexture = TextureAttribute.createDiffuse(textureManager.getTexture(textureLocation));
         model.getMaterial("player.png").set(diffuseTexture);
