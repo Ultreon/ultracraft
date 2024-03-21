@@ -1,12 +1,21 @@
 package com.ultreon.craft.client;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.utils.BufferUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -72,8 +81,19 @@ public class Screenshot {
         // Write the data to a PNG file
         PixmapIO.writePNG(data, pixmap);
 
+        // Copy the screenshot file to clipboard
+        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT)) {
+            Clipboard clipboard = UltracraftClient.get().clipboard;
+            try(InputStream read = data.read()) {
+                clipboard.setContents(new ImageSelection(ImageIO.read(read)), null);
+            } catch (IOException e) {
+                UltracraftClient.LOGGER.error("Failed to copy screenshot to clipboard", e);
+            }
+        }
+
         return data;
     }
+
 
     /**
      * Saves the data to a file with the given filename and disposes of any resources.
@@ -87,7 +107,6 @@ public class Screenshot {
 
         return data;
     }
-
     /**
      * Takes a screenshot of the current frame with the specified width and height.
      *
@@ -120,5 +139,31 @@ public class Screenshot {
 
         // Return the captured screenshot as a Screenshot object
         return new Screenshot(pixmap);
+    }
+
+    static class ImageSelection implements Transferable {
+        private Image image;
+
+        public ImageSelection(Image image) {
+            this.image = image;
+        }
+
+        // Returns supported flavors
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[] { DataFlavor.imageFlavor };
+        }
+
+        // Returns true if flavor is supported
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return DataFlavor.imageFlavor.equals(flavor);
+        }
+
+        // Returns image
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (!DataFlavor.imageFlavor.equals(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return image;
+        }
     }
 }

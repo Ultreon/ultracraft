@@ -1,0 +1,16 @@
+{
+  attributes: [
+    {
+      type: "texture",
+      texture_type: "diffuse",
+      target: "ultracraft:breaking_stages",
+    },
+    {
+      type: "blending",
+      opacity: 0.8,
+      blended: true,
+      src_factor: "src_alpha",
+      dst_factor: "one_minus_src_alpha",
+    }
+  ]
+}

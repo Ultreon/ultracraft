@@ -383,7 +383,7 @@ public class GreedyMesher implements Mesher {
 
     /**
      * @param outputList List to put faces in
-     * @param side       CubicDirection being meshed
+     * @param side       BlockFace being meshed
      * @param z          Depth on the plane
      */
     private void greedy(List<Face> outputList, CubicDirection side, MergeCondition mergeCond, boolean[][] mask, PerCornerLightData[][] lightDatas, int z, int offsetX, int offsetY, int offsetZ) {
@@ -496,7 +496,7 @@ public class GreedyMesher implements Mesher {
     /**
      * Averages light values at a corner.
      *
-     * @param side CubicDirection of the face being calculated
+     * @param side BlockFace of the face being calculated
      * @param cx   Chunk-relative X coordinate for the corner. NOT PRE-OFFSET FOR THE FACE!
      * @param y    Chunk-relative Y coordinate for the corner. NOT PRE-OFFSET FOR THE FACE!
      * @param cz   Chunk-relative Z coordinate for the corner. NOT PRE-OFFSET FOR THE FACE!

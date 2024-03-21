@@ -5,6 +5,7 @@ import com.ultreon.craft.config.crafty.ConfigInfo;
 import com.ultreon.craft.config.crafty.CraftyConfig;
 import com.ultreon.craft.config.crafty.Ranged;
 import com.ultreon.craft.util.Identifier;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * This is the client configuration.
@@ -53,7 +54,7 @@ public class Config extends CraftyConfig {
     public static boolean enable4xScreenshot = false;
 
     @ConfigEntry(path = "generic.enableDebugUtils", comment = "Whether debug utils are enabled.")
-    public static boolean enableDebugUtils = false;
+    public static boolean enableDebugUtils = FabricLoader.getInstance().isDevelopmentEnvironment();
 
     @ConfigEntry(path = "generic.enableDebugOverlay", comment = "Whether debug overlays are enabled.")
     public static boolean enableDebugOverlay = false;

@@ -846,4 +846,6 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     public RecipeManager getRecipeManager() {
         return this.recipeManager;
     }
+
+    public abstract void fatalCrash(Throwable throwable);
 }

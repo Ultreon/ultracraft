@@ -525,7 +525,6 @@ public non-sealed class ServerPlayer extends Player implements CacheablePlayer {
     public void openMenu(@NotNull ContainerMenu menu) {
         if (getOpenMenu() != null) {
             UltracraftServer.LOGGER.warn("Player {} tried to open menu {} but it was already open!", this.name, menu.getType().getId());
-            this.closeMenu();
             return;
         }
 

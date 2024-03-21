@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.resources.ReloadContext;
 import com.ultreon.craft.resources.StaticResource;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Color;
@@ -188,5 +189,16 @@ public class TextureManager {
         for (Texture texture : this.textures.values()) {
             texture.dispose();
         }
+    }
+
+    public void reload(ReloadContext context) {
+        this.frozen = true;
+        context.submit(() -> {
+            for (Texture texture : this.textures.values()) {
+                texture.dispose();
+            }
+            this.textures.clear();
+            this.frozen = false;
+        });
     }
 }

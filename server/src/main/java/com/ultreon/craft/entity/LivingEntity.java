@@ -29,6 +29,7 @@ public class LivingEntity extends Entity {
     public float xHeadRot;
     protected float lastDamage;
     protected @Nullable DamageSource lastDamageSource;
+    private int age;
 
     public LivingEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -310,5 +311,9 @@ public class LivingEntity extends Entity {
 
     public boolean isWalking() {
         return this.walking;
+    }
+
+    public int getAge() {
+        return age;
     }
 }

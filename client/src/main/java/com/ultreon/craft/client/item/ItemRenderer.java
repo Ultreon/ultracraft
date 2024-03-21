@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
@@ -81,7 +82,7 @@ public class ItemRenderer {
         if (item instanceof BlockItem blockItem) {
             ModelInstance modelInstance = modelsInstances.get(item);
             if (modelInstance != null) {
-                this.renderModel(modelInstance, renderer, x + 8, this.client.getScaledHeight() - y - 16);
+                this.renderModel(modelInstance, models.get(item), renderer, x + 8, this.client.getScaledHeight() - y - 16);
                 return;
             }
 
@@ -100,7 +101,7 @@ public class ItemRenderer {
         }
     }
 
-    private void renderModel(ModelInstance instance, Renderer renderer, int x, int y) {
+    private void renderModel(ModelInstance instance, ItemModel itemModel, Renderer renderer, int x, int y) {
         if (instance != null) {
             renderer.external(() -> {
                 float guiScale = this.client.getGuiScale();
@@ -108,7 +109,8 @@ public class ItemRenderer {
                 this.itemCam.far = 100000;
                 this.itemCam.update();
                 this.batch.begin(this.itemCam);
-                instance.transform.set(this.position.cpy().add((x - (int) (this.client.getScaledWidth() / 2.0F)) * guiScale, (y - (int) (this.client.getScaledHeight() / 2.0F)) * guiScale, 100), this.quaternion, this.scale);
+                Vector3 scl = this.scale.cpy().scl(itemModel.getScale());
+                instance.transform.idt().translate(this.position.cpy().add((x - (int) (this.client.getScaledWidth() / 2.0F)) * guiScale, (y - (int) (this.client.getScaledHeight() / 2.0F)) * guiScale, 100)).translate(itemModel.getOffset().scl(1 / scl.x, 1 / scl.y, 1 / scl.z)).scale(scl.x, scl.y, scl.z);
                 instance.transform.rotate(Vector3.X, this.rotation.x);
                 instance.transform.rotate(Vector3.Y, this.rotation.y);
                 this.batch.render(instance, environment);
@@ -159,7 +161,7 @@ public class ItemRenderer {
         ModelInstance modelInstance = new ModelInstance(getModel(block));
         this.modelsInstances.put(item, modelInstance);
 
-        renderModel(modelInstance, renderer, x, y);
+        renderModel(modelInstance, models.get(item), renderer, x, y);
     }
 
     private static Model getModel(BlockMetadata block) {
@@ -190,7 +192,12 @@ public class ItemRenderer {
 
     public void registerBlockModel(BlockItem blockItem, Supplier<BlockModel> model) {
         models.put(blockItem, new BlockItemModel(Suppliers.memoize(model::get)));
-        this.modelsInstances.put(blockItem, new ModelInstance(models.get(blockItem).getModel()));
+        ItemModel itemModel = models.get(blockItem);
+        Vector3 scale = itemModel.getScale();
+        ModelInstance value = new ModelInstance(itemModel.getModel());
+        value.transform.scale(scale.x, scale.y, scale.z);
+        value.calculateTransforms();
+        this.modelsInstances.put(blockItem, value);
     }
 
     public void loadModels(UltracraftClient client) {

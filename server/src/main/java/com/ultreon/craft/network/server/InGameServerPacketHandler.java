@@ -244,7 +244,6 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
             ContainerMenu menu = menuType.create(this.player.getWorld(), this.player, pos);
             if (menu == null) return;
 
-
             this.player.openMenu(menu);
         });
     }

@@ -2,7 +2,6 @@ package com.ultreon.craft.client.api.events;
 
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.events.api.Event;
-import com.ultreon.craft.events.api.EventResult;
 
 public class ClientLifecycleEvents {
     public static final Event<ClientStarted> CLIENT_STARTED = Event.create();
@@ -45,4 +44,5 @@ public class ClientLifecycleEvents {
     public interface Registration {
         void onRegister();
     }
+
 }

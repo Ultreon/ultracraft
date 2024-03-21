@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ClientChunk extends Chunk {
+    public static final RenderablePool RENDERABLE_POOL = new RenderablePool();
     final GreedyMesher mesher;
     private final ClientWorld clientWorld;
     public final Vector3 renderOffset = new Vector3();
@@ -196,10 +197,14 @@ public final class ClientChunk extends Chunk {
             if (z < 0) z += 16;
             ModelObject modelObject = model.userData instanceof ModelObject ? (ModelObject) model.userData : null;
             if (modelObject == null) {
-                model.userData = new ModelObject(Shaders.MODEL_VIEW, model);
+                RenderableArray renderables = new RenderableArray();
+                model.getRenderables(renderables, RENDERABLE_POOL);
+                model.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW, model, renderables);
             }
+            modelObject.renderables().clear();
             model.transform.setToTranslationAndScaling(this.renderOffset.x + x, this.renderOffset.y + (float) key.y() % 65536, this.renderOffset.z + z, 1 / 16f, 1 / 16f, 1 / 16f);
-            model.getRenderables(output, pool);
+            model.getRenderables(modelObject.renderables(), RENDERABLE_POOL);
+            output.addAll(modelObject.renderables());
         }
     }
 

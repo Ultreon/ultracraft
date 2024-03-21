@@ -1,17 +1,23 @@
 package com.ultreon.craft.client.model.blockbench;
 
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
 public final class BBCubeModelElement extends BBModelElement {
     private final String name;
@@ -27,10 +33,18 @@ public final class BBCubeModelElement extends BBModelElement {
     private final Vec3f origin;
     private final List<BBModelFace> faces;
     private final UUID uuid;
+    private final Vec3f rotation;
+    private Matrix4 rotationMatrix;
 
     public BBCubeModelElement(String name, boolean boxUv, boolean rescale, boolean locked, String renderOrder,
                               boolean allowMirrorModeling, Vec3f from, Vec3f to, float autouv, Color color,
                               Vec3f origin, List<BBModelFace> faces, UUID uuid) {
+        this(name, boxUv, rescale, locked, renderOrder, allowMirrorModeling, from, to, autouv, color, origin, faces, uuid, new Vec3f());
+    }
+
+    public BBCubeModelElement(String name, boolean boxUv, boolean rescale, boolean locked, String renderOrder,
+                              boolean allowMirrorModeling, Vec3f from, Vec3f to, float autouv, Color color,
+                              Vec3f origin, List<BBModelFace> faces, UUID uuid, Vec3f rotation) {
         this.name = name;
         this.boxUv = boxUv;
         this.rescale = rescale;
@@ -44,8 +58,10 @@ public final class BBCubeModelElement extends BBModelElement {
         this.origin = origin;
         this.faces = faces;
         this.uuid = uuid;
+        this.rotation = rotation;
     }
 
+    @Override
     public String name() {
         return name;
     }
@@ -58,14 +74,17 @@ public final class BBCubeModelElement extends BBModelElement {
         return rescale;
     }
 
+    @Override
     public boolean locked() {
         return locked;
     }
 
+    @Override
     public String renderOrder() {
         return renderOrder;
     }
 
+    @Override
     public boolean allowMirrorModeling() {
         return allowMirrorModeling;
     }
@@ -82,10 +101,12 @@ public final class BBCubeModelElement extends BBModelElement {
         return autouv;
     }
 
+    @Override
     public Color color() {
         return color;
     }
 
+    @Override
     public Vec3f origin() {
         return origin;
     }
@@ -94,8 +115,14 @@ public final class BBCubeModelElement extends BBModelElement {
         return faces;
     }
 
+    @Override
     public UUID uuid() {
         return uuid;
+    }
+
+    @Override
+    public Vec3f rotation() {
+        return rotation;
     }
 
     @Override
@@ -142,12 +169,12 @@ public final class BBCubeModelElement extends BBModelElement {
     }
 
     @Override
-    public void write(ModelBuilder model, Map<Integer, MeshBuilder> texture2builder, BlockBenchModelImporter modelData, Vec2f resolution) {
-        this.bake(texture2builder, resolution);
+    public Node write(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2texture, BlockBenchModelImporter modelData, Vec2f resolution) {
+        return this.bake(groupBuilder, subNodes, texture2texture, resolution);
     }
 
 
-    public void bake(Map<Integer, MeshBuilder> texture2builder, Vec2f resolution) {
+    public Node bake(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2builder0, Vec2f resolution) {
         Vec3f from = this.from().cpy().div(16);
         Vec3f to = this.to().cpy().div(16);
 
@@ -155,30 +182,34 @@ public final class BBCubeModelElement extends BBModelElement {
         MeshPartBuilder.VertexInfo v01 = new MeshPartBuilder.VertexInfo();
         MeshPartBuilder.VertexInfo v10 = new MeshPartBuilder.VertexInfo();
         MeshPartBuilder.VertexInfo v11 = new MeshPartBuilder.VertexInfo();
+
+        ModelBuilder elementBuilder = new ModelBuilder();
+        elementBuilder.begin();
+        Map<Integer, MeshBuilder> texture2builder = new HashMap<>();
         for (BBModelFace entry : faces) {
             CubicDirection blockFace = entry.blockFace();
             int texRef = entry.texture();
-            MeshBuilder meshBuilder = texture2builder.get(texRef);
+            if (texRef == -1) continue;
+            MeshBuilder parent = texture2builder.computeIfAbsent(texRef, integer -> {
+                MeshBuilder meshBuilder = new MeshBuilder();
+                meshBuilder.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.ColorPacked | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates, GL20.GL_TRIANGLES);
+                return meshBuilder;
+            });
 
-            v00.setCol(Color.MAGENTA.toGdx());
-            v01.setCol(Color.MAGENTA.toGdx());
-            v10.setCol(Color.MAGENTA.toGdx());
-            v11.setCol(Color.MAGENTA.toGdx());
+            v00.setCol(Color.WHITE.toGdx());
+            v01.setCol(Color.WHITE.toGdx());
+            v10.setCol(Color.WHITE.toGdx());
+            v11.setCol(Color.WHITE.toGdx());
 
             v00.setNor(blockFace.getNormal());
             v01.setNor(blockFace.getNormal());
             v10.setNor(blockFace.getNormal());
             v11.setNor(blockFace.getNormal());
 
-            v00.setUV(entry.uv().x / resolution.x, entry.uv().w / resolution.y);
-            v01.setUV(entry.uv().x / resolution.x, entry.uv().y / resolution.y);
-            v10.setUV(entry.uv().z / resolution.x, entry.uv().w / resolution.y);
-            v11.setUV(entry.uv().z / resolution.x, entry.uv().y / resolution.y);
-
-            v00.setUV(0, 1);
-            v01.setUV(0, 0);
-            v10.setUV(1, 1);
-            v11.setUV(1, 0);
+            v00.setUV(entry.uv().x / resolution.x, entry.uv().y / resolution.y);
+            v01.setUV(entry.uv().x / resolution.x, entry.uv().w / resolution.y);
+            v10.setUV(entry.uv().z / resolution.x, entry.uv().y / resolution.y);
+            v11.setUV(entry.uv().z / resolution.x, entry.uv().w / resolution.y);
 
             switch (blockFace) {
                 case UP -> {
@@ -219,7 +250,34 @@ public final class BBCubeModelElement extends BBModelElement {
                 }
             }
 
-            meshBuilder.rect(v00, v10, v11, v01);
+            parent.rect(v00, v10, v11, v01);
         }
+
+        texture2builder.forEach((texId, meshBuilder) -> {
+            Material material = new Material();
+            UltracraftClient.invokeAndWait(() -> {
+                try {
+                    material.set(TextureAttribute.createDiffuse(texture2builder0.get(texId).loadOrGetTexture()));
+                    elementBuilder.part(name + " @" + texId, meshBuilder.end(), GL20.GL_TRIANGLES, material);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        Node node = groupBuilder.node(name, elementBuilder.end());
+        node.rotation.setFromMatrix(this.rotationMatrix());
+
+        return node;
+    }
+
+    public Matrix4 rotationMatrix() {
+        if (this.rotationMatrix == null) {
+            this.rotationMatrix = new Matrix4();
+            this.rotationMatrix.rotate(Vector3.X, this.rotation.x);
+            this.rotationMatrix.rotate(Vector3.Y, this.rotation.y);
+            this.rotationMatrix.rotate(Vector3.Z, this.rotation.z);
+        }
+        return this.rotationMatrix;
     }
 }

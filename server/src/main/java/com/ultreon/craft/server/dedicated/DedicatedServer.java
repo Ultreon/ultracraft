@@ -169,6 +169,11 @@ public class DedicatedServer extends UltracraftServer {
     }
 
     @Override
+    public void fatalCrash(Throwable throwable) {
+        this.crash(throwable);
+    }
+
+    @Override
     public boolean isTerminated() {
         return super.isTerminated() && !this.running && UltracraftServer.get() == null;
     }

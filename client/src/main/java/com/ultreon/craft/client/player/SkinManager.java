@@ -4,17 +4,30 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
+import com.ultreon.craft.client.api.events.ClientReloadEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
 public class SkinManager {
-    public static final CompletableFuture<Texture> future = CompletableFuture.supplyAsync(() -> {
-        FileHandle data = UltracraftClient.data("skin.png");
-        if (!data.exists()) return null;
-        Pixmap pixmap = new Pixmap(data);
+    private CompletableFuture<Texture> future = loadAsync();
 
-        return UltracraftClient.invokeAndWait(() -> new Texture(pixmap, false));
-    });
+    @NotNull
+    private static CompletableFuture<Texture> loadAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            FileHandle data = UltracraftClient.data("skin.png");
+            if (!data.exists()) return null;
+            Pixmap pixmap = new Pixmap(data);
+
+            return UltracraftClient.invokeAndWait(() -> {
+                Texture texture = new Texture(pixmap, false);
+                ClientReloadEvent.SKIN_LOADED.factory().onSkinLoaded(texture, pixmap);
+
+                pixmap.dispose();
+                return texture;
+            });
+        });
+    }
 
     public Texture getLocalSkin() {
         return getOrNull();
@@ -22,5 +35,17 @@ public class SkinManager {
 
     private Texture getOrNull() {
         return future.getNow(null);
+    }
+
+    public void reloadResources() {
+
+    }
+
+    public void reload() {
+        if (getOrNull() == null) return;
+        getOrNull().dispose();
+        future = loadAsync();
+
+        ClientReloadEvent.SKIN_RELOAD.factory().onSkinReload();
     }
 }

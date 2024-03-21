@@ -36,9 +36,6 @@ public abstract class EntityRenderer<E extends Entity> {
         if (instance.getModel().nodes.size == 0)
             throw new IllegalStateException("Cannot render entity " + instance.getEntity().getType().getId() + " without nodes");
 
-        if (instance.getModel().materials.size == 0)
-            throw new IllegalStateException("Cannot render entity " + instance.getEntity().getType().getId() + " without materials");
-
         instance.getModel().userData = Shaders.MODEL_VIEW;
         instance.render(context);
     }

@@ -1,6 +1,7 @@
 package com.ultreon.craft.client.model.item;
 
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.util.Identifier;
@@ -27,5 +28,15 @@ public class BlockItemModel implements ItemModel {
     @Override
     public Model getModel() {
         return this.blockModel.get().getModel();
+    }
+
+    @Override
+    public Vector3 getScale() {
+        return this.blockModel.get().getItemScale();
+    }
+
+    @Override
+    public Vector3 getOffset() {
+        return this.blockModel.get().getItemOffset();
     }
 }

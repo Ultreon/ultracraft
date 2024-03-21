@@ -8,6 +8,7 @@ import java.util.*;
 public class ResourcePackage implements Closeable {
     protected final Map<Identifier, StaticResource> resources;
     protected final Map<String, ResourceCategory> categories;
+    private boolean locked;
 
     public ResourcePackage(Map<Identifier, StaticResource> resources, Map<String, ResourceCategory> categories) {
         this.resources = resources;

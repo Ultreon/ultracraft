@@ -229,7 +229,6 @@ void main() {
     #else
     vec4 diffuse = vec4(1.0);
     #endif
-    diffuse.rgb = vec3(1.0);
 
     #if defined(emissiveTextureFlag)
     vec4 emissive = texture2D(u_emissiveTexture, v_emissiveTexUV);
@@ -256,6 +255,4 @@ void main() {
     #ifdef normalFlag
     gl_FragColor.rgba = vec4(gl_FragColor.xyz*gamma(sh_light(v_normal, groove)).r, gl_FragColor.w);
     #endif
-
-    gl_FragColor.rgb = vec3(1.0);
 }

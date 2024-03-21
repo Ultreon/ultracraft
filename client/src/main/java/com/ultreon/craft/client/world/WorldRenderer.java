@@ -31,8 +31,12 @@ import com.ultreon.craft.client.model.block.BakedCubeModel;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
+import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.registry.RendererRegistry;
+import com.ultreon.craft.client.render.material.MaterialLoader;
+import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
@@ -66,9 +70,9 @@ public final class WorldRenderer implements DisposableContainer {
     private static final Vec3d TMP_3D_A = new Vec3d();
     private static final Vec3d TMp_3D_B = new Vec3d();
     public static final String OUTLINE_CURSOR_ID = CommonConstants.strId("outline_cursor");
-    private final Material material;
+    private Material material;
     private final Material transparentMaterial;
-    private final Texture breakingTex;
+    private Texture breakingTex;
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
     private final Environment environment;
@@ -90,7 +94,7 @@ public final class WorldRenderer implements DisposableContainer {
     private boolean disposed;
     private final Vector3 tmp = new Vector3();
     private final Vector3 tmp1 = new Vector3();
-    private final Material breakingMaterial;
+    private Material breakingMaterial;
     private final Array<Mesh> breakingMeshes;
     private final Int2ObjectMap<ModelInstance> modelInstances = new Int2ObjectOpenHashMap<>();
     private final List<Disposable> disposables = new ArrayList<>();
@@ -124,9 +128,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         // Breaking animation meshes.
         this.breakingTex = this.client.getTextureManager().getTexture(id("textures/break_stages.png"));
-        this.breakingMaterial = new Material(UltracraftClient.strId("block_breaking"));
-        this.breakingMaterial.set(TextureAttribute.createDiffuse(this.breakingTex));
-        this.breakingMaterial.set(new BlendingAttribute(0.8f));
+        this.breakingMaterial = this.client.getMaterialLoader().get(id("breaking"));
         Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
         for (int i = 0; i < 6; i++) {
             TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
@@ -279,7 +281,9 @@ public final class WorldRenderer implements DisposableContainer {
         });
 
         UltracraftClient.PROFILER.section("players", () -> {
-            for (var remotePlayer : this.client.getMultiplayerData().getRemotePlayers()) {
+            MultiplayerData multiplayerData = this.client.getMultiplayerData();
+            if (multiplayerData == null) return;
+            for (var remotePlayer : multiplayerData.getRemotePlayers()) {
                 UltracraftClient.PROFILER.section(remotePlayer.getType().getId() + " (" + remotePlayer.getName() + ")", () -> {
                     // TODO: Implement if needed
                 });
@@ -428,7 +432,7 @@ public final class WorldRenderer implements DisposableContainer {
             ModelInstance model = this.modelInstances.get(entity.getId());
             LocalPlayer player = UltracraftClient.get().player;
             if (player == null) return;
-            if (player.getPosition().dst(entity.getPosition()) > 64) return;
+            if (player.getPosition(client.partialTick).dst(entity.getPosition()) > 64) return;
 
             if (entity instanceof Player playerEntity && playerEntity.isSpectator()) return;
 
@@ -448,7 +452,7 @@ public final class WorldRenderer implements DisposableContainer {
             }
 
             EntityModelInstance<@NotNull Entity> instance = new EntityModelInstance<>(model, entity);
-            WorldRenderContextImpl<Entity> context = new WorldRenderContextImpl<>(output, renderablePool, entity, entity.getWorld(), WorldRenderer.SCALE, player.getPosition());
+            WorldRenderContextImpl<Entity> context = new WorldRenderContextImpl<>(output, renderablePool, entity, entity.getWorld(), WorldRenderer.SCALE, player.getPosition(client.partialTick));
             renderer.animate(instance, context);
             renderer.render(instance, context);
         } catch (Exception e) {
@@ -583,6 +587,12 @@ public final class WorldRenderer implements DisposableContainer {
         }
         this.disposables.add(disposable);
         return disposable;
+    }
+
+    public void reload(ReloadContext context, TextureManager textureManager, MaterialLoader materialLoader) {
+        context.submit(() -> {
+            this.breakingMaterial = materialLoader.get(id("block/breaking"));
+        });
     }
 
     private record MeshMaterial(Mesh mesh, Material material) {

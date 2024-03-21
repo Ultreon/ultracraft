@@ -22,7 +22,7 @@ public class KillCommand extends Command {
         return this.successMessage("You successfully killed yourself");
     }
 
-    @DefineCommand("<player>")
+    @DefineCommand("<entity>")
     public @Nullable CommandResult executeCoords(CommandSender sender, CommandContext commandContext, String alias, Player player) {
         if (sender != player && !sender.hasPermission("ultracraft.commands.kill.others")) return this.noPermission();
 

@@ -211,6 +211,11 @@ public class IntegratedServer extends UltracraftServer {
                 .build());
     }
 
+    @Override
+    public void fatalCrash(Throwable throwable) {
+        UltracraftClient.crash(throwable);
+    }
+
     public UltracraftClient getClient() {
         return this.client;
     }

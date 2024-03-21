@@ -70,11 +70,14 @@ import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.SkinManager;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.registry.MenuRegistry;
+import com.ultreon.craft.client.render.CubemapManager;
+import com.ultreon.craft.client.render.material.MaterialLoader;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
 import com.ultreon.craft.client.render.pipeline.MainRenderNode;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
 import com.ultreon.craft.client.render.pipeline.WorldDiffuseNode;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
+import com.ultreon.craft.client.resources.ReloadContext;
 import com.ultreon.craft.client.resources.ResourceLoader;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
 import com.ultreon.craft.client.rpc.GameActivity;
@@ -127,8 +130,6 @@ import de.marhali.json5.Json5Array;
 import de.marhali.json5.Json5Element;
 import de.marhali.json5.Json5Object;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModOrigin;
 import org.checkerframework.common.reflection.qual.NewInstance;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -139,14 +140,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.*;
@@ -174,6 +179,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final RenderPipeline pipeline;
     private final boolean devWorld;
     public final Renderer renderer;
+    public Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     private boolean imGui = false;
     public Connection connection;
     public ClientConnection clientConn;
@@ -231,6 +237,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public GameSettings settings = new GameSettings();
     public final ShapeDrawer shapes;
     private final TextureManager textureManager;
+    private final CubemapManager cubemapManager;
     private final ResourceManager resourceManager;
     private float guiScale = this.calcMaxGuiScale();
 
@@ -310,8 +317,9 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final List<CrashLog> crashes = new CopyOnWriteArrayList<>();
     private long screenshotFlashTime;
     private final Color tmpColor = new Color();
-    private SkinManager skinManager = new SkinManager();
+    private final SkinManager skinManager = new SkinManager();
     private CompletableFuture<Screenshot> screenshotFuture;
+    private final MaterialLoader materialLoader;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -351,11 +359,13 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         // Initialize the resource manager, texture manager, and resource loader
         this.resourceManager = new ResourceManager("assets");
-        boolean found = false;
 
         // Locate resources by finding the ".ucraft-resources" file using Class.getResource() and using the parent file.
         try {
             URL resource = UltracraftClient.class.getResource("/.ucraft-resources");
+            if (resource == null) {
+                throw new GdxRuntimeException("Ultracraft resources unavailable!");
+            }
             String string = resource.toString();
 
             if (string.startsWith("jar:")) {
@@ -368,7 +378,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
                 string = string.substring(0, string.length() - 1);
             }
 
-            this.resourceManager.importPackage(new File(new URL(string).toURI()).toPath());
+            this.resourceManager.importPackage(new File(new URI(string)).toPath());
         } catch (Exception e) {
             for (Path rootPath : FabricLoader.getInstance().getModContainer(CommonConstants.NAMESPACE).orElseThrow().getRootPaths()) {
                 try {
@@ -383,6 +393,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         LanguageBootstrap.bootstrap.set(Language::translate);
 
         this.textureManager = new TextureManager(this.resourceManager);
+        this.cubemapManager = new CubemapManager(this.resourceManager);
+        this.materialLoader = new MaterialLoader(this.resourceManager, this.textureManager, this.cubemapManager);
         ResourceLoader.init(this);
 
         // Load the configuration
@@ -406,7 +418,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.mainThread = Thread.currentThread();
 
         // Initialize ImGui if necessary
-        this.imGui = !SharedLibraryLoader.isMac && !SharedLibraryLoader.isLinux && !SharedLibraryLoader.isAndroid && !SharedLibraryLoader.isARM && !SharedLibraryLoader.isIos;
+        this.imGui = !SharedLibraryLoader.isMac && !SharedLibraryLoader.isAndroid && !SharedLibraryLoader.isARM && !SharedLibraryLoader.isIos;
         if (this.imGui)
             ImGuiOverlay.preInitImGui();
 
@@ -727,7 +739,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.loadingOverlay.setProgress(0.15F);
 
         UltracraftClient.LOGGER.info("Importing resources");
-        this.importModResources(this.resourceManager);
+        this.resourceManager.importModResources();
 
         this.loadingOverlay.setProgress(0.35F);
 
@@ -899,20 +911,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private void registerMenuScreens() {
         MenuRegistry.registerScreen(MenuTypes.INVENTORY, InventoryScreen::new);
         MenuRegistry.registerScreen(MenuTypes.CRATE, CrateScreen::new);
-    }
-
-    private void importModResources(ResourceManager resourceManager) {
-        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            if (mod.getOrigin().getKind() != ModOrigin.Kind.PATH) continue;
-            for (Path rootPath : mod.getRootPaths()) {
-                // Try to import a resource package for the given mod path.
-                try {
-                    resourceManager.importPackage(rootPath);
-                } catch (IOException e) {
-                    UltracraftClient.LOGGER.warn("Importing resources failed for path: " + rootPath.toFile(), e);
-                }
-            }
-        }
     }
 
     /**
@@ -2367,5 +2365,32 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     public void setShowDebugHud(boolean showDebugHud) {
         Config.enableDebugUtils = showDebugHud;
         this.newConfig.save();
+    }
+
+    public void reloadResourcesAsync() {
+        CompletableFuture.runAsync(() -> {
+            LOGGER.info("Reloading resources...");
+            this.reloadResources();
+            LOGGER.info("Resources reloaded.");
+        }).exceptionally(throwable -> {
+            LOGGER.error("Failed to reload resources:", throwable);
+            return null;
+        });
+    }
+
+    private void reloadResources() {
+        ReloadContext context = ReloadContext.create(this);
+        this.resourceManager.reload();
+        this.textureManager.reload(context);
+        this.cubemapManager.reload(context);
+        this.materialLoader.reload(context);
+        this.skinManager.reload();
+        if (this.worldRenderer != null) {
+            this.worldRenderer.reload(context, textureManager, materialLoader);
+        }
+    }
+
+    public MaterialLoader getMaterialLoader() {
+        return materialLoader;
     }
 }

@@ -1,20 +1,16 @@
 package com.ultreon.craft.client.model.blockbench;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
-import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector3;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.ModelImporter;
-import com.ultreon.craft.client.util.Utils;
 import com.ultreon.craft.resources.Resource;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
@@ -22,13 +18,18 @@ import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
 import com.ultreon.libs.commons.v0.vector.Vec3f;
 import com.ultreon.libs.commons.v0.vector.Vec4f;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class BlockBenchModelImporter implements ModelImporter {
+    private static final Matrix4 TEMP_MATRIX = new Matrix4();
+    private static final Vector3 TEMP_VEC3 = new Vector3();
+    private static final Quaternion TEMP_ROTATION = new Quaternion();
     private final BBMeta meta;
     private final String name;
     private final String modelIdentifier;
@@ -122,17 +123,30 @@ public class BlockBenchModelImporter implements ModelImporter {
     }
 
     private BBModelOutliner loadOutliner(JsonArray outliner) {
-        List<UUID> uuids = new ArrayList<>();
-        BBModelOutlinerData data = null;
+        List<BBModelOutlineInfo> values = new ArrayList<>();
 
         for (JsonElement elem : outliner) {
-            if (!elem.isJsonObject()) {
-                if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isString()) {
-                    uuids.add(UUID.fromString(elem.getAsString()));
-                }
-                continue;
+            BBModelOutlineInfo node;
+            node = loadNode(elem);
+            if (node == null) {
+                UltracraftClient.LOGGER.warn("Failed to load BlockBench model node: " + elem);
             }
+            values.add(node);
+        }
 
+        return new BBModelOutliner(values);
+    }
+
+    @Nullable
+    private BBModelOutlineInfo loadNode(JsonElement elem) {
+        BBModelOutlineInfo node;
+        if (!elem.isJsonObject()) {
+            if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isString()) {
+                return new BBModelElementReference(UUID.fromString(elem.getAsString()));
+            } else {
+                return null;
+            }
+        } else {
             JsonObject elemObj = elem.getAsJsonObject();
             String name = elemObj.getAsJsonPrimitive("name").getAsString();
             Vec3f origin = loadVec3(elemObj.getAsJsonArray("origin"));
@@ -143,20 +157,17 @@ public class BlockBenchModelImporter implements ModelImporter {
             boolean isOpen = elemObj.getAsJsonPrimitive("isOpen").getAsBoolean();
             boolean visibility = elemObj.getAsJsonPrimitive("visibility").getAsBoolean();
             int autouv = elemObj.getAsJsonPrimitive("autouv").getAsInt();
-            List<UUID> children = new ArrayList<>();
+            JsonArray rotation1 = elemObj.getAsJsonArray("rotation");
+            List<BBModelOutlineInfo> children = new ArrayList<>();
 
             for (JsonElement child : elemObj.getAsJsonArray("children")) {
-                children.add(UUID.fromString(child.getAsString()));
+                children.add(loadNode(child));
             }
 
-            data = new BBModelOutlinerData(name, origin, color, uuid, export, mirrorUV, isOpen, visibility, autouv, children);
+            if (rotation1 == null) return new BBModelGroup(this, name, origin, color, uuid, export, mirrorUV, isOpen, visibility, autouv, children, new Vec3f());
+            Vec3f rotation = loadVec3(rotation1);
+            return new BBModelGroup(this, name, origin, color, uuid, export, mirrorUV, isOpen, visibility, autouv, children, rotation);
         }
-
-        if (data == null) {
-            throw new IllegalArgumentException("Missing outliner data");
-        }
-
-        return uuids.isEmpty() ? new BBModelOutliner(data) : new BBModelOutliner(data, Collections.unmodifiableList(uuids));
     }
 
     private List<BBModelElement> loadElements(JsonArray elements) {
@@ -193,7 +204,9 @@ public class BlockBenchModelImporter implements ModelImporter {
 
         List<BBModelMeshFace> faces = loadMeshFaces(vertices, meshJson.getAsJsonObject("faces"));
 
-        return new BBMeshModelElement(name, color, origin, rotation, export, visibility, locked, renderOrder, allowMirrorModeling, faces);
+        UUID uuid = UUID.fromString(meshJson.getAsJsonPrimitive("uuid").getAsString());
+
+        return new BBMeshModelElement(name, color, origin, rotation, export, visibility, locked, renderOrder, allowMirrorModeling, faces, uuid);
     }
 
     private List<BBModelMeshFace> loadMeshFaces(Map<String, BBModelVertex> vertices, JsonObject faces) {
@@ -268,7 +281,11 @@ public class BlockBenchModelImporter implements ModelImporter {
 
         UUID uuid = UUID.fromString(elem.getAsJsonObject().getAsJsonPrimitive("uuid").getAsString());
 
-        return new BBCubeModelElement(name, boxUv, rescale, locked, renderOrder, allowMirrorModeling, from, to, autouv, color, origin, faces, uuid);
+        JsonArray rotation1 = elem.getAsJsonObject().getAsJsonArray("rotation");
+        if (rotation1 == null) return new BBCubeModelElement(name, boxUv, rescale, locked, renderOrder, allowMirrorModeling, from, to, autouv, color, origin, faces, uuid);
+        
+        Vec3f rotation = loadVec3(rotation1);
+        return new BBCubeModelElement(name, boxUv, rescale, locked, renderOrder, allowMirrorModeling, from, to, autouv, color, origin, faces, uuid, rotation);
     }
 
     private List<BBModelFace> loadFaces(JsonObject faces) {
@@ -286,7 +303,8 @@ public class BlockBenchModelImporter implements ModelImporter {
 
         JsonObject faceJson = faceData.getValue().getAsJsonObject();
         Vec4f uv = loadVec4(faceJson.getAsJsonArray("uv"));
-        int texture = faceJson.get("texture").getAsInt();
+        JsonElement texture1 = faceJson.get("texture");
+        int texture = texture1 == null ? -1 : texture1.getAsInt();
 
         return new BBModelFace(blockFace, uv, texture);
     }
@@ -358,29 +376,32 @@ public class BlockBenchModelImporter implements ModelImporter {
     public Model createModel() {
         ModelBuilder model = new ModelBuilder();
         model.begin();
-        Map<Integer, MeshBuilder> texture2builder = new HashMap<>();
+        Map<Integer, BBTexture> texture2texture = new HashMap<>();
         for (int i = 0; i < textures.size(); i++) {
-            MeshBuilder value = new MeshBuilder();
-            value.begin(VertexAttributes.Usage.Position | VertexAttributes.Usage.ColorPacked | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates, GL20.GL_TRIANGLES);
             System.out.println(textures.get(i).id());
-            texture2builder.put(i, value);
-        }
-        for (BBModelElement element : elements) {
-            writeElement(model, texture2builder, element);
+            texture2texture.put(i, textures.get(i));
         }
 
-        for (Map.Entry<Integer, MeshBuilder> builder : texture2builder.entrySet()) {
+        Map<UUID, ModelBuilder> subNodes = new HashMap<>();
+//        for (BBModelElement element : elements) {
+//            writeElement(model, subNodes, texture2texture, element);
+//        }
+
+        List<BBModelOutlineInfo> data = outliner.entries();
+        extracted(data, null, model, subNodes, texture2texture);
+
+        for (Map.Entry<Integer, BBTexture> builder : texture2texture.entrySet()) {
             UltracraftClient.invokeAndWait(() -> {
                 try {
                     System.out.println(textures.get(builder.getKey()).id());
 
-                    return model.part(textures.get(builder.getKey()).id(), builder.getValue().end(), GL20.GL_TRIANGLES, Utils.make(new Material(), (mat) -> {
-                        try {
-                            mat.set(TextureAttribute.createDiffuse(textures.get(builder.getKey()).loadOrGetTexture()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }));
+//                    return model.part(textures.get(builder.getKey()).id(), builder.getValue().end(), GL20.GL_TRIANGLES, Utils.make(new Material(), (mat) -> {
+//                        try {
+//                            mat.set(TextureAttribute.createDiffuse(textures.get(builder.getKey()).loadOrGetTexture()));
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }));
                 } catch (Exception e) {
                     throw new RuntimeException("Texture " + textures.get(builder.getKey()).id() + " failed to load", e);
                 }
@@ -388,10 +409,111 @@ public class BlockBenchModelImporter implements ModelImporter {
             });
         }
 
-        return this.model = model.end();
+        this.model = model.end();
+        this.model.calculateTransforms();
+        return this.model;
     }
 
-    private void writeElement(ModelBuilder model, Map<Integer, MeshBuilder> texture2builder, BBModelElement element) {
-        element.write(model, texture2builder, this, resolution);
+    private void extracted(List<BBModelOutlineInfo> data, BBModelGroup parent, ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes0, Map<Integer, BBTexture> texture2texture) {
+        for (BBModelOutlineInfo node : data) {
+            if (node instanceof BBModelGroup group) {
+                group.parent = parent;
+                Vec3f origin = group.origin();
+                if (origin.x != 0 || origin.y != 0 || origin.z != 0) {
+                    ModelBuilder wrapperBuilder = new ModelBuilder();
+                    wrapperBuilder.begin();
+                    writeGroup(groupBuilder, subNodes0, texture2texture, group);
+                    groupBuilder.node(group.name() + "::PivotWrapper", wrapperBuilder.end());
+                } else {
+                    writeGroup(groupBuilder, subNodes0, texture2texture, group);
+                }
+            } else if (node instanceof BBModelElementReference ref) {
+                writeElement(groupBuilder, parent, subNodes0, texture2texture, ref);
+            }
+        }
+    }
+
+    private static Vec3f createPivotPoint(Vec3f origin) {
+        return origin.cpy().neg();
+    }
+
+    private void writeElement(ModelBuilder groupBuilder, BBModelGroup group, Map<UUID, ModelBuilder> subNodes0, Map<Integer, BBTexture> texture2texture, BBModelElementReference ref) {
+        BBModelElement element = this.getElement(ref.uuid());
+        if (element == null) {
+            throw new RuntimeException("Element not found: " + ref.uuid());
+        }
+        element.parent = group;
+
+        Vec3f origin = element.origin();
+        if (origin.x != 0 || origin.y != 0 || origin.z != 0) {
+            Vec3f cpy = createPivotPoint(origin);
+            ModelBuilder wrapperBuilder = new ModelBuilder();
+            wrapperBuilder.begin();
+            writeElement(groupBuilder, subNodes0, texture2texture, element);
+            groupBuilder.node(element.name() + "::PivotWrapper", wrapperBuilder.end());
+        } else {
+            writeElement(groupBuilder, subNodes0, texture2texture, element);
+        }
+    }
+
+    private void writeGroup(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes0, Map<Integer, BBTexture> texture2texture, BBModelGroup group) {
+        List<BBModelOutlineInfo> children = group.children();
+
+        ModelBuilder nodeBuilder = new ModelBuilder();
+        nodeBuilder.begin();
+        extracted(children, group, nodeBuilder, subNodes0, texture2texture);
+        Model childModel = nodeBuilder.end();
+        Node node = groupBuilder.node(group.name(), childModel);
+        node.rotation.setFromMatrix(group.rotationMatrix());
+    }
+
+    private void writeElement(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2builder, BBModelElement element) {
+        Node written = element.write(groupBuilder, subNodes, texture2builder, this, resolution);
+        if (written != null) {
+            var rotationMatrix = chain(element, group -> {
+                var mat = new Matrix4();
+                mat.rotate(Vector3.X, group.rotation().x);
+                mat.rotate(Vector3.Y, group.rotation().y + 90);
+                mat.rotate(Vector3.Z, group.rotation().z);
+
+                return mat;
+            }, Matrix4::mul);
+            written.rotation.set(rotationMatrix.getRotation(TEMP_ROTATION));
+            if (element.origin().x != 0 || element.origin().y != 0 || element.origin().z != 0) {
+                Vector3 origin;
+                if (element instanceof BBCubeModelElement cube) {
+                    origin = new Vector3(element.origin().x / 16f - cube.from().x / 16f, element.origin().y / 16f - cube.from().y / 16f, element.origin().z / 16f - cube.from().z / 16f);
+                } else {
+                    origin = new Vector3(element.origin().x / 16f, element.origin().y / 16f, element.origin().z / 16f);
+                }
+
+                Vector3 origin2 = origin.cpy();
+                origin = origin.scl(-2);
+
+                Vec3f chain = this.<Vec3f>chain(element, BBModelNode::rotation, (v1, v2) -> v1.add(v2));
+                origin.rotate(Vector3.X, element.rotation().x + chain.x);
+                origin.rotate(Vector3.Y, element.rotation().y + chain.y);
+                origin.rotate(Vector3.Z, element.rotation().z + chain.z);
+                written.translation.set(origin.add(origin2.scl(-1)));
+            }
+        }
+    }
+
+    private <T> T chain(BBModelNode group, Function<BBModelNode, T> func, BiFunction<T, T, T> func2) {
+        List<BBModelNode> groups = new ArrayList<>();
+        groups.add(group);
+        while (group.parent() != null) {
+            group = group.parent();
+            groups.add(group);
+        }
+        T sum = func.apply(group);
+        for (BBModelNode g : groups) {
+            sum = func2.apply(sum, func.apply(g));
+        }
+        return sum;
+    }
+
+    public BBModelElement getElement(UUID uuid) {
+        return elements.stream().filter(e -> e.uuid().equals(uuid)).findFirst().orElse(null);
     }
 }

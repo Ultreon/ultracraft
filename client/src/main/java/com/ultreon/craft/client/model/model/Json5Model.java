@@ -2,6 +2,7 @@ package com.ultreon.craft.client.model.model;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 import com.google.common.collect.Table;
 import com.ultreon.craft.block.state.BlockDataEntry;
 import com.ultreon.craft.client.UltracraftClient;
@@ -21,6 +22,7 @@ public class Json5Model implements BlockModel, ItemModel {
     private final RegistryKey<?> key;
     private Model model;
     private Table<String, BlockDataEntry<?>, Json5Model> overrides;
+    private static final Vector3 SCALE = new Vector3(-0.0625f, -0.0625f, 0.0625f);
 
     public Json5Model(RegistryKey<?> key, Map<String, Identifier> textureElements, List<Json5ModelLoader.ModelElement> modelElements, boolean ambientOcclusion, Json5ModelLoader.Display display, Table<String, BlockDataEntry<?>, Json5Model> overrides) {
         this.key = key;
@@ -70,6 +72,16 @@ public class Json5Model implements BlockModel, ItemModel {
         if (model != null) {
             model.dispose();
         }
+    }
+
+    @Override
+    public Vector3 getItemScale() {
+        return SCALE;
+    }
+
+    @Override
+    public Vector3 getItemOffset() {
+        return new Vector3(-18, -30,0);
     }
 
     public Table<String, BlockDataEntry<?>, Json5Model> getOverrides() {

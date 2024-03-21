@@ -1,6 +1,6 @@
 package com.ultreon.craft.client.model.blockbench;
 
-import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.ultreon.craft.util.Color;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
@@ -9,6 +9,7 @@ import com.ultreon.libs.commons.v0.vector.Vec3f;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class BBMeshModelElement extends BBModelElement {
     private final String name;
@@ -21,10 +22,11 @@ public final class BBMeshModelElement extends BBModelElement {
     private final String renderOrder;
     private final boolean allowMirrorModeling;
     private final List<BBModelMeshFace> faces;
+    private final UUID uuid;
 
     public BBMeshModelElement(String name, Color color, Vec3f origin, Vec3f rotation, boolean export,
                               boolean visibility, boolean locked, String renderOrder, boolean allowMirrorModeling,
-                              List<BBModelMeshFace> faces) {
+                              List<BBModelMeshFace> faces, UUID uuid) {
         this.name = name;
         this.color = color;
         this.origin = origin;
@@ -35,16 +37,20 @@ public final class BBMeshModelElement extends BBModelElement {
         this.renderOrder = renderOrder;
         this.allowMirrorModeling = allowMirrorModeling;
         this.faces = faces;
+        this.uuid = uuid;
     }
 
+    @Override
     public String name() {
         return name;
     }
 
+    @Override
     public Color color() {
         return color;
     }
 
+    @Override
     public Vec3f origin() {
         return origin;
     }
@@ -61,14 +67,17 @@ public final class BBMeshModelElement extends BBModelElement {
         return visibility;
     }
 
+    @Override
     public boolean locked() {
         return locked;
     }
 
+    @Override
     public String renderOrder() {
         return renderOrder;
     }
 
+    @Override
     public boolean allowMirrorModeling() {
         return allowMirrorModeling;
     }
@@ -115,9 +124,15 @@ public final class BBMeshModelElement extends BBModelElement {
     }
 
     @Override
-    public void write(ModelBuilder builder, Map<Integer, MeshBuilder> texture2builder, BlockBenchModelImporter modelData, Vec2f resolution) {
+    public UUID uuid() {
+        return uuid;
+    }
+
+    @Override
+    public Node write(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2texture, BlockBenchModelImporter modelData, Vec2f resolution) {
         for (BBModelMeshFace face : faces) {
-            face.write(builder, texture2builder, resolution);
+            face.write(groupBuilder, texture2texture, resolution);
         }
+        return null;
     }
 }

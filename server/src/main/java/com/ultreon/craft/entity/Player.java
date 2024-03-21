@@ -262,7 +262,9 @@ public abstract class Player extends LivingEntity {
 
     public void openMenu(ContainerMenu menu) {
         if (this.openMenu != null) {
-            return;
+            if (this.openMenu == menu)
+                return;
+            this.closeMenu();
         }
 
         this.openMenu = menu;
