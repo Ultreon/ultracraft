@@ -2,7 +2,6 @@ package com.ultreon.craft.client.render.pipeline;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g3d.Attributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -17,13 +16,13 @@ import com.ultreon.craft.client.init.Shaders;
 import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.util.Identifier;
 import org.checkerframework.common.reflection.qual.NewInstance;
-import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 public class SkyboxNode extends WorldRenderNode {
     public static final float SIZE = 1.0f;
     private final Mesh mesh;
-    private final ShaderProgram shader;
+    private final Supplier<ShaderProgram> shader;
     private Renderable renderable;
 
     public SkyboxNode() {
@@ -36,9 +35,6 @@ public class SkyboxNode extends WorldRenderNode {
         this.mesh = skybox.end();
 
         this.shader = getShaderProgram();
-        if (!this.shader.isCompiled()) {
-            throw new GdxRuntimeException("Could not compile shader: " + this.shader.getLog());
-        }
 
         Renderable renderable = new Renderable();
         renderable.material = new Material();
@@ -48,13 +44,12 @@ public class SkyboxNode extends WorldRenderNode {
         renderable.worldTransform.setToTranslationAndScaling(0, 0, 0, 1, 1, 1);
         renderable.userData = new Identifier("skybox");
         renderable.environment = this.client.getEnvironment();
-        renderable.shader = Shaders.SKYBOX.getShader(renderable);
+//        renderable.shader = Shaders.SKYBOX.getShader(renderable);
 
         this.renderable = renderable;
     }
 
-    @NotNull
-    private static ShaderProgram getShaderProgram() {
+    private static Supplier<ShaderProgram> getShaderProgram() {
 //        @Language("GLSL")
 //        String vertexShader = """
 //                attribute vec4 a_position;
@@ -92,6 +87,5 @@ public class SkyboxNode extends WorldRenderNode {
         super.dispose();
 
         this.mesh.dispose();
-        this.shader.dispose();
     }
 }

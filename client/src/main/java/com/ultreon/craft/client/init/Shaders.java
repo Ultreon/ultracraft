@@ -5,54 +5,40 @@ import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.google.common.base.Supplier;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.render.shader.OpenShaderProvider;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.client.shaders.provider.ModelViewShaderProvider;
 import com.ultreon.craft.client.shaders.provider.SkyboxShaderProvider;
 import com.ultreon.craft.client.shaders.provider.WorldShaderProvider;
-import com.ultreon.craft.registry.Registry;
 
+import static com.ultreon.craft.client.UltracraftClient.get;
 import static com.ultreon.craft.client.UltracraftClient.id;
 
+@SuppressWarnings("SameParameterValue")
 public class Shaders {
-    public static final Registry<ShaderProvider> REGISTRY = Registry.create(id("shaders"));
-
-    public static final DepthShaderProvider DEPTH = Shaders.registerDepth("depth");
-
-    public static final DefaultShaderProvider DEFAULT = Shaders.register("default", new MyDefaultShaderProvider());
-    public static final WorldShaderProvider WORLD = Shaders.register("world", new WorldShaderProvider(
-            new ResourceFileHandle(UltracraftClient.id("shaders/world.vert")),
-            new ResourceFileHandle(UltracraftClient.id("shaders/world.frag"))
-    ));
-    public static final DefaultShaderProvider SKYBOX = Shaders.register("skybox", new SkyboxShaderProvider(
-            new ResourceFileHandle(UltracraftClient.id("shaders/skybox.vert")),
-            new ResourceFileHandle(UltracraftClient.id("shaders/skybox.frag"))
-    ));
-    public static final ModelViewShaderProvider MODEL_VIEW = Shaders.register("model_view", new ModelViewShaderProvider(
-            new ResourceFileHandle(UltracraftClient.id("shaders/model_view.vert")),
-            new ResourceFileHandle(UltracraftClient.id("shaders/model_view.frag"))
+    public static final Supplier<DepthShaderProvider> DEPTH = Shaders.register("depth", () -> new MyDepthShaderProvider(
+            new ResourceFileHandle(id("shaders/depth.vert")),
+            new ResourceFileHandle(id("shaders/depth.frag"))
     ));
 
-    private static <T extends ShaderProvider> T register(String name, T provider) {
-        Shaders.REGISTRY.register(id(name), provider);
-        return provider;
-    }
+    public static final Supplier<DefaultShaderProvider> DEFAULT = Shaders.register("default", MyDefaultShaderProvider::new);
+    
+    public static final Supplier<WorldShaderProvider> WORLD = Shaders.register("world", () -> new WorldShaderProvider(
+            new ResourceFileHandle(id("shaders/world.vert")),
+            new ResourceFileHandle(id("shaders/world.frag"))
+    ));
+    public static final Supplier<DefaultShaderProvider> SKYBOX = Shaders.register("skybox", () -> new SkyboxShaderProvider(
+            new ResourceFileHandle(id("shaders/skybox.vert")),
+            new ResourceFileHandle(id("shaders/skybox.frag"))
+    ));
+    public static final Supplier<ModelViewShaderProvider> MODEL_VIEW = Shaders.register("model_view", () -> new ModelViewShaderProvider(
+            new ResourceFileHandle(id("shaders/model_view.vert")),
+            new ResourceFileHandle(id("shaders/model_view.frag"))
+    ));
 
-    private static DepthShaderProvider registerDepth(String name) {
-        DepthShaderProvider provider = new MyDepthShaderProvider(
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".vert")),
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".frag")));
-        Shaders.REGISTRY.register(UltracraftClient.id(name), provider);
-        return provider;
-    }
-
-    private static DefaultShaderProvider registerDefault(String name) {
-        DefaultShaderProvider provider = new MyDefaultShaderProvider(
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".vert")),
-                new ResourceFileHandle(id(name).mapPath(s -> "shaders/" + name + ".frag")));
-        Shaders.REGISTRY.register(UltracraftClient.id(name), provider);
-        return provider;
+    private static <T extends ShaderProvider> Supplier<T> register(String name, Supplier<T> provider) {
+        return get().getShaderProviderManager().register(id(name), provider);
     }
 
     public static void checkShaderCompilation(ShaderProgram program, String filename) {

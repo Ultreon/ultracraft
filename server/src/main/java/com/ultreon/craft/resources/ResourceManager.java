@@ -54,8 +54,6 @@ public class ResourceManager implements Closeable {
         }
 
         logger.warn("Unknown resource: " + entry);
-
-
         return null;
     }
 
@@ -335,7 +333,12 @@ public class ResourceManager implements Closeable {
     }
 
     private void importResourcePackages() throws IOException {
-        try (Stream<Path> list = Files.list(Paths.get("resource-mods"))) {
+        Path dir = Paths.get("resource-mods");
+        if (!Files.exists(dir)) {
+            Files.createDirectories(dir);
+            return;
+        }
+        try (Stream<Path> list = Files.list(dir)) {
             this.importFrom(list);
         }
     }

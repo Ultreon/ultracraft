@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.render.material;
+package com.ultreon.craft.client.management;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cubemap;
@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.*;
 import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.render.CubemapManager;
 import com.ultreon.craft.client.render.DestinationBlending;
 import com.ultreon.craft.client.render.SourceBlending;
 import com.ultreon.craft.client.resources.ReloadContext;
@@ -25,30 +24,52 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
-public class MaterialLoader {
+public class MaterialManager implements Manager<Material> {
     private final ResourceManager resourceManager;
     private final TextureManager textureManager;
     private final CubemapManager cubemapManager;
 
-    public MaterialLoader(ResourceManager resourceManager, TextureManager textureManager, CubemapManager cubemapManager) {
+    private final Material defaultMaterial = new Material();
+    private final Map<Identifier, Material> materials = new LinkedHashMap<>();
+
+    public MaterialManager(ResourceManager resourceManager, TextureManager textureManager, CubemapManager cubemapManager) {
         this.resourceManager = resourceManager;
         this.textureManager = textureManager;
         this.cubemapManager = cubemapManager;
     }
 
     public void reload(ReloadContext context) {
-        
+        this.materials.clear();
+        this.defaultMaterial.id = "default";
+        this.register(Identifier.parse("default"), this.defaultMaterial);
     }
 
-    public Material get(Identifier id) {
+    @Override
+    public Material register(@NotNull Identifier id, @NotNull Material material) {
+        this.materials.put(id, material);
+        return material;
+    }
+
+    public @Nullable Material get(Identifier id) {
+        if (id.equals(Identifier.parse("default"))) {
+            return this.defaultMaterial;
+        }
+
+        if (this.materials.containsKey(id)) {
+            return this.materials.get(id);
+        }
+
         try (InputStream inputStream = resourceManager.openResourceStream(id.mapPath(path -> "materials/" + path + ".json5"))) {
             Material material = new Material();
             material.id = id.toString();
             Json5Element parse = CommonConstants.JSON5.parse(inputStream);
 
             this.loadInto(material, this.textureManager, this.cubemapManager, parse);
+            this.register(id, material);
             return material;
         } catch (IOException e) {
             UltracraftClient.LOGGER.error("Failed to load material {}", id, e);
@@ -86,7 +107,7 @@ public class MaterialLoader {
 
     private Attribute loadCubemap(Json5Object attrObj, CubemapManager cubemapManager) {
         @NotNull Identifier textureId = Identifier.parse(attrObj.getAsJson5Primitive("cubemap").getAsString());
-        Cubemap cubemap = cubemapManager.getCubemap(textureId);
+        Cubemap cubemap = cubemapManager.get(textureId);
         if (cubemap == null) {
             return null;
         }
@@ -101,8 +122,8 @@ public class MaterialLoader {
         
         float opacity = attrObj.getAsJson5Primitive("opacity").getAsFloat(); // TODO: Implement opacity
 
-        SourceBlending srcBlending = SourceBlending.valueOf(src.toLowerCase(Locale.ROOT));
-        DestinationBlending dstBlending = DestinationBlending.valueOf(dst.toLowerCase(Locale.ROOT));
+        SourceBlending srcBlending = SourceBlending.valueOf(src.toUpperCase(Locale.ROOT));
+        DestinationBlending dstBlending = DestinationBlending.valueOf(dst.toUpperCase(Locale.ROOT));
 
         return new BlendingAttribute(blended, srcBlending.id, dstBlending.id, opacity);
     }

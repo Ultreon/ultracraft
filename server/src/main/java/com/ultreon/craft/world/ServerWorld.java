@@ -72,6 +72,7 @@ public class ServerWorld extends World {
 
     private int playTime;
     private final Set<RecordedChange> recordedChanges = new CopyOnWriteArraySet<>();
+    private int chunksToLoadCount;
 
     public ServerWorld(UltracraftServer server, WorldStorage storage, MapType worldData) {
         super((LongType) worldData.get("seed"));
@@ -140,7 +141,7 @@ public class ServerWorld extends World {
     }
 
     public int getChunksToLoad() {
-        return this.chunksToLoad.size();
+        return this.chunksToLoadCount;
     }
 
     private <T> Queue<T> createSyncQueue() {
@@ -299,7 +300,9 @@ public class ServerWorld extends World {
             var chunk = region.openChunk(localPos, globalPos);
 
             // Return null if the chunk couldn't be opened
-            if (chunk == null) return null;
+            if (chunk == null) {
+                return null;
+            }
 
             // Throw an error if the chunk is already active
             if (chunk.active) {
@@ -464,6 +467,17 @@ public class ServerWorld extends World {
     @ApiStatus.Internal
     public void doRefresh(ChunkRefresher refresher) {
         if (!refresher.isFrozen()) return;
+        if (!this.chunksToLoad.isEmpty()) return;
+        if (!this.chunksToUnload.isEmpty()) return;
+
+        if (this.chunksToLoadCount > 0) {
+            this.chunksToLoadCount = -1;
+            this.server.onInitialChunksLoaded();
+        }
+
+        if (this.chunksToLoadCount == 0) {
+            this.chunksToLoadCount = refresher.toLoad.size();
+        }
 
         for (ChunkPos pos : refresher.toLoad) {
             this.deferLoadChunk(pos);
@@ -1039,6 +1053,10 @@ public class ServerWorld extends World {
     }
 
     public void recordOutOfBounds(int x, int y, int z, BlockMetadata block) {
+        if (!(UltracraftServer.isOnServerThread())) {
+            UltracraftServer.invokeAndWait(() -> this.recordOutOfBounds(x, y, z, block));
+            return;
+        }
         if (this.isOutOfWorldBounds(x, y, z)) {
             return;
         }
@@ -1385,7 +1403,8 @@ public class ServerWorld extends World {
                 try {
                     return this.buildChunk(globalPos);
                 } catch (Throwable e) {
-                    throw new RuntimeException(e);
+                    UltracraftServer.LOGGER.error("Failed to build chunk at %s:".formatted(globalPos), e);
+                    throw new Error(e);
                 }
             }, this.world.executor).thenAccept(builtChunk -> UltracraftServer.invoke(() -> {
                 var players = this.world.getServer().getPlayersInChunk(globalPos);
@@ -1400,6 +1419,9 @@ public class ServerWorld extends World {
                         World.LOGGER.error("Failed to teleport player outside unloaded chunk:", e);
                     }
                 });
+            }).exceptionallyAsync(e -> {
+                UltracraftServer.LOGGER.error("Failed to build chunk at %s:".formatted(globalPos), e);
+                return null;
             }));
         }
 

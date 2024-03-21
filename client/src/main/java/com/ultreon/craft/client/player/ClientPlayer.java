@@ -18,9 +18,24 @@ public abstract class ClientPlayer extends Player {
     private float xRot0;
     private float yRot0;
     private float xHeadRot0;
+    private float oXRot;
+    private float oYRot;
+    private float oXHeadRot;
 
     protected ClientPlayer(EntityType<? extends Player> entityType, World world) {
         super(entityType, world, UltracraftClient.get().getUser().name());
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        this.oXRot = this.xRot;
+        this.oYRot = this.yRot;
+        this.oXHeadRot = this.xHeadRot;
+        this.xRot0 = this.xRot;
+        this.yRot0 = this.yRot;
+        this.xHeadRot0 = this.xHeadRot;
     }
 
     public float getHeadXRot(float partialTick) {
@@ -62,5 +77,20 @@ public abstract class ClientPlayer extends Player {
     @Override
     public void dropItem() {
         super.dropItem();
+    }
+
+    public Vec3d getLookVector(float partialTick) {
+        // Calculate the direction vector
+        Vec3d direction = new Vec3d();
+
+        float yRot = this.getYRot(partialTick);
+        float xHeadRot = this.getHeadXRot(partialTick);
+        direction.x = (float) (Math.cos(Math.toRadians(yRot)) * Math.sin(Math.toRadians(xHeadRot)));
+        direction.z = (float) (Math.cos(Math.toRadians(yRot)) * Math.cos(Math.toRadians(xHeadRot)));
+        direction.y = (float) (Math.sin(Math.toRadians(yRot)));
+
+        // Normalize the direction vector
+        direction.nor();
+        return direction;
     }
 }

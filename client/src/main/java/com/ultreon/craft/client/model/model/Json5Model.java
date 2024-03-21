@@ -21,7 +21,7 @@ public class Json5Model implements BlockModel, ItemModel {
     public final Json5ModelLoader.Display display;
     private final RegistryKey<?> key;
     private Model model;
-    private Table<String, BlockDataEntry<?>, Json5Model> overrides;
+    private final Table<String, BlockDataEntry<?>, Json5Model> overrides;
     private static final Vector3 SCALE = new Vector3(-0.0625f, -0.0625f, 0.0625f);
 
     public Json5Model(RegistryKey<?> key, Map<String, Identifier> textureElements, List<Json5ModelLoader.ModelElement> modelElements, boolean ambientOcclusion, Json5ModelLoader.Display display, Table<String, BlockDataEntry<?>, Json5Model> overrides) {

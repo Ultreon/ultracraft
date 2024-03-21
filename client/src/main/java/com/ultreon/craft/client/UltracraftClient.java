@@ -39,7 +39,6 @@ import com.ultreon.craft.client.api.events.ClientTickEvents;
 import com.ultreon.craft.client.api.events.RenderEvents;
 import com.ultreon.craft.client.api.events.gui.ScreenEvents;
 import com.ultreon.craft.client.atlas.TextureAtlas;
-import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.audio.ClientSound;
 import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.config.GameSettings;
@@ -59,6 +58,7 @@ import com.ultreon.craft.client.input.GameCamera;
 import com.ultreon.craft.client.input.GameInput;
 import com.ultreon.craft.client.input.PlayerInput;
 import com.ultreon.craft.client.item.ItemRenderer;
+import com.ultreon.craft.client.management.*;
 import com.ultreon.craft.client.model.block.BakedModelRegistry;
 import com.ultreon.craft.client.model.block.BlockModel;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
@@ -68,10 +68,10 @@ import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.SkinManager;
+import com.ultreon.craft.client.registry.EntityRendererManager;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.registry.MenuRegistry;
-import com.ultreon.craft.client.render.CubemapManager;
-import com.ultreon.craft.client.render.material.MaterialLoader;
+import com.ultreon.craft.client.registry.EntityModelManager;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
 import com.ultreon.craft.client.render.pipeline.MainRenderNode;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
@@ -100,10 +100,8 @@ import com.ultreon.craft.debug.inspect.InspectionNode;
 import com.ultreon.craft.debug.inspect.InspectionRoot;
 import com.ultreon.craft.debug.profiler.Profiler;
 import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.item.Items;
 import com.ultreon.craft.item.tool.ToolItem;
 import com.ultreon.craft.menu.MenuTypes;
 import com.ultreon.craft.network.Connection;
@@ -111,7 +109,6 @@ import com.ultreon.craft.network.api.PacketDestination;
 import com.ultreon.craft.network.packets.c2s.C2SLoginPacket;
 import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.registry.Registry;
-import com.ultreon.craft.registry.RegistryKey;
 import com.ultreon.craft.registry.event.RegistryEvents;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.server.UltracraftServer;
@@ -172,21 +169,21 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private static final float DURATION = 6000f;
     private static final int MINIMUM_WIDTH = 800;
     private static final int MINIMUM_HEIGHT = 600;
+    @SuppressWarnings("GDXJavaStaticResource")
+    public static final Profiler PROFILER = new Profiler();
     private static ArgParser arguments;
     private static boolean crashing;
     private final Cursor normalCursor;
     private final Cursor clickCursor;
     private final RenderPipeline pipeline;
-    private final boolean devWorld;
     public final Renderer renderer;
-    public Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    private boolean imGui = false;
+    public final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     public Connection connection;
     public ClientConnection clientConn;
     public ServerData serverData;
     public ExecutorService chunkLoadingExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
-    @SuppressWarnings("GDXJavaStaticResource")
-    public static Profiler PROFILER = new Profiler();
+    private final boolean devWorld;
+    private boolean imGui = false;
     public InspectionRoot<UltracraftClient> inspection;
     public Config newConfig;
     public boolean hideHud = false;
@@ -239,6 +236,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final TextureManager textureManager;
     private final CubemapManager cubemapManager;
     private final ResourceManager resourceManager;
+    public final EntityModelManager entityModelManager;
+    public final EntityRendererManager entityRendererManager;
     private float guiScale = this.calcMaxGuiScale();
 
     public Hud hud;
@@ -319,7 +318,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private final Color tmpColor = new Color();
     private final SkinManager skinManager = new SkinManager();
     private CompletableFuture<Screenshot> screenshotFuture;
-    private final MaterialLoader materialLoader;
+    private final MaterialManager materialManager;
+    private final ShaderProviderManager shaderProviderManager;
+    private final ShaderProgramManager shaderProgramManager;
+    private final TextureAtlasManager textureAtlasManager;
 
     UltracraftClient(String[] argv) {
         super(UltracraftClient.PROFILER);
@@ -360,6 +362,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         // Initialize the resource manager, texture manager, and resource loader
         this.resourceManager = new ResourceManager("assets");
 
+        // Initialize shader provider and shader program manager. These should be initialized after the resource manager.
+        this.shaderProviderManager = new ShaderProviderManager();
+        this.shaderProgramManager = new ShaderProgramManager();
+
         // Locate resources by finding the ".ucraft-resources" file using Class.getResource() and using the parent file.
         try {
             URL resource = UltracraftClient.class.getResource("/.ucraft-resources");
@@ -394,7 +400,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         this.textureManager = new TextureManager(this.resourceManager);
         this.cubemapManager = new CubemapManager(this.resourceManager);
-        this.materialLoader = new MaterialLoader(this.resourceManager, this.textureManager, this.cubemapManager);
+        this.materialManager = new MaterialManager(this.resourceManager, this.textureManager, this.cubemapManager);
+        this.textureAtlasManager = new TextureAtlasManager(this);
         ResourceLoader.init(this);
 
         // Load the configuration
@@ -424,6 +431,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         // Initialize the model loader
         this.modelLoader = new G3dModelLoader(new JsonReader());
+        this.entityModelManager = new EntityModelManager(this.modelLoader, this);
+        this.entityRendererManager = new EntityRendererManager(this.entityModelManager);
 
         // Initialize the game camera
         this.camera = new GameCamera(67, this.getWidth(), this.getHeight());
@@ -816,7 +825,10 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         UltracraftClient.LOGGER.info("Registering models");
         this.registerMenuScreens();
-        RenderingRegistration.registerRendering(this, this.modelLoader);
+        RenderingRegistration.registerRendering(this);
+
+        UltracraftClient.LOGGER.info("Reloading resources");
+        this.reloadResources();
 
         this.loadingOverlay.setProgress(0.95F);
 
@@ -1147,17 +1159,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void stitchTextures() {
-        this.blocksTextureAtlas = deferDispose(BlockModelRegistry.stitch(this.textureManager));
-
-        TextureStitcher itemTextures = new TextureStitcher(UltracraftClient.id("item"));
-        for (Map.Entry<RegistryKey<Item>, Item> e : Registries.ITEM.entries()) {
-            if (e.getValue() == Items.AIR || e.getValue() instanceof BlockItem) continue;
-
-            Identifier texId = e.getKey().element().mapPath(path -> "textures/items/" + path + ".png");
-            Texture tex = this.textureManager.getTexture(texId);
-            itemTextures.add(texId, tex);
-        }
-        this.itemTextureAtlas = itemTextures.stitch();
     }
 
     private GameInput createInput() {
@@ -1446,7 +1447,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
 
         UltracraftClient.setCrashHook(this.crashes::add);
 
-        this.loadingOverlay = new LoadingOverlay(this.ultreonBgTex);
+        this.loadingOverlay = new LoadingOverlay();
 
         CompletableFuture.runAsync(this::load).exceptionally(throwable -> {
             // Clear the crash handling
@@ -2368,10 +2369,14 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     public void reloadResourcesAsync() {
+        this.loadingOverlay = new LoadingOverlay();
+        loading = true;
         CompletableFuture.runAsync(() -> {
             LOGGER.info("Reloading resources...");
             this.reloadResources();
             LOGGER.info("Resources reloaded.");
+            this.loading = false;
+            this.loadingOverlay = null;
         }).exceptionally(throwable -> {
             LOGGER.error("Failed to reload resources:", throwable);
             return null;
@@ -2383,14 +2388,34 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.resourceManager.reload();
         this.textureManager.reload(context);
         this.cubemapManager.reload(context);
-        this.materialLoader.reload(context);
+        this.materialManager.reload(context);
+        this.entityModelManager.reload(this.resourceManager, context);
+        this.entityRendererManager.reload(this.resourceManager, context);
+        this.textureAtlasManager.reload(context);
         this.skinManager.reload();
+
         if (this.worldRenderer != null) {
-            this.worldRenderer.reload(context, textureManager, materialLoader);
+            this.worldRenderer.reload(context, materialManager);
+        }
+
+        while (!context.isDone()) {
+            try {
+                Duration.ofSeconds(0.1).sleep();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public MaterialLoader getMaterialLoader() {
-        return materialLoader;
+    public MaterialManager getMaterialManager() {
+        return materialManager;
+    }
+
+    public ShaderProviderManager getShaderProviderManager() {
+        return shaderProviderManager;
+    }
+
+    public ShaderProgramManager getShaderProgramManager() {
+        return shaderProgramManager;
     }
 }

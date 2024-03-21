@@ -199,7 +199,7 @@ public final class ClientChunk extends Chunk {
             if (modelObject == null) {
                 RenderableArray renderables = new RenderableArray();
                 model.getRenderables(renderables, RENDERABLE_POOL);
-                model.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW, model, renderables);
+                model.userData = modelObject = new ModelObject(Shaders.MODEL_VIEW.get(), model, renderables);
             }
             modelObject.renderables().clear();
             model.transform.setToTranslationAndScaling(this.renderOffset.x + x, this.renderOffset.y + (float) key.y() % 65536, this.renderOffset.z + z, 1 / 16f, 1 / 16f, 1 / 16f);

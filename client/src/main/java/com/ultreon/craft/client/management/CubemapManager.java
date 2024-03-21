@@ -1,4 +1,4 @@
-package com.ultreon.craft.client.render;
+package com.ultreon.craft.client.management;
 
 import com.badlogic.gdx.graphics.Cubemap;
 import com.ultreon.craft.CommonConstants;
@@ -7,13 +7,16 @@ import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Identifier;
 import de.marhali.json5.Json5Object;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-public class CubemapManager {
+public class CubemapManager implements Manager<Cubemap> {
     private final Map<Identifier, Cubemap> cubemaps = new LinkedHashMap<>();
     private final ResourceManager resourceManager;
 
@@ -21,8 +24,10 @@ public class CubemapManager {
         this.resourceManager = resourceManager;
     }
 
-    public void registerCubemap(Identifier id, Cubemap cubemap) {
+    @Override
+    public Cubemap register(@NotNull Identifier id, @NotNull Cubemap cubemap) {
         this.cubemaps.put(id, cubemap);
+        return cubemap;
     }
 
     public void loadCubemap(Identifier id) {
@@ -56,18 +61,23 @@ public class CubemapManager {
                     new ResourceFileHandle(targetNegZ.mapPath(p -> "textures/cubemap/" + p + ".png"))
             );
 
-            this.registerCubemap(id, cubemap);
+            this.register(id, cubemap);
         } catch (IOException e) {
             CommonConstants.LOGGER.error("Failed to load cubemap {}", id, e);
         }
     }
 
-    public Cubemap getCubemap(Identifier id) {
+    @Override
+    public @Nullable Cubemap get(Identifier id) {
+        if (!this.cubemaps.containsKey(id)) {
+            this.loadCubemap(id);
+        }
+
         return this.cubemaps.get(id);
     }
 
     public void reload(ReloadContext context) {
-        for (Cubemap cubemap : Map.copyOf(this.cubemaps).values()) {
+        for (Cubemap cubemap : List.copyOf(this.cubemaps.values())) {
             context.submit(cubemap::dispose);
         }
 

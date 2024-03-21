@@ -101,7 +101,7 @@ public class Color {
             int rgb = Integer.valueOf(hex.substring(1), 16);
             return Color.rgb(rgb);
         } else if (Pattern.matches("#[0-9a-fA-F]{8}", hex)) {
-            int rgb = Integer.valueOf(hex.substring(1), 16);
+            int rgb = Integer.parseUnsignedInt(hex.substring(1), 16);
             return Color.rgba(rgb);
         } else if (Pattern.matches("#[0-9a-fA-F]{3}", hex)) {
             int rgb = Integer.valueOf(new String(new char[]{

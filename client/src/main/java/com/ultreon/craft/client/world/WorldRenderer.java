@@ -33,10 +33,9 @@ import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.multiplayer.MultiplayerData;
 import com.ultreon.craft.client.player.LocalPlayer;
-import com.ultreon.craft.client.registry.RendererRegistry;
-import com.ultreon.craft.client.render.material.MaterialLoader;
+import com.ultreon.craft.client.registry.EntityRendererManager;
+import com.ultreon.craft.client.management.MaterialManager;
 import com.ultreon.craft.client.resources.ReloadContext;
-import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.crash.CrashCategory;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.ValueTracker;
@@ -71,8 +70,8 @@ public final class WorldRenderer implements DisposableContainer {
     private static final Vec3d TMp_3D_B = new Vec3d();
     public static final String OUTLINE_CURSOR_ID = CommonConstants.strId("outline_cursor");
     private Material material;
-    private final Material transparentMaterial;
-    private Texture breakingTex;
+    private Material transparentMaterial;
+    private final Texture breakingTex;
     private final Mesh sectionBorder;
     private final Material sectionBorderMaterial;
     private final Environment environment;
@@ -128,7 +127,7 @@ public final class WorldRenderer implements DisposableContainer {
 
         // Breaking animation meshes.
         this.breakingTex = this.client.getTextureManager().getTexture(id("textures/break_stages.png"));
-        this.breakingMaterial = this.client.getMaterialLoader().get(id("breaking"));
+        this.breakingMaterial = this.client.getMaterialManager().get(id("block/breaking"));
         Array<TextureRegion> breakingTexRegions = new Array<>(new TextureRegion[6]);
         for (int i = 0; i < 6; i++) {
             TextureRegion textureRegion = new TextureRegion(this.breakingTex, 0, i / 6f, 1, (i + 1) / 6f);
@@ -437,10 +436,10 @@ public final class WorldRenderer implements DisposableContainer {
             if (entity instanceof Player playerEntity && playerEntity.isSpectator()) return;
 
             //noinspection unchecked
-            var renderer = (EntityRenderer<@NotNull Entity>) RendererRegistry.get(entity.getType());
+            var renderer = (EntityRenderer<@NotNull Entity>) this.client.entityRendererManager.get(entity.getType());
             if (model == null) {
                 if (renderer == null) {
-                    UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's renderer is null");
+//                    UltracraftClient.LOGGER.warn("Failed to render entity " + entity.getId() + " because it's renderer is null");
                     return;
                 }
                 model = renderer.createModel(entity);
@@ -589,9 +588,32 @@ public final class WorldRenderer implements DisposableContainer {
         return disposable;
     }
 
-    public void reload(ReloadContext context, TextureManager textureManager, MaterialLoader materialLoader) {
+    public void reload(ReloadContext context, MaterialManager materialManager) {
         context.submit(() -> {
-            this.breakingMaterial = materialLoader.get(id("block/breaking"));
+            this.breakingMaterial = materialManager.get(id("block/breaking"));
+
+            Texture blockTex = this.client.blocksTextureAtlas.getTexture();
+            Texture emissiveBlockTex = this.client.blocksTextureAtlas.getEmissiveTexture();
+
+            this.material = new Material();
+            this.material.set(TextureAttribute.createDiffuse(blockTex));
+            this.material.set(TextureAttribute.createEmissive(emissiveBlockTex));
+            this.material.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+            this.transparentMaterial = new Material();
+            this.transparentMaterial.set(TextureAttribute.createDiffuse(blockTex));
+            this.transparentMaterial.set(TextureAttribute.createEmissive(emissiveBlockTex));
+//            this.transparentMaterial.set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
+            this.transparentMaterial.set(new DepthTestAttribute(GL20.GL_DEPTH_FUNC));
+//            this.transparentMaterial.set(FloatAttribute.createAlphaTest(0.02f));
+
+            for (ClientChunk loadedChunk : this.world.getLoadedChunks()) {
+                ChunkMesh solidMesh = loadedChunk.solidMesh;
+                if (solidMesh != null) solidMesh.renderable.material = this.material;
+                ChunkMesh transparentMesh = loadedChunk.transparentMesh;
+                if (transparentMesh != null) transparentMesh.renderable.material = this.transparentMaterial;
+            }
+
+            this.modelInstances.clear();
         });
     }
 

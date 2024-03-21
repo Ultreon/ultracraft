@@ -50,5 +50,7 @@ public class TextureAtlas implements Disposable {
     @Override
     public void dispose() {
         this.stitcher.dispose();
+        this.atlas.dispose();
+        this.emissiveAtlas.dispose();
     }
 }

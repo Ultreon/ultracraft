@@ -3,6 +3,7 @@ package com.ultreon.craft.client.model.blockbench;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
@@ -12,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.ModelImporter;
 import com.ultreon.craft.resources.Resource;
+import com.ultreon.craft.util.Axis;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.CubicDirection;
@@ -62,7 +64,11 @@ public class BlockBenchModelImporter implements ModelImporter {
 
         this.outliner = loadOutliner(jsonObject.getAsJsonArray("outliner"));
         this.textures = loadTextures(jsonObject.getAsJsonArray("textures"));
-        this.animations = loadAnimations(jsonObject.getAsJsonArray("animations"));
+        JsonArray animations1 = jsonObject.getAsJsonArray("animations");
+        if (animations1 == null) {
+            animations1 = new JsonArray();
+        }
+        this.animations = loadAnimations(animations1);
     }
 
     private Vec2f loadVec2Size(JsonObject resolution) {
@@ -422,8 +428,18 @@ public class BlockBenchModelImporter implements ModelImporter {
                 if (origin.x != 0 || origin.y != 0 || origin.z != 0) {
                     ModelBuilder wrapperBuilder = new ModelBuilder();
                     wrapperBuilder.begin();
-                    writeGroup(groupBuilder, subNodes0, texture2texture, group);
-                    groupBuilder.node(group.name() + "::PivotWrapper", wrapperBuilder.end());
+                    writeGroup(wrapperBuilder, subNodes0, texture2texture, group);
+                    Node node1 = groupBuilder.node(group.name() + "::PivotWrapper", wrapperBuilder.end());
+                    node1.localTransform.translate(origin.x, origin.y, origin.z);
+                    Vec3f rotation = this.chain(group, BBModelNode::rotation, (a, b) -> a.add(b));
+                    node1.localTransform.rotate(Vector3.X, rotation.x);
+                    node1.localTransform.rotate(Vector3.Y, rotation.y);
+                    node1.localTransform.rotate(Vector3.Z, rotation.z);
+                    node1.localTransform.translate(-origin.x, -origin.y, -origin.z);
+
+                    node1.translation.set(node1.localTransform.getTranslation(new Vector3()));
+                    node1.rotation.set(node1.localTransform.getRotation(new Quaternion()));
+                    node1.scale.set(node1.localTransform.getScale(new Vector3()));
                 } else {
                     writeGroup(groupBuilder, subNodes0, texture2texture, group);
                 }
@@ -463,38 +479,33 @@ public class BlockBenchModelImporter implements ModelImporter {
         nodeBuilder.begin();
         extracted(children, group, nodeBuilder, subNodes0, texture2texture);
         Model childModel = nodeBuilder.end();
-        Node node = groupBuilder.node(group.name(), childModel);
-        node.rotation.setFromMatrix(group.rotationMatrix());
+        Node written = groupBuilder.node(group.name(), childModel);
+
+        Vec3f origin = group.origin();
+
+        written.localTransform.translate(-origin.x, -origin.y, -origin.z);
+        Vec3f rotation = this.chain(group, BBModelNode::rotation, (a, b) -> a.add(b));
+        written.localTransform.rotate(Vector3.X, rotation.x);
+        written.localTransform.rotate(Vector3.Y, rotation.y);
+        written.localTransform.rotate(Vector3.Z, rotation.z);
+        written.localTransform.translate(origin.x, origin.y, origin.z);
+
+        written.translation.set(written.localTransform.getTranslation(new Vector3()));
+        written.rotation.set(written.localTransform.getRotation(new Quaternion()));
+        written.scale.set(written.localTransform.getScale(new Vector3()));
     }
 
     private void writeElement(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2builder, BBModelElement element) {
         Node written = element.write(groupBuilder, subNodes, texture2builder, this, resolution);
         if (written != null) {
-            var rotationMatrix = chain(element, group -> {
-                var mat = new Matrix4();
-                mat.rotate(Vector3.X, group.rotation().x);
-                mat.rotate(Vector3.Y, group.rotation().y + 90);
-                mat.rotate(Vector3.Z, group.rotation().z);
-
-                return mat;
-            }, Matrix4::mul);
-            written.rotation.set(rotationMatrix.getRotation(TEMP_ROTATION));
+//            written.rotation.set(rotationMatrix.getRotation(TEMP_ROTATION));
             if (element.origin().x != 0 || element.origin().y != 0 || element.origin().z != 0) {
                 Vector3 origin;
                 if (element instanceof BBCubeModelElement cube) {
-                    origin = new Vector3(element.origin().x / 16f - cube.from().x / 16f, element.origin().y / 16f - cube.from().y / 16f, element.origin().z / 16f - cube.from().z / 16f);
+                    origin = new Vector3(cube.from().x / 16f - element.origin().x / 16f, cube.from().y / 16f - element.origin().y / 16f, cube.from().z / 16f - element.origin().z / 16f);
                 } else {
                     origin = new Vector3(element.origin().x / 16f, element.origin().y / 16f, element.origin().z / 16f);
                 }
-
-                Vector3 origin2 = origin.cpy();
-                origin = origin.scl(-2);
-
-                Vec3f chain = this.<Vec3f>chain(element, BBModelNode::rotation, (v1, v2) -> v1.add(v2));
-                origin.rotate(Vector3.X, element.rotation().x + chain.x);
-                origin.rotate(Vector3.Y, element.rotation().y + chain.y);
-                origin.rotate(Vector3.Z, element.rotation().z + chain.z);
-                written.translation.set(origin.add(origin2.scl(-1)));
             }
         }
     }

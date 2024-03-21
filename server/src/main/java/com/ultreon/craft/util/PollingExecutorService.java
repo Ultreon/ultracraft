@@ -139,6 +139,7 @@ public class PollingExecutorService implements ExecutorService {
                     Identifier id = ((Task<?>) task).id();
                     PollingExecutorService.LOGGER.warn("Submitted task failed \"" + id + "\":", throwable);
                 }
+                PollingExecutorService.LOGGER.error("Failed to run task:", throwable);
                 future.completeExceptionally(throwable);
             }
         });

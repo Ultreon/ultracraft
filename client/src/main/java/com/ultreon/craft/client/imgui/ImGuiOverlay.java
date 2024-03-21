@@ -9,7 +9,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.registry.ModelRegistry;
 import com.ultreon.craft.client.world.ClientWorld;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.registry.Registries;
@@ -178,7 +177,7 @@ public class ImGuiOverlay {
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
         if (ImGui.begin("Model Viewer", ImGuiOverlay.getDefaultFlags())) {
             if (ImGui.button("Reload")) {
-                modelViewerList = ModelRegistry.getRegistry().keySet().stream().map(EntityType::getId).map(Objects::toString).sorted(String.CASE_INSENSITIVE_ORDER).toArray(String[]::new);
+                modelViewerList = UltracraftClient.get().entityModelManager.getRegistry().keySet().stream().map(EntityType::getId).map(Objects::toString).sorted(String.CASE_INSENSITIVE_ORDER).toArray(String[]::new);
             }
 
             ImGui.text("Select Model:");
@@ -193,7 +192,7 @@ public class ImGuiOverlay {
                 Identifier id = new Identifier(s);
                 EntityType<?> entityType = Registries.ENTITY_TYPE.get(id);
                 if (entityType != null) {
-                    Model model = ModelRegistry.getFinished(entityType);
+                    Model model = UltracraftClient.get().entityModelManager.getFinished(entityType);
                     if (model != null) {
                         if (ImGui.treeNode("Model")) {
                             ImGui.text("Model Name:");

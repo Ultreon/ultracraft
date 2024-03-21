@@ -46,4 +46,8 @@ public abstract class EntityRenderer<E extends Entity> {
     public abstract ModelInstance createModel(E entity);
 
     public abstract EntityTextures getTextures();
+
+    public void dispose() {
+        
+    }
 }

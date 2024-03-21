@@ -18,13 +18,14 @@ import com.ultreon.libs.commons.v0.Mth;
 import org.checkerframework.common.reflection.qual.NewInstance;
 
 import java.io.PrintStream;
+import java.util.function.Supplier;
 
 import static com.badlogic.gdx.Gdx.gl;
 import static com.badlogic.gdx.graphics.GL20.GL_TEXTURE0;
 
 public class MainRenderNode extends RenderNode {
     private Mesh quad = this.createFullScreenQuad();
-    private final ShaderProgram program = ShaderPrograms.MODEL;
+    private final Supplier<ShaderProgram> program = ShaderPrograms.MODEL;
     private float blurScale = 0f;
 
     @NewInstance
@@ -69,7 +70,7 @@ public class MainRenderNode extends RenderNode {
     }
 
     private void drawDiffuse(Texture diffuseTexture) {
-        this.client.spriteBatch.setShader(this.program);
+        this.client.spriteBatch.setShader(this.program.get());
         this.client.spriteBatch.draw(diffuseTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
@@ -84,7 +85,7 @@ public class MainRenderNode extends RenderNode {
     @Override
     public void dumpInfo(PrintStream stream) {
         super.dumpInfo(stream);
-        stream.println("Shader Handle: " + this.program.getHandle());
+        stream.println("Shader Handle: " + this.program.get().getHandle());
     }
 
     public Mesh createFullScreenQuad() {

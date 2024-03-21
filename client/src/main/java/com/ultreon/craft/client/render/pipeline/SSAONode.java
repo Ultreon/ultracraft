@@ -16,11 +16,12 @@ import org.checkerframework.common.reflection.qual.NewInstance;
 import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.function.Supplier;
 
 public class SSAONode extends RenderPipeline.RenderNode {
     private static final Texture RAND_TEX = new Texture("noise.png");
     private Mesh quad = this.createFullScreenQuad();
-    private final ShaderProgram program = ShaderPrograms.WORLD;
+    private final Supplier<ShaderProgram> program = ShaderPrograms.WORLD;
     private final Random rand = new Random();
     private static final Texture defTex0 = new Texture(1, 1, Pixmap.Format.RGB888); // Default texture
     private static final Texture defTex1 = new Texture(1, 1, Pixmap.Format.RGB888); // Default texture
@@ -61,24 +62,25 @@ public class SSAONode extends RenderPipeline.RenderNode {
 
     private void setUniforms() {
         // You might need to replace these values
-        this.program.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 1f);
-        this.program.setUniformf("iTime", this.getTime());
-        this.program.setUniformf("iTimeDelta", Gdx.graphics.getDeltaTime());
-        this.program.setUniformf("iFrame", Gdx.graphics.getFrameId());
-        this.program.setUniform1fv("iChannelTime", new float[]{this.getTime(), this.getTime(), this.getTime(), this.getTime()}, 0, 4);
-        this.program.setUniformf("iMouse", Gdx.input.getX(), Gdx.input.getY(), Gdx.input.isButtonPressed(Input.Buttons.LEFT) ? 1 : 0, Gdx.input.isButtonPressed(Input.Buttons.RIGHT) ? 1 : 0); // Update this appropriately for your needs
-        this.program.setUniformf("iDate", Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DAY_OF_MONTH), Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-        this.program.setUniformf("iSampleRate", 48000f); // Most common sample rate is 48KHz, but replace this with your actual sample rate
+        ShaderProgram program = this.program.get();
+        program.setUniformf("iResolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 1f);
+        program.setUniformf("iTime", this.getTime());
+        program.setUniformf("iTimeDelta", Gdx.graphics.getDeltaTime());
+        program.setUniformf("iFrame", Gdx.graphics.getFrameId());
+        program.setUniform1fv("iChannelTime", new float[]{this.getTime(), this.getTime(), this.getTime(), this.getTime()}, 0, 4);
+        program.setUniformf("iMouse", Gdx.input.getX(), Gdx.input.getY(), Gdx.input.isButtonPressed(Input.Buttons.LEFT) ? 1 : 0, Gdx.input.isButtonPressed(Input.Buttons.RIGHT) ? 1 : 0); // Update this appropriately for your needs
+        program.setUniformf("iDate", Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DAY_OF_MONTH), Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+        program.setUniformf("iSampleRate", 48000f); // Most common sample rate is 48KHz, but replace this with your actual sample rate
 
         // Now pass the texture units to the iChannelX uniforms. The last parameter is the number of the texture unit.
-        this.program.setUniform3fv("iChannelResolution", new float[]{this.tex0.getWidth(), this.tex0.getHeight(), 1, this.tex1.getWidth(), this.tex1.getHeight(), 1, this.tex2.getWidth(), this.tex2.getHeight(), 1, this.tex3.getWidth(), this.tex3.getHeight(), 1}, 0, 12);
-        this.program.setUniformi("iChannel0", 0);
-        this.program.setUniformi("iChannel1", 1);
-        this.program.setUniformi("iChannel2", 2);
-        this.program.setUniformi("iChannel3", 3);
+        program.setUniform3fv("iChannelResolution", new float[]{this.tex0.getWidth(), this.tex0.getHeight(), 1, this.tex1.getWidth(), this.tex1.getHeight(), 1, this.tex2.getWidth(), this.tex2.getHeight(), 1, this.tex3.getWidth(), this.tex3.getHeight(), 1}, 0, 12);
+        program.setUniformi("iChannel0", 0);
+        program.setUniformi("iChannel1", 1);
+        program.setUniformi("iChannel2", 2);
+        program.setUniformi("iChannel3", 3);
 
         // Shader-specific uniforms.
-        this.program.setUniformf("iGamma", ImGuiOverlay.I_GAMMA.get());
+        program.setUniformf("iGamma", ImGuiOverlay.I_GAMMA.get());
     }
 
     @Override

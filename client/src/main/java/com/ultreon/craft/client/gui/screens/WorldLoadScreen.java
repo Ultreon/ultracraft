@@ -13,8 +13,10 @@ import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.world.*;
+import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 import org.apache.commons.collections4.set.ListOrderedSet;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +26,8 @@ import java.util.ArrayList;
 
 public class WorldLoadScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldLoadScreen.class);
+    public static final @NotNull Color PROGRESS_BG = Color.hex("#ffffff80");
+    public static final @NotNull Color PROGRESS_FG = Color.rgb(0xff0040);
     private Label titleLabel;
     private Label descriptionLabel;
     private Label subTitleLabel;
@@ -31,6 +35,7 @@ public class WorldLoadScreen extends Screen {
     private long nextLog;
     private ServerWorld world;
     private DeathScreen closeScreen;
+    private boolean done = false;
 
     public WorldLoadScreen(WorldStorage storage) {
         super(TextObject.translation("ultracraft.screen.world_load"));
@@ -113,19 +118,32 @@ public class WorldLoadScreen extends Screen {
 
     @Override
     protected void renderBackground(Renderer renderer) {
-        renderer.fill(0, 0, this.size.width, this.size.height, Color.rgb(0x202020));
+        this.renderSolidBackground(renderer);
 
         ServerWorld world = this.world;
         if (world != null) {
             int chunksToLoad = world.getChunksToLoad();
             if (chunksToLoad != 0) {
-                String s = (100 * world.getChunksLoaded() / chunksToLoad) + "%";
-                this.subTitleLabel.text().setRaw(s);
+//                int ratio = world.getChunksLoaded() / chunksToLoad;
+                float ratio = (float) world.getChunksLoaded() / chunksToLoad;
+                String percent = (int) (100 * ratio) + "%";
+                ratio = Mth.clamp(ratio, 0, 1);
+                this.subTitleLabel.text().setRaw("Loaded %d of %d chunks (%s complete)".formatted(world.getChunksLoaded(), chunksToLoad, percent));
 
                 if (this.nextLog <= System.currentTimeMillis()) {
-                    this.nextLog = System.currentTimeMillis() + 1000;
-                    UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", s);
+                    this.nextLog = System.currentTimeMillis() + 2000;
+                    UltracraftClient.LOGGER.info(World.MARKER, "Loading world: {}", percent);
                 }
+
+                // Draw progressbar
+                int x = this.size.width / 2 - 100;
+                int y = this.size.height / 3 + 50;
+
+                int width = 200;
+                int height = 5;
+
+                renderer.fill(x, y, width, height, PROGRESS_BG);
+                renderer.fill(x, y, (int) (width * ratio), height, PROGRESS_FG);
             } else {
                 this.subTitleLabel.text().setRaw("");
             }
@@ -136,7 +154,7 @@ public class WorldLoadScreen extends Screen {
 
     @Override
     public boolean canClose() {
-        return this.client.renderWorld;
+        return this.done;
     }
 
     public void setCloseScreen(DeathScreen screen) {
@@ -191,5 +209,9 @@ public class WorldLoadScreen extends Screen {
     @Override
     public boolean canCloseWithEsc() {
         return false;
+    }
+
+    public void done() {
+        this.done = true;
     }
 }

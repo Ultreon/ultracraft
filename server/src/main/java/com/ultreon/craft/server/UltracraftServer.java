@@ -848,4 +848,8 @@ public abstract class UltracraftServer extends PollingExecutorService implements
     }
 
     public abstract void fatalCrash(Throwable throwable);
+
+    public void onInitialChunksLoaded() {
+
+    }
 }

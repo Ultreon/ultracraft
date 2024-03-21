@@ -59,7 +59,7 @@ public class GameCamera extends PerspectiveCamera {
      * @param player the player to update the camera for.
      */
     public void update(LocalPlayer player) {
-        var lookVec = player.getLookVector();
+        var lookVec = player.getLookVector(client.partialTick);
         this.camPos = player.getPosition(client.partialTick).div(WorldRenderer.SCALE).add(0, player.getEyeHeight() / WorldRenderer.SCALE, 0);
         this.player = player;
 

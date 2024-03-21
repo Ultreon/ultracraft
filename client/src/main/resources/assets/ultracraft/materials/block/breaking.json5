@@ -3,7 +3,7 @@
     {
       type: "texture",
       texture_type: "diffuse",
-      target: "ultracraft:breaking_stages",
+      target: "ultracraft:break_stages",
     },
     {
       type: "blending",

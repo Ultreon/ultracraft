@@ -1,36 +1,21 @@
 package com.ultreon.craft.client;
 
-import com.badlogic.gdx.assets.loaders.ModelLoader;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.client.api.events.ClientRegistrationEvents;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
 import com.ultreon.craft.client.model.block.CubeModel;
 import com.ultreon.craft.client.model.block.ModelProperties;
-import com.ultreon.craft.client.model.blockbench.BlockBenchModelImporter;
-import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.DroppedItemRenderer;
-import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.model.entity.renderer.PlayerRenderer;
 import com.ultreon.craft.client.model.entity.renderer.SomethingRenderer;
 import com.ultreon.craft.client.registry.BlockEntityModelRegistry;
 import com.ultreon.craft.client.registry.BlockRenderTypeRegistry;
-import com.ultreon.craft.client.registry.ModelRegistry;
-import com.ultreon.craft.client.registry.RendererRegistry;
+import com.ultreon.craft.client.registry.EntityModelManager;
+import com.ultreon.craft.client.registry.EntityRendererManager;
 import com.ultreon.craft.client.render.RenderType;
 import com.ultreon.craft.client.world.FaceProperties;
-import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.EntityTypes;
-import com.ultreon.craft.registry.Registries;
-import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.CubicDirection;
-
-import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
-import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
 
 /**
  * Register rendering for entities, blocks, etc.
@@ -42,60 +27,17 @@ public class RenderingRegistration {
     /**
      * Register rendering for entities and blocks
      * @param client the UltracraftClient instance
-     * @param modelLoader the model loader
      */
-    public static void registerRendering(UltracraftClient client, ModelLoader<?> modelLoader) {
+    public static void registerRendering(UltracraftClient client) {
         // Register block and entity models
         registerBlockModels();
         registerBlockEntityModels(client);
-        registerEntityModels();
 
-        // Register entity and block renderers
-        registerEntityRenderers();
+        // Register block renderers
         registerBlockRenderers();
         registerBlockRenderTypes();
 
-        // Iterate through all entity types and register their models and renderers
-        for (var e : Registries.ENTITY_TYPE.entries()) {
-            EntityType<?> type = e.getValue();
-            EntityRenderer<?> renderer = RendererRegistry.get(type);
-            EntityModel<?> entityModel = ModelRegistry.get(type);
-
-            Identifier key = e.getKey().element();
-            FileHandle handle = UltracraftClient.resource(key.mapPath(path -> "models/entity/" + path + ".g3dj"));
-
-            // Load and register the model if it exists
-            if (handle.exists()) {
-                Model model = UltracraftClient.invokeAndWait(() -> modelLoader.loadModel(handle, fileName -> {
-                    String filePath = fileName.substring(("assets/" + key.namespace() + "/models/entity/").length());
-                    return new Texture(UltracraftClient.resource(key.mapPath(path -> "textures/entity/" + filePath)));
-                }));
-                if (model == null)
-                    throw new RuntimeException("Failed to load entity model: " + key.mapPath(path -> "models/entity/" + path + ".g3dj"));
-                // Set blending and alpha test attributes for the model materials
-                model.materials.forEach(modelModel -> {
-                    modelModel.set(new BlendingAttribute(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-                    modelModel.set(FloatAttribute.createAlphaTest(0.5f));
-                });
-                ModelRegistry.registerFinished(type, model);
-            } else {
-                // If the model does not exist, use the entity model and renderer
-                if (entityModel == null) {
-                    UltracraftClient.LOGGER.warn("Model not found for entity {}", type.getId());
-                    continue;
-                }
-
-                if (renderer == null) {
-                    UltracraftClient.LOGGER.warn("Renderer not found for entity {}", type.getId());
-                    continue;
-                }
-
-                ModelRegistry.registerFinished(type, entityModel.finish(renderer.getTextures()));
-            }
-        }
-
-        // Load the renderer registry
-        RendererRegistry.load();
+        registerEntityRenderers();
     }
 
     /**
@@ -138,7 +80,7 @@ public class RenderingRegistration {
         BlockModelRegistry.register(Blocks.LOG, meta -> true , CubeModel.of(UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log"), UltracraftClient.id("blocks/log_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
         BlockModelRegistry.register(Blocks.CRAFTING_BENCH, meta -> true, CubeModel.of(UltracraftClient.id("blocks/crafting_bench_top"), UltracraftClient.id("blocks/crafting_bench_bottom"), UltracraftClient.id("blocks/crafting_bench_side"), ModelProperties.builder().top(FaceProperties.builder().randomRotation().build()).build()));
 
-        // Register block models for switch test block based on meta data
+        // Register block models for switch test block based on metadata
         BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_on")));
         BlockModelRegistry.register(Blocks.META_SWITCH_TEST, meta -> !meta.<Boolean>getEntry("on").value, CubeModel.of(UltracraftClient.id("blocks/switch_off")));
 
@@ -169,28 +111,19 @@ public class RenderingRegistration {
     /**
      * Registers entity models.
      */
-    private static void registerEntityModels() {
-        Model somethingModel = importBBModel(new Identifier("entity/something"));
-        ModelRegistry.registerFinished(EntityTypes.SOMETHING, somethingModel);
-
-        // Call the onRegister method of the factory in ENTITY_MODELS
-        ClientRegistrationEvents.ENTITY_MODELS.factory().onRegister();
-    }
-
-    private static Model importBBModel(Identifier id) {
-        return new BlockBenchModelImporter(id.mapPath(path -> "models/" + path + ".bbmodel")).createModel();
+    public static void registerEntityRendering(EntityModelManager entityModelManager) {
     }
 
     /**
      * Registers entity renderers.
      */
-    private static void registerEntityRenderers() {
+    public static void registerEntityRenderers() {
         // Register the player entity renderer
-        RendererRegistry.register(EntityTypes.PLAYER, PlayerRenderer::new);
+        EntityRendererManager.register(EntityTypes.PLAYER, PlayerRenderer::new);
 
         // Register the dropped item entity renderer
-        RendererRegistry.register(EntityTypes.DROPPED_ITEM, DroppedItemRenderer::new);
-        RendererRegistry.register(EntityTypes.SOMETHING, SomethingRenderer::new);
+        EntityRendererManager.register(EntityTypes.DROPPED_ITEM, DroppedItemRenderer::new);
+        EntityRendererManager.register(EntityTypes.SOMETHING, SomethingRenderer::new);
 
         // Call the onRegister method of the factory in ENTITY_RENDERERS
         ClientRegistrationEvents.ENTITY_RENDERERS.factory().onRegister();

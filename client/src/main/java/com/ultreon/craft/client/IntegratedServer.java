@@ -3,7 +3,9 @@ package com.ultreon.craft.client;
 import com.ultreon.craft.client.gui.Notification;
 import com.ultreon.craft.client.gui.icon.MessageIcon;
 import com.ultreon.craft.client.gui.screens.TitleScreen;
+import com.ultreon.craft.client.gui.screens.WorldLoadScreen;
 import com.ultreon.craft.client.player.LocalPlayer;
+import com.ultreon.craft.client.world.WorldRenderer;
 import com.ultreon.craft.crash.ApplicationCrash;
 import com.ultreon.craft.crash.CrashLog;
 import com.ultreon.craft.debug.DebugFlags;
@@ -214,6 +216,20 @@ public class IntegratedServer extends UltracraftServer {
     @Override
     public void fatalCrash(Throwable throwable) {
         UltracraftClient.crash(throwable);
+    }
+
+    @Override
+    public void onInitialChunksLoaded() {
+        super.onInitialChunksLoaded();
+
+        UltracraftClient.invoke(() -> {
+            this.client.worldRenderer = new WorldRenderer(this.client.world);
+            this.client.renderWorld = true;
+            if (this.client.screen instanceof WorldLoadScreen loadScreen) {
+                loadScreen.done();
+                this.client.showScreen(null);
+            }
+        });
     }
 
     public UltracraftClient getClient() {

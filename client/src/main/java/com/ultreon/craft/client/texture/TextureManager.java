@@ -195,6 +195,7 @@ public class TextureManager {
         this.frozen = true;
         context.submit(() -> {
             for (Texture texture : this.textures.values()) {
+                if (texture == null) continue;
                 texture.dispose();
             }
             this.textures.clear();

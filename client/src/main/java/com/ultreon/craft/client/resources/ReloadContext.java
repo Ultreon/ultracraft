@@ -1,9 +1,14 @@
 package com.ultreon.craft.client.resources;
 
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.util.PollingExecutorService;
+import de.marhali.json5.Json5Element;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -42,5 +47,13 @@ public class ReloadContext implements Disposable {
         }
 
         this.futures.clear();
+    }
+
+    public Json5Element get(String s) {
+        try {
+            return CommonConstants.JSON5.parse(UltracraftClient.get().getResourceManager().openResourceStream(UltracraftClient.id(s)));
+        } catch (IOException e) {
+            throw new GdxRuntimeException(e);
+        }
     }
 }

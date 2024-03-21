@@ -1,6 +1,5 @@
 package com.ultreon.craft.client.gui;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.config.Config;
 import com.ultreon.craft.client.gui.hud.OverlayManager;
@@ -12,15 +11,12 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.text.TextObject;
 import com.ultreon.craft.util.Color;
 import com.ultreon.craft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class Hud implements GameRenderable {
     private final UltracraftClient client;
 
-    private final @NotNull Texture widgetsTex;
-    private final @NotNull Texture iconsTex;
     public int leftY;
     public int rightY;
     private int width;
@@ -29,8 +25,6 @@ public class Hud implements GameRenderable {
 
     public Hud(UltracraftClient client) {
         this.client = client;
-        this.widgetsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/widgets.png"));
-        this.iconsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/icons.png"));
     }
 
     @Override
@@ -69,8 +63,10 @@ public class Hud implements GameRenderable {
         ItemStack selectedItem = player.getSelectedItem();
         Identifier key = Registries.ITEM.getId(selectedItem.getItem());
 
-        renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
-        renderer.blit(this.widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
+        var widgetsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/widgets.png"));
+        var iconsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/icons.png"));
+        renderer.blit(widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90, this.leftY - 43, 180, 41, 0, 42);
+        renderer.blit(widgetsTex, (int)((float)this.client.getScaledWidth() / 2) - 90 + x, this.leftY - 26, 20, 24, 0, 83);
 
         List<ItemSlot> allowed = player.inventory.getHotbarSlots();
         for (int index = 0, allowedLength = allowed.size(); index < allowedLength; index++) {
@@ -101,15 +97,16 @@ public class Hud implements GameRenderable {
     private void renderHealth(Renderer renderer, Player player) {
         int x = (int) ((float) this.client.getScaledWidth() / 2) - 81;
 
+        var iconsTex = this.client.getTextureManager().getTexture(UltracraftClient.id("textures/gui/icons.png"));
         for (int emptyHeartX = 0; emptyHeartX < 10; emptyHeartX++)
-            renderer.blit(this.iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
+            renderer.blit(iconsTex, x + emptyHeartX * 8, this.leftY - 9, 9, 9, 16, 0);
 
         int heartX;
         for (heartX = 0; heartX < Math.floor(player.getHealth() / 2); heartX++)
-            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
+            renderer.blit(iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 25, 0);
 
         if ((int) player.getHealth() % 2 == 1)
-            renderer.blit(this.iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
+            renderer.blit(iconsTex, x + heartX * 8, this.leftY - 9, 9, 9, 34, 0);
 
         this.leftY -= 13;
     }

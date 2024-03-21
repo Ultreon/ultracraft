@@ -3,6 +3,7 @@ package com.ultreon.craft.client.model.blockbench;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -170,13 +171,26 @@ public final class BBCubeModelElement extends BBModelElement {
 
     @Override
     public Node write(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2texture, BlockBenchModelImporter modelData, Vec2f resolution) {
-        return this.bake(groupBuilder, subNodes, texture2texture, resolution);
+        return this.bake(groupBuilder, texture2texture, resolution);
     }
 
 
-    public Node bake(ModelBuilder groupBuilder, Map<UUID, ModelBuilder> subNodes, Map<Integer, BBTexture> texture2builder0, Vec2f resolution) {
+    public Node bake(ModelBuilder groupBuilder, Map<Integer, BBTexture> texture2builder0, Vec2f resolution) {
         Vec3f from = this.from().cpy().div(16);
         Vec3f to = this.to().cpy().div(16);
+
+//        Vec3f rotation = this.rotation().cpy();
+//        Vector3 from = new Vector3(fromVec.x, fromVec.y, fromVec.z);
+//        Vector3 to = new Vector3(toVec.x, toVec.y, toVec.z);
+//        Matrix4 transform = new Matrix4();
+//        transform.translate(from.x, from.y, from.z);
+//        transform.rotate(1, 0, 0, rotation.x);
+//        transform.rotate(0, 1, 0, rotation.y);
+//        transform.rotate(0, 0, 1, rotation.z);
+//        transform.translate(-from.x, -from.y, -from.z);
+//
+//        from.mul(transform);
+//        to.mul(transform);
 
         MeshPartBuilder.VertexInfo v00 = new MeshPartBuilder.VertexInfo();
         MeshPartBuilder.VertexInfo v01 = new MeshPartBuilder.VertexInfo();
@@ -206,10 +220,10 @@ public final class BBCubeModelElement extends BBModelElement {
             v10.setNor(blockFace.getNormal());
             v11.setNor(blockFace.getNormal());
 
-            v00.setUV(entry.uv().x / resolution.x, entry.uv().y / resolution.y);
-            v01.setUV(entry.uv().x / resolution.x, entry.uv().w / resolution.y);
-            v10.setUV(entry.uv().z / resolution.x, entry.uv().y / resolution.y);
-            v11.setUV(entry.uv().z / resolution.x, entry.uv().w / resolution.y);
+            v00.setUV(entry.uv().x / resolution.x, entry.uv().w / resolution.y);
+            v01.setUV(entry.uv().x / resolution.x, entry.uv().y / resolution.y);
+            v10.setUV(entry.uv().z / resolution.x, entry.uv().w / resolution.y);
+            v11.setUV(entry.uv().z / resolution.x, entry.uv().y / resolution.y);
 
             switch (blockFace) {
                 case UP -> {
@@ -258,6 +272,7 @@ public final class BBCubeModelElement extends BBModelElement {
             UltracraftClient.invokeAndWait(() -> {
                 try {
                     material.set(TextureAttribute.createDiffuse(texture2builder0.get(texId).loadOrGetTexture()));
+                    material.set(new BlendingAttribute());
                     elementBuilder.part(name + " @" + texId, meshBuilder.end(), GL20.GL_TRIANGLES, material);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -266,7 +281,7 @@ public final class BBCubeModelElement extends BBModelElement {
         });
 
         Node node = groupBuilder.node(name, elementBuilder.end());
-        node.rotation.setFromMatrix(this.rotationMatrix());
+//        node.rotation.setFromMatrix(this.rotationMatrix());
 
         return node;
     }

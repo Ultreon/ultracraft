@@ -45,8 +45,7 @@ public class GameRenderer {
         this.depthFbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         this.fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
-//        ShaderProgram.pedantic = false;
-        ShaderProgram worldShaderProgram = ShaderPrograms.MODEL;
+        ShaderProgram worldShaderProgram = ShaderPrograms.MODEL.get();
         if (!worldShaderProgram.isCompiled()) {
             LOGGER.error("Failed to compile model shader:\n{}", worldShaderProgram.getLog());
         }
@@ -70,7 +69,7 @@ public class GameRenderer {
         if (player != null) {
             UltracraftClient.PROFILER.section("camera", () -> {
                 if (this.client.screen == null && !ImGuiOverlay.isShown()) {
-                    player.rotateHead(-Gdx.input.getDeltaX() / 2f, -Gdx.input.getDeltaY() / 2f);
+                    player.rotateHead(-Gdx.input.getDeltaX() * Gdx.graphics.getDeltaTime() * 50f, -Gdx.input.getDeltaY() * Gdx.graphics.getDeltaTime() * 50f);
                 }
 
                 this.client.camera.update(player);
