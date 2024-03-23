@@ -1,28 +1,18 @@
 package com.ultreon.craft.client.registry;
 
 import com.badlogic.gdx.assets.loaders.ModelLoader;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.api.events.ClientRegistrationEvents;
 import com.ultreon.craft.client.model.blockbench.BlockBenchModelImporter;
 import com.ultreon.craft.client.model.entity.EntityModel;
-import com.ultreon.craft.client.model.entity.PlayerModel;
-import com.ultreon.craft.client.model.entity.renderer.DroppedItemRenderer;
-import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.resources.ContextAwareReloadable;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;
 import com.ultreon.craft.entity.EntityTypes;
-import com.ultreon.craft.entity.Player;
-import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Identifier;
-import net.mgsx.gltf.scene3d.scene.SceneAsset;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,9 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
-import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
 
 public class EntityModelManager implements ContextAwareReloadable {
     private final Map<EntityType<?>, EntityModel<?>> registry = new HashMap<>();

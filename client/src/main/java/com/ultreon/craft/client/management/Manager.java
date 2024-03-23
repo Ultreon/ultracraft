@@ -1,7 +1,7 @@
 package com.ultreon.craft.client.management;
 
 import com.ultreon.craft.client.resources.ContextAwareReloadable;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;

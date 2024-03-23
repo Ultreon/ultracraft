@@ -17,6 +17,7 @@ import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.loot.LootGenerator;
 import com.ultreon.data.types.MapType;
+import io.netty.handler.codec.DecoderException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +37,36 @@ public class BlockMetadata {
         int rawId = packetBuffer.readVarInt();
         Block block = Registries.BLOCK.byId(rawId);
         if (block == null)
-            throw new IllegalArgumentException("Block " + rawId + " does not exist");
+            throw new DecoderException("Block " + rawId + " does not exist");
 
         BlockMetadata meta = block.createMeta();
         meta.entries.putAll(meta.readEntries(packetBuffer));
 
         return meta;
+    }
+
+    private Map<String, BlockDataEntry<?>> readEntries(PacketBuffer packetBuffer) {
+        int size = packetBuffer.readMedium();
+        for (int i = 0; i < size; i++) {
+            String key = packetBuffer.readString(64);
+            BlockDataEntry<?> blockDataEntry = this.entries.get(key);
+            if (blockDataEntry == null)
+                throw new DecoderException("Entry " + key + " does not exist in block " + block);
+
+            BlockDataEntry<?> property = blockDataEntry.read(packetBuffer);
+            entries.put(key, property);
+        }
+        return entries;
+    }
+
+    public int write(PacketBuffer encode) {
+        encode.writeVarInt(Registries.BLOCK.getRawId(block));
+        encode.writeMedium(entries.size());
+        for (Map.Entry<String, BlockDataEntry<?>> entry : entries.entrySet()) {
+            encode.writeUTF(entry.getKey(), 64);
+            entry.getValue().write(encode);
+        }
+        return entries.size();
     }
 
     public static BlockMetadata load(MapType data) {
@@ -57,23 +82,6 @@ public class BlockMetadata {
         for (Map.Entry<String, ? extends BlockDataEntry<?>> entry : this.getEntries().entrySet()) {
             BlockDataEntry<?> property = entry.getValue().load(data.get(entry.getKey()));
             entries.put(entry.getKey(), property);
-        }
-        return entries;
-    }
-
-    private Map<String, BlockDataEntry<?>> readEntries(PacketBuffer packetBuffer) {
-        int size = packetBuffer.readMedium();
-        for (int i = 0; i < size; i++) {
-            String key = packetBuffer.readString(64);
-            BlockDataEntry<?> blockDataEntry = this.entries.get(key);
-            if (blockDataEntry == null)
-                throw new IllegalArgumentException("Entry " + key + " does not exist in block " + block);
-
-            BlockDataEntry<?> property = blockDataEntry.read(packetBuffer);
-            entries.put(key, property);
-            size--;
-
-            if (size == 0) break;
         }
         return entries;
     }
@@ -146,16 +154,6 @@ public class BlockMetadata {
 
     public boolean isWater() {
         return block == Blocks.WATER;
-    }
-
-    public int write(PacketBuffer encode) {
-        encode.writeVarInt(Registries.BLOCK.getRawId(block));
-        encode.writeMedium(entries.size());
-        for (Map.Entry<String, BlockDataEntry<?>> entry : entries.entrySet()) {
-            encode.writeUTF(entry.getKey(), 64);
-            entry.getValue().write(encode);
-        }
-        return entries.size();
     }
 
     public boolean hasCollider() {

@@ -11,7 +11,7 @@ import com.ultreon.craft.CommonConstants;
 import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.render.DestinationBlending;
 import com.ultreon.craft.client.render.SourceBlending;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.client.texture.TextureManager;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Identifier;

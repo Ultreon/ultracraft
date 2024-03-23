@@ -7,7 +7,8 @@ import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.*;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.NoiseInstance;
+import de.articdive.jnoise.core.api.pipeline.NoiseSource;
+import de.articdive.jnoise.pipeline.JNoise;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -18,7 +19,7 @@ import static com.ultreon.craft.world.World.CHUNK_HEIGHT;
 
 public class BiomeGenerator implements ServerDisposable {
     private final World world;
-    private final NoiseInstance biomeNoise;
+    private final NoiseSource biomeNoise;
     private final List<TerrainLayer> layers;
     private final List<WorldGenFeature> features;
     public static final boolean USE_DOMAIN_WARPING = true;
@@ -27,11 +28,11 @@ public class BiomeGenerator implements ServerDisposable {
     private final Biome biome;
     private final Carver carver;
 
-    public BiomeGenerator(World world, Biome biome, NoiseInstance noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<WorldGenFeature> features) {
+    public BiomeGenerator(World world, Biome biome, NoiseSource noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<WorldGenFeature> features) {
         this.world = world;
         this.biome = biome;
         this.biomeNoise = noise;
-        this.carver = new Carver(domainWarping, noise);
+        this.carver = new Carver(domainWarping, noise, world.getSeed() + 1);
         this.layers = layers;
         this.features = features;
     }
@@ -98,8 +99,6 @@ public class BiomeGenerator implements ServerDisposable {
 
     @Override
     public void dispose() {
-        this.biomeNoise.dispose();
-
         this.layers.forEach(TerrainLayer::dispose);
         this.features.forEach(WorldGenFeature::dispose);
     }

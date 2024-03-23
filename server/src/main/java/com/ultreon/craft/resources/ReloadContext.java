@@ -1,14 +1,9 @@
-package com.ultreon.craft.client.resources;
+package com.ultreon.craft.resources;
 
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.util.PollingExecutorService;
-import de.marhali.json5.Json5Element;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -17,13 +12,15 @@ import java.util.concurrent.CompletableFuture;
 public class ReloadContext implements Disposable {
     private final PollingExecutorService executor;
     private final List<CompletableFuture<?>> futures = new ArrayList<>();
+    private final ResourceManager resourceManager;
 
-    public ReloadContext(PollingExecutorService executor) {
+    public ReloadContext(PollingExecutorService executor, ResourceManager resourceManager) {
         this.executor = executor;
+        this.resourceManager = resourceManager;
     }
 
-    public static ReloadContext create(PollingExecutorService executor) {
-        return new ReloadContext(executor);
+    public static ReloadContext create(PollingExecutorService executor, ResourceManager resourceManager) {
+        return new ReloadContext(executor, resourceManager);
     }
 
     public void submit(Runnable submission) {
@@ -49,11 +46,7 @@ public class ReloadContext implements Disposable {
         this.futures.clear();
     }
 
-    public Json5Element get(String s) {
-        try {
-            return CommonConstants.JSON5.parse(UltracraftClient.get().getResourceManager().openResourceStream(UltracraftClient.id(s)));
-        } catch (IOException e) {
-            throw new GdxRuntimeException(e);
-        }
+    public ResourceManager getResourceManager() {
+        return this.resourceManager;
     }
 }

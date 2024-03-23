@@ -38,6 +38,7 @@ public final class ClientWorld extends World implements Disposable {
     private int chunkRefresh;
     private ChunkPos oldChunkPos = new ChunkPos(0, 0);
     private int time = 0;
+    private int totalChunks;
 
     public ClientWorld(@NotNull UltracraftClient client) {
         super();
@@ -54,7 +55,11 @@ public final class ClientWorld extends World implements Disposable {
         if (!UltracraftClient.isOnMainThread()) {
             return UltracraftClient.invokeAndWait(() -> this.unloadChunk(chunk, pos));
         }
-        return this.chunks.remove(pos) == chunk;
+        boolean removed = this.chunks.remove(pos) == chunk;
+        if (removed) {
+            this.totalChunks--;
+        }
+        return removed;
     }
 
     @Override
@@ -203,6 +208,7 @@ public final class ClientWorld extends World implements Disposable {
             finalChunk.ready();
             synchronized (this) {
                 this.chunks.put(pos, data);
+                this.totalChunks++;
             }
             this.client.connection.send(new C2SChunkStatusPacket(pos, Chunk.Status.SUCCESS));
         });
@@ -304,6 +310,11 @@ public final class ClientWorld extends World implements Disposable {
             this.chunks.forEach((chunkPos, clientChunk) -> clientChunk.dispose());
             this.chunks.clear();
         }
+    }
+
+    @Override
+    public int getTotalChunks() {
+        return this.totalChunks;
     }
 
     public void setDaytime(int daytime) {

@@ -60,7 +60,7 @@ dependencies {
     implementation api("io.github.ultreon.corelibs:commons-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:datetime-v0:$corelibs_version")
     implementation api("io.github.ultreon.corelibs:functions-v0:$corelibs_version")
-    implementation api("com.github.Ultreon:ultreon-data:$ultreon_data_version")
+    implementation api("io.github.ultreon:ubo:$ultreon_data_version")
     implementation api("io.projectreactor:reactor-core:$reactor_version")
 
     // Apache Log4J
@@ -96,6 +96,9 @@ dependencies {
     implementation api("it.unimi.dsi:fastutil:8.5.12")
     implementation api("com.raylabz:opensimplex:1.0.3")
     implementation api("de.articdive:jnoise-pipeline:4.1.0")
+
+    implementation api('com.github.Ultreon:libnoiseforjava:f77e0827da')
+    implementation api('com.flowpowered:flow-noise:1.0.0')
 
     implementation api("space.earlygrey:shapedrawer:$shapedrawer_version")
 

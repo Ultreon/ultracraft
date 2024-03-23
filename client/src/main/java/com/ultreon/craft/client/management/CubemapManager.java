@@ -2,7 +2,7 @@ package com.ultreon.craft.client.management;
 
 import com.badlogic.gdx.graphics.Cubemap;
 import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.resources.ResourceManager;
 import com.ultreon.craft.util.Identifier;

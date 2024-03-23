@@ -10,7 +10,7 @@ public final class NoiseConfigs {
             new NoiseConfig(0, 0, new Vec2f(), 0, 0, 0, 0, 0, 0));
 
     public static final NoiseConfig GENERIC_NOISE = NoiseConfigs.register("plains",
-            new NoiseConfig(0.1f, 6, new Vec2f(330462, 631774), 196977, .35f, .001f, 1f, 5, 90));
+            new NoiseConfig(0.1f, 3, new Vec2f(330462, 631774), 196977, .35f, .001f, 1f, 5, 90));
 
     @Deprecated
     public static final NoiseConfig OCEAN = NoiseConfigs.register("ocean",
@@ -53,6 +53,8 @@ public final class NoiseConfigs {
             new NoiseConfig(0.002f, 8, new Vec2f(903852, 493382), 137339, 0.6f, 2.0f, 5f, 10, 0));
     public static final NoiseConfig FIOLAGE = NoiseConfigs.register("fiolage",
             new NoiseConfig(1f, 1, new Vec2f(652748, 695825), 297418, 0.5f, 2.0f, 1f, 2, 0));
+    public static final NoiseConfig ORE = NoiseConfigs.register("ore",
+            new NoiseConfig(1f, 3, new Vec2f(867470, 115558), 930208, 0.5f, 2.0f, 1f, 2, 0));
 
     private static <T extends NoiseConfig> T register(String name, T settings) {
         Registries.NOISE_SETTINGS.register(new Identifier(CommonConstants.NAMESPACE, name), settings);

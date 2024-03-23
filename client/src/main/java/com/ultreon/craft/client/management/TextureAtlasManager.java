@@ -5,7 +5,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.atlas.TextureAtlas;
 import com.ultreon.craft.client.atlas.TextureStitcher;
 import com.ultreon.craft.client.model.block.BlockModelRegistry;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.item.BlockItem;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.Items;

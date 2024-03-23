@@ -17,7 +17,12 @@ import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.libs.commons.v0.vector.Vec2i;
 import com.ultreon.libs.commons.v0.vector.Vec3i;
 import de.articdive.jnoise.core.api.noisegen.NoiseGenerator;
+import de.articdive.jnoise.core.api.pipeline.NoiseSource;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex2DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex3DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex4DVariant;
 import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator;
+import de.articdive.jnoise.pipeline.JNoise;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import org.apache.commons.collections4.set.ListOrderedSet;
@@ -34,7 +39,7 @@ public class TerrainGenerator {
     private final DomainWarping layerDomain;
     private final NoiseConfig noiseConfig;
     @MonotonicNonNull
-    private NoiseGenerator noise;
+    private NoiseSource noise;
     private FloatList biomeNoise = new FloatArrayList();
     private final List<BiomeData> biomeGenData = new ArrayList<>();
 
@@ -45,7 +50,10 @@ public class TerrainGenerator {
     }
 
     public void create(ServerWorld world, long seed) {
-        this.noise = FastSimplexNoiseGenerator.newBuilder().setSeed(seed).build();
+        this.noise = JNoise.newBuilder()
+                .fastSimplex(seed, Simplex2DVariant.CLASSIC, Simplex3DVariant.IMPROVE_XZ, Simplex4DVariant.IMRPOVE_XYZ)
+                .abs()
+                .build();
     }
 
     @CanIgnoreReturnValue

@@ -2,6 +2,7 @@ package com.ultreon.craft.crash;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.CommonConstants;
+import com.ultreon.craft.util.DataSizes;
 import com.ultreon.craft.util.Result;
 import org.apache.commons.lang3.SystemProperties;
 import org.jetbrains.annotations.ApiStatus;
@@ -93,7 +94,7 @@ public final class CrashLog extends CrashCategory {
 
         CrashCategory category = new CrashCategory("System Details");
         category.add("OS", SystemProperties.getOsName() + " " + SystemProperties.getOsVersion());
-        category.add("Memory", (runtime.totalMemory() - runtime.freeMemory()) + "/" + runtime.totalMemory());
+        category.add("Memory", DataSizes.format(runtime.totalMemory() - runtime.freeMemory()) + "/" + DataSizes.format(runtime.totalMemory()));
 
         crashLog.addCategory(category);
         return crashLog;

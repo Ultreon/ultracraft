@@ -135,7 +135,6 @@ public class ImGuiOverlay {
             ImGui.end();
         }
 
-
         ImGuiOverlay.renderWindows(client);
 
         ImGuiOverlay.handleTriggers();
@@ -217,8 +216,8 @@ public class ImGuiOverlay {
                 ImGuiOverlay.SHOW_MODEL_VIEWER.set(false);
             }
 
-            ImGui.end();
         }
+        ImGui.end();
     }
 
     private static void drawNode(Node node) {

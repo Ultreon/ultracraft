@@ -1,6 +1,12 @@
 package com.ultreon.craft.world.gen.noise;
 
 import com.ultreon.libs.commons.v0.vector.Vec2f;
+import de.articdive.jnoise.core.api.pipeline.NoiseSource;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex2DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex3DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex4DVariant;
+import de.articdive.jnoise.modules.octavation.fractal_functions.FractalFunction;
+import de.articdive.jnoise.pipeline.JNoise;
 
 import java.util.Objects;
 
@@ -42,8 +48,14 @@ public final class NoiseConfig {
     public NoiseInstance create(long seed) {
         this.seed = seed;
 
-        return new NoiseInstance(new SimplexNoise((int)Math.pow(2, this.octaves), this.persistence, seed), seed,
-                this.noiseZoom, this.octaves, this.offset, this.redistributionModifier, this.exponent, this.persistence, this.amplitude, this.base);
+        return new NoiseInstance(new JNoiseType(JNoise.newBuilder()
+                .fastSimplex(seed, Simplex2DVariant.CLASSIC, Simplex3DVariant.IMPROVE_XZ, Simplex4DVariant.IMRPOVE_XYZ)
+                .scale(this.noiseZoom)
+                .octavate((int) this.octaves, 1, 1, FractalFunction.FBM, true)
+//                .addModifier(v -> Math.pow(v, this.exponent))
+                .clamp(0, 1)
+                .addModifier(v -> (v * this.amplitude) + this.base)
+                .build()), seed);
     }
 
     public float noiseZoom() {

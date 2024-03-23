@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.ultreon.craft.LoadingContext;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.registry.event.RegistryEvents;
+import com.ultreon.craft.tags.NamedTag;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.libs.commons.v0.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,7 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
     private final boolean syncDisabled;
     private final RegistryKey<Registry<T>> key;
     private final List<Subscriber<? super Registry<T>>> subscriptions = Lists.newArrayList();
+    private final Map<Identifier, NamedTag<T>> tags = new HashMap<>();
 
     private Registry(Builder<T> builder, RegistryKey<Registry<T>> key) throws IllegalStateException {
         Preconditions.checkNotNull(key, "key");
@@ -285,6 +287,20 @@ public class Registry<T> extends AbstractRegistry<RegistryKey<T>, T> implements 
             s.onNext(this);
             s.onComplete();
         }
+    }
+
+    public Optional<NamedTag<T>> getTag(Identifier identifier) {
+        NamedTag<T> tag = this.tags.get(identifier);
+        if (tag == null) return Optional.empty();
+
+        return Optional.of(tag);
+    }
+
+    public NamedTag<T> createTag(Identifier identifier) {
+        NamedTag<T> tag = new NamedTag<>(identifier, this);
+        this.tags.put(identifier, tag);
+
+        return tag;
     }
 
     public static class Builder<T> {

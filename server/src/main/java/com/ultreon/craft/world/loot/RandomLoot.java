@@ -3,7 +3,7 @@ package com.ultreon.craft.world.loot;
 import com.google.common.collect.ImmutableList;
 import com.ultreon.craft.item.Item;
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.world.rng.RandomSource;
+import com.ultreon.craft.world.rng.RNG;
 import com.ultreon.data.types.MapType;
 import org.apache.commons.lang3.IntegerRange;
 
@@ -17,7 +17,7 @@ public class RandomLoot implements LootGenerator {
     }
 
     @Override
-    public Iterable<ItemStack> generate(RandomSource random) {
+    public Iterable<ItemStack> generate(RNG random) {
         var items = new ImmutableList.Builder<ItemStack>();
 
         for (var entry : this.entries) {
@@ -33,7 +33,7 @@ public class RandomLoot implements LootGenerator {
     }
 
     public interface LootEntry {
-        int randomCount(RandomSource random);
+        int randomCount(RNG random);
 
         Item item();
 
@@ -53,7 +53,7 @@ public class RandomLoot implements LootGenerator {
         }
 
         @Override
-        public int randomCount(RandomSource random) {
+        public int randomCount(RNG random) {
             return random.randint(this.range.getMinimum(), this.range.getMaximum());
         }
     }
@@ -71,7 +71,7 @@ public class RandomLoot implements LootGenerator {
         }
 
         @Override
-        public int randomCount(RandomSource random) {
+        public int randomCount(RNG random) {
             return random.chance(this.chance) ? 1 : 0;
         }
     }

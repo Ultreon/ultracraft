@@ -15,6 +15,10 @@ public class NoiseInstance implements ServerDisposable {
     private final double amplitude;
     private final double base;
 
+    public NoiseInstance(NoiseType noise, long seed) {
+        this(noise, seed, 1, 0, new Vec2f(), 1, 1, 0, 1, 0);
+    }
+
     public NoiseInstance(NoiseType noise, long seed, double noiseZoom, double octaves, Vec2f offset, double redistributionModifier, double exponent, double persistence, double amplitude, double base) {
         this.noise = noise;
         this.seed = seed;

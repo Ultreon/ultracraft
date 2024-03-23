@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.utils.BufferUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -142,7 +143,7 @@ public class Screenshot {
     }
 
     static class ImageSelection implements Transferable {
-        private Image image;
+        private final Image image;
 
         public ImageSelection(Image image) {
             this.image = image;
@@ -159,7 +160,7 @@ public class Screenshot {
         }
 
         // Returns image
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+        public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
             if (!DataFlavor.imageFlavor.equals(flavor)) {
                 throw new UnsupportedFlavorException(flavor);
             }

@@ -68,16 +68,16 @@ import com.ultreon.craft.client.network.ClientConnection;
 import com.ultreon.craft.client.network.LoginClientPacketHandlerImpl;
 import com.ultreon.craft.client.player.LocalPlayer;
 import com.ultreon.craft.client.player.SkinManager;
+import com.ultreon.craft.client.registry.EntityModelManager;
 import com.ultreon.craft.client.registry.EntityRendererManager;
 import com.ultreon.craft.client.registry.LanguageRegistry;
 import com.ultreon.craft.client.registry.MenuRegistry;
-import com.ultreon.craft.client.registry.EntityModelManager;
 import com.ultreon.craft.client.render.pipeline.CollectNode;
 import com.ultreon.craft.client.render.pipeline.MainRenderNode;
 import com.ultreon.craft.client.render.pipeline.RenderPipeline;
 import com.ultreon.craft.client.render.pipeline.WorldDiffuseNode;
 import com.ultreon.craft.client.render.shader.GameShaderProvider;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.client.resources.ResourceLoader;
 import com.ultreon.craft.client.resources.ResourceNotFoundException;
 import com.ultreon.craft.client.rpc.GameActivity;
@@ -137,6 +137,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import javax.annotation.WillClose;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.io.File;
@@ -305,7 +306,6 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     private boolean wasClicking;
     private final Queue<Runnable> serverTickQueue = new ArrayDeque<>();
     private boolean startDevLoading = true;
-    private final G3dModelLoader modelLoader;
     private final Environment defaultEnv = new Environment();
     private boolean autoScale;
     private boolean disposed;
@@ -430,8 +430,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             ImGuiOverlay.preInitImGui();
 
         // Initialize the model loader
-        this.modelLoader = new G3dModelLoader(new JsonReader());
-        this.entityModelManager = new EntityModelManager(this.modelLoader, this);
+        G3dModelLoader modelLoader = new G3dModelLoader(new JsonReader());
+        this.entityModelManager = new EntityModelManager(modelLoader, this);
         this.entityRendererManager = new EntityRendererManager(this.entityModelManager);
 
         // Initialize the game camera
@@ -531,7 +531,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     @RestrictedApi(
             explanation = "Only use this if you know what you are doing",
             link = "https://github.com/Ultreon/ultracraft/wiki/Crash-Hooks#important",
-            allowlistAnnotations = AgreeUnsafe.class
+            allowlistAnnotations = UnsafeApi.class
     )
     @UnsafeApi
     public static void setCrashHook(Callback<CrashLog> crashHook) {
@@ -1072,7 +1072,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
      * @param <T>       the type of the closeable.
      * @return the same closeable.
      */
-    public <T extends AutoCloseable> T deferClose(T closeable) {
+    public <T extends AutoCloseable> T deferClose(@WillClose T closeable) {
         UltracraftClient.instance.closeables.add(closeable);
         return closeable;
     }
@@ -2384,7 +2384,7 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
     }
 
     private void reloadResources() {
-        ReloadContext context = ReloadContext.create(this);
+        ReloadContext context = ReloadContext.create(this, this.resourceManager);
         this.resourceManager.reload();
         this.textureManager.reload(context);
         this.cubemapManager.reload(context);
@@ -2392,6 +2392,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
         this.entityModelManager.reload(this.resourceManager, context);
         this.entityRendererManager.reload(this.resourceManager, context);
         this.textureAtlasManager.reload(context);
+        if (this.itemRenderer != null)
+            this.itemRenderer.reload();
         this.skinManager.reload();
 
         if (this.worldRenderer != null) {
@@ -2402,7 +2404,8 @@ public class UltracraftClient extends PollingExecutorService implements Deferred
             try {
                 Duration.ofSeconds(0.1).sleep();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                crash(new IllegalThreadInterruptionError("Thread interrupted while reloading resources!", e));
             }
         }
     }

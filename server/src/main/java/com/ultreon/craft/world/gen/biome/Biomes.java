@@ -12,6 +12,7 @@ import com.ultreon.craft.world.gen.layer.SurfaceTerrainLayer;
 import com.ultreon.craft.world.gen.layer.UndergroundTerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
+import kotlin.ranges.IntRange;
 
 public class Biomes {
     public static final Biome VOID = Biomes.register("void", Biome.builder()
@@ -33,6 +34,7 @@ public class Biomes {
             .layer(new SurfaceTerrainLayer(Blocks.GRASS_BLOCK, 0))
             .feature(new PatchFeature(NoiseConfigs.PATCH, Blocks.DIRT, -0.5f, 4))
             .feature(new RockFeature(NoiseConfigs.ROCK, Blocks.STONE, 0.0005f))
+            .feature(new OreFeature(NoiseConfigs.ORE.seed(), Blocks.IRON_ORE, 20, new IntRange(4, 6), new IntRange(24, 72)))
             .feature(new FoliageFeature(NoiseConfigs.FIOLAGE, Blocks.TALL_GRASS, -0.15f))
             .feature(new TreeFeature(NoiseConfigs.TREE, Blocks.LOG, Blocks.LEAVES, 0.007f, 3, 5))
             .build());

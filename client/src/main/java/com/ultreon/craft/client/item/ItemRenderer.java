@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.DepthTestAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
@@ -236,5 +235,9 @@ public class ItemRenderer {
         if (e instanceof BlockItem blockItem) {
 //            this.registerBlockModel(blockItem, () -> this.client.getBakedBlockModel(blockItem.createBlockMeta()));
         }
+    }
+
+    public void reload() {
+        this.modelsInstances.clear();
     }
 }

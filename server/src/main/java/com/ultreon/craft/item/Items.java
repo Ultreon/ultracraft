@@ -36,6 +36,9 @@ public class Items {
     public static final BlockItem CACTUS = Items.register("cactus", new BlockItem(new Properties(), () -> Blocks.CACTUS));
     public static final BlockItem META_SWITCH_TEST = Items.register("meta_switch_test", new BlockItem(new Properties(), () -> Blocks.META_SWITCH_TEST));
     public static final BlockItem BLAST_FURNACE = Items.register("blast_furnace", new BlockItem(new Properties(), () -> Blocks.BLAST_FURNACE));
+    public static final BlockItem IRON_ORE = Items.register("iron_ore", new BlockItem(new Properties(), () -> Blocks.IRON_ORE));
+    public static final Item IRON_INGOT = Items.register("iron_ingot", new Item(new Properties()));
+    public static final Item RAW_IRON = Items.register("raw_iron", new Item(new Properties()));
 
     private static <T extends Item> T register(String name, T block) {
         Registries.ITEM.register(new Identifier(name), block);

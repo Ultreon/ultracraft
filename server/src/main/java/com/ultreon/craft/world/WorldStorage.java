@@ -25,7 +25,6 @@ public final class WorldStorage {
      *
      * @param path the world directory.
      */
-
     public WorldStorage(Path path) {
         this.directory = path;
     }

@@ -1,7 +1,7 @@
 package com.ultreon.craft.world.loot;
 
 import com.ultreon.craft.item.ItemStack;
-import com.ultreon.craft.world.rng.RandomSource;
+import com.ultreon.craft.world.rng.RNG;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class ConstantLoot implements LootGenerator {
     }
 
     @Override
-    public Iterable<ItemStack> generate(RandomSource random) {
+    public Iterable<ItemStack> generate(RNG random) {
         return this.loot;
     }
 }

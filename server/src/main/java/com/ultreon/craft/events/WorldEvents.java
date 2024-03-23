@@ -5,8 +5,9 @@ import com.ultreon.craft.world.*;
 import com.ultreon.craft.world.gen.WorldGenFeature;
 import com.ultreon.craft.world.gen.layer.TerrainLayer;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
-import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.data.types.MapType;
+import de.articdive.jnoise.core.api.pipeline.NoiseSource;
+import de.articdive.jnoise.pipeline.JNoise;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class WorldEvents {
 
     @FunctionalInterface
     public interface CreateBiome {
-        void onCreateBiome(World world, NoiseInstance noiseInstance, DomainWarping domainWarping, List<TerrainLayer> layers, List<WorldGenFeature> features);
+        void onCreateBiome(World world, NoiseSource noise, DomainWarping domainWarping, List<TerrainLayer> layers, List<WorldGenFeature> features);
     }
 
     @FunctionalInterface

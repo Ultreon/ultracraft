@@ -69,7 +69,6 @@ public abstract class World implements ServerDisposable {
     protected final Int2ReferenceMap<Entity> entitiesById = new Int2ReferenceArrayMap<>();
     protected final List<Entity> entities = new CopyOnWriteArrayList<>();
     private int curId;
-    private int totalChunks;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final List<ChunkPos> alwaysLoaded = new ArrayList<>();
     final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 3, 1));
@@ -78,6 +77,8 @@ public abstract class World implements ServerDisposable {
     private final List<ContainerMenu> menus = new ArrayList<>();
     private DimensionInfo info = DimensionInfo.OVERWORLD;
     protected UUID uid = Utils.ZEROED_UUID;
+    protected int spawnX;
+    protected int spawnZ;
 
     protected World() {
         // Shh, the original seed was 512.
@@ -425,7 +426,7 @@ public abstract class World implements ServerDisposable {
      */
     public int getHighest(int x, int z) {
         Chunk chunkAt = this.getChunkAt(x, 0, z);
-        if (chunkAt == null) return World.WORLD_DEPTH;
+        if (chunkAt == null) return Integer.MIN_VALUE;
 
         // FIXME: Optimize by using a heightmap.
         for (int y = World.CHUNK_HEIGHT - 1; y > 0; y--) {
@@ -638,9 +639,7 @@ public abstract class World implements ServerDisposable {
     /**
      * @return the amount of loaded chunks in the world.
      */
-    public int getTotalChunks() {
-        return this.totalChunks;
-    }
+    public abstract int getTotalChunks();
 
     /**
      * Fills the crash log with information about the world.
@@ -653,7 +652,7 @@ public abstract class World implements ServerDisposable {
         // Create a new CrashCategory for world details
         CrashCategory cat = new CrashCategory("World Details");
         // Add total chunks information to the crash category
-        cat.add("Total chunks", this.totalChunks); // Too many chunks?
+        cat.add("Total chunks", this.getTotalChunks()); // Too many chunks?
         // Add rendered chunks information to the crash category
         cat.add("Rendered chunks", this.renderedChunks); // Chunk render overflow?
         // Add seed information to the crash category
@@ -771,15 +770,16 @@ public abstract class World implements ServerDisposable {
      * @return the spawn point
      */
     public BlockPos getSpawnPoint() {
-        int highest = this.getHighest(this.spawnPoint.x, this.spawnPoint.z);
-        if (highest != World.WORLD_DEPTH)
-            this.spawnPoint.y = highest;
+        int highest = this.getHighest(this.spawnX, this.spawnZ);
+        int spawnY = 0;
+        if (highest != Integer.MIN_VALUE)
+            spawnY = highest;
 
-        return new BlockPos(this.spawnPoint);
+        return new BlockPos(this.spawnX, spawnY, this.spawnZ);
     }
 
     public int getChunksLoaded() {
-        return this.getLoadedChunks().size();
+        return this.getTotalChunks();
     }
 
     public boolean isDisposed() {

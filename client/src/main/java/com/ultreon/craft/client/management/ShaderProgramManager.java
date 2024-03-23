@@ -2,7 +2,7 @@ package com.ultreon.craft.client.management;
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.ultreon.craft.client.UltracraftClient;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.util.Identifier;
 import org.jetbrains.annotations.NotNull;

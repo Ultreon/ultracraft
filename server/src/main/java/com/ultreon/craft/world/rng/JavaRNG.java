@@ -2,18 +2,18 @@ package com.ultreon.craft.world.rng;
 
 import java.util.Random;
 
-public class JavaRandomSource implements RandomSource {
+public class JavaRNG implements RNG {
     private final Random random;
 
-    public JavaRandomSource() {
+    public JavaRNG() {
         this(new Random());
     }
 
-    public JavaRandomSource(long seed) {
+    public JavaRNG(long seed) {
         this(new Random(seed));
     }
 
-    public JavaRandomSource(Random random) {
+    public JavaRNG(Random random) {
         this.random = random;
     }
 

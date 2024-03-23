@@ -6,8 +6,8 @@ package com.ultreon.craft.world;
  *
  * @author <a href="https://github.com/XyperCode">XyperCode</a>
  */
-public class IllegalStateError extends Error {
-    public IllegalStateError(String message) {
+public class IllegalChunkStateException extends RuntimeException {
+    public IllegalChunkStateException(String message) {
         super(message);
     }
 }

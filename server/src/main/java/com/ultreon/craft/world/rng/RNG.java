@@ -1,6 +1,6 @@
 package com.ultreon.craft.world.rng;
 
-public interface RandomSource {
+public interface RNG {
     int randint(int min, int max);
     boolean chance(int max);
     boolean chance(float chance);

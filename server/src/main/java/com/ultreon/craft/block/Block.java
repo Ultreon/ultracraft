@@ -40,6 +40,7 @@ public class Block implements DataWriter<MapType> {
     private final boolean replaceable;
     private final boolean occlude;
     private final boolean greedyMerge;
+    private final @Nullable ToolLevel toolLevel;
 
     public Block() {
         this(new Properties());
@@ -58,6 +59,7 @@ public class Block implements DataWriter<MapType> {
         this.hasCustomRender = properties.hasCustomRender;
         this.occlude = properties.occlude;
         this.greedyMerge = properties.greedyMerge;
+        this.toolLevel = properties.toolLevel;
     }
 
     public Identifier getId() {
@@ -201,6 +203,10 @@ public class Block implements DataWriter<MapType> {
         return true;
     }
 
+    public @Nullable ToolLevel getToolRequirement() {
+        return toolLevel;
+    }
+
     public static class Properties {
         private boolean greedyMerge = true;
         private boolean occlude = true;
@@ -215,6 +221,7 @@ public class Block implements DataWriter<MapType> {
         private boolean requiresTool = false;
         private LootGenerator loot = ConstantLoot.EMPTY;
         private boolean disableRendering = false;
+        private @Nullable ToolLevel toolLevel = null;
 
         public @This Properties transparent() {
             this.transparent = true;
@@ -297,6 +304,12 @@ public class Block implements DataWriter<MapType> {
 
         public @This Properties noGreedyMerge() {
             this.greedyMerge = false;
+            return this;
+        }
+
+        public Properties toolRequirement(ToolLevel toolLevel) {
+            this.requiresTool();
+            this.toolLevel = toolLevel;
             return this;
         }
     }

@@ -10,7 +10,7 @@ import com.ultreon.craft.client.UltracraftClient;
 import com.ultreon.craft.client.model.entity.EntityModel;
 import com.ultreon.craft.client.model.entity.renderer.EntityRenderer;
 import com.ultreon.craft.client.resources.ContextAwareReloadable;
-import com.ultreon.craft.client.resources.ReloadContext;
+import com.ultreon.craft.resources.ReloadContext;
 import com.ultreon.craft.collection.OrderedMap;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.EntityType;

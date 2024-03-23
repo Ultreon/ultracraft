@@ -26,7 +26,6 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.server.player.ServerPlayer;
 import com.ultreon.craft.util.*;
 import com.ultreon.craft.world.gen.TerrainGenerator;
-import com.ultreon.craft.world.gen.WorldGenInfo;
 import com.ultreon.craft.world.gen.noise.DomainWarping;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.data.DataIo;
@@ -276,7 +275,7 @@ public class ServerWorld extends World {
      * @param z         The z-coordinate of the chunk.
      * @param overwrite Whether to overwrite an existing chunk if present.
      * @return The loaded chunk or null if loading failed.
-     * @throws IllegalStateError If the chunk is already active.
+     * @throws IllegalChunkStateException If the chunk is already active.
      */
     @Nullable
     @NonBlocking
@@ -306,7 +305,7 @@ public class ServerWorld extends World {
 
             // Throw an error if the chunk is already active
             if (chunk.active) {
-                throw new IllegalStateError("Chunk is already active.");
+                throw new IllegalChunkStateException("Chunk is already active.");
             }
 
             // Trigger chunk loaded event and track chunk loads
@@ -392,7 +391,7 @@ public class ServerWorld extends World {
                 return null;
             }
             if (chunk.active) {
-                throw new IllegalStateError("Chunk is already active.");
+                throw new IllegalChunkStateException("Chunk is already active.");
             }
 
             // Trigger CHUNK_LOADED event and update chunk load count
@@ -584,11 +583,11 @@ public class ServerWorld extends World {
         var localChunkPos = World.toLocalChunkPos(chunkPos);
 
         if (region.getActiveChunk(localChunkPos) == null)
-            throw new IllegalStateError("Tried to unload chunk %s but it isn't active".formatted(chunkPos));
+            throw new IllegalChunkStateException("Tried to unload chunk %s but it isn't active".formatted(chunkPos));
 
         var chunk = region.deactivate(localChunkPos);
         if (chunk == null) {
-            throw new IllegalStateError("Tried to unload non-existing chunk: " + chunkPos);
+            throw new IllegalChunkStateException("Tried to unload non-existing chunk: " + chunkPos);
         }
 
         if (region.isEmpty() && save) {
@@ -681,8 +680,31 @@ public class ServerWorld extends World {
     }
 
     @Override
+    public int getTotalChunks() {
+        return this.regionStorage.getChunkCount();
+    }
+
+    @Override
     public BreakResult continueBreaking(@NotNull BlockPos breaking, float amount, @NotNull Player breaker) {
         return super.continueBreaking(breaking, amount, breaker);
+    }
+
+    @Override
+    public BlockPos getSpawnPoint() {
+        ChunkPos chunkPos = World.toChunkPos(this.spawnX, 0, this.spawnZ);
+        Chunk chunkAt = this.getChunk(chunkPos);
+        if (chunkAt == null) {
+            Chunk chunk = this.loadChunkNow(chunkPos);
+            if (chunk == null)
+                throw new IllegalStateException("Failed to load chunk at spawn position");
+        }
+
+        int highest = this.getHighest(this.spawnX, this.spawnZ);
+        int spawnY = 0;
+        if (highest != Integer.MIN_VALUE)
+            spawnY = highest;
+
+        return new BlockPos(this.spawnX, spawnY, this.spawnZ);
     }
 
     /**
@@ -954,6 +976,7 @@ public class ServerWorld extends World {
         // Create a new region if it doesn't exist and add it to the regions map
         var region = new Region(this, regionPos);
         this.regionStorage.regions.put(regionPos, region);
+        this.regionStorage.chunkCount += region.getChunkCount();
 
         return region;
     }
@@ -1036,6 +1059,8 @@ public class ServerWorld extends World {
         var localPos = World.toLocalChunkPos(globalPos);
         region.activeChunks.remove(localPos);
         region.chunks.remove(localPos);
+        region.chunkCount--;
+        regionStorage.chunkCount--;
         region.generateChunk(localPos, globalPos);
     }
 
@@ -1144,6 +1169,7 @@ public class ServerWorld extends World {
         private final Object buildLock = new Object();
         private boolean dirty;
         private final Lock writeLock = new ReentrantLock(true);
+        private int chunkCount;
 
         /**
          * Constructs a new region with the given world and position.
@@ -1218,7 +1244,7 @@ public class ServerWorld extends World {
             if (chunk == null) return null;
 
             if (!this.activeChunks.remove(chunkPos))
-                throw new IllegalStateError("Can't deactivate an already inactive chunk.");
+                throw new IllegalChunkStateException("Can't deactivate an already inactive chunk.");
 
             chunk.active = false;
             return chunk;
@@ -1311,9 +1337,12 @@ public class ServerWorld extends World {
             this.validateLocalPos(pos);
             this.validateThread();
 
-            if (this.chunks.containsKey(pos)) throw new IllegalStateError("Chunk is already loaded");
+            if (this.chunks.containsKey(pos)) throw new IllegalChunkStateException("Chunk is already loaded");
 
-            return this.chunks.put(pos, chunk);
+            ServerChunk put = this.chunks.put(pos, chunk);
+            world.regionStorage.chunkCount++;
+            this.chunkCount++;
+            return put;
         }
 
         private void validateThread() {
@@ -1438,6 +1467,8 @@ public class ServerWorld extends World {
             // Put the chunk into the list of loaded chunks.
             ServerChunk builtChunk = chunk.build();
             this.chunks.put(localPos, builtChunk);
+            this.world.regionStorage.chunkCount++;
+            this.chunkCount++;
 
             // Send the chunk to all connections.
             try {
@@ -1474,7 +1505,7 @@ public class ServerWorld extends World {
 
             var loadedAt = loadedChunk.getPos();
             if (!loadedAt.equals(pos)) {
-                throw new IllegalStateError("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
+                throw new IllegalChunkStateException("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
             }
 
             return loadedChunk;
@@ -1497,7 +1528,7 @@ public class ServerWorld extends World {
 
             var loadedAt = loadedChunk.getPos();
             if (!loadedAt.equals(pos)) {
-                throw new IllegalStateError("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
+                throw new IllegalChunkStateException("Chunk requested to load at %s got loaded at %s instead".formatted(pos, loadedAt));
             }
 
             return loadedChunk;
@@ -1535,6 +1566,10 @@ public class ServerWorld extends World {
         public void writeUnlock() {
             this.writeLock.unlock();
         }
+
+        public int getChunkCount() {
+            return this.chunkCount;
+        }
     }
 
     /**
@@ -1545,6 +1580,7 @@ public class ServerWorld extends World {
      */
     public static class RegionStorage {
         private final Map<RegionPos, Region> regions = new ConcurrentHashMap<>();
+        private int chunkCount;
 
         /**
          * Saves a region to an output stream.
@@ -1584,6 +1620,7 @@ public class ServerWorld extends World {
             // Dispose the region if requested.
             if (dispose) {
                 this.regions.remove(region.getPos());
+                this.chunkCount -= region.getChunkCount();
                 UltracraftServer.invokeAndWait(region::dispose);
             }
         }
@@ -1656,6 +1693,7 @@ public class ServerWorld extends World {
 
             // Create region instance.
             this.regions.put(regionPos, region);
+            this.chunkCount += region.chunkCount;
             return region;
         }
 
@@ -1699,6 +1737,10 @@ public class ServerWorld extends World {
         public void dispose() {
             this.regions.values().forEach(Region::dispose);
             this.regions.clear();
+        }
+
+        public int getChunkCount() {
+            return this.chunkCount;
         }
     }
 

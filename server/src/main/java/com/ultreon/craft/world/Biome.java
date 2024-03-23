@@ -14,6 +14,11 @@ import com.ultreon.craft.world.gen.noise.NoiseConfig;
 import com.ultreon.craft.world.gen.noise.NoiseConfigs;
 import com.ultreon.craft.world.gen.noise.NoiseInstance;
 import com.ultreon.data.types.MapType;
+import de.articdive.jnoise.core.api.functions.Combiner;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex2DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex3DVariant;
+import de.articdive.jnoise.generators.noise_parameters.simplex_variants.Simplex4DVariant;
+import de.articdive.jnoise.pipeline.JNoise;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceFunction;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Biome {
-    private final NoiseConfig settings;
     private final List<TerrainLayer> layers = new ArrayList<>();
     private final List<WorldGenFeature> features = new ArrayList<>();
     private final float temperatureStart;
@@ -29,8 +33,7 @@ public abstract class Biome {
     private final boolean isOcean;
     private final boolean doesNotGenerate;
 
-    protected Biome(NoiseConfig settings, float temperatureStart, float temperatureEnd, boolean isOcean, boolean doesNotGenerate) {
-        this.settings = settings;
+    protected Biome(float temperatureStart, float temperatureEnd, boolean isOcean, boolean doesNotGenerate) {
         this.temperatureStart = temperatureStart;
         this.temperatureEnd = temperatureEnd;
         this.isOcean = isOcean;
@@ -54,19 +57,19 @@ public abstract class Biome {
     }
 
     public BiomeGenerator create(ServerWorld world, long seed) {
-        NoiseInstance noiseInstance = this.settings.create(seed);
-        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noiseInstance, world.getTerrainGenerator().getLayerDomain(), this.layers, this.features);
+        TerrainNoise noise = new TerrainNoise(seed);
+        WorldEvents.CREATE_BIOME.factory().onCreateBiome(world, noise, world.getTerrainGenerator().getLayerDomain(), this.layers, this.features);
 
         this.layers.forEach(layer -> layer.create(world));
         this.features.forEach(layer -> layer.create(world));
 
         DomainWarping domainWarping = new DomainWarping(UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_X.create(seed)), UltracraftServer.get().disposeOnClose(NoiseConfigs.LAYER_Y.create(seed)));
 
-        return new BiomeGenerator(world, this, noiseInstance, domainWarping, this.layers, this.features);
+        return new BiomeGenerator(world, this, noise, domainWarping, this.layers, this.features);
     }
 
     public NoiseConfig getSettings() {
-        return this.settings;
+        return NoiseConfigs.BIOME_MAP;
     }
 
     public float getTemperatureStart() {
@@ -149,7 +152,7 @@ public abstract class Biome {
             if (Float.isNaN(this.temperatureStart)) throw new IllegalArgumentException("Temperature start not set.");
             if (Float.isNaN(this.temperatureEnd)) throw new IllegalArgumentException("Temperature end not set.");
 
-            return new Biome(this.biomeNoise, this.temperatureStart, this.temperatureEnd, this.isOcean, this.doesNotGenerate) {
+            return new Biome(this.temperatureStart, this.temperatureEnd, this.isOcean, this.doesNotGenerate) {
                 @Override
                 protected void onBuildLayers(List<TerrainLayer> layerList, List<WorldGenFeature> featureList) {
                     layerList.addAll(Builder.this.layers);

@@ -17,8 +17,8 @@ import com.ultreon.craft.world.BlockPos;
 import com.ultreon.craft.world.Location;
 import com.ultreon.craft.world.ServerWorld;
 import com.ultreon.craft.world.World;
-import com.ultreon.craft.world.rng.JavaRandomSource;
-import com.ultreon.craft.world.rng.RandomSource;
+import com.ultreon.craft.world.rng.JavaRNG;
+import com.ultreon.craft.world.rng.RNG;
 import com.ultreon.data.types.MapType;
 import com.ultreon.libs.commons.v0.Mth;
 import com.ultreon.libs.commons.v0.vector.Vec2f;
@@ -61,7 +61,7 @@ public class Entity implements CommandSender {
     private @Nullable TextObject customName;
     private UUID uuid = Utils.ZEROED_UUID;
     protected AttributeMap attributes = new AttributeMap();
-    private final RandomSource random = new JavaRandomSource();
+    private final RNG random = new JavaRNG();
     private MapType pipeline = new MapType();
     private boolean markedForRemoval;
 
@@ -713,7 +713,7 @@ public class Entity implements CommandSender {
         return this.attributes;
     }
 
-    public RandomSource getRng() {
+    public RNG getRng() {
         return this.random;
     }
 
