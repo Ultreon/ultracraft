@@ -20,12 +20,14 @@ import com.ultreon.craft.network.PacketBuffer;
 import com.ultreon.craft.world.CubicDirection;
 import com.ultreon.libs.commons.v0.vector.Vec3d;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** Encapsulates a ray having a starting position and a unit length direction.
  * 
  * @author badlogicgames@gmail.com */
 public class Ray implements Serializable {
+	@Serial
 	private static final long serialVersionUID = -620692054835390878L;
 	public final Vec3d origin = new Vec3d();
 	public final Vec3d direction = new Vec3d();

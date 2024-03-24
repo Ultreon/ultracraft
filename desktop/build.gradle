@@ -89,7 +89,6 @@ dependencies {
     runtimeOnly api("org.apache.logging.log4j:log4j-core:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-api:$log4j_version")
     runtimeOnly api("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
-    implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.tukaani:xz:$tukaani_xz_version")
     implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
@@ -102,7 +101,7 @@ dependencies {
 
     // Google
     implementation api("com.google.code.gson:gson:2.10.1")
-    implementation api("com.google.guava:guava:32.0.0-jre")
+    implementation api("com.google.guava:guava:$guava_version")
 
     // Misc
     implementation api("it.unimi.dsi:fastutil:8.5.12")
@@ -184,16 +183,6 @@ jar {
                 'Main-Class': 'com.ultreon.craft.DesktopLauncher',
                 'Multi-Release': 'true'
     }
-
-    from {
-        compileJava.outputs
-    }
-    from {
-        processResources.outputs
-    }
-
-    zip64 true
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 tasks.register('prepareRun', {
@@ -211,12 +200,4 @@ tasks.withType(Jar).configureEach {
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
 }

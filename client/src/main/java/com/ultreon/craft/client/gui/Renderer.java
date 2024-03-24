@@ -2436,7 +2436,6 @@ public class Renderer implements Disposable {
         Color hexagonColor;
         try {
             String hexagonColorHex = Config.hexagonColor;
-            if (hexagonColorHex == null) hexagonColorHex = "#ffffff";
             if (hexagonColorHex.length() > 7) hexagonColorHex = hexagonColorHex.substring(0, 7);
             if (hexagonColorHex.length() < 7 && hexagonColorHex.length() > 4)
                 hexagonColorHex = hexagonColorHex.substring(0, 4);

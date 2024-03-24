@@ -3,6 +3,8 @@ package com.ultreon.craft.api.commands;
 import com.ultreon.craft.entity.Entity;
 import com.ultreon.craft.entity.Player;
 import com.ultreon.craft.server.ConsoleCommandSender;
+import com.ultreon.craft.server.UltracraftServer;
+import com.ultreon.craft.text.TextObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -44,9 +46,11 @@ public class CommandCrashReport {
      */
     public Details save(CommandSender sender) {
         // Create the directory for command crashes if it does not exist
-        File commandCrashes = new File("servercorex-data/command-crashes/");
-        if (!commandCrashes.exists()) {
-            commandCrashes.mkdirs();
+        File commandCrashes = new File("command-crashes/");
+        if (!commandCrashes.exists() && !commandCrashes.mkdirs()) {
+            sender.sendMessage(TextObject.translation("ultracraft.commands.crash.save.failed"));
+            UltracraftServer.LOGGER.error("Failed to create directory for command crashes: " + commandCrashes.getAbsolutePath());
+            return null;
         }
 
         // Generate a unique ID for the error file

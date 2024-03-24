@@ -107,7 +107,6 @@ dependencies {
     pack implementation("com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-desktop")
     pack implementation("com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdx_controllers_version")
     pack implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-desktop")
-    pack implementation("org.apache.commons:commons-compress:$commons_compress_version")
     pack implementation("org.tukaani:xz:$tukaani_xz_version")
     pack implementation("org.bidib.org.oxbow:swingbits:$swingbits_version")
 
@@ -126,7 +125,7 @@ dependencies {
 
     // Google
     pack implementation("com.google.code.gson:gson:2.10.1")
-    pack implementation('com.google.guava:guava:32.0.0-jre')
+    pack implementation("com.google.guava:guava:$guava_version")
 
     // Misc
     pack implementation('it.unimi.dsi:fastutil:8.5.12')
@@ -170,7 +169,7 @@ dependencies {
     pack implementation('net.fabricmc:dev-launch-injector:0.2.1+build.8')
     pack implementation('net.fabricmc:access-widener:2.1.0')
 
-    pack compileOnly("net.fabricmc:fabric-loader:$fabric_version")
+    pack implementation("net.fabricmc:fabric-loader:$fabric_version")
 }
 
 processResources {
@@ -329,13 +328,5 @@ jpackage {
         winUpgradeUuid = "a539b496-ae50-4df2-9a1b-8a089e44f7ce"
         winMenuGroup = "Ultreon Team"
         appVersion = (project.version).toString().replaceAll("-cb\\.\\d+", "").replace("+", ".")
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
     }
 }

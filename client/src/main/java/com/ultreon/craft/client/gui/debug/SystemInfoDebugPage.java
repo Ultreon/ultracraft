@@ -92,8 +92,7 @@ public class SystemInfoDebugPage implements DebugPage {
             context.left("Chunk Mesh Disposes", WorldRenderer.getChunkMeshFrees());
             if (client.isSinglePlayer()) {
                 context.left("Chunk Loads", ValueTracker.getChunkLoads())
-                        .left("Chunk Unloads", ServerWorld.getChunkUnloads())
-                        .left("Chunk Saves", ServerWorld.getChunkSaves());
+                        .left("Chunk Unloads", ServerWorld.getChunkUnloads());
             }
 
             context.left("Pool Free", WorldRenderer.getPoolFree())

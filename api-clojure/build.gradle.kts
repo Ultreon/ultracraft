@@ -12,9 +12,6 @@ plugins {
     id("dev.clojurephant.clojure") version "0.8.0-beta.7"
 }
 
-group = "io.github.xypercode"
-version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 

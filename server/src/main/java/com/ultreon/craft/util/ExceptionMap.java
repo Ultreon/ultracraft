@@ -5,7 +5,6 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.libs.commons.v0.exceptions.SyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.error.YAMLException;
 
 import javax.xml.crypto.NoSuchMechanismException;
 import java.io.EOFException;
@@ -21,7 +20,6 @@ public class ExceptionMap {
     public static String getErrorCode(@NotNull Throwable t) {
         return switch (t) {
             case NoSuchMechanismException noSuchMechanismException -> "JX-0001";
-            case YAMLException yamlException -> "YML-0001";
             case SyntaxException syntaxException -> "SRV-0001";
             case IllegalCommandException illegalCommandException -> "SRV-0004";
             case UnsupportedOperationException unsupportedOperationException -> "J-0001";
@@ -75,8 +73,6 @@ public class ExceptionMap {
         switch (thrown) {
             case NoSuchMechanismException noSuchMechanismException ->
                     s.sendMessage("[JX-0001] No such mechanism: " + thrown.getMessage());
-            case YAMLException yamlException ->
-                    s.sendMessage("[YML-0001] Generic YAML error: " + thrown.getMessage());
             case CommandExecuteException commandExecuteException ->
                     s.sendMessage("[B-0002] Illegal or invalid command: " + thrown.getMessage());
             case SpecSyntaxException specSyntaxException ->

@@ -12,6 +12,7 @@ import com.ultreon.craft.text.LanguageBootstrap;
 import com.ultreon.craft.util.ModLoadingContext;
 import com.ultreon.libs.datetime.v0.Duration;
 import net.fabricmc.loader.api.FabricLoader;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 @ApiStatus.Internal
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger("ServerMain");
+    private static final Object WAITER = new Object();
     private static DedicatedServer server;
     private static ServerLoader serverLoader;
 
@@ -124,7 +126,7 @@ public class Main {
                     break;
                 }
 
-                Thread.sleep(50);
+                WAITER.wait(50);
             } catch (IOException e) {
                 LOGGER.warn("Failed to read from stdin", e);
                 break;

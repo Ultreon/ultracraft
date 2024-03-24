@@ -22,7 +22,7 @@ public class AttributeMap {
     }
 
     public void addModifier(Attribute attribute, AttributeModifier modifier) {
-        this.modifiers.get(attribute).put(modifier.id(), modifier);
+        this.modifiers.computeIfAbsent(attribute, key -> new HashMap<>()).put(modifier.id(), modifier);
     }
 
     public AttributeModifier removeModifier(Attribute attribute, UUID uuid) {

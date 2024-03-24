@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group = 'io.github.xypercode'
-version = 'unspecified'
+group = 'io.github.ultreon.craftmods'
+version = '0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -24,4 +24,24 @@ test {
 tasks.withType(JavaCompile).each {
     it.options.encoding = 'UTF-8'
     it.options.compilerArgs.add('--enable-preview')
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            //noinspection GrUnresolvedAccess
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = "CoreLibsGitHub"
+            url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
+            credentials {
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+            }
+        }
+    }
 }

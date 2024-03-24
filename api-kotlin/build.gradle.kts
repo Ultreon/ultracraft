@@ -13,9 +13,6 @@ plugins {
 
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 
-group = "io.github.xypercode"
-version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }
@@ -147,4 +144,24 @@ commonProperties
 
 beforeEvaluate {
     setupIdea()
+}
+
+publishing {
+    publications {
+        create("mavenScala", MavenPublication::class) {
+            //noinspection GrUnresolvedAccess
+            from(components["kotlin"])
+        }
+    }
+
+    repositories {
+        maven {
+            name = "CoreLibsGitHub"
+            url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
+            credentials {
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+            }
+        }
+    }
 }

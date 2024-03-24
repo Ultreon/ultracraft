@@ -1,7 +1,5 @@
 package com.ultreon.craft.network.server;
 
-import com.ultreon.craft.CommonConstants;
-import com.ultreon.craft.block.Block;
 import com.ultreon.craft.block.Blocks;
 import com.ultreon.craft.block.state.BlockMetadata;
 import com.ultreon.craft.entity.Attribute;
@@ -24,6 +22,7 @@ import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.packets.c2s.C2SBlockBreakingPacket;
 import com.ultreon.craft.network.packets.s2c.S2CBlockSetPacket;
 import com.ultreon.craft.network.packets.s2c.S2CPingPacket;
+import com.ultreon.craft.recipe.Recipe;
 import com.ultreon.craft.recipe.RecipeManager;
 import com.ultreon.craft.recipe.RecipeType;
 import com.ultreon.craft.registry.Registries;
@@ -228,8 +227,12 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
     }
 
     public void onCraftRecipe(int typeId, Identifier recipeId) {
-        RecipeType recipeType = Registries.RECIPE_TYPE.byId(typeId);
-        ItemStack crafted = RecipeManager.get().get(recipeId, recipeType).craft(this.player.inventory);
+        RecipeType<?> recipeType = Registries.RECIPE_TYPE.byId(typeId);
+        Recipe recipe = RecipeManager.get().get(recipeId, recipeType);
+        if (recipe == null) {
+            throw new IllegalStateException("Recipe not found: " + recipeId);
+        }
+        ItemStack crafted = recipe.craft(this.player.inventory);
         this.player.inventory.addItem(crafted);
     }
 
@@ -237,7 +240,7 @@ public class InGameServerPacketHandler implements ServerPacketHandler {
         this.player.dropItem();
     }
 
-    public void handleOpenMenu(PacketContext ctx, Identifier id, BlockPos pos) {
+    public void handleOpenMenu(Identifier id, BlockPos pos) {
         MenuType<?> menuType = Registries.MENU_TYPE.get(id);
 
         this.server.execute(() -> {

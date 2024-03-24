@@ -9,10 +9,12 @@ import com.ultreon.craft.server.UltracraftServer;
 import com.ultreon.craft.text.ServerLanguage;
 import com.ultreon.craft.util.Identifier;
 import com.ultreon.craft.world.ChunkPos;
+import com.ultreon.craft.world.ServerChunk;
 import com.ultreon.craft.world.World;
 import com.ultreon.craft.world.WorldStorage;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +24,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Dedicated server implementation.
@@ -127,22 +131,6 @@ public class DedicatedServer extends UltracraftServer {
         }
 
         Runtime.getRuntime().halt(1); //* Halt server since the server crashed.
-    }
-
-    @Override
-    public void run() {
-        // Get the chunk position of the world's spawn point
-        ChunkPos spawnPoint = World.toChunkPos(this.world.getSpawnPoint());
-
-        // Iterate through a 9x9 area around the spawn point
-        for (int x = -4; x <= 4; x++) {
-            for (int z = -4; z <= 4; z++) {
-                // Load the chunk at the offset position from the spawn point
-                this.world.loadChunk(spawnPoint.offset(x, z));
-            }
-        }
-
-        super.run();
     }
 
     /**

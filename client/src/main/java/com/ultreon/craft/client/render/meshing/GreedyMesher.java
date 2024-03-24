@@ -120,15 +120,18 @@ public class GreedyMesher implements Mesher {
                 for (int x = 0; x < width; x++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        if (curBlock == null) continue;
                         BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             this.chunk.addModel(new BlockPos(x, y, z), new ModelInstance(blockModel.getModel()));
                             continue;
                         }
 
-                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
+                        if (!condition.shouldUse(curBlock.getBlock())) continue;
 
-                        if (y < height - 1 && !ocCond.shouldOcclude(curBlock.getBlock(), this.block(this.chunk, x, y + 1, z).getBlock())) {
+                        BlockMetadata block = this.block(this.chunk, x, y + 1, z);
+                        if (block == null) continue;
+                        if (y < height - 1 && !ocCond.shouldOcclude(curBlock.getBlock(), block.getBlock())) {
                             topMask[x][z] = true;
 
                             if (this.perCornerLight) {
@@ -140,7 +143,9 @@ public class GreedyMesher implements Mesher {
                                 topPcld[x][z] = lightData;
                             }
                         }
-                        if (y > 0 && !ocCond.shouldOcclude(curBlock.getBlock(), this.block(this.chunk, x, y - 1, z).getBlock())) {
+                        BlockMetadata block1 = this.block(this.chunk, x, y - 1, z);
+                        if (block1 == null) continue;
+                        if (y > 0 && !ocCond.shouldOcclude(curBlock.getBlock(), block1.getBlock())) {
                             btmMask[x][z] = true;
 
                             if (this.perCornerLight) {
@@ -177,11 +182,12 @@ public class GreedyMesher implements Mesher {
                 for (int z = 0; z < depth; z++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        if (curBlock == null) continue;
                         BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
-                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
+                        if (!condition.shouldUse(curBlock.getBlock())) continue;
 
                         int westNeighborX = x - 1;
                         int eastNeighborX = x + 1;
@@ -252,11 +258,12 @@ public class GreedyMesher implements Mesher {
                 for (int x = 0; x < width; x++) {
                     try {
                         BlockMetadata curBlock = this.block(this.chunk, x, y, z);
+                        if (curBlock == null) continue;
                         BlockModel blockModel = BlockModelRegistry.get(curBlock);
                         if (blockModel != null && !(blockModel instanceof BakedCubeModel)) {
                             continue;
                         }
-                        if (curBlock == null || !condition.shouldUse(curBlock.getBlock())) continue;
+                        if (!condition.shouldUse(curBlock.getBlock())) continue;
 
                         int northNeighborZ = z + 1;
                         int southNeighborZ = z - 1;
@@ -365,8 +372,7 @@ public class GreedyMesher implements Mesher {
         if (sChunk == null) return null;
         float sunBrightness = sChunk.getBrightness(this.sunlight(sChunk, x, y, z));
         float blockBrightness = sChunk.getBrightness(this.blockLight(sChunk, x, y, z));
-        LightLevelData result = new LightLevelData(sunBrightness, blockBrightness);
-        return result;
+        return new LightLevelData(sunBrightness, blockBrightness);
     }
 
     public List<Face> getFaces(UseCondition condition) {

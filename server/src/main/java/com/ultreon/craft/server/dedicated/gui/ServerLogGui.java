@@ -42,7 +42,7 @@ public class ServerLogGui extends JScrollPane {
                     }
                 } catch (FileNotFoundException e) {
                     try {
-                        Thread.sleep(1000);
+                        e.wait(10000);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         break;
@@ -53,7 +53,7 @@ public class ServerLogGui extends JScrollPane {
                 log = new StringBuilder();
 
                 try {
-                    Thread.sleep(50);
+                    log.wait(50);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;

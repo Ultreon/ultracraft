@@ -86,7 +86,7 @@ public class IndexedCommandSpecValues implements Iterable<IndexedCommandSpecValu
         return this.mapping.values();
     }
 
-    public class Entry {
+    public static class Entry {
         private final Int2ReferenceMap.Entry<CommandSpecValues> wrapped;
         public Entry(Int2ReferenceMap.Entry<CommandSpecValues> wrapped) {
             this.wrapped = wrapped;

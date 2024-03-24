@@ -3,11 +3,10 @@ package com.ultreon.craft.client.gui;
 import com.badlogic.gdx.graphics.Texture;
 import com.ultreon.craft.client.resources.ResourceFileHandle;
 import com.ultreon.craft.util.Identifier;
-import org.fusionyaml.library.FusionYAML;
 import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Experimental
 public class Sprite {
-    private static final FusionYAML YAML = new FusionYAML.Builder().allowUnicode(true).build();
     private final ResourceFileHandle handle;
     private final Texture texture;
     private final int width;
@@ -23,7 +22,7 @@ public class Sprite {
         this.width = this.texture.getWidth();
         this.height = this.texture.getHeight();
 
-        this.meta = YAML.deserialize(spriteRes.readString(), Meta.class);
+        this.meta = new Meta(0, 0, 0, 0);
     }
 
     @ApiStatus.Internal

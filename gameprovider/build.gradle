@@ -68,7 +68,7 @@ dependencies {
     implementation api("org.apache.logging.log4j:log4j-api:$log4j_version")
     implementation api("com.formdev:flatlaf:3.2.1")
 
-    compileOnly("net.fabricmc:fabric-loader:$fabric_version") {
+    implementation api("net.fabricmc:fabric-loader:$fabric_version") {
         exclude group: "org.ow2.asm"
         exclude group: "org.ow2.sat4j"
     }
@@ -123,12 +123,4 @@ build {
 
 test {
     useJUnitPlatform()
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
 }

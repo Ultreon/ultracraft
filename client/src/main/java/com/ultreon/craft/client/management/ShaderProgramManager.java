@@ -68,5 +68,11 @@ public class ShaderProgramManager implements Manager<ShaderProgram> {
         }
 
         this.programs.clear();
+
+        this.factories.forEach((id, factory) -> {
+            ShaderProgram program = factory.get();
+            this.programs.put(id, program);
+            context.submit(program::dispose);
+        });
     }
 }

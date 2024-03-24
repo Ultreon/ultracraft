@@ -5,7 +5,9 @@ import com.ultreon.craft.registry.Registries;
 import com.ultreon.craft.util.Identifier;
 
 public class EntityTypes {
-    public static final EntityType<Player> PLAYER = EntityTypes.register("player", new EntityType.Builder<Player>().size(0.4f, 1.8f).factory((entityType, world) -> null));
+    public static final EntityType<Player> PLAYER = EntityTypes.register("player", new EntityType.Builder<Player>().size(0.4f, 1.8f).factory((entityType, world) -> {
+        throw new IllegalArgumentException("Cannot create player entity");
+    }));
     public static final EntityType<DroppedItem> DROPPED_ITEM = EntityTypes.register("dropped_item", new EntityType.Builder<DroppedItem>().size(0.25f, 0.25f).factory(DroppedItem::new));
     public static final EntityType<Something> SOMETHING = EntityTypes.register("something", new EntityType.Builder<Something>().size(0.25f, 0.25f).factory(Something::new));
 

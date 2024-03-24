@@ -95,7 +95,6 @@ dependencies {
     implementation api("io.github.spair:imgui-java-natives-macos:$imgui_version")
     implementation api("io.github.spair:imgui-java-natives-windows:$imgui_version")
 
-    implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
     implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")
     implementation api("org.tukaani:xz:$tukaani_xz_version")
@@ -107,7 +106,7 @@ dependencies {
 
     // Google
     implementation api("com.google.code.gson:gson:2.10.1")
-    implementation api('com.google.guava:guava:32.0.0-jre')
+    implementation api("com.google.guava:guava:$guava_version")
 
     // Misc. Libraries
     implementation api('it.unimi.dsi:fastutil:8.5.12')
@@ -158,7 +157,12 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 
     // Discord API
-    implementation api('com.github.jagrosh:DiscordIPC:master-SNAPSHOT')
+    implementation api('com.github.jagrosh:DiscordIPC:master-SNAPSHOT'), {
+        exclude group: 'org.json', module: 'json'
+    }
+
+    // json.org API
+    implementation api('org.json:json:20231013')
 }
 
 processResources {
@@ -215,14 +219,6 @@ tasks.register('copyDependencies', Copy) {
 tasks.register('copyJar', Copy) {
     from(tasks.jar)
     into("$projectDir/build/jars")
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
 }
 
 test {

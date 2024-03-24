@@ -1,18 +1,9 @@
 package com.ultreon.craft.config;
 
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.ultreon.craft.config.crafty.ConfigEntry;
 import com.ultreon.craft.config.crafty.ConfigInfo;
 import com.ultreon.craft.config.crafty.CraftyConfig;
 import com.ultreon.craft.config.crafty.Ranged;
-import com.ultreon.craft.server.UltracraftServer;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @ConfigInfo(fileName = "ultracraft_server")
 public class UltracraftServerConfig extends CraftyConfig {

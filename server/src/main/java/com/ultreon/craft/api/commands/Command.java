@@ -229,7 +229,9 @@ public abstract class Command {
                 // Handle command argument mismatch
                 final var dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH.mm.ss.SSS"));
                 final var dir = new File("crash-reports/commands/arg-mismatch");
-                if (!dir.exists()) dir.mkdirs();
+                if (!dir.exists() && !dir.mkdirs()) {
+                    throw new RuntimeException("Unable to create crash report directory: " + dir.getAbsolutePath());
+                }
                 final var file = new File(dir, "crash $dateTime.txt");
                 e.dump(file);
                 Chat.sendFatal(sender, "An internal error occurred when executing the command.");

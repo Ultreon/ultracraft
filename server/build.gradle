@@ -46,7 +46,6 @@ dependencies {
     implementation api(project(":gameprovider"))
 
     implementation api("com.formdev:flatlaf:3.2.1")
-    implementation api("com.github.FusionYAML:FusionYAML:$fusion_yaml_version")
 
     annotationProcessor "com.google.errorprone:error_prone_annotations:2.18.0"
 
@@ -70,7 +69,6 @@ dependencies {
     implementation api("org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version")
     implementation api("org.apache.commons:commons-lang3:3.13.0")
     implementation api("org.apache.commons:commons-collections4:$commons_collections4_version")
-    implementation api("org.apache.commons:commons-compress:$commons_compress_version")
     implementation api("org.tukaani:xz:$tukaani_xz_version")
     implementation api("org.bidib.org.oxbow:swingbits:$swingbits_version")
     implementation api("io.netty:netty-all:$netty_version")
@@ -90,7 +88,7 @@ dependencies {
 
     // Google
     implementation api("com.google.code.gson:gson:2.10.1")
-    implementation api("com.google.guava:guava:32.0.0-jre")
+    implementation api("com.google.guava:guava:$guava_version")
 
     // Misc
     implementation api("it.unimi.dsi:fastutil:8.5.12")
@@ -204,15 +202,6 @@ tasks.register('copyDependencies', Copy) {
 tasks.register('copyJar', Copy) {
     from(tasks.jar)
     into("$projectDir/build/jars")
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            //noinspection GrUnresolvedAccess
-            from components.java
-        }
-    }
 }
 
 compileJava {

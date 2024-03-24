@@ -62,7 +62,11 @@ public class TabCompleting {
 
     public static List<String> offlinePlayerUuids(List<String> list, String currentArgument) {
         for (var player : UltracraftServer.get().getCachedPlayers()) {
-            TabCompleting.addIfStartsWith(list, player.getUuid().toString(), currentArgument);
+            UUID uuid = player.getUuid();
+
+            if (uuid != null) {
+                TabCompleting.addIfStartsWith(list, uuid.toString(), currentArgument);
+            }
         }
         return list;
     }
@@ -81,7 +85,7 @@ public class TabCompleting {
     public static List<String> entityTypes(List<String> list, String currentArgument, boolean includePlayer) {
         for (var entityType : Registries.ENTITY_TYPE.entries()) {
             var key = entityType.getKey();
-            if (!includePlayer && entityType == EntityTypes.PLAYER)
+            if (!includePlayer && entityType.getKey().equals(Registries.ENTITY_TYPE.getKey(EntityTypes.PLAYER)))
                 continue;
 
             TabCompleting.addIfStartsWith(list, key, currentArgument);

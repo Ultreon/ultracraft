@@ -5,6 +5,7 @@ import com.ultreon.craft.network.PacketContext;
 import com.ultreon.craft.network.packets.Packet;
 import com.ultreon.craft.network.server.InGameServerPacketHandler;
 import com.ultreon.craft.server.player.ServerPlayer;
+import io.netty.handler.codec.DecoderException;
 
 public class C2SChatPacket extends Packet<InGameServerPacketHandler> {
     private final String message;
@@ -25,6 +26,7 @@ public class C2SChatPacket extends Packet<InGameServerPacketHandler> {
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
         ServerPlayer player = ctx.getPlayer();
+        if (player == null) throw new DecoderException("Player is null!");
         player.onMessageSent(this.message);
     }
 }

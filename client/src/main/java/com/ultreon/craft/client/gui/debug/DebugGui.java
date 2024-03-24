@@ -249,9 +249,9 @@ public class DebugGui {
     }
 
     public void updateProfiler() {
-        if (this.getPage() instanceof ProfilerDebugPage page) {
+        if (this.getPage() instanceof ProfilerDebugPage profilerPage) {
             var profiler = this.client.profiler;
-            page.profile = profiler.collect();
+            profilerPage.profile = profiler.collect();
         }
     }
 }

@@ -25,7 +25,7 @@ public class BlockModelRegistry {
     private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<CubeModel>>>> REGISTRY = new HashMap<>();
     private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>> CUSTOM_REGISTRY = new HashMap<>();
     private static final Set<Identifier> TEXTURES = new HashSet<>();
-    private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>> FINISHED_REGISTRY = new HashMap<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>>();
+    private static final Map<Block, List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>>> FINISHED_REGISTRY = new HashMap<>();
 
     static {
         BlockModelRegistry.TEXTURES.add(new Identifier("misc/breaking1"));
@@ -140,6 +140,15 @@ public class BlockModelRegistry {
                     UltracraftClient.LOGGER.error("Failed to load block model for " + value.getId(), e);
                 }
             }
+        }
+
+        for (var entry : CUSTOM_REGISTRY.entrySet()) {
+            List<Pair<Predicate<BlockMetadata>, Supplier<BlockModel>>> models = new ArrayList<>();
+            for (var pair : entry.getValue()) {
+                BlockModel model = pair.getSecond().get();
+                models.add(new Pair<>(pair.getFirst(), Suppliers.memoize(() -> model)));
+            }
+            FINISHED_REGISTRY.put(entry.getKey(), models);
         }
     }
 }

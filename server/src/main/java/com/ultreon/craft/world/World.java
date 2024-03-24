@@ -75,7 +75,7 @@ public abstract class World implements ServerDisposable {
     private boolean disposed;
     private final Set<ChunkPos> invalidatedChunks = new LinkedHashSet<>();
     private final List<ContainerMenu> menus = new ArrayList<>();
-    private DimensionInfo info = DimensionInfo.OVERWORLD;
+    private final DimensionInfo info = DimensionInfo.OVERWORLD; // TODO WIP
     protected UUID uid = Utils.ZEROED_UUID;
     protected int spawnX;
     protected int spawnZ;

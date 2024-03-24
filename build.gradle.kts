@@ -42,6 +42,7 @@ buildscript {
 //*****************//
 plugins {
     id("idea")
+    id("maven-publish")
     id("io.freefair.javadoc-links") version "8.3"
 }
 
@@ -63,7 +64,7 @@ extensions.configure<GameUtilsExt> {
     projectVersion =
         if (ghBuildNumber != null) "$gameVersion+build.$ghBuildNumber"
         else gameVersion
-    projectGroup = "com.github.Ultreon.ultracraft"
+    projectGroup = "io.github.ultreon.ultracraft"
     projectId = "ultracraft"
     production = true
 
@@ -135,6 +136,10 @@ allprojects {
         it["gdx_controllers_version"] = "2.2.3"
     }
 
+    artifacts {
+        add("archives", tasks.getByName<Jar>("jar"))
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -144,9 +149,17 @@ allprojects {
         maven("https://maven.quiltmc.org/repository/release/")
         maven("https://oss.sonatype.org/content/repositories/releases")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
-        maven("https://github.com/Ultreon/ultreon-data/raw/main/.mvnrepo/")
-        maven("https://github.com/Ultreon/corelibs/raw/main/.mvnrepo/")
         maven("https://jitpack.io")
+
+        maven {
+            name = "CoreLibsGitHub"
+            url = uri("https://maven.pkg.github.com/Ultreon/corelibs")
+            credentials {
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+            }
+        }
+
         flatDir {
             name = "Project Libraries"
             dirs = setOf(file("${projectDir}/libs"))
@@ -159,6 +172,21 @@ allprojects {
 
     dependencies {
 
+    }
+}
+
+subprojects {
+    extensions.getByType(BasePluginExtension::class.java).apply {
+        this.archivesName.set(property("project_name").toString() + "-" + property("project_version"))
+    }
+
+    tasks.withType(JavaCompile::class.java).configureEach {
+        options.encoding = "UTF-8"
+    }
+
+    tasks.withType(Jar::class.java).configureEach {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        archiveBaseName.set("ultracraft-${project.name}")
     }
 }
 
@@ -176,7 +204,7 @@ tasks.withType(JavaCompile::class.java).configureEach {
 println("Java: " + System.getProperty("java.version") + " JVM: " + System.getProperty("java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch"))
 println("OS: " + System.getProperty("os.name") + " Version: " + System.getProperty("os.version"))
 
-println("Current version: $version")
+println("Current version: $gameVersion")
 println("Project: $group:$name")
 
 afterEvaluate {
@@ -219,6 +247,213 @@ afterEvaluate {
     }
 
     this.apply(plugin = "org.danilopianini.javadoc.io-linker")
+}
+
+artifacts {
+
+}
+
+val publishProjects =
+    listOf(project(":client"), project(":desktop"), project(":server"), project(":gameprovider"))
+
+publishProjects.forEach {
+    it.artifacts {
+        this.add("archives", tasks.named<Jar>("jar"))
+    }
+
+    it.publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(it.components["java"])
+
+                groupId = "io.github.ultreon.craft"
+                artifactId = "ultracraft-${it.name}"
+                version = gameVersion
+
+                pom {
+                    this@pom.name.set("Ultracraft")
+                    this@pom.description.set("Ultracraft is a voxel game that focuses on technology based survival.")
+
+                    this@pom.url.set("https://github.com/Ultreon/ultracraft")
+                    this@pom.inceptionYear.set("2023")
+
+                    this@pom.developers {
+                        developer {
+                            id.set("XyperCode")
+                            name.set("XyperCode")
+
+                            organization.set("Ultreon")
+                            organizationUrl.set("https://ultreon.github.io/")
+
+                            roles.set(listOf("Owner", "Maintainer"))
+
+                            url.set("https://github.com/Ultreon/ultracraft")
+                        }
+                    }
+
+                    this@pom.organization {
+                        name.set("Ultreon")
+                        url.set("https://ultreon.github.io/")
+                    }
+
+                    this@pom.issueManagement {
+                        system.set("GitHub")
+                        url.set("https://github.com/Ultreon/ultracraft/issues")
+                    }
+
+                    this@pom.scm {
+                        url.set("https://github.com/Ultreon/ultracraft")
+                        connection.set("scm:git:git://github.com/Ultreon/ultracraft.git")
+                    }
+
+                    this@pom.licenses {
+                        license {
+                            name.set("AGPL-3.0")
+                            url.set("https://github.com/Ultreon/ultracraft/blob/main/LICENSE")
+                        }
+                    }
+
+                    this@pom.contributors {
+                        contributor {
+                            name.set("XyperCode")
+                            url.set("https://github.com/XyperCode")
+
+                            roles.set(listOf("Author", "Developer"))
+                        }
+
+                        contributor {
+                            name.set("MaroonShaded")
+                            url.set("https://github.com/MaroonShaded")
+
+                            roles.set(listOf("Contributor"))
+                        }
+
+                        contributor {
+                            name.set("Oszoou")
+                            url.set("https://github.com/Oszoou")
+
+                            roles.set(listOf("Contributor"))
+                        }
+
+                        contributor {
+                            name.set("MincraftEinstein")
+                            url.set("https://github.com/MincraftEinstein")
+
+                            roles.set(listOf("Tester", "Modeler"))
+                        }
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "UltracraftGitHub"
+                url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
+                credentials {
+                    username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                    password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+                }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        create("maven", MavenPublication::class) {
+            from(components["java"])
+
+            groupId = "io.github.ultreon.craft"
+            artifactId = "ultracraft"
+            version = gameVersion
+
+            pom {
+                this@pom.name.set("Ultracraft")
+                this@pom.description.set("Ultracraft is a voxel game that focuses on technology based survival.")
+
+                this@pom.url.set("https://github.com/Ultreon/ultracraft")
+                this@pom.inceptionYear.set("2023")
+
+                this@pom.developers {
+                    developer {
+                        id.set("XyperCode")
+                        name.set("XyperCode")
+
+                        organization.set("Ultreon")
+                        organizationUrl.set("https://ultreon.github.io/")
+
+                        roles.set(listOf("Owner", "Maintainer"))
+
+                        url.set("https://github.com/Ultreon/ultracraft")
+                    }
+                }
+
+                this@pom.organization {
+                    name.set("Ultreon")
+                    url.set("https://ultreon.github.io/")
+                }
+
+                this@pom.issueManagement {
+                    system.set("GitHub")
+                    url.set("https://github.com/Ultreon/ultracraft/issues")
+                }
+
+                this@pom.scm {
+                    url.set("https://github.com/Ultreon/ultracraft")
+                    connection.set("scm:git:git://github.com/Ultreon/ultracraft.git")
+                }
+
+                this@pom.licenses {
+                    license {
+                        name.set("AGPL-3.0")
+                        url.set("https://github.com/Ultreon/ultracraft/blob/main/LICENSE")
+                    }
+                }
+
+                this@pom.contributors {
+                    contributor {
+                        name.set("XyperCode")
+                        url.set("https://github.com/XyperCode")
+
+                        roles.set(listOf("Author", "Developer"))
+                    }
+
+                    contributor {
+                        name.set("MaroonShaded")
+                        url.set("https://github.com/MaroonShaded")
+
+                        roles.set(listOf("Contributor"))
+                    }
+
+                    contributor {
+                        name.set("Oszoou")
+                        url.set("https://github.com/Oszoou")
+
+                        roles.set(listOf("Contributor"))
+                    }
+
+                    contributor {
+                        name.set("MincraftEinstein")
+                        url.set("https://github.com/MincraftEinstein")
+
+                        roles.set(listOf("Tester", "Modeler"))
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "UltracraftGitHub"
+            url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
+            credentials {
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+            }
+        }
+    }
 }
 
 idea {
@@ -309,10 +544,6 @@ commonProperties
             }
 
             setupIdea(rootProject.project(":desktop"), "Java")
-            setupIdea(rootProject.project(":api-groovy"), "Groovy")
-            setupIdea(rootProject.project(":api-scala"), "Scala")
-            setupIdea(rootProject.project(":api-kotlin"), "Kotlin")
-//            setupIdea(rootProject.project(":api-clojure"), "Clojure")
             setupIdea(rootProject.project(":testmod"), "Test Mod")
         }
     }

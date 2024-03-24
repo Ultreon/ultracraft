@@ -15,7 +15,7 @@ plugins {
 
 apply(plugin = "org.jetbrains.gradle.plugin.idea-ext")
 
-group = "com.github.Ultreon.craftmods"
+group = "io.github.ultreon.craftmods"
 version = "0.1.0"
 
 base {
@@ -153,4 +153,24 @@ commonProperties
 
 beforeEvaluate {
     setupIdea()
+}
+
+publishing {
+    publications {
+        create("mavenScala", MavenPublication::class) {
+            //noinspection GrUnresolvedAccess
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        maven {
+            name = "CoreLibsGitHub"
+            url = uri("https://maven.pkg.github.com/Ultreon/ultracraft-scala")
+            credentials {
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+            }
+        }
+    }
 }

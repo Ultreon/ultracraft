@@ -31,7 +31,6 @@ public class ChunkCommand extends Command {
     @DefineCommand("dump-data")
     public @Nullable CommandResult executeDumpData(CommandSender sender, CommandContext commandContext, String alias) {
         Location location = sender.getLocation();
-        if (location == null) return this.errorMessage("Failed to get location");
 
         ServerWorld serverWorld = location.getSeverWorld();
         UltracraftServer server = serverWorld.getServer();

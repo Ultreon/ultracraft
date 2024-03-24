@@ -22,7 +22,6 @@ public class CraftyConfigGui extends Screen {
 
     private void renderItem(Renderer renderer, CraftyConfig value, int y, int mouseX, int mouseY, boolean selected, float deltaTime) {
         String fileName = value.getFileName();
-        value.getMod();
         renderer.textLeft(fileName, 20, y + 20, Color.rgb(selected ? 0xFF0000 : 0xFFFFFF));
     }
 }

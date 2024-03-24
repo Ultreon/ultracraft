@@ -33,6 +33,6 @@ public class C2SOpenMenuPacket extends Packet<InGameServerPacketHandler> {
 
     @Override
     public void handle(PacketContext ctx, InGameServerPacketHandler handler) {
-        handler.handleOpenMenu(ctx, id, pos);
+        handler.handleOpenMenu(id, pos);
     }
 }

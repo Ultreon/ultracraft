@@ -24,7 +24,6 @@ public abstract class ArgumentType<T> {
         ArgumentType.ID_ARGUMENT_MAP.put(id, this);
         ArgumentType.ARGUMENT_ID_MAP.put(this, id);
         ArgumentType.ID_CLASS_MAP.put(id, this.getClass().getName());
-        ArgumentType.CLASS_ID_MAP.put(this.getClass().getName(), id);
     }
 
     public abstract Class<? extends Argument<?>> getArgClass();
@@ -95,7 +94,6 @@ public abstract class ArgumentType<T> {
     private static final Map<String, ArgumentType<?>> ID_ARGUMENT_MAP = new HashMap<>();
     private static final Map<ArgumentType<?>, String> ARGUMENT_ID_MAP = new HashMap<>();
     private static final Map<String, String> ID_CLASS_MAP = new HashMap<>();
-    private static final Map<String, String> CLASS_ID_MAP = new HashMap<>();
 
     static <T extends ArgumentType<?>> T register(T argumentType) {
         return argumentType;

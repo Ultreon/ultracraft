@@ -111,10 +111,10 @@ public class TerrainGenerator {
         for (var dir : Neighbour8Direction.values()) {
             var offXZ = dir.vec();
 
-            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * (len / 1)));
-            centers.add(new Vec3i(origin.x + offXZ.x * 2 * (len / 1), 0, origin.z + offXZ.y * 2 * (len / 1)));
+            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * len, 0, origin.z + offXZ.y * 2 * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * len));
+            centers.add(new Vec3i(origin.x + offXZ.x * 2 * len, 0, origin.z + offXZ.y * 2 * len));
         }
 
         return centers.asList();

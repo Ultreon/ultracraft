@@ -61,7 +61,7 @@ public class PerlinNoise implements NoiseType {
 
 		while (size >= 1) {
 			value += this.smoothNoise((x / size), (y / size), (z / size)) * size;
-			size /= 2.0;
+			size /= 2;
 		}
 
 		return value / initialSize;

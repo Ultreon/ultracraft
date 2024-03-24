@@ -230,7 +230,7 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
     public void onPlayerPosition(PacketContext ctx, UUID player, Vec3d pos) {
         // Update the remote player's position in the local multiplayer data.
         var data = this.client.getMultiplayerData();
-        RemotePlayer remotePlayer = data.getRemotePlayerByUuid(player);
+        RemotePlayer remotePlayer = data != null ? data.getRemotePlayerByUuid(player) : null;
         if (remotePlayer == null) return;
 
         remotePlayer.setPosition(pos);
@@ -248,12 +248,20 @@ public class InGameClientPacketHandlerImpl implements InGameClientPacketHandler 
 
     @Override
     public void onAddPlayer(UUID uuid, String name, Vec3d position) {
-        this.client.getMultiplayerData().addPlayer(uuid, name, position);
+        if (this.client.getMultiplayerData() != null) {
+            this.client.getMultiplayerData().addPlayer(uuid, name, position);
+        } else {
+            throw new IllegalStateException("Multiplayer data is null");
+        }
     }
 
     @Override
     public void onRemovePlayer(UUID uuid) {
-        this.client.getMultiplayerData().removePlayer(uuid);
+        if (this.client.getMultiplayerData() != null) {
+            this.client.getMultiplayerData().removePlayer(uuid);
+        } else {
+            throw new IllegalStateException("Multiplayer data is null");
+        }
     }
 
     @Override

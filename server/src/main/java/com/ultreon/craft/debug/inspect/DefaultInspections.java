@@ -116,7 +116,6 @@ public class DefaultInspections {
             node.create("chunksToLoad", ServerWorld::getChunksToLoad);
             node.create("chunkLoads", ValueTracker::getChunkLoads);
             node.create("chunkUnloads", ServerWorld::getChunkUnloads);
-            node.create("chunkSaves", ServerWorld::getChunkSaves);
         });
         InspectionRoot.registerFormatter(Item.class, element -> {
             var id = element.getId();

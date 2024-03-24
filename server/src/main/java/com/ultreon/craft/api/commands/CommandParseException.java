@@ -95,7 +95,7 @@ public class CommandParseException extends Exception {
 
         private static String repr(Object value) {
             return value.toString()
-                .replace("\\\\", "\\\\")
+                .replace("\\", "\\\\")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t")
@@ -120,7 +120,7 @@ public class CommandParseException extends Exception {
 
         private static String repr(Object value) {
             return value.toString()
-                .replace("\\\\", "\\\\")
+                .replace("\\", "\\\\")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t")

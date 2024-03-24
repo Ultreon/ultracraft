@@ -29,8 +29,9 @@ public abstract class WorldRenderNode extends RenderPipeline.RenderNode {
     public void setTexture(Texture texture) {
         if (texture == null) {
             gl.glActiveTexture(GL_NONE);
+        } else {
+            texture.bind(GL_TEXTURE0);
         }
-        texture.bind(GL_TEXTURE0);
     }
 
     protected void render(ModelBatch modelBatch, ShaderProvider shaderProvider, Array<Renderable> input) {
