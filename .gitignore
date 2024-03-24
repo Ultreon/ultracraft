@@ -123,3 +123,16 @@ Thumbs.db
 /desktop-merge/build/
 /buildSrc/build/
 /lib/
+/client/build/
+/server/build/
+/layout.json
+/.clj-kondo/
+
+/*/build/
+/api/build/
+/api-clojure/build/
+/api-groovy/build/
+/api-kotlin/build/
+/api-scala/build/
+/testmod/build/
+/.lsp/

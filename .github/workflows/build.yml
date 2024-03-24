@@ -12,7 +12,7 @@ jobs:
       matrix:
         # Use these Java versions
         java: [
-          17    # Minimum supported
+          21    # Minimum supported
         ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -29,7 +29,7 @@ jobs:
       - name: Build
         run: chmod +x ./gradlew && ./gradlew pack
         env:
-          GITHUB_BUILD_NUMBER: ${{ github.run_number }}
+          GH_BUILD_NUMBER: ${{ github.run_number }}
       - name: Capture the build artifacts
         uses: actions/upload-artifact@v2
         with:

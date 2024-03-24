@@ -1,8 +1,8 @@
 package com.ultreon.gameprovider.craft;
 
-import org.quiltmc.loader.impl.util.log.LogCategory;
-import org.quiltmc.loader.impl.util.log.LogHandler;
-import org.quiltmc.loader.impl.util.log.LogLevel;
+import net.fabricmc.loader.impl.util.log.LogCategory;
+import net.fabricmc.loader.impl.util.log.LogHandler;
+import net.fabricmc.loader.impl.util.log.LogLevel;
 import org.apache.logging.log4j.*;
 
 import java.util.HashMap;

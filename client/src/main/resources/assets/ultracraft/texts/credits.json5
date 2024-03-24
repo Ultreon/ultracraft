@@ -1,0 +1,27 @@
+{
+  /*
+   * This is the credits file for Ultracraft.
+   * Any person that has contributed to the project will be added here.
+   * External libraries will be linked in this file. (Currently not all linked, as it's a lot of libraries lmao)
+   */
+
+  // Contributors that contributed with code.
+  Code: [
+    "XyperCode"
+  ],
+  // Contributors that contributed language changes/additions through GitHub pull requests.
+  Language: [
+    "Oszoou",
+    "XyperCode"
+  ],
+  // External libraries that are included with the game.
+  ExternalLibraries: {
+    "LibGDX": {
+      "url": "https://libgdx.com/"
+    },
+    "Fabric Loader": {
+      "url": "https://fabricmc.net/"
+    }
+    // TODO add other external libraries in credits
+  }
+}

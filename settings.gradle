@@ -12,5 +12,20 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
+}
 
-include 'desktop-merge', 'gameprovider', 'desktop', 'core'
+include 'desktop-merge'
+include 'gameprovider'
+include 'desktop'
+include 'client'
+include 'server'
+include 'api'
+include 'api-kotlin'
+include 'api-groovy'
+include 'api-scala'
+//include 'api-clojure'
+include 'api'
+include 'testmod'
+
