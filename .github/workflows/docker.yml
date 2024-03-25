@@ -42,14 +42,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: Extract metadata from image-version.txt
-        run:
-          export VERSION=$(cat build/docker/image-version.txt) &&
-          
-          if [ match $VERSION ^[0-9]+\.[0-9]+\.[0-9]+$ ] then
-            echo "Valid version number" &&
+        run: |
+          export VERSION=$(cat build/docker/image-version.txt)
+          if [ match $VERSION ^[0-9]+\.[0-9]+\.[0-9]+$ ]
+          then
+            echo "Valid version number"
             echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
           else
-            echo "Invalid version number" &&
+            echo "Invalid version number"
             export VERSION=''
           fi
       - name: Build and push Docker image
