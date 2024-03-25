@@ -51,10 +51,9 @@ jobs:
           else
             echo "Invalid version number"
             export VERSION='latest-${{ github.branch.name }}'
-            echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
+            echo "VERSION=${{ env.VERSION }}" >> ${
           fi
       - name: Build and push Docker image
-        if: ${{ env.VERSION != '' }}
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: build/docker
