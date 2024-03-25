@@ -53,8 +53,8 @@ publishing {
             name = "CoreLibsGitHub"
             url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
             credentials {
-                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
-                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String?
+                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String?
             }
         }
     }

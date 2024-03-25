@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -75,20 +76,24 @@ public class Main {
             // Handle server console commands.
             Scanner scanner = new Scanner(System.in);
 
-            SwingUtilities.invokeLater(() -> {
-                DedicatedServerGui gui = new DedicatedServerGui();
-                gui.setVisible(true);
-            });
+            if (!GraphicsEnvironment.isHeadless()) {
+                SwingUtilities.invokeLater(() -> {
+                    DedicatedServerGui gui = new DedicatedServerGui();
+                    gui.setVisible(true);
+                });
+            }
 
             while (!Main.server.isTerminated()) {
                 // Read command from the server console.
-                String commandline = scanner.nextLine();
+                if (scanner.hasNextLine()) {
+                    String commandline = scanner.nextLine();
 
-                if (commandline.equals("stop")) {
-                    // Handle stop command.
-                    Main.server.shutdown();
-                    if (!Main.server.awaitTermination(60, TimeUnit.SECONDS)) {
-                        Main.server.onTerminationFailed();
+                    if (commandline.equals("stop")) {
+                        // Handle stop command.
+                        Main.server.shutdown();
+                        if (!Main.server.awaitTermination(60, TimeUnit.SECONDS)) {
+                            Main.server.onTerminationFailed();
+                        }
                     }
                 }
             }
@@ -119,6 +124,11 @@ public class Main {
     }
 
     private static void waitForKey() {
+        // Check for docker
+        if (System.getenv("DOCKER") != null) {
+            return;
+        }
+
         while (true) {
             try {
                 if (System.in.read() != -1) {
@@ -126,7 +136,7 @@ public class Main {
                     break;
                 }
 
-                WAITER.wait(50);
+                Thread.sleep(10);
             } catch (IOException e) {
                 LOGGER.warn("Failed to read from stdin", e);
                 break;

@@ -86,7 +86,15 @@ repositories {
     maven("https://maven.atlassian.com/3rdparty/")
     maven("https://repo1.maven.org/maven2/")
     maven("https://repo.runelite.net/")
-    maven("https://jitpack.io")
+    maven("https://jitpack.io") {
+        content {
+            includeGroup("com.github.Ultreon")
+            includeGroup("com.github.mgsx-dev.gdx-gltf")
+            includeGroup("com.github.JnCrMx")
+            includeGroup("com.github.jagrosh")
+            includeGroup("space.earlygrey")
+        }
+    }
     flatDir {
         name = "Project Libraries"
         dirs = setOf(file("${projectDir}/libs"))
@@ -151,12 +159,16 @@ allprojects {
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://jitpack.io")
 
+        maven("https://raw.githubusercontent.com/Ultreon/corelibs/main/.mvnrepo/")
+        maven("https://raw.githubusercontent.com/Ultreon/ultreon-data/main/.mvnrepo/")
+
         maven {
             name = "CoreLibsGitHub"
             url = uri("https://maven.pkg.github.com/Ultreon/corelibs")
+
             credentials {
-                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
-                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+                username = (project.findProperty("gpr.user") ?: getenv("USERNAME")) as String?
+                password = (project.findProperty("gpr.key") ?: getenv("TOKEN")) as String?
             }
         }
 
@@ -351,8 +363,8 @@ publishProjects.forEach {
                 name = "UltracraftGitHub"
                 url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
                 credentials {
-                    username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
-                    password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+                    username = (project.findProperty("gpr.user") ?: getenv("USERNAME")) as String?
+                    password = (project.findProperty("gpr.key") ?: getenv("TOKEN")) as String?
                 }
             }
         }
@@ -449,8 +461,8 @@ publishing {
             name = "UltracraftGitHub"
             url = uri("https://maven.pkg.github.com/Ultreon/ultracraft")
             credentials {
-                username = (project.findProperty("gpr.user") ?: System.getenv("USERNAME")) as String
-                password = (project.findProperty("gpr.key") ?: System.getenv("TOKEN")) as String
+                username = (project.findProperty("gpr.user") ?: getenv("USERNAME")) as String?
+                password = (project.findProperty("gpr.key") ?: getenv("TOKEN")) as String?
             }
         }
     }
@@ -545,6 +557,78 @@ commonProperties
 
             setupIdea(rootProject.project(":desktop"), "Java")
             setupIdea(rootProject.project(":testmod"), "Test Mod")
+        }
+    }
+}
+
+tasks.register<Copy>("docker-jar") {
+    dependsOn(":server:jar")
+
+    from(project(":server").tasks.getByName("serverJar").outputs)
+    into("$projectDir/build/docker")
+
+    rename {
+        "server.jar"
+    }
+}
+
+tasks.register<DefaultTask>("docker-image") {
+    dependsOn("docker-jar")
+
+    doLast {
+        // Prepare docker image
+        val runScriptPath = file("$projectDir/build/docker/run.sh").toPath()
+
+        val serverClassPath = project(":server").configurations["runtimeClasspath"]!!
+        val classPath = serverClassPath.asSequence()
+            .filter { it != null }
+            .map {
+                copy {
+                    from(it)
+                    into("$projectDir/build/docker/lib")
+                }
+                return@map "./lib/${it.name}"
+            }
+            .joinToString(":")
+
+        val runScript = """
+#!/bin/bash
+java -cp ./server.jar:$classPath net.fabricmc.loader.impl.launch.knot.KnotClient
+        """.trimIndent()
+        if (!Files.exists(runScriptPath))
+            Files.createFile(runScriptPath)
+
+        Files.writeString(runScriptPath, runScript, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
+
+        copy {
+            from("$projectDir/log4j.xml")
+            into("$projectDir/build/docker")
+        }
+
+        copy {
+            from("$projectDir/Dockerfile")
+            into("$projectDir/build/docker")
+        }
+
+        // Build docker image
+        exec {
+            workingDir = file("$projectDir/build/docker")
+            if (!gameVersion.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+"))) {
+                commandLine("docker", "build", "-t", "${project.name}/server:latest", ".")
+            } else {
+                commandLine("docker", "build", "-t", "${project.name}/server:${gameVersion}", ".")
+            }
+        }
+    }
+}
+
+tasks.register<DefaultTask>("docker-run") {
+    dependsOn("docker-image")
+
+    doLast {
+        exec {
+            workingDir = file("$projectDir/build/docker")
+            commandLine("docker", "run", "--rm", "-i", "--name", "gradle-${project.name}", "${project.name}/server")
         }
     }
 }

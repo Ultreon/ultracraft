@@ -1,8 +1,13 @@
 //file:noinspection GroovyUnusedCatchParameter
 //file:noinspection GroovyAssignabilityCheck
 
+
+import org.intellij.lang.annotations.Language
+
 import java.nio.file.Files
 import java.nio.file.Paths
+
+import static org.gradle.api.file.DuplicatesStrategy.*
 
 buildscript {
     repositories {
@@ -33,6 +38,9 @@ apply plugin: 'groovy'
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
+
+@Language("jvm-class-name")
+def mainClass = 'com.ultreon.craft.server.dedicated.PreMain'
 
 java {
     withSourcesJar()
@@ -157,7 +165,7 @@ processResources {
     filesMatching("metadata.json") {
         expand(["version": version])
     }
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    duplicatesStrategy INCLUDE
 }
 
 jar {
@@ -167,19 +175,38 @@ jar {
         attributes 'Implementation-Title': 'Ultracraft',
                 'Implementation-Vendor': 'Ultreon Team',
                 project_version: project.version,
-                'Main-Class': 'com.ultreon.craft.DesktopLauncher',
+                'Main-Class': mainClass,
                 'Multi-Release': 'true'
     }
 
-    from {
-        compileJava.outputs
-    }
-    from {
-        processResources.outputs
+    from(compileJava.outputs)
+    from(processResources.outputs)
+
+    zip64 true
+    duplicatesStrategy INCLUDE
+}
+
+//noinspection ConfigurationAvoidance
+tasks.create("serverJar", Jar) {
+    dependsOn jar
+
+    archiveFileName = "server.jar"
+
+    from compileJava.outputs
+    from processResources.outputs
+
+    duplicatesStrategy EXCLUDE
+
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'Ultracraft',
+                'Implementation-Vendor': 'Ultreon Team',
+                project_version: project.version,
+                'Main-Class': mainClass,
+                'Multi-Release': 'true'
     }
 
     zip64 true
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 tasks.register('prepareRun', {
@@ -187,11 +214,11 @@ tasks.register('prepareRun', {
 })
 
 tasks.withType(ProcessResources).configureEach {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    duplicatesStrategy INCLUDE
 }
 
 tasks.withType(Jar).configureEach {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    duplicatesStrategy INCLUDE
 }
 
 tasks.register('copyDependencies', Copy) {
