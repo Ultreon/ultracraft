@@ -572,7 +572,7 @@ tasks.register<Copy>("docker-jar") {
     }
 }
 
-tasks.register<DefaultTask>("docker-image") {
+tasks.register<DefaultTask>("docker-prepare") {
     dependsOn("docker-jar")
 
     doLast {
@@ -609,7 +609,13 @@ java -cp ./server.jar:$classPath net.fabricmc.loader.impl.launch.knot.KnotClient
             from("$projectDir/Dockerfile")
             into("$projectDir/build/docker")
         }
+    }
+}
 
+tasks.register<DefaultTask>("docker-image") {
+    dependsOn("docker-prepare")
+
+    doLast {
         // Build docker image
         exec {
             workingDir = file("$projectDir/build/docker")
