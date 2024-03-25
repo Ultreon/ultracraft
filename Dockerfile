@@ -22,7 +22,7 @@ RUN chmod +x ./run/server.jar
 VOLUME /run
 
 # Expose port
-EXPOSE 36686
+EXPOSE 38800
 
 # Set working directory
 WORKDIR /run
