@@ -8,7 +8,10 @@ ENV DOCKER true
 RUN mkdir -p /run
 RUN mkdir -p /run/lib
 
-ADD . /run
+ADD ./lib /run/lib
+ADD ./run.sh /run
+ADD ./server.jar /run
+ADD ./log4j.xml /run
 WORKDIR /
 MAINTAINER ultreon
 
