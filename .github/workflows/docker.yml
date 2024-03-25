@@ -42,21 +42,21 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: Extract metadata from image-version.txt
+        id: version
         run: |
           export VERSION=$(cat build/docker/image-version.txt)
           if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           then
             echo "Valid version number"
-            echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
           else
             echo "Invalid version number"
             export VERSION='latest-${{ github.branch.name }}'
-            echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
           fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: build/docker
           push: true
-          tags: ultracraft/server:${{ env.VERSION }}
+          tags: ultracraft/server:${{ steps.version.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
