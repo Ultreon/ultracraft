@@ -5,6 +5,7 @@ import org.jetbrains.gradle.ext.runConfigurations
 import org.jetbrains.gradle.ext.settings
 import java.lang.System.getenv
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -609,6 +610,8 @@ java -cp ./server.jar:$classPath net.fabricmc.loader.impl.launch.knot.KnotClient
             from("$projectDir/Dockerfile")
             into("$projectDir/build/docker")
         }
+
+        Files.writeString(Paths.get("$projectDir/build/docker/image-version.txt"), gameVersion, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)
     }
 }
 
