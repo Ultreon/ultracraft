@@ -641,3 +641,19 @@ tasks.register<DefaultTask>("docker-run") {
         }
     }
 }
+
+tasks.register<DefaultTask>("docker-push") {
+    dependsOn("docker-image")
+
+    doLast {
+        exec {
+            workingDir = file("$projectDir/build/docker")
+
+            // Push docker image
+            if (!gameVersion.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+")))
+                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}-server:latest")
+            else
+                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}-server:" + gameVersion)
+        }
+    }
+}
