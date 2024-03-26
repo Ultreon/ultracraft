@@ -651,9 +651,55 @@ tasks.register<DefaultTask>("docker-push") {
 
             // Push docker image
             if (!gameVersion.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+")))
-                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}-server:latest")
+                commandLine("docker", "build",
+                    "--label",
+                    "org.opencontainers.image.description=A WIP voxel game that aims to have a lot of features",
+
+                    "--label",
+                    "org.opencontainers.image.url=https://github.com/Ultreon/ultracraft",
+
+                    "--label",
+                    "org.opencontainers.image.source=https://github.com/Ultreon/ultracraft",
+
+                    "--label",
+                    "org.opencontainers.image.version=latest",
+
+                    "--label",
+                    "org.opencontainers.image.created=${LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)}",
+
+                    "--label",
+                    "org.opencontainers.image.revision=${getenv("GH_SHA")}",
+
+                    "--label",
+                    "org.opencontainers.image.licenses=AGPL-3.0",
+
+                    "--tag",
+                    "ghcr.io/ultreon/${project.name}-server:latest", ".")
             else
-                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}-server:" + gameVersion)
+                commandLine("docker", "build",
+                    "--label",
+                    "org.opencontainers.image.description=A WIP voxel game that aims to have a lot of features",
+
+                    "--label",
+                    "org.opencontainers.image.url=https://github.com/Ultreon/ultracraft",
+
+                    "--label",
+                    "org.opencontainers.image.source=https://github.com/Ultreon/ultracraft",
+
+                    "--label",
+                    "org.opencontainers.image.version=${gameVersion}",
+
+                    "--label",
+                    "org.opencontainers.image.created=${LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)}",
+
+                    "--label",
+                    "org.opencontainers.image.revision=${getenv("GH_SHA")}",
+
+                    "--label",
+                    "org.opencontainers.image.licenses=AGPL-3.0",
+
+                    "--tag",
+                    "ghcr.io/ultreon/${project.name}-server:${gameVersion}", ".")
         }
     }
 }
