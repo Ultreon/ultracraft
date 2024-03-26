@@ -674,7 +674,7 @@ tasks.register<DefaultTask>("docker-push") {
                     "org.opencontainers.image.licenses=AGPL-3.0",
 
                     "--tag",
-                    "ghcr.io/ultreon/${project.name}-server:latest", ".")
+                    "ghcr.io/ultreon/${project.name}:server-latest", ".")
             else
                 commandLine("docker", "build",
                     "--label",
@@ -699,7 +699,9 @@ tasks.register<DefaultTask>("docker-push") {
                     "org.opencontainers.image.licenses=AGPL-3.0",
 
                     "--tag",
-                    "ghcr.io/ultreon/${project.name}-server:${gameVersion}", ".")
+                    "ghcr.io/ultreon/${project.name}:server-${gameVersion}", ".")
+
+            isIgnoreExitValue = false
         }
     }
 }
