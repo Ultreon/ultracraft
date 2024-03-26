@@ -58,6 +58,6 @@ jobs:
         with:
           context: build/docker
           push: true
-          tags: ultracraft/server:${{ steps.version.outputs.version }}
+          tags: ultracraft:${{ steps.version.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
           github-token: ${{ secrets.GH_TOKEN }}
