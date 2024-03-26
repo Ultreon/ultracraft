@@ -703,5 +703,15 @@ tasks.register<DefaultTask>("docker-push") {
 
             isIgnoreExitValue = false
         }
+
+        exec {
+            workingDir = file("$projectDir/build/docker")
+
+            if (!gameVersion.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+"))) {
+                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}:server-latest")
+            } else {
+                commandLine("docker", "push", "ghcr.io/ultreon/${project.name}:server-${gameVersion}")
+            }
+        }
     }
 }
